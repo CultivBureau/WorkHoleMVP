@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100..900;1,100..900&display=swap");
 @import "tailwindcss";
 
 #root {
@@ -7,38 +8,25 @@
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+body {
+  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, Arial,
+    "Noto Sans", "Helvetica Neue", sans-serif;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.dark {
+  --bg-color: #031829;
+  --container-color: #1d2d3d;
+  --text-color: #e3e3e3;
+  --sub-text-color: #f0f0f2;
+  --accent-color: #4cbc36;
+  --hover-color: #91d47c;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+.light {
+  --bg-color: #e3e3e3;
+  --container-color: #f0f0f2;
+  --text-color: #031829;
+  --sub-text-color: #1d2d3d;
+  --accent-color: #66c550;
+  --hover-color: #7ccc67;
 }
