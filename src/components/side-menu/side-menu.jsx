@@ -1,0 +1,361 @@
+import { useState, useEffect } from 'react'
+import {
+  LayoutDashboard,
+  Clock,
+  ListTodo,
+  BarChart3,
+  LogOut,
+  Wallet,
+  Settings as SettingsIcon,
+  RefreshCw,
+  Bot,
+  Moon,
+  ChevronLeft,
+  ChevronDown,
+  CalendarCheck,
+  Coffee,
+  ListChecks,
+  FolderKanban,
+  LayoutGrid,
+  FileBarChart2,
+} from 'lucide-react'
+import logo from '../../assets/side-menu-icons/logo.svg?url'
+
+const mainMenuItems = [
+  { key: 'dashboard', label: 'Dashboard', Icon: LayoutDashboard },
+  {
+    key: 'time',
+    label: 'Time Tracking',
+    Icon: Clock,
+    children: [
+      { key: 'attendance', label: 'Attendance Logs', Icon: CalendarCheck },
+      { key: 'break', label: 'Break Tracking', Icon: Coffee },
+    ],
+  },
+  {
+    key: 'tasks',
+    label: 'Tasks & Projects',
+    Icon: ListTodo,
+    children: [
+      { key: 'tasks-list', label: 'Tasks List', Icon: ListChecks },
+      { key: 'projects', label: 'Projects', Icon: FolderKanban },
+    ],
+  },
+  {
+    key: 'performance',
+    label: 'Performance',
+    Icon: BarChart3,
+    children: [
+      { key: 'overview', label: 'Overview', Icon: LayoutGrid },
+      { key: 'reports', label: 'Reports', Icon: FileBarChart2 },
+    ],
+  },
+  { key: 'leaves', label: 'Leaves', Icon: LogOut },
+  { key: 'wallet', label: 'Team Wallet', Icon: Wallet },
+]
+
+const settingsItems = [
+  { key: 'settings', label: 'Settings', Icon: SettingsIcon },
+  { key: 'subscriptions', label: 'Subscriptions', Icon: RefreshCw },
+  { key: 'help', label: 'Help', Icon: Bot },
+]
+
+function SideMenuItem({ item, active, collapsed, onClick, openDropdown, setOpenDropdown, setCollapsed }) {
+  const isActive = active === item.key
+  const hasChildren = !!item.children
+  const isOpen = openDropdown === item.key
+
+  return (
+    <>
+      <button
+        onClick={() => {
+          if (hasChildren) {
+            if (collapsed) {
+              setCollapsed(false)
+              setTimeout(() => setOpenDropdown(item.key), 200) // wait for animation
+            } else {
+              setOpenDropdown(isOpen ? null : item.key)
+            }
+          } else {
+            onClick(item.key)
+          }
+        }}
+        className={[
+          'group w-full flex items-center gap-2 rounded-2xl px-2 py-1.5 transition-all duration-200',
+          'outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-hover)]',
+          isActive
+            ? 'gradient-bg text-white shadow'
+            : 'bg-transparent hover:bg-[var(--hover-color)]',
+          collapsed ? 'justify-center ' : 'justify-start'
+        ].join(' ')}
+        style={{
+          color: isActive ? 'white' : 'var(--text-color)',
+          fontSize: collapsed ? 0 : '13px'
+        }}
+      >
+        <item.Icon className={[
+          'shrink-0 transition-colors',
+          collapsed ? 'w-6 h-6' : 'w-4 h-4',
+          isActive ? 'text-white' : 'text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]',
+        ].join(' ')} />
+        {!collapsed && (
+          <span
+            className={[
+              'font-medium transition-colors',
+              isActive
+                ? 'text-white'
+                : 'text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]',
+            ].join(' ')}>
+            {item.label}
+          </span>
+        )}
+        {hasChildren && !collapsed && (
+          <ChevronDown
+            className={[
+              'ml-auto transition-transform',
+              isOpen ? 'rotate-180' : '',
+              isActive ? 'text-white' : 'text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]'
+            ].join(' ')}
+            size={16}
+          />
+        )}
+      </button>
+      {/* Dropdown */}
+      {hasChildren && isOpen && !collapsed && (
+        <div className="pl-3 flex flex-col gap-0.5">
+          {item.children.map((child) => (
+            <button
+              key={child.key}
+              onClick={() => onClick(child.key)}
+              className={[
+                'group w-full flex items-center gap-2 rounded-2xl px-1.5 py-1 text-[13px] font-medium transition-all duration-200',
+                active === child.key
+                  ? 'gradient-bg text-white shadow'
+                  : 'bg-transparent text-[var(--sub-text-color)] hover:bg-[var(--hover-color)] hover:text-[var(--accent-color)]'
+              ].join(' ')}
+              style={{ fontSize: '13px' }}
+            >
+              <child.Icon className={[
+                'shrink-0 transition-colors w-4 h-4',
+                active === child.key
+                  ? 'text-white'
+                  : 'text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]'
+              ].join(' ')} />
+              <span
+                className={[
+                  active === child.key
+                    ? 'text-white'
+                    : 'text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]'
+                ].join(' ')}
+              >
+                {child.label}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+    </>
+  )
+}
+
+function ThemeToggle({ theme, onToggle, collapsed }) {
+  const isDark = theme === 'dark'
+  if (collapsed) {
+    // Only show the toggle button, centered and large
+    return (
+      <div className="w-full flex justify-center items-center py-1">
+        <button
+          onClick={onToggle}
+          role="switch"
+          aria-checked={isDark}
+          className="relative inline-flex items-center justify-center rounded-2xl shadow-sm border-2 border-[var(--toggle-border)] transition-all duration-200"
+          style={{
+            width: 38,
+            height: 38,
+            background: 'var(--toggle-bg)',
+          }}
+        >
+          <div
+            className="absolute inset-0 flex items-center justify-center"
+            style={{
+              color: isDark ? 'var(--accent-color)' : 'var(--sub-text-color)'
+            }}
+          >
+            <Moon size={22} />
+          </div>
+          <div
+            className="absolute bottom-1 right-1 w-3 h-3 rounded-full"
+            style={{
+              background: isDark
+                ? 'linear-gradient(135deg, var(--knob-gradient-start) 0%, var(--knob-gradient-end) 100%)'
+                : 'linear-gradient(135deg, var(--knob-gradient-end) 0%, var(--knob-gradient-start) 100%)'
+            }}
+          />
+        </button>
+      </div>
+    )
+  }
+  return (
+    <div className="w-full flex items-center justify-between rounded-2xl px-2 py-2 shadow-sm border" style={{ backgroundColor: 'var(--bg-color)', borderColor: 'var(--border-color)' }}>
+      <span className="text-sm font-medium" style={{ color: 'var(--text-color)' }}>
+        {isDark ? 'Dark Mode' : 'Light Mode'}
+      </span>
+      <button
+        onClick={onToggle}
+        role="switch"
+        aria-checked={isDark}
+        className="relative inline-flex items-center justify-start rounded-full shadow-sm border transition-all duration-200"
+        style={{
+          width: 42,
+          height: 22,
+          background: 'var(--toggle-bg)',
+          borderColor: 'var(--toggle-border)',
+          paddingLeft: 3,
+          paddingRight: 3,
+        }}
+      >
+        <div className="absolute left-1 top-1/2 -translate-y-1/2 text-[var(--accent-color)]">
+          <Moon className="w-3 h-3" />
+        </div>
+        <div
+          className="absolute top-1/2 -translate-y-1/2 transition-all duration-200 ease-out rounded-full shadow-md"
+          style={{
+            left: isDark ? 20 : 3,
+            width: 12,
+            height: 12,
+            background: 'linear-gradient(135deg, var(--knob-gradient-start) 0%, var(--knob-gradient-end) 100%)'
+          }}
+        >
+          <div className="absolute top-0.5 left-0.5 w-1 h-1 bg-white/40 rounded-full"></div>
+          <div className="absolute bottom-0.5 right-0.5 w-1 h-1 bg-white/20 rounded-full"></div>
+        </div>
+      </button>
+    </div>
+  )
+}
+
+export default function SideMenu() {
+  const [collapsed, setCollapsed] = useState(false)
+  const [active, setActive] = useState('dashboard')
+  const [theme, setTheme] = useState('light')
+  const [openDropdown, setOpenDropdown] = useState(null)
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('theme')
+      if (saved) setTheme(saved)
+    } catch {
+      // Ignore errors (e.g., localStorage not available)
+    }
+  }, [])
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+    try {
+      localStorage.setItem('theme', theme)
+    } catch {
+      // Ignore errors (e.g., localStorage not available)
+    }
+  }, [theme])
+
+  const containerBase = 'flex flex-col h-full min-h-0 overflow-hidden rounded-3xl shadow-sm'
+  const containerWidth = collapsed ? 'w-20' : 'w-[220px]'
+
+  return (
+    <aside
+      className={[containerBase, containerWidth, 'h-full m-4 p-2 border'].join(' ')}
+      style={{ background: 'var(--bg-color)', borderColor: 'var(--border-color)' }}
+    >
+      {/* Collapse/Expand button always at the top when collapsed */}
+      {collapsed && (
+        <div className="flex justify-center mb-2">
+          <button
+            onClick={() => setCollapsed((v) => !v)}
+            className="rounded-2xl p-2 hover:bg-[var(--hover-color)] transition-colors"
+            title="Expand"
+          >
+            <ChevronLeft className="w-5 h-5 transition-transform rotate-180" style={{ color: 'var(--text-color)' }} />
+          </button>
+        </div>
+      )}
+
+      {/* Header (fixed) */}
+      <div className="flex items-center justify-between shrink-0 mb-1">
+        <div className="flex items-center p-2 gap-2">
+          <div className="size-8 grid place-items-center">
+            <img src={logo} alt="WorkHole" className="h-8" />
+          </div>
+          {!collapsed && (
+            <div className="text-left flex items-center">
+              <span className="text-m font-semibold  gradient-text">Work</span>
+              <span className="text-m font-semibold text-[var(--sub-text-color)]">Hole</span>
+            </div>
+          )}
+        </div>
+        {!collapsed && (
+          <button
+            onClick={() => setCollapsed((v) => !v)}
+            className="rounded-xl p-1 hover:bg-[var(--sub-text-color)] transition-colors"
+            title="Collapse"
+          >
+            <ChevronLeft className="w-5 h-5 transition-transform" style={{ color: 'var(--text-color)' }} />
+          </button>
+        )}
+      </div>
+
+
+      {/* Scrollable content (middle only) */}
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {!collapsed && (
+          <p className="px-2 text-left pb-1 text-[11px] tracking-wide uppercase" style={{ color: 'var(--sub-text-color)' }}>
+            Main Menu
+          </p>
+        )}
+        <nav className="flex mx-3 flex-col gap-0.5" style={{ alignItems: collapsed ? 'center' : 'stretch' }}>
+          {mainMenuItems.map((item) => (
+            <SideMenuItem
+              key={item.key}
+              item={item}
+              active={active}
+              collapsed={collapsed}
+              onClick={setActive}
+              openDropdown={openDropdown}
+              setOpenDropdown={setOpenDropdown}
+              setCollapsed={setCollapsed} // أضف دي هنا
+            />
+          ))}
+        </nav>
+
+        {!collapsed && (
+          <p className="px-2 text-left pt-2 pb-1 text-[11px] tracking-wide uppercase" style={{ color: 'var(--sub-text-color)' }}>
+            Settings
+          </p>
+        )}
+        <nav className="flex mx-3 flex-col gap-0.5 pb-1" style={{ alignItems: collapsed ? 'center' : 'stretch' }}>
+          {settingsItems.map((item) => (
+            <SideMenuItem
+              key={item.key}
+              item={item}
+              active={active}
+              collapsed={collapsed}
+              onClick={setActive}
+              openDropdown={openDropdown}
+              setOpenDropdown={setOpenDropdown}
+              setCollapsed={setCollapsed} // أضف دي هنا
+            />
+          ))}
+        </nav>
+      </div>
+
+      {/* Bottom card: Dark Mode (fixed) */}
+      <div className="shrink-0 pt-1">
+        <ThemeToggle
+          theme={theme}
+          onToggle={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+          collapsed={collapsed}
+        />
+      </div>
+    </aside>
+  )
+}
+

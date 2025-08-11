@@ -1,10 +1,23 @@
-import { StrictMode } from 'react'
+import { StrictMode, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 
+function ThemeBootstrap({ children }) {
+  useEffect(() => {
+    const saved = (() => {
+      try { return localStorage.getItem('theme') } catch { return null }
+    })()
+    const initial = saved || 'light'
+    document.documentElement.dataset.theme = initial
+  }, [])
+  return children
+}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <ThemeBootstrap>
+      <App />
+    </ThemeBootstrap>
   </StrictMode>,
 )
