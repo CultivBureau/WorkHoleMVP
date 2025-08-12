@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Clock,
@@ -275,11 +276,22 @@ function ThemeToggle({ theme, onToggle, collapsed, t, isArabic }) {
 export default function SideMenu() {
   const { t, i18n } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
-  const [active, setActive] = useState("dashboard");
   const [theme, setTheme] = useState("light");
   const [openDropdown, setOpenDropdown] = useState(null);
 
+  const navigate = useNavigate();
+  const location = useLocation();
   const isArabic = i18n.language === "ar";
+
+  // تحديد الـ active بناءً على الـ route الحالي
+  const getActiveKey = () => {
+    if (location.pathname.startsWith("/pages/User/dashboard"))
+      return "dashboard";
+    if (location.pathname.startsWith("/pages/User/leaves")) return "leaves";
+    // أضف باقي الصفحات هنا لو عندك
+    return "";
+  };
+  const active = getActiveKey();
 
   // Set language from localStorage or default to "en"
   useEffect(() => {
@@ -305,6 +317,17 @@ export default function SideMenu() {
       // Ignore errors
     }
   }, [theme]);
+
+  // تعديل دالة onClick:
+  const handleMenuClick = (key) => {
+    // Routing logic
+    if (key === "dashboard") navigate("/pages/User/dashboard");
+    else if (key === "leaves") navigate("/pages/User/leaves");
+    // أضف باقي الروابط هنا
+  };
+
+  // استخدم دالة فارغة بدل setActive
+  const handleSettingsClick = () => {};
 
   const containerBase =
     "flex flex-col min-h-0 overflow-hidden rounded-3xl shadow-sm";
@@ -394,7 +417,7 @@ export default function SideMenu() {
               item={item}
               active={active}
               collapsed={collapsed}
-              onClick={setActive}
+              onClick={handleMenuClick}
               openDropdown={openDropdown}
               setOpenDropdown={setOpenDropdown}
               setCollapsed={setCollapsed}
@@ -427,7 +450,7 @@ export default function SideMenu() {
               item={item}
               active={active}
               collapsed={collapsed}
-              onClick={setActive}
+              onClick={handleSettingsClick} // هنا التغيير
               openDropdown={openDropdown}
               setOpenDropdown={setOpenDropdown}
               setCollapsed={setCollapsed}
