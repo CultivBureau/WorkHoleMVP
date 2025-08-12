@@ -1,0 +1,61 @@
+{
+  "aside": {
+    "mainMenu": "Main Menu",
+    "settings": "Settings",
+    "dashboard": "Dashboard",
+    "time": "Time Tracking",
+    "attendance": "Attendance Logs",
+    "break": "Break Tracking",
+    "tasks": "Tasks & Projects",
+    "tasks-list": "Tasks List",
+    "projects": "Projects",
+    "performance": "Performance",
+    "overview": "Overview",
+    "reports": "Reports",
+    "leaves": "Leaves",
+    "wallet": "Team Wallet",
+    "settingsItem": "Settings",
+    "subscriptions": "Subscriptions",
+    "help": "Help",
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode"
+  },
+  "navbar": {
+    "greeting": "Good Morning",
+    "user": ", Adam",
+    "online": "Online",
+    "arabic": "Arabic",
+    "english": "English",
+    "searchPlaceholder": "Search...",
+    "role": "Frontend Developer",
+    "profileName": "Adam Wael",
+    "months": {
+      "0": "Jan",
+      "1": "Feb",
+      "2": "Mar",
+      "3": "Apr",
+      "4": "May",
+      "5": "Jun",
+      "6": "Jul",
+      "7": "Aug",
+      "8": "Sep",
+      "9": "Oct",
+      "10": "Nov",
+      "11": "Dec"
+    },
+    "days": {
+      "0": "Sun",
+      "1": "Mon",
+      "2": "Tue",
+      "3": "Wed",
+      "4": "Thu",
+      "5": "Fri",
+      "6": "Sat"
+    },
+    "profile": "Profile",
+    "logout": "Log out",
+    "notifications": "Notifications",
+    "noNotifications": "No notifications",
+    "viewAll": "View all"
+  }
+}

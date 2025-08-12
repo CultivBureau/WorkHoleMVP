@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard,
   Clock,
@@ -22,42 +23,39 @@ import {
 import logo from "../../assets/side-menu-icons/logo.svg?url";
 
 const mainMenuItems = [
-  { key: "dashboard", label: "Dashboard", Icon: LayoutDashboard },
+  { key: "dashboard", Icon: LayoutDashboard },
   {
     key: "time",
-    label: "Time Tracking",
     Icon: Clock,
     children: [
-      { key: "attendance", label: "Attendance Logs", Icon: CalendarCheck },
-      { key: "break", label: "Break Tracking", Icon: Coffee },
+      { key: "attendance", Icon: CalendarCheck },
+      { key: "break", Icon: Coffee },
     ],
   },
   {
     key: "tasks",
-    label: "Tasks & Projects",
     Icon: ListTodo,
     children: [
-      { key: "tasks-list", label: "Tasks List", Icon: ListChecks },
-      { key: "projects", label: "Projects", Icon: FolderKanban },
+      { key: "tasks-list", Icon: ListChecks },
+      { key: "projects", Icon: FolderKanban },
     ],
   },
   {
     key: "performance",
-    label: "Performance",
     Icon: BarChart3,
     children: [
-      { key: "overview", label: "Overview", Icon: LayoutGrid },
-      { key: "reports", label: "Reports", Icon: FileBarChart2 },
+      { key: "overview", Icon: LayoutGrid },
+      { key: "reports", Icon: FileBarChart2 },
     ],
   },
-  { key: "leaves", label: "Leaves", Icon: LogOut },
-  { key: "wallet", label: "Team Wallet", Icon: Wallet },
+  { key: "leaves", Icon: LogOut },
+  { key: "wallet", Icon: Wallet },
 ];
 
 const settingsItems = [
-  { key: "settings", label: "Settings", Icon: SettingsIcon },
-  { key: "subscriptions", label: "Subscriptions", Icon: RefreshCw },
-  { key: "help", label: "Help", Icon: Bot },
+  { key: "settingsItem", Icon: SettingsIcon },
+  { key: "subscriptions", Icon: RefreshCw },
+  { key: "help", Icon: Bot },
 ];
 
 function SideMenuItem({
@@ -68,6 +66,8 @@ function SideMenuItem({
   openDropdown,
   setOpenDropdown,
   setCollapsed,
+  t,
+  isArabic,
 }) {
   const isActive = active === item.key;
   const hasChildren = !!item.children;
@@ -99,6 +99,7 @@ function SideMenuItem({
         style={{
           color: isActive ? "white" : "var(--text-color)",
           fontSize: collapsed ? 0 : "13px",
+          direction: isArabic ? "rtl" : "ltr",
         }}
       >
         <item.Icon
@@ -119,13 +120,14 @@ function SideMenuItem({
                 : "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]",
             ].join(" ")}
           >
-            {item.label}
+            {t(`aside.${item.key}`)}
           </span>
         )}
         {hasChildren && !collapsed && (
           <ChevronDown
             className={[
-              "ml-auto transition-transform",
+              isArabic ? "mr-auto" : "ml-auto",
+              "transition-transform",
               isOpen ? "rotate-180" : "",
               isActive
                 ? "text-white"
@@ -137,7 +139,13 @@ function SideMenuItem({
       </button>
       {/* Dropdown */}
       {hasChildren && isOpen && !collapsed && (
-        <div className="pl-3 flex flex-col gap-0.5">
+        <div
+          className={
+            isArabic
+              ? "pr-2 flex flex-col gap-0.5"
+              : "pl-6 flex flex-col gap-0.5"
+          }
+        >
           {item.children.map((child) => (
             <button
               key={child.key}
@@ -148,7 +156,10 @@ function SideMenuItem({
                   ? "gradient-bg text-white shadow"
                   : "bg-transparent text-[var(--sub-text-color)] hover:bg-[var(--hover-color)] hover:text-[var(--accent-color)]",
               ].join(" ")}
-              style={{ fontSize: "13px" }}
+              style={{
+                fontSize: "13px",
+                direction: isArabic ? "rtl" : "ltr",
+              }}
             >
               <child.Icon
                 className={[
@@ -165,7 +176,7 @@ function SideMenuItem({
                     : "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]",
                 ].join(" ")}
               >
-                {child.label}
+                {t(`aside.${child.key}`)}
               </span>
             </button>
           ))}
@@ -175,7 +186,7 @@ function SideMenuItem({
   );
 }
 
-function ThemeToggle({ theme, onToggle, collapsed }) {
+function ThemeToggle({ theme, onToggle, collapsed, t, isArabic }) {
   const isDark = theme === "dark";
   if (collapsed) {
     return (
@@ -217,13 +228,14 @@ function ThemeToggle({ theme, onToggle, collapsed }) {
       style={{
         backgroundColor: "var(--bg-color)",
         borderColor: "var(--border-color)",
+        direction: isArabic ? "rtl" : "ltr",
       }}
     >
       <span
         className="text-sm font-medium"
         style={{ color: "var(--text-color)" }}
       >
-        {isDark ? "Dark Mode" : "Light Mode"}
+        {isDark ? t("aside.darkMode") : t("aside.lightMode")}
       </span>
       <button
         onClick={onToggle}
@@ -261,10 +273,20 @@ function ThemeToggle({ theme, onToggle, collapsed }) {
 }
 
 export default function SideMenu() {
+  const { t, i18n } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
   const [active, setActive] = useState("dashboard");
   const [theme, setTheme] = useState("light");
   const [openDropdown, setOpenDropdown] = useState(null);
+
+  const isArabic = i18n.language === "ar";
+
+  // Set language from localStorage or default to "en"
+  useEffect(() => {
+    const lang = localStorage.getItem("lang") || "en";
+    if (i18n.language !== lang) i18n.changeLanguage(lang);
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  }, [i18n]);
 
   useEffect(() => {
     try {
@@ -298,7 +320,7 @@ export default function SideMenu() {
       style={{
         background: "var(--bg-color)",
         borderColor: "var(--border-color)",
-        height: "calc(100vh - 96px)", // Adjusted for navbar height + margins
+        height: "calc(100vh - 96px)",
       }}
     >
       {/* Collapse/Expand button when collapsed */}
@@ -324,7 +346,8 @@ export default function SideMenu() {
             <img src={logo} alt="WorkHole" className="h-10" />
           </div>
           {!collapsed && (
-            <div className="text-left flex items-center">
+            // ثابت بالإنجليزي واتجاهه يسار دائماً
+            <div className="text-left flex items-center" dir="ltr">
               <span className="text-lg font-bold gradient-text">Work</span>
               <span className="text-lg font-bold text-[var(--sub-text-color)]">
                 Hole
@@ -350,10 +373,15 @@ export default function SideMenu() {
       <div className="min-h-0 flex-1 overflow-y-auto pr-1">
         {!collapsed && (
           <p
-            className="px-3 text-left pb-2 text-xs tracking-wide uppercase font-semibold"
-            style={{ color: "var(--sub-text-color)" }}
+            className={`px-3 pb-2 text-xs tracking-wide uppercase font-semibold ${
+              isArabic ? "text-right" : "text-left"
+            }`}
+            style={{
+              color: "var(--sub-text-color)",
+              direction: isArabic ? "rtl" : "ltr",
+            }}
           >
-            Main Menu
+            {t("aside.mainMenu")}
           </p>
         )}
         <nav
@@ -370,16 +398,23 @@ export default function SideMenu() {
               openDropdown={openDropdown}
               setOpenDropdown={setOpenDropdown}
               setCollapsed={setCollapsed}
+              t={t}
+              isArabic={isArabic}
             />
           ))}
         </nav>
 
         {!collapsed && (
           <p
-            className="px-3 text-left pt-4 pb-2 text-xs tracking-wide uppercase font-semibold"
-            style={{ color: "var(--sub-text-color)" }}
+            className={`px-3 pt-4 pb-2 text-xs tracking-wide uppercase font-semibold ${
+              isArabic ? "text-right" : "text-left"
+            }`}
+            style={{
+              color: "var(--sub-text-color)",
+              direction: isArabic ? "rtl" : "ltr",
+            }}
           >
-            Settings
+            {t("aside.settings")}
           </p>
         )}
         <nav
@@ -396,6 +431,8 @@ export default function SideMenu() {
               openDropdown={openDropdown}
               setOpenDropdown={setOpenDropdown}
               setCollapsed={setCollapsed}
+              t={t}
+              isArabic={isArabic}
             />
           ))}
         </nav>
@@ -407,6 +444,8 @@ export default function SideMenu() {
           theme={theme}
           onToggle={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
           collapsed={collapsed}
+          t={t}
+          isArabic={isArabic}
         />
       </div>
     </aside>
