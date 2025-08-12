@@ -86,3 +86,69 @@ body {
   --border-color: #374151;
   --divider-color: #4b5563;
 }
+
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--sub-text-color);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Hide scrollbar arrows */
+::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+/* Hide scrollbar completely (optional) */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari and Opera */
+}
+
+/* Light/Dark theme specific scrollbar colors */
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: #d1d5db;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #374151;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
+}
