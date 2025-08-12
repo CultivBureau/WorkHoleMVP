@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   Clock,
@@ -18,52 +18,60 @@ import {
   FolderKanban,
   LayoutGrid,
   FileBarChart2,
-} from 'lucide-react'
-import logo from '../../assets/side-menu-icons/logo.svg?url'
+} from "lucide-react";
+import logo from "../../assets/side-menu-icons/logo.svg?url";
 
 const mainMenuItems = [
-  { key: 'dashboard', label: 'Dashboard', Icon: LayoutDashboard },
+  { key: "dashboard", label: "Dashboard", Icon: LayoutDashboard },
   {
-    key: 'time',
-    label: 'Time Tracking',
+    key: "time",
+    label: "Time Tracking",
     Icon: Clock,
     children: [
-      { key: 'attendance', label: 'Attendance Logs', Icon: CalendarCheck },
-      { key: 'break', label: 'Break Tracking', Icon: Coffee },
+      { key: "attendance", label: "Attendance Logs", Icon: CalendarCheck },
+      { key: "break", label: "Break Tracking", Icon: Coffee },
     ],
   },
   {
-    key: 'tasks',
-    label: 'Tasks & Projects',
+    key: "tasks",
+    label: "Tasks & Projects",
     Icon: ListTodo,
     children: [
-      { key: 'tasks-list', label: 'Tasks List', Icon: ListChecks },
-      { key: 'projects', label: 'Projects', Icon: FolderKanban },
+      { key: "tasks-list", label: "Tasks List", Icon: ListChecks },
+      { key: "projects", label: "Projects", Icon: FolderKanban },
     ],
   },
   {
-    key: 'performance',
-    label: 'Performance',
+    key: "performance",
+    label: "Performance",
     Icon: BarChart3,
     children: [
-      { key: 'overview', label: 'Overview', Icon: LayoutGrid },
-      { key: 'reports', label: 'Reports', Icon: FileBarChart2 },
+      { key: "overview", label: "Overview", Icon: LayoutGrid },
+      { key: "reports", label: "Reports", Icon: FileBarChart2 },
     ],
   },
-  { key: 'leaves', label: 'Leaves', Icon: LogOut },
-  { key: 'wallet', label: 'Team Wallet', Icon: Wallet },
-]
+  { key: "leaves", label: "Leaves", Icon: LogOut },
+  { key: "wallet", label: "Team Wallet", Icon: Wallet },
+];
 
 const settingsItems = [
-  { key: 'settings', label: 'Settings', Icon: SettingsIcon },
-  { key: 'subscriptions', label: 'Subscriptions', Icon: RefreshCw },
-  { key: 'help', label: 'Help', Icon: Bot },
-]
+  { key: "settings", label: "Settings", Icon: SettingsIcon },
+  { key: "subscriptions", label: "Subscriptions", Icon: RefreshCw },
+  { key: "help", label: "Help", Icon: Bot },
+];
 
-function SideMenuItem({ item, active, collapsed, onClick, openDropdown, setOpenDropdown, setCollapsed }) {
-  const isActive = active === item.key
-  const hasChildren = !!item.children
-  const isOpen = openDropdown === item.key
+function SideMenuItem({
+  item,
+  active,
+  collapsed,
+  onClick,
+  openDropdown,
+  setOpenDropdown,
+  setCollapsed,
+}) {
+  const isActive = active === item.key;
+  const hasChildren = !!item.children;
+  const isOpen = openDropdown === item.key;
 
   return (
     <>
@@ -71,51 +79,58 @@ function SideMenuItem({ item, active, collapsed, onClick, openDropdown, setOpenD
         onClick={() => {
           if (hasChildren) {
             if (collapsed) {
-              setCollapsed(false)
-              setTimeout(() => setOpenDropdown(item.key), 200) // wait for animation
+              setCollapsed(false);
+              setTimeout(() => setOpenDropdown(item.key), 200);
             } else {
-              setOpenDropdown(isOpen ? null : item.key)
+              setOpenDropdown(isOpen ? null : item.key);
             }
           } else {
-            onClick(item.key)
+            onClick(item.key);
           }
         }}
         className={[
-          'group w-full flex items-center gap-2 rounded-2xl px-2 py-1.5 transition-all duration-200',
-          'outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-hover)]',
+          "group w-full flex items-center gap-2 rounded-2xl px-2 py-1.5 transition-all duration-200",
+          "outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-hover)]",
           isActive
-            ? 'gradient-bg text-white shadow'
-            : 'bg-transparent hover:bg-[var(--hover-color)]',
-          collapsed ? 'justify-center ' : 'justify-start'
-        ].join(' ')}
+            ? "gradient-bg text-white shadow"
+            : "bg-transparent hover:bg-[var(--hover-color)]",
+          collapsed ? "justify-center " : "justify-start",
+        ].join(" ")}
         style={{
-          color: isActive ? 'white' : 'var(--text-color)',
-          fontSize: collapsed ? 0 : '13px'
+          color: isActive ? "white" : "var(--text-color)",
+          fontSize: collapsed ? 0 : "13px",
         }}
       >
-        <item.Icon className={[
-          'shrink-0 transition-colors',
-          collapsed ? 'w-6 h-6' : 'w-4 h-4',
-          isActive ? 'text-white' : 'text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]',
-        ].join(' ')} />
+        <item.Icon
+          className={[
+            "shrink-0 transition-colors",
+            collapsed ? "w-6 h-6" : "w-4 h-4",
+            isActive
+              ? "text-white"
+              : "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]",
+          ].join(" ")}
+        />
         {!collapsed && (
           <span
             className={[
-              'font-medium transition-colors',
+              "font-medium transition-colors",
               isActive
-                ? 'text-white'
-                : 'text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]',
-            ].join(' ')}>
+                ? "text-white"
+                : "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]",
+            ].join(" ")}
+          >
             {item.label}
           </span>
         )}
         {hasChildren && !collapsed && (
           <ChevronDown
             className={[
-              'ml-auto transition-transform',
-              isOpen ? 'rotate-180' : '',
-              isActive ? 'text-white' : 'text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]'
-            ].join(' ')}
+              "ml-auto transition-transform",
+              isOpen ? "rotate-180" : "",
+              isActive
+                ? "text-white"
+                : "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]",
+            ].join(" ")}
             size={16}
           />
         )}
@@ -128,25 +143,27 @@ function SideMenuItem({ item, active, collapsed, onClick, openDropdown, setOpenD
               key={child.key}
               onClick={() => onClick(child.key)}
               className={[
-                'group w-full flex items-center gap-2 rounded-2xl px-1.5 py-1 text-[13px] font-medium transition-all duration-200',
+                "group w-full flex items-center gap-2 rounded-2xl px-1.5 py-1 text-[13px] font-medium transition-all duration-200",
                 active === child.key
-                  ? 'gradient-bg text-white shadow'
-                  : 'bg-transparent text-[var(--sub-text-color)] hover:bg-[var(--hover-color)] hover:text-[var(--accent-color)]'
-              ].join(' ')}
-              style={{ fontSize: '13px' }}
+                  ? "gradient-bg text-white shadow"
+                  : "bg-transparent text-[var(--sub-text-color)] hover:bg-[var(--hover-color)] hover:text-[var(--accent-color)]",
+              ].join(" ")}
+              style={{ fontSize: "13px" }}
             >
-              <child.Icon className={[
-                'shrink-0 transition-colors w-4 h-4',
-                active === child.key
-                  ? 'text-white'
-                  : 'text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]'
-              ].join(' ')} />
+              <child.Icon
+                className={[
+                  "shrink-0 transition-colors w-4 h-4",
+                  active === child.key
+                    ? "text-white"
+                    : "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]",
+                ].join(" ")}
+              />
               <span
                 className={[
                   active === child.key
-                    ? 'text-white'
-                    : 'text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]'
-                ].join(' ')}
+                    ? "text-white"
+                    : "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]",
+                ].join(" ")}
               >
                 {child.label}
               </span>
@@ -155,13 +172,12 @@ function SideMenuItem({ item, active, collapsed, onClick, openDropdown, setOpenD
         </div>
       )}
     </>
-  )
+  );
 }
 
 function ThemeToggle({ theme, onToggle, collapsed }) {
-  const isDark = theme === 'dark'
+  const isDark = theme === "dark";
   if (collapsed) {
-    // Only show the toggle button, centered and large
     return (
       <div className="w-full flex justify-center items-center py-1">
         <button
@@ -172,13 +188,13 @@ function ThemeToggle({ theme, onToggle, collapsed }) {
           style={{
             width: 38,
             height: 38,
-            background: 'var(--toggle-bg)',
+            background: "var(--toggle-bg)",
           }}
         >
           <div
             className="absolute inset-0 flex items-center justify-center"
             style={{
-              color: isDark ? 'var(--accent-color)' : 'var(--sub-text-color)'
+              color: isDark ? "var(--accent-color)" : "var(--sub-text-color)",
             }}
           >
             <Moon size={22} />
@@ -187,18 +203,27 @@ function ThemeToggle({ theme, onToggle, collapsed }) {
             className="absolute bottom-1 right-1 w-3 h-3 rounded-full"
             style={{
               background: isDark
-                ? 'linear-gradient(135deg, var(--knob-gradient-start) 0%, var(--knob-gradient-end) 100%)'
-                : 'linear-gradient(135deg, var(--knob-gradient-end) 0%, var(--knob-gradient-start) 100%)'
+                ? "linear-gradient(135deg, var(--knob-gradient-start) 0%, var(--knob-gradient-end) 100%)"
+                : "linear-gradient(135deg, var(--knob-gradient-end) 0%, var(--knob-gradient-start) 100%)",
             }}
           />
         </button>
       </div>
-    )
+    );
   }
   return (
-    <div className="w-full flex items-center justify-between rounded-2xl px-2 py-2 shadow-sm border" style={{ backgroundColor: 'var(--bg-color)', borderColor: 'var(--border-color)' }}>
-      <span className="text-sm font-medium" style={{ color: 'var(--text-color)' }}>
-        {isDark ? 'Dark Mode' : 'Light Mode'}
+    <div
+      className="w-full flex items-center justify-between rounded-2xl px-2 py-2 shadow-sm border"
+      style={{
+        backgroundColor: "var(--bg-color)",
+        borderColor: "var(--border-color)",
+      }}
+    >
+      <span
+        className="text-sm font-medium"
+        style={{ color: "var(--text-color)" }}
+      >
+        {isDark ? "Dark Mode" : "Light Mode"}
       </span>
       <button
         onClick={onToggle}
@@ -208,8 +233,8 @@ function ThemeToggle({ theme, onToggle, collapsed }) {
         style={{
           width: 42,
           height: 22,
-          background: 'var(--toggle-bg)',
-          borderColor: 'var(--toggle-border)',
+          background: "var(--toggle-bg)",
+          borderColor: "var(--toggle-border)",
           paddingLeft: 3,
           paddingRight: 3,
         }}
@@ -223,7 +248,8 @@ function ThemeToggle({ theme, onToggle, collapsed }) {
             left: isDark ? 20 : 3,
             width: 12,
             height: 12,
-            background: 'linear-gradient(135deg, var(--knob-gradient-start) 0%, var(--knob-gradient-end) 100%)'
+            background:
+              "linear-gradient(135deg, var(--knob-gradient-start) 0%, var(--knob-gradient-end) 100%)",
           }}
         >
           <div className="absolute top-0.5 left-0.5 w-1 h-1 bg-white/40 rounded-full"></div>
@@ -231,87 +257,109 @@ function ThemeToggle({ theme, onToggle, collapsed }) {
         </div>
       </button>
     </div>
-  )
+  );
 }
 
 export default function SideMenu() {
-  const [collapsed, setCollapsed] = useState(false)
-  const [active, setActive] = useState('dashboard')
-  const [theme, setTheme] = useState('light')
-  const [openDropdown, setOpenDropdown] = useState(null)
+  const [collapsed, setCollapsed] = useState(false);
+  const [active, setActive] = useState("dashboard");
+  const [theme, setTheme] = useState("light");
+  const [openDropdown, setOpenDropdown] = useState(null);
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('theme')
-      if (saved) setTheme(saved)
+      const saved = localStorage.getItem("theme");
+      if (saved) setTheme(saved);
     } catch {
-      // Ignore errors (e.g., localStorage not available)
+      // Ignore errors
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme
+    document.documentElement.dataset.theme = theme;
     try {
-      localStorage.setItem('theme', theme)
+      localStorage.setItem("theme", theme);
     } catch {
-      // Ignore errors (e.g., localStorage not available)
+      // Ignore errors
     }
-  }, [theme])
+  }, [theme]);
 
-  const containerBase = 'flex flex-col h-full min-h-0 overflow-hidden rounded-3xl shadow-sm'
-  const containerWidth = collapsed ? 'w-20' : 'w-[220px]'
+  const containerBase =
+    "flex flex-col min-h-0 overflow-hidden rounded-3xl shadow-sm";
+  const containerWidth = collapsed ? "w-20" : "w-[280px]";
 
   return (
     <aside
-      className={[containerBase, containerWidth, 'h-full m-4 p-2 border'].join(' ')}
-      style={{ background: 'var(--bg-color)', borderColor: 'var(--border-color)' }}
+      className={[
+        containerBase,
+        containerWidth,
+        "ml-4 mr-2 my-4 p-3 border",
+      ].join(" ")}
+      style={{
+        background: "var(--bg-color)",
+        borderColor: "var(--border-color)",
+        height: "calc(100vh - 96px)", // Adjusted for navbar height + margins
+      }}
     >
-      {/* Collapse/Expand button always at the top when collapsed */}
+      {/* Collapse/Expand button when collapsed */}
       {collapsed && (
-        <div className="flex justify-center mb-2">
+        <div className="flex justify-center mb-3">
           <button
             onClick={() => setCollapsed((v) => !v)}
             className="rounded-2xl p-2 hover:bg-[var(--hover-color)] transition-colors"
             title="Expand"
           >
-            <ChevronLeft className="w-5 h-5 transition-transform rotate-180" style={{ color: 'var(--text-color)' }} />
+            <ChevronLeft
+              className="w-5 h-5 transition-transform rotate-180"
+              style={{ color: "var(--text-color)" }}
+            />
           </button>
         </div>
       )}
 
-      {/* Header (fixed) */}
-      <div className="flex items-center justify-between shrink-0 mb-1">
-        <div className="flex items-center p-2 gap-2">
-          <div className="size-8 grid place-items-center">
-            <img src={logo} alt="WorkHole" className="h-8" />
+      {/* Header */}
+      <div className="flex items-center justify-between shrink-0 mb-4">
+        <div className="flex items-center p-2 gap-3">
+          <div className="size-10 grid place-items-center">
+            <img src={logo} alt="WorkHole" className="h-10" />
           </div>
           {!collapsed && (
             <div className="text-left flex items-center">
-              <span className="text-m font-semibold  gradient-text">Work</span>
-              <span className="text-m font-semibold text-[var(--sub-text-color)]">Hole</span>
+              <span className="text-lg font-bold gradient-text">Work</span>
+              <span className="text-lg font-bold text-[var(--sub-text-color)]">
+                Hole
+              </span>
             </div>
           )}
         </div>
         {!collapsed && (
           <button
             onClick={() => setCollapsed((v) => !v)}
-            className="rounded-xl p-1 hover:bg-[var(--sub-text-color)] transition-colors"
+            className="rounded-xl p-2 hover:bg-[var(--hover-color)] transition-colors"
             title="Collapse"
           >
-            <ChevronLeft className="w-5 h-5 transition-transform" style={{ color: 'var(--text-color)' }} />
+            <ChevronLeft
+              className="w-5 h-5 transition-transform"
+              style={{ color: "var(--text-color)" }}
+            />
           </button>
         )}
       </div>
 
-
-      {/* Scrollable content (middle only) */}
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      {/* Scrollable content */}
+      <div className="min-h-0 flex-1 overflow-y-auto pr-1">
         {!collapsed && (
-          <p className="px-2 text-left pb-1 text-[11px] tracking-wide uppercase" style={{ color: 'var(--sub-text-color)' }}>
+          <p
+            className="px-3 text-left pb-2 text-xs tracking-wide uppercase font-semibold"
+            style={{ color: "var(--sub-text-color)" }}
+          >
             Main Menu
           </p>
         )}
-        <nav className="flex mx-3 flex-col gap-0.5" style={{ alignItems: collapsed ? 'center' : 'stretch' }}>
+        <nav
+          className="flex px-2 flex-col gap-1"
+          style={{ alignItems: collapsed ? "center" : "stretch" }}
+        >
           {mainMenuItems.map((item) => (
             <SideMenuItem
               key={item.key}
@@ -321,17 +369,23 @@ export default function SideMenu() {
               onClick={setActive}
               openDropdown={openDropdown}
               setOpenDropdown={setOpenDropdown}
-              setCollapsed={setCollapsed} // أضف دي هنا
+              setCollapsed={setCollapsed}
             />
           ))}
         </nav>
 
         {!collapsed && (
-          <p className="px-2 text-left pt-2 pb-1 text-[11px] tracking-wide uppercase" style={{ color: 'var(--sub-text-color)' }}>
+          <p
+            className="px-3 text-left pt-4 pb-2 text-xs tracking-wide uppercase font-semibold"
+            style={{ color: "var(--sub-text-color)" }}
+          >
             Settings
           </p>
         )}
-        <nav className="flex mx-3 flex-col gap-0.5 pb-1" style={{ alignItems: collapsed ? 'center' : 'stretch' }}>
+        <nav
+          className="flex px-2 flex-col gap-1 pb-2"
+          style={{ alignItems: collapsed ? "center" : "stretch" }}
+        >
           {settingsItems.map((item) => (
             <SideMenuItem
               key={item.key}
@@ -341,21 +395,20 @@ export default function SideMenu() {
               onClick={setActive}
               openDropdown={openDropdown}
               setOpenDropdown={setOpenDropdown}
-              setCollapsed={setCollapsed} // أضف دي هنا
+              setCollapsed={setCollapsed}
             />
           ))}
         </nav>
       </div>
 
-      {/* Bottom card: Dark Mode (fixed) */}
-      <div className="shrink-0 pt-1">
+      {/* Bottom Theme Toggle */}
+      <div className="shrink-0 pt-3 mb-2">
         <ThemeToggle
           theme={theme}
-          onToggle={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+          onToggle={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
           collapsed={collapsed}
         />
       </div>
     </aside>
-  )
+  );
 }
-
