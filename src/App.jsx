@@ -4,8 +4,8 @@ import NavBar from './components/NavBar/navbar'
 function App() {
   return (
     <div className='w-full h-screen ' style={{ background: 'var(--bg-color)' }}>
-      <SideMenu />
       <NavBar/> 
+      <SideMenu />
     </div>
   )
 }

@@ -19,21 +19,21 @@ body {
   --container-color: #e5e7eb;
   --text-color: #1f2937;
   --sub-text-color: #6b7280;
-  --accent-color: #E596C5;
-  --accent-hover: #C17DEE;
-  --hover-color: #fdf4ff;
-  --border-color: #e5e7eb;
-  --divider-color: #e5e7eb;
+  --accent-color: #15919B;
+  --accent-hover: #09D1C7;
+  --hover-color: #CDFFFC9C;
+  --border-color: #E0FFFD;
+  --divider-color: #E0FFFD;
 
   /* Purple Gradient Colors */
-  --gradient-start: #E596C5;
-  --gradient-end: #C17DEE;
+  --gradient-start: #09D1C7;
+  --gradient-end: #15919B;
 
   /* Theme Toggle Colors */
-  --toggle-bg: #f7eafe;
-  --toggle-border: #f1e6fe;
-  --knob-gradient-start: #E596C5;
-  --knob-gradient-end: #C17DEE;
+  --toggle-bg: #E0FFFD;
+  --toggle-border: #E0FFFD;
+  --knob-gradient-start: #09D1C7;
+  --knob-gradient-end: #15919B;
 
   /* Status Colors */
   --success-color: #10b981;
@@ -68,9 +68,9 @@ body {
   --container-color: #e5e7eb;
   --text-color: #1f2937;
   --sub-text-color: #6b7280;
-  --accent-color: #E596C5;
-  --accent-hover: #C17DEE;
-  --hover-color: #fdf4ff;
+  --accent-color: #09D1C7;
+  --accent-hover: #15919B;
+  --hover-color: #CDFFFC9C;
   --border-color: #e5e7eb;
   --divider-color: #e5e7eb;
 }
@@ -80,9 +80,9 @@ body {
   --container-color: #4b5563;
   --text-color: #f9fafb;
   --sub-text-color: #d1d5db;
-  --accent-color: #E596C5;
-  --accent-hover: #C17DEE;
-  --hover-color: #374151;
+  --accent-color: #09D1C7;
+  --accent-hover: #15919B;
+  --hover-color: #CDFFFC9C;
   --border-color: #374151;
   --divider-color: #4b5563;
 }
