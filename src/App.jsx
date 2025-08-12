@@ -1,12 +1,11 @@
 import './App.css'
 import SideMenu from './components/side-menu/side-menu'
+import NavBar from './components/NavBar/navbar'
 function App() {
   return (
     <div className='w-full h-screen ' style={{ background: 'var(--bg-color)' }}>
       <SideMenu />
-      <main className='flex-1 p-6'>
-        {/* Page content placeholder */}
-      </main>
+      <NavBar/> 
     </div>
   )
 }
