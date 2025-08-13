@@ -18,7 +18,8 @@
     "subscriptions": "Subscriptions",
     "help": "Help",
     "darkMode": "Dark Mode",
-    "lightMode": "Light Mode"
+    "lightMode": "Light Mode",
+    "time_tracking": "Time Tracking"
   },
   "navbar": {
     "greeting": "Good Morning",

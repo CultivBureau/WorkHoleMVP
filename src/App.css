@@ -64,10 +64,12 @@ body {
 }
 
 [data-theme="light"] {
+  --bg-all: #F4F4F4;
   --bg-color: #ffffff;
   --container-color: #e5e7eb;
-  --text-color: #1f2937;
-  --sub-text-color: #6b7280;
+  --text-color: #202224;
+  --sub-text-color: #777D86;
+  --sub-text-color-2: #B0B0B0;
   --accent-color: #09D1C7;
   --accent-hover: #15919B;
   --hover-color: #CDFFFC9C;
@@ -76,10 +78,12 @@ body {
 }
 
 [data-theme="dark"] {
+  --bg-all: #F4F4F4;
   --bg-color: #111827;
   --container-color: #4b5563;
   --text-color: #f9fafb;
   --sub-text-color: #d1d5db;
+  --sub-text-color-2: #B0B0B0;
   --accent-color: #09D1C7;
   --accent-hover: #15919B;
   --hover-color: #CDFFFC9C;

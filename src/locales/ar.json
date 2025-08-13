@@ -18,7 +18,8 @@
     "subscriptions": "الاشتراكات",
     "help": "مساعدة",
     "darkMode": "الوضع الليلي",
-    "lightMode": "الوضع النهاري"
+    "lightMode": "الوضع النهاري",
+    "time_tracking": "تتبع الوقت"
   },
   "navbar": {
     "greeting": "صباح الخير",

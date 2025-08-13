@@ -26,7 +26,7 @@ import logo from "../../assets/side-menu-icons/logo.svg?url";
 const mainMenuItems = [
   { key: "dashboard", Icon: LayoutDashboard },
   {
-    key: "time",
+    key: "time_tracking", // غير من "time" إلى "time_tracking"
     Icon: Clock,
     children: [
       { key: "attendance", Icon: CalendarCheck },
@@ -83,8 +83,11 @@ function SideMenuItem({
               setCollapsed(false);
               setTimeout(() => setOpenDropdown(item.key), 200);
             } else {
+              // toggle dropdown
               setOpenDropdown(isOpen ? null : item.key);
             }
+            // لو ضغطت على العنصر الأساسي، روح للصفحة
+            onClick(item.key);
           } else {
             onClick(item.key);
           }
@@ -288,10 +291,25 @@ export default function SideMenu() {
     if (location.pathname.startsWith("/pages/User/dashboard"))
       return "dashboard";
     if (location.pathname.startsWith("/pages/User/leaves")) return "leaves";
-    // أضف باقي الصفحات هنا لو عندك
+    if (location.pathname.startsWith("/pages/User/time_tracking"))
+      return "time_tracking";
+    if (location.pathname.startsWith("/pages/User/attendance"))
+      return "attendance";
+    if (location.pathname.startsWith("/pages/User/break")) return "break";
     return "";
   };
   const active = getActiveKey();
+
+  // فتح dropdown تلقائي لو كنت على time_tracking أو أي صفحة من children بتوعها
+  useEffect(() => {
+    if (
+      active === "time_tracking" ||
+      active === "attendance" ||
+      active === "break"
+    ) {
+      setOpenDropdown("time_tracking");
+    }
+  }, [active]);
 
   // Set language from localStorage or default to "en"
   useEffect(() => {
@@ -320,10 +338,14 @@ export default function SideMenu() {
 
   // تعديل دالة onClick:
   const handleMenuClick = (key) => {
-    // Routing logic
     if (key === "dashboard") navigate("/pages/User/dashboard");
     else if (key === "leaves") navigate("/pages/User/leaves");
-    // أضف باقي الروابط هنا
+    else if (key === "time_tracking") {
+      navigate("/pages/User/time_tracking");
+      // الـ dropdown هيفتح تلقائي من الـ useEffect
+    } else if (key === "attendance") navigate("/pages/User/attendance");
+    else if (key === "break") navigate("/pages/User/break");
+    // أضف باقي الصفحات هنا
   };
 
   // استخدم دالة فارغة بدل setActive
@@ -372,7 +394,7 @@ export default function SideMenu() {
             // ثابت بالإنجليزي واتجاهه يسار دائماً
             <div className="text-left flex items-center" dir="ltr">
               <span className="text-lg font-bold gradient-text">Work</span>
-              <span className="text-lg font-bold text-[var(--sub-text-color)]">
+              <span className="text-lg font-bold text-[var(--sub-text-color]">
                 Hole
               </span>
             </div>

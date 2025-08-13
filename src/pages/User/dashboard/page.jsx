@@ -6,18 +6,18 @@ const Dashboard = ({ lang, setLang }) => {
   return (
     <div
       className="w-full h-screen flex flex-col"
-      style={{ background: "var(--bg-color)" }}
+      style={{ background: "var(--bg-all)" }}
     >
       {/* Navigation Bar - Full Width at Top */}
       <NavBar lang={lang} setLang={setLang} />
 
       {/* Content Area with SideMenu and Main Content */}
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-1 min-h-0" style={{ background: "var(--bg-all)" }}>
         {/* Side Menu - Left side under navbar */}
         <SideMenu lang={lang} />
 
         {/* Main Content - Rest of the space */}
-        <main className="flex-1 overflow-auto p-4">
+        <main className="flex-1 overflow-auto p-4" style={{ background: "var(--bg-all)" }}>
           <div
             className="h-full rounded-2xl border border-gray-200"
             style={{ background: "var(--bg-color)" }}
