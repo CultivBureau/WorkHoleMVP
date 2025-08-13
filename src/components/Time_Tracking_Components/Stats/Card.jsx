@@ -1,42 +1,42 @@
 import React from "react";
 import { TrendingUp } from "lucide-react";
 
-const Card = ({ header, title, subTitle, icon , bar, percentage }) => {
+const Card = ({ header, title, subTitle, icon, bar, percentage }) => {
   return (
     <div
-      className="w-[280px] h-max pb-5  min-h-[168px] flex flex-col justify-between p-6 pl-[15px] pt-[10px] rounded-3xl border shadow-sm transition-all duration-300 hover:shadow-lg"
+      className="w-full h-[180px] flex flex-col justify-between p-4 rounded-2xl border shadow-sm transition-all duration-300 hover:shadow-lg"
       style={{
         backgroundColor: "var(--bg-color)",
         borderColor: "var(--border-color)",
       }}
     >
       {/* Header and Icon */}
-      <div className="w-full h-max  flex justify-between items-center">
+      <div className="w-full flex justify-between items-center">
         <h3
-          className="text-sm font-medium leading-tight"
+          className="text-xs font-medium"
           style={{ color: "var(--sub-text-color)" }}
         >
           {header}
         </h3>
         <div
-          className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: "var(--hover-color)" }}
         >
-          <img src={icon} className="w-6 h-6" style={{ color: "var(--accent-color)" }} />
+          <img src={icon} className="w-4 h-4" alt={header} />
         </div>
       </div>
 
       {/* Title and Subtitle */}
-      <div className="w-full h-max flex flex-col gap-2 justify-center items-start">
+      <div className="w-full flex flex-col gap-1 flex-1 justify-center">
         <h2
-          className="text-2xl font-bold leading-none"
+          className="text-lg font-bold"
           style={{ color: "var(--text-color)" }}
         >
           {title}
         </h2>
         <div className="flex flex-col gap-1">
           <p
-            className="text-sm font-medium leading-tight"
+            className="text-xs"
             style={{ color: "var(--sub-text-color)" }}
           >
             {subTitle}
@@ -60,7 +60,7 @@ const Card = ({ header, title, subTitle, icon , bar, percentage }) => {
 
       {/* Progress Bar */}
       <div
-        className="w-full h-2 rounded-full overflow-hidden"
+        className="w-full h-1.5 rounded-full overflow-hidden"
         style={{ backgroundColor: "var(--border-color)" }}
       >
         <div
