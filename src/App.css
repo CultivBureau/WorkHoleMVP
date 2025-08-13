@@ -78,7 +78,7 @@ body {
 }
 
 [data-theme="dark"] {
-  --bg-all: #F4F4F4;
+  --bg-all: #111827;
   --bg-color: #111827;
   --container-color: #4b5563;
   --text-color: #f9fafb;
