@@ -58,5 +58,94 @@
     "notifications": "الإشعارات",
     "noNotifications": "لا توجد إشعارات",
     "viewAll": "عرض الكل"
+  },
+  "dashboard": {
+    "quickActions": {
+      "title": "الإجراءات السريعة",
+      "subtitle": "وصول سريع لأكثر الإجراءات استخدامًا",
+      "clockIn": {
+        "title": "تسجيل الدخول",
+        "subtitle": "لم يتم تسجيل الدخول"
+      },
+      "requestLeave": {
+        "title": "طلب إجازة",
+        "subtitle": "لديك 3 أيام إجازة سنوية"
+      },
+      "newTask": {
+        "title": "مهمة جديدة",
+        "subtitle": "تعيين أو إنشاء مهمة"
+      },
+      "myKpis": {
+        "title": "مؤشرات الأداء",
+        "subtitle": "نتيجة أغسطس: 73%"
+      },
+      "askAi": {
+        "title": "اسأل المساعد الذكي",
+        "subtitle": "متاح للطلبات"
+      },
+      "myTasks": {
+        "title": "مهامي",
+        "subtitle": "عرض وإدارة مهامك"
+      }
+    },
+    "activityHeatmap": {
+      "eachSquareRepresents": "كل مربع يمثل يوماً - الأغمق يعني ساعات عمل أكثر",
+      "less": "أقل",
+      "more": "أكثر",
+      "weekDays": [
+        "السبت",
+        "الأحد",
+        "الاثنين",
+        "الثلاثاء",
+        "الأربعاء",
+        "الخميس",
+        "الجمعة"
+      ],
+      "months": [
+        "يناير",
+        "فبراير",
+        "مارس",
+        "أبريل",
+        "مايو",
+        "يونيو",
+        "يوليو",
+        "أغسطس",
+        "سبتمبر",
+        "أكتوبر",
+        "نوفمبر",
+        "ديسمبر"
+      ]
+    },
+    "statusCards": {
+      "status": "الحالة",
+      "notClockedIn": "لم يتم تسجيل الدخول",
+      "goToTimeTracker": "اذهب إلى متتبع الوقت",
+      "leaveRequest": "طلب إجازة",
+      "noLeaveRequest": "لا يوجد طلب إجازة",
+      "noRequestText": "لم تطلب أي إجازة لهذا الشهر",
+      "dailyShift": "الوردية اليومية",
+      "hoursWorked": "ساعات العمل",
+      "performance": "الأداء",
+      "tasksCompleted": "المهام المكتملة هذا الأسبوع"
+    }
+  },
+  "breakTime": {
+    "title": "وقت الاستراحة",
+    "selectReason": "اختر السبب",
+    "startBreak": "بدء الاستراحة",
+    "breakSummary": "ملخص الاستراحات",
+    "breakPatterns": "أنماط الاستراحة الخاصة بك هذا الأسبوع",
+    "dailyAverage": "المتوسط اليومي",
+    "total": "الإجمالي",
+    "minutes": "دقيقة",
+    "reasons": {
+      "prayer": "صلاة",
+      "lunch": "غداء",
+      "meeting": "اجتماع",
+      "bathroom": "دورة مياه",
+      "coffee": "استراحة قهوة",
+      "phone": "مكالمة هاتفية",
+      "personal": "شخصي"
+    }
   }
 }

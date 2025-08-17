@@ -1,22 +1,8 @@
 "use client"
+import { useTranslation } from "react-i18next";
 
-const translations = {
-  en: {
-    eachSquareRepresents: "Each square represents a day - darker means more hours worked",
-    less: "Less",
-    more: "More",
-    monthes: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-  },
-  ar: {
-    eachSquareRepresents: "كل مربع يمثل يوماً - الأغمق يعني ساعات عمل أكثر",
-    less: "أقل",
-    more: "أكثر",
-    monthes: ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"],
-  },
-}
-
-export default function ActivityHeatmap({ lang }) {
-  const t = translations[lang] || translations.en
+export default function ActivityHeatmap() {
+  const { t } = useTranslation();
 
   // Generate heatmap data (52 weeks * 7 days = 364 days)
   const generateHeatmapData = () => {
@@ -44,6 +30,12 @@ export default function ActivityHeatmap({ lang }) {
     return { backgroundColor: colors[level] || colors[0] }
   }
 
+  // Add translated week days
+  const weekDays = t("dashboard.activityHeatmap.weekDays", {
+    returnObjects: true,
+    defaultValue: ["sat", "sun", "mon", "tue", "wed", "thu", "fri"],
+  });
+
   return (
     <div
       className="w-full bg-white rounded-lg shadow-sm border border-gray-100"
@@ -54,15 +46,14 @@ export default function ActivityHeatmap({ lang }) {
     >
       {/* Month Labels */}
       <div
-        className="grid grid-cols-12 text-xs text-gray-400 mb-3"
+        className="grid grid-cols-12 text-xs ml-10 text-gray-400 mb-3"
         style={{
           fontSize: "11px",
           fontWeight: "500",
-          marginLeft: "20px", // Account for day labels width
-          gap: "0",
+          marginLeft: "20px",
         }}
       >
-        {t.monthes.map((month, index) => (
+        {t("dashboard.activityHeatmap.months", { returnObjects: true }).map((month, index) => (
           <span key={index} className="text-left">
             {month}
           </span>
@@ -73,7 +64,7 @@ export default function ActivityHeatmap({ lang }) {
       <div className="flex items-start" style={{ gap: "8px" }}>
         {/* Days of week labels */}
         <div
-          className="flex flex-col text-xs text-gray-400"
+          className="flex flex-col px-6 text-xs text-gray-400"
           style={{
             fontSize: "9px",
             fontWeight: "500",
@@ -83,13 +74,9 @@ export default function ActivityHeatmap({ lang }) {
             flexShrink: 0,
           }}
         >
-          <span>M</span>
-          <span></span>
-          <span>W</span>
-          <span></span>
-          <span>F</span>
-          <span></span>
-          <span></span>
+          {weekDays.map((day, idx) => (
+            <span key={idx}>{day}</span>
+          ))}
         </div>
 
         {/* Heatmap Grid Container */}
@@ -126,11 +113,11 @@ export default function ActivityHeatmap({ lang }) {
       {/* Bottom Info */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-2">
         <p className="text-xs text-gray-500 order-2 sm:order-1">
-          {t.eachSquareRepresents}
+          {t("dashboard.activityHeatmap.eachSquareRepresents")}
         </p>
 
         <div className="flex items-center gap-2 text-xs text-gray-500 order-1 sm:order-2 justify-end">
-          <span>{t.less}</span>
+          <span>{t("dashboard.activityHeatmap.less")}</span>
           <div className="flex gap-1">
             {[0, 1, 2, 3].map((level) => (
               <div
@@ -144,7 +131,7 @@ export default function ActivityHeatmap({ lang }) {
               />
             ))}
           </div>
-          <span>{t.more}</span>
+          <span>{t("dashboard.activityHeatmap.more")}</span>
         </div>
       </div>
     </div>

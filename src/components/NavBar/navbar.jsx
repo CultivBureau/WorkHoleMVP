@@ -14,9 +14,8 @@ import {
 } from "lucide-react";
 import AvatarIcon from "../../../public/assets/navbar/Avatar.png";
 
-const NavBar = () => {
+const NavBar = ({ lang, setLang }) => {
   const { t, i18n } = useTranslation();
-  const lang = i18n.language;
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -74,10 +73,11 @@ const NavBar = () => {
 
   // Change language and save to localStorage
   const handleLangChange = (lng) => {
+    setLang(lng);
     i18n.changeLanguage(lng);
+    document.documentElement.dir = lng === "ar" ? "rtl" : "ltr";
     localStorage.setItem("lang", lng);
     setLangOpen(false);
-    document.documentElement.dir = lng === "ar" ? "rtl" : "ltr";
   };
 
   // Format time and date based on language and locale
@@ -115,9 +115,8 @@ const NavBar = () => {
 
       const formattedTime = `${arabicNumerals(
         hours % 12 || 12
-      )}:${arabicNumerals(minutes.toString().padStart(2, "0"))} ${
-        hours >= 12 ? "م" : "ص"
-      }`;
+      )}:${arabicNumerals(minutes.toString().padStart(2, "0"))} ${hours >= 12 ? "م" : "ص"
+        }`;
       const formattedDate = `${arabicNumerals(day)} ${month} ${arabicNumerals(
         year
       )}`;
@@ -234,9 +233,8 @@ const NavBar = () => {
                 style={{ color: "var(--sub-text-color)" }}
               />
               <ChevronDown
-                className={`w-3 h-3 transition-transform duration-200 ${
-                  langOpen ? "rotate-180" : ""
-                }`}
+                className={`w-3 h-3 transition-transform duration-200 ${langOpen ? "rotate-180" : ""
+                  }`}
                 style={{ color: "var(--sub-text-color)" }}
               />
             </button>
@@ -294,9 +292,8 @@ const NavBar = () => {
         {/* Search and Notifications */}
         <div
           ref={searchRef}
-          className={`flex items-center gap-3 ${
-            lang === "ar" ? "flex-row-reverse" : ""
-          }`}
+          className={`flex items-center gap-3 ${lang === "ar" ? "flex-row-reverse" : ""
+            }`}
         >
           {/* Search Toggle */}
           <button
@@ -314,14 +311,12 @@ const NavBar = () => {
           </button>
           {/* Expanding Search Field */}
           <div
-            className={`overflow-hidden transition-all duration-300 ${
-              isSearchOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-            } ${isSearchOpen ? "w-64" : "w-0"}`}
+            className={`overflow-hidden transition-all duration-300 ${isSearchOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+              } ${isSearchOpen ? "w-64" : "w-0"}`}
           >
             <div
-              className={`flex items-center gap-3 border rounded-2xl px-3 py-2 shadow-sm ${
-                lang === "ar" ? "flex-row-reverse" : ""
-              }`}
+              className={`flex items-center gap-3 border rounded-2xl px-3 py-2 shadow-sm ${lang === "ar" ? "flex-row-reverse" : ""
+                }`}
               style={{
                 backgroundColor: "var(--bg-color)",
                 borderColor: "var(--border-color)",
@@ -370,9 +365,8 @@ const NavBar = () => {
             {/* Notification Dropdown */}
             {notifOpen && (
               <div
-                className={`absolute ${
-                  lang === "ar" ? "left-0" : "right-0"
-                } mt-2 w-80 max-w-[90vw] bg-white dark:bg-[var(--bg-color)] border border-[var(--border-color)] rounded-2xl shadow-xl z-50 animate-fade-in`}
+                className={`absolute ${lang === "ar" ? "left-0" : "right-0"
+                  } mt-2 w-80 max-w-[90vw] bg-white dark:bg-[var(--bg-color)] border border-[var(--border-color)] rounded-2xl shadow-xl z-50 animate-fade-in`}
                 style={{ minWidth: 360 }}
               >
                 <div className="p-4 border-b border-[var(--border-color)] flex items-center justify-between">
@@ -508,17 +502,15 @@ const NavBar = () => {
               </p>
             </div>
             <ChevronDown
-              className={`w-3.5 h-3.5 transition-transform duration-200 group-hover:rotate-180 ${
-                profileOpen ? "rotate-180" : ""
-              }`}
+              className={`w-3.5 h-3.5 transition-transform duration-200 group-hover:rotate-180 ${profileOpen ? "rotate-180" : ""
+                }`}
               style={{ color: "var(--sub-text-color)" }}
             />
           </div>
           {profileOpen && (
             <div
-              className={`absolute ${
-                lang === "ar" ? "left-0" : "right-0"
-              } mt-2 w-56 rounded-2xl shadow-2xl border z-50 overflow-hidden`}
+              className={`absolute ${lang === "ar" ? "left-0" : "right-0"
+                } mt-2 w-56 rounded-2xl shadow-2xl border z-50 overflow-hidden`}
               style={{
                 backgroundColor: "var(--bg-color)",
                 borderColor: "var(--border-color)",

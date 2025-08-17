@@ -26,8 +26,8 @@ body {
   --divider-color: #E0FFFD;
 
   /* Purple Gradient Colors */
-  --gradient-start: #09D1C7;
-  --gradient-end: #15919B;
+  --gradient-start: #15919B;
+  --gradient-end: #09D1C7;
 
   /* Theme Toggle Colors */
   --toggle-bg: #E0FFFD;

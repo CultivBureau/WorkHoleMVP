@@ -1,65 +1,39 @@
 "use client"
+import { useTranslation } from "react-i18next";
 import Card from "../Time_Tracking_Components/Stats/Card"
 
-const translations = {
-  en: {
-    status: "Status",
-    notClockedIn: "Not Clocked in",
-    goToTimeTracker: "Go to Time Tracker",
-    leaveRequest: "Leave Request",
-    noLeaveRequest: "No Leave Request",
-    noRequestText: "You haven't requested any leave for this month",
-    dailyShift: "Daily Shift",
-    hoursWorked: "Hours Worked",
-    performance: "Performance",
-    tasksCompleted: "Tasks completed this week",
-  },
-  ar: {
-    status: "الحالة",
-    notClockedIn: "لم يتم تسجيل الدخول",
-    goToTimeTracker: "اذهب إلى متتبع الوقت",
-    leaveRequest: "طلب إجازة",
-    noLeaveRequest: "لا يوجد طلب إجازة",
-    noRequestText: "لم تطلب أي إجازة لهذا الشهر",
-    dailyShift: "الوردية اليومية",
-    hoursWorked: "ساعات العمل",
-    performance: "الأداء",
-    tasksCompleted: "المهام المكتملة هذا الأسبوع",
-  },
-}
-
-export default function StatusCards({ lang }) {
-  const t = translations[lang]
+export default function StatusCards() {
+  const { t } = useTranslation();
 
   const cardsData = [
     {
-      header: t.status,
-      title: t.notClockedIn,
-      subTitle: t.goToTimeTracker,
+      header: t("dashboard.statusCards.status"),
+      title: t("dashboard.statusCards.notClockedIn"),
+      subTitle: t("dashboard.statusCards.goToTimeTracker"),
       icon: "/assets/dashboard_card/status.svg",
       bar: 0,
       percentage: null
     },
     {
-      header: t.leaveRequest,
-      title: t.noLeaveRequest,
-      subTitle: t.noRequestText,
+      header: t("dashboard.statusCards.leaveRequest"),
+      title: t("dashboard.statusCards.noLeaveRequest"),
+      subTitle: t("dashboard.statusCards.noRequestText"),
       icon: "/assets/dashboard_card/clock.svg",
       bar: 0,
       percentage: null
     },
     {
-      header: t.dailyShift,
+      header: t("dashboard.statusCards.dailyShift"),
       title: "2:15:00",
-      subTitle: t.hoursWorked,
+      subTitle: t("dashboard.statusCards.hoursWorked"),
       icon: "/assets/dashboard_card/clock2.svg",
       bar: 35,
       percentage: null
     },
     {
-      header: t.performance,
+      header: t("dashboard.statusCards.performance"),
       title: "75%",
-      subTitle: t.tasksCompleted,
+      subTitle: t("dashboard.statusCards.tasksCompleted"),
       icon: "/assets/dashboard_card/performance.svg",
       bar: 75,
       percentage: 12

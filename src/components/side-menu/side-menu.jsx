@@ -349,11 +349,16 @@ export default function SideMenu() {
   };
 
   // استخدم دالة فارغة بدل setActive
-  const handleSettingsClick = () => {};
+  const handleSettingsClick = () => { };
 
   const containerBase =
     "flex flex-col min-h-0 overflow-hidden rounded-3xl shadow-sm";
   const containerWidth = collapsed ? "w-20" : "w-[280px]";
+
+  // Remove scroll when collapsed
+  const scrollableContentClass = collapsed
+    ? "min-h-0 flex-1 pr-1" // No overflow-y-auto when collapsed
+    : "min-h-0 flex-1 overflow-y-auto pr-1";
 
   return (
     <aside
@@ -415,12 +420,11 @@ export default function SideMenu() {
       </div>
 
       {/* Scrollable content */}
-      <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+      <div className={scrollableContentClass}>
         {!collapsed && (
           <p
-            className={`px-3 pb-2 text-xs tracking-wide uppercase font-semibold ${
-              isArabic ? "text-right" : "text-left"
-            }`}
+            className={`px-3 pb-2 text-xs tracking-wide uppercase font-semibold ${isArabic ? "text-right" : "text-left"
+              }`}
             style={{
               color: "var(--sub-text-color)",
               direction: isArabic ? "rtl" : "ltr",
@@ -451,9 +455,8 @@ export default function SideMenu() {
 
         {!collapsed && (
           <p
-            className={`px-3 pt-4 pb-2 text-xs tracking-wide uppercase font-semibold ${
-              isArabic ? "text-right" : "text-left"
-            }`}
+            className={`px-3 pt-4 pb-2 text-xs tracking-wide uppercase font-semibold ${isArabic ? "text-right" : "text-left"
+              }`}
             style={{
               color: "var(--sub-text-color)",
               direction: isArabic ? "rtl" : "ltr",

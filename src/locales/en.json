@@ -58,5 +58,94 @@
     "notifications": "Notifications",
     "noNotifications": "No notifications",
     "viewAll": "View all"
+  },
+  "dashboard": {
+    "quickActions": {
+      "title": "Quick Actions",
+      "subtitle": "Access your most-used actions in one click",
+      "clockIn": {
+        "title": "Clock In",
+        "subtitle": "Not Clocked In"
+      },
+      "requestLeave": {
+        "title": "Request Leave",
+        "subtitle": "You have 3 annual leave days"
+      },
+      "newTask": {
+        "title": "New Task",
+        "subtitle": "Assign or Create task"
+      },
+      "myKpis": {
+        "title": "My KPIs",
+        "subtitle": "August score: 73%"
+      },
+      "askAi": {
+        "title": "Ask AI Assistant",
+        "subtitle": "Available for requests"
+      },
+      "myTasks": {
+        "title": "My Tasks",
+        "subtitle": "View and manage your tasks"
+      }
+    },
+    "activityHeatmap": {
+      "eachSquareRepresents": "Each square represents a day - darker means more hours worked",
+      "less": "Less",
+      "more": "More",
+      "weekDays": [
+        "Sat",
+        "Sun",
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri"
+      ],
+      "months": [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec"
+      ]
+    },
+    "statusCards": {
+      "status": "Status",
+      "notClockedIn": "Not Clocked in",
+      "goToTimeTracker": "Go to Time Tracker",
+      "leaveRequest": "Leave Request",
+      "noLeaveRequest": "No Leave Request",
+      "noRequestText": "You haven't requested any leave for this month",
+      "dailyShift": "Daily Shift",
+      "hoursWorked": "Hours Worked",
+      "performance": "Performance",
+      "tasksCompleted": "Tasks completed this week"
+    }
+  },
+  "breakTime": {
+    "title": "Break Time",
+    "selectReason": "Select Reason",
+    "startBreak": "Start Break",
+    "breakSummary": "Break Summary",
+    "breakPatterns": "Your break patterns this week",
+    "dailyAverage": "Daily average",
+    "total": "total",
+    "minutes": "minutes",
+    "reasons": {
+      "prayer": "Prayer",
+      "lunch": "Lunch",
+      "meeting": "Meeting",
+      "bathroom": "Bathroom",
+      "coffee": "Coffee Break",
+      "phone": "Phone Call",
+      "personal": "Personal"
+    }
   }
 }

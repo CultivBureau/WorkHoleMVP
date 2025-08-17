@@ -1,10 +1,22 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import SideMenu from "../../../components/side-menu/side-menu";
 import NavBar from "../../../components/NavBar/navbar";
 import ActivityHeatmap from "../../../components/dashboard/activity-heatmap";
 import StatusCards from "../../../components/dashboard/status-cards";
+import QuickActions from "../../../components/dashboard/quick-actions";
+import BreakTime from "../../../components/dashboard/break-time";
+import { useTranslation } from "react-i18next";
 
-const Dashboard = ({ lang, setLang }) => {
+const Dashboard = () => {
+  const { i18n } = useTranslation();
+  const [lang, setLang] = useState(i18n.language);
+
+  useEffect(() => {
+    i18n.changeLanguage(lang);
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+    localStorage.setItem("lang", lang);
+  }, [lang, i18n]);
+
   return (
     <div
       className="w-full h-screen flex flex-col"
@@ -27,11 +39,21 @@ const Dashboard = ({ lang, setLang }) => {
             {/* Dashboard content */}
             <div className="w-full h-max p-6">
               {/* Status Cards */}
-              <StatusCards lang={lang || "en"} />
+              <StatusCards />
+
+              {/* Quick Actions & Break Time */}
+              <div className="mt-6 flex flex-col md:flex-row gap-4">
+                <div className="flex-1 min-w-0">
+                  <QuickActions />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <BreakTime />
+                </div>
+              </div>
 
               {/* Activity Heatmap */}
               <div className="mt-6">
-                <ActivityHeatmap lang={lang || "en"} />
+                <ActivityHeatmap />
               </div>
             </div>
           </div>
