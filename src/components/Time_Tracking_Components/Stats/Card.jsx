@@ -1,28 +1,35 @@
 import React from "react";
 import { TrendingUp } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
-const Card = ({ header, title, subTitle, icon , bar, percentage }) => {
+const Card = ({ header, title, subTitle, icon, bar, percentage }) => {
+  const { t } = useTranslation();
+
   return (
     <div
-      className="w-[280px] h-max pb-5  min-h-[168px] flex flex-col justify-between p-6 pl-[15px] pt-[10px] rounded-3xl border shadow-sm transition-all duration-300 hover:shadow-lg"
+      className="w-[280px] h-max pb-5 min-h-[168px] flex flex-col justify-between p-6 pl-[15px] pt-[10px] rounded-3xl border shadow-sm transition-all duration-300 hover:shadow-lg"
       style={{
         backgroundColor: "var(--bg-color)",
         borderColor: "var(--border-color)",
       }}
     >
       {/* Header and Icon */}
-      <div className="w-full h-max  flex justify-between items-center">
+      <div className="w-full h-max flex justify-between items-center">
         <h3
           className="text-sm font-medium leading-tight"
           style={{ color: "var(--sub-text-color)" }}
         >
-          {header}
+          {t(header)}
         </h3>
         <div
           className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: "var(--hover-color)" }}
         >
-          <img src={icon} className="w-6 h-6" style={{ color: "var(--accent-color)" }} />
+          <img
+            src={icon}
+            className="w-6 h-6"
+            style={{ color: "var(--accent-color)" }}
+          />
         </div>
       </div>
 
@@ -39,7 +46,7 @@ const Card = ({ header, title, subTitle, icon , bar, percentage }) => {
             className="text-sm font-medium leading-tight"
             style={{ color: "var(--sub-text-color)" }}
           >
-            {subTitle}
+            {t(subTitle)}
           </p>
           {percentage && (
             <div className="flex items-center gap-1 mt-1">
@@ -51,7 +58,7 @@ const Card = ({ header, title, subTitle, icon , bar, percentage }) => {
                 className="text-xs font-semibold"
                 style={{ color: "var(--accent-color)" }}
               >
-                {percentage}% Up from Month
+                {t("stats.percentage_up", { percentage })}
               </span>
             </div>
           )}

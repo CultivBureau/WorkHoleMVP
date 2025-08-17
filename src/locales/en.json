@@ -58,5 +58,16 @@
     "notifications": "Notifications",
     "noNotifications": "No notifications",
     "viewAll": "View all"
+  },
+  "stats": {
+    "daily_shift": "Daily shift",
+    "hours_worked": "Hours Worked",
+    "this_week": "This Week",
+    "total_hours_worked": "Total Hours Worked",
+    "breaks_taken": "Breaks Taken",
+    "breaks_subtitle": "You've taken this much break today",
+    "total_overtime": "Total Overtime",
+    "overtime_subtitle": "This month's extra hours worked",
+    "percentage_up": "{{percentage}}% Up from Month"
   }
 }

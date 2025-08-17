@@ -1,6 +1,5 @@
 import React from "react";
 import Card from "./Card";
-import { Clock, Calendar, Coffee, TrendingUp } from "lucide-react";
 import ClockIcon from "../../../../public/assets/dashboard_card/clock.svg";
 import ClockIcon2 from "../../../../public/assets/dashboard_card/clock2.svg";
 import ClockIcon3 from "../../../../public/assets/dashboard_card/clock3.svg";
@@ -9,30 +8,30 @@ import BreakIcon from "../../../../public/assets/dashboard_card/break.svg";
 const Stats = () => {
   const Card_Data = [
     {
-      header: "Daily shift",
+      header: "stats.daily_shift",
       title: "2:15:00",
-      subTitle: "Hours Worked",
+      subTitle: "stats.hours_worked",
       icon: ClockIcon,
       bar: 45,
     },
     {
-      header: "This Week",
+      header: "stats.this_week",
       title: "34:15:00",
-      subTitle: "Total Hours Worked",
+      subTitle: "stats.total_hours_worked",
       icon: ClockIcon2,
       bar: 75,
     },
     {
-      header: "Breaks Taken",
+      header: "stats.breaks_taken",
       title: "22m",
-      subTitle: "You've taken this much break today",
+      subTitle: "stats.breaks_subtitle",
       icon: BreakIcon,
       bar: 30,
     },
     {
-      header: "Total Overtime",
+      header: "stats.total_overtime",
       title: "3h",
-      subTitle: "This month's extra hours worked",
+      subTitle: "stats.overtime_subtitle",
       icon: ClockIcon3,
       bar: 60,
       percentage: 1.3,

@@ -58,5 +58,16 @@
     "notifications": "الإشعارات",
     "noNotifications": "لا توجد إشعارات",
     "viewAll": "عرض الكل"
+  },
+  "stats": {
+    "daily_shift": "الوردية اليومية",
+    "hours_worked": "ساعات العمل",
+    "this_week": "هذا الأسبوع",
+    "total_hours_worked": "إجمالي ساعات العمل",
+    "breaks_taken": "الاستراحات المأخوذة",
+    "breaks_subtitle": "هذا مقدار الاستراحة التي أخذتها اليوم",
+    "total_overtime": "إجمالي الوقت الإضافي",
+    "overtime_subtitle": "ساعات العمل الإضافية لهذا الشهر",
+    "percentage_up": "{{percentage}}٪ زيادة عن الشهر"
   }
 }
