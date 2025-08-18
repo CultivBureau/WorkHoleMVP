@@ -57,7 +57,10 @@ const QuickActions = () => {
             >
                 {t("dashboard.quickActions.subtitle")}
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 flex-1">
+            <div
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 h-72 overflow-y-auto"
+                style={{ minHeight: 0 }}
+            >
                 {actions.map((action, idx) => (
                     <button
                         key={idx}
