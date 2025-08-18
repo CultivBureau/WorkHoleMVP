@@ -1,79 +1,96 @@
 import React from "react";
-import { TrendingUp } from "lucide-react";
 
-const Card = ({ header, title, subTitle, icon, bar, percentage }) => {
+const Card = ({
+  header,
+  title,
+  subTitle,
+  icon,
+  bar,
+  percentage,
+  button,
+  rightIcon,
+  statusDot,
+  footer,
+  children,
+}) => {
   return (
     <div
-      className="w-full h-[180px] flex flex-col justify-between p-4 rounded-2xl border shadow-sm transition-all duration-300 hover:shadow-lg"
+      className="w-full min-h-[170px] flex flex-col justify-between p-4 rounded-2xl border shadow-sm"
       style={{
-        backgroundColor: "var(--bg-color)",
-        borderColor: "var(--border-color)",
+        backgroundColor: 'var(--bg-color)',
+        borderColor: 'var(--border-color)',
       }}
     >
-      {/* Header and Icon */}
-      <div className="w-full flex justify-between items-center">
-        <h3
-          className="text-xs font-medium"
-          style={{ color: "var(--sub-text-color)" }}
-        >
-          {header}
-        </h3>
-        <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-          style={{ backgroundColor: "var(--hover-color)" }}
-        >
-          <img src={icon} className="w-4 h-4" alt={header} />
+      {/* Header Row */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center">
+          <h3 className="text-xs font-medium" style={{ color: 'var(--sub-text-color)' }}>
+            {header}
+          </h3>
+          {statusDot}
         </div>
+        {rightIcon && (
+          <div 
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{ backgroundColor: 'var(--hover-color)' }}
+          >
+            {rightIcon}
+          </div>
+        )}
       </div>
 
-      {/* Title and Subtitle */}
-      <div className="w-full flex flex-col gap-1 flex-1 justify-center">
-        <h2
-          className="text-lg font-bold"
-          style={{ color: "var(--text-color)" }}
-        >
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col justify-center mb-3">
+        <h2 className="text-lg font-bold mb-1" style={{ color: 'var(--text-color)' }}>
           {title}
         </h2>
-        <div className="flex flex-col gap-1">
-          <p
-            className="text-xs"
-            style={{ color: "var(--sub-text-color)" }}
-          >
-            {subTitle}
-          </p>
-          {percentage && (
-            <div className="flex items-center gap-1 mt-1">
-              <TrendingUp
-                className="w-3 h-3"
-                style={{ color: "var(--accent-color)" }}
-              />
-              <span
-                className="text-xs font-semibold"
-                style={{ color: "var(--accent-color)" }}
-              >
-                {percentage}% Up from Month
-              </span>
-            </div>
-          )}
-        </div>
+        <p className="text-xs mb-2" style={{ color: 'var(--sub-text-color)' }}>
+          {subTitle}
+        </p>
+        {children}
+        {button && <div className="mt-2">{button}</div>}
       </div>
 
       {/* Progress Bar */}
-      <div
-        className="w-full h-1.5 rounded-full overflow-hidden"
-        style={{ backgroundColor: "var(--border-color)" }}
-      >
-        <div
-          className="h-full rounded-full transition-all duration-700 ease-out"
-          style={{
-            background:
-              "linear-gradient(90deg, var(--gradient-start), var(--gradient-end))",
-            width: `${bar}%`,
-          }}
-        />
-      </div>
+      {typeof bar === "number" && bar > 0 && (
+        <div className="flex items-center gap-2">
+          <div 
+            className="flex-1 h-1.5 rounded-full overflow-hidden"
+            style={{ backgroundColor: 'var(--container-color)' }}
+          >
+            <div
+              className="h-full rounded-full"
+              style={{
+                background: 'linear-gradient(135deg, var(--gradient-start), var(--gradient-end))',
+                width: `${bar}%`,
+                transition: "width 0.5s ease-out",
+              }}
+            />
+          </div>
+          {footer && <div className="flex-shrink-0">{footer}</div>}
+        </div>
+      )}
+
+      {/* Footer without progress bar */}
+      {(!bar || bar === 0) && footer && (
+        <div className="flex justify-end">{footer}</div>
+      )}
     </div>
   );
 };
 
 export default Card;
+
+// Example Usage:
+// <Card
+//   header="My Card"
+//   title="Some Value"
+//   subTitle="Some Subtitle"
+//   icon="/assets/myicon.svg"
+//   bar={60}
+//   percentage={12}
+//   button={<button className="btn">Click Me</button>}
+//   footer={<div>Custom Footer</div>}
+// >
+/* Any custom content here */
+// </Card>
