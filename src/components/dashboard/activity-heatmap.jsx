@@ -44,43 +44,75 @@ export default function ActivityHeatmap() {
         boxSizing: "border-box",
       }}
     >
-      {/* Month Labels */}
-      <div
-        className="grid grid-cols-12 text-xs ml-10 text-gray-400 mb-3"
-        style={{
-          fontSize: "11px",
-          fontWeight: "500",
-          marginLeft: "20px",
-        }}
-      >
-        {t("dashboard.activityHeatmap.months", { returnObjects: true }).map((month, index) => (
-          <span key={index} className="text-left">
-            {month}
-          </span>
-        ))}
-      </div>
+      {/* Container for entire heatmap */}
+      <div className="flex flex-col">
+        {/* Month Labels */}
+        <div className="flex items-start mb-3" style={{ gap: "8px" }}>
+          {/* Empty space to align with weekdays column */}
+          <div style={{ width: "20px", flexShrink: 0 }}></div>
 
-      {/* Days Labels + Heatmap Grid */}
-      <div className="flex items-start" style={{ gap: "8px" }}>
-        {/* Days of week labels */}
-        <div
-          className="flex flex-col px-6 text-xs text-gray-400"
-          style={{
-            fontSize: "9px",
-            fontWeight: "500",
-            height: "105px",
-            justifyContent: "space-around",
-            width: "12px",
-            flexShrink: 0,
-          }}
-        >
-          {weekDays.map((day, idx) => (
-            <span key={idx}>{day}</span>
-          ))}
+          {/* Month Labels - aligned with grid */}
+          <div
+            className="text-xs text-gray-400"
+            style={{
+              fontSize: "11px",
+              fontWeight: "500",
+              display: "grid",
+              gridTemplateColumns: "repeat(52, 1fr)",
+              gap: "2px",
+              height: "16px",
+              flex: 1,
+            }}
+          >
+            {/* Show month every ~4.3 weeks */}
+            {Array.from({ length: 52 }, (_, weekIndex) => {
+              const monthIndex = Math.floor((weekIndex * 12) / 52);
+              const isMonthStart = weekIndex === 0 || Math.floor(((weekIndex - 1) * 12) / 52) !== monthIndex;
+              const months = t("dashboard.activityHeatmap.months", { returnObjects: true });
+
+              return (
+                <div key={weekIndex} className="text-left" style={{ gridColumn: `${weekIndex + 1}` }}>
+                  {isMonthStart ? months[monthIndex] : ""}
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Heatmap Grid Container */}
-        <div className="flex-1">
+        {/* Days Labels + Heatmap Grid */}
+        <div className="flex items-start" style={{ gap: "8px" }}>
+          {/* Days of week labels - aligned with heatmap rows */}
+          <div
+            className="text-xs ml-2 text-gray-400"
+            style={{
+              fontSize: "9px",
+              fontWeight: "500",
+              display: "grid",
+              gridTemplateRows: "repeat(7, 1fr)",
+              gap: "2px",
+              height: "105px",
+
+              width: "20px",
+              flexShrink: 0,
+            }}
+          >
+            {weekDays.map((day, idx) => (
+              <div
+                key={idx}
+                className="flex items-center"
+                style={{
+                  gridRow: `${idx + 1}`,
+                  height: "100%",
+                  textAlign: "right",
+                  paddingRight: "4px"
+                }}
+              >
+                {day}
+              </div>
+            ))}
+          </div>
+
+          {/* Heatmap Grid Container */}
           <div
             style={{
               display: "grid",
@@ -88,7 +120,7 @@ export default function ActivityHeatmap() {
               gridTemplateRows: "repeat(7, 1fr)",
               gap: "2px",
               height: "105px",
-              width: "100%",
+              flex: 1,
             }}
           >
             {heatmapData.map((day, idx) => (
