@@ -4,6 +4,7 @@ import Login from "./components/login/login";
 import Dashboard from "./pages/User/dashboard/page";
 import Leaves from "./pages/User/leaves/page";
 import TimeTracking from "./pages/User/time_tracking/page";
+import AttendanceLogs from "./pages/User/attendance-logs/page";
 import { useState, useEffect } from "react";
 
 function App() {
@@ -30,6 +31,10 @@ function App() {
         <Route
           path="/pages/User/time_tracking"
           element={<TimeTracking lang={lang} setLang={setLang} />}
+        />
+        <Route
+          path="/pages/User/attendance-logs"
+          element={<AttendanceLogs lang={lang} setLang={setLang} />}
         />
       </Routes>
     </BrowserRouter>

@@ -147,5 +147,65 @@
       "phone": "مكالمة هاتفية",
       "personal": "شخصي"
     }
+  },
+  "attendanceStats": {
+    "totalDaysPresent": "إجمالي أيام الحضور",
+    "totalDaysAbsent": "إجمالي أيام الغياب",
+    "lateArrivals": "الوصول المتأخر",
+    "averageClockIn": "متوسط تسجيل الدخول",
+    "hoursWorked": "ساعات العمل",
+    "breakToday": "لقد أخذت هذا القدر من الاستراحة اليوم",
+    "lateThisMonth": "لقد وصلت متأخراً هذا الشهر",
+    "basedOnMonth": "بناءً على هذا الشهر",
+    "upFromMonth": "أعلى من الشهر",
+    "downFromMonth": "أقل من الشهر"
+  },
+  "stats": {
+    "thisWeek": "هذا الأسبوع",
+    "totalHoursWorked": "إجمالي ساعات العمل",
+    "breaksTaken": "الاستراحات المأخوذة",
+    "totalOvertime": "إجمالي العمل الإضافي",
+    "extraHoursThisMonth": "ساعات العمل الإضافية لهذا الشهر"
+  },
+  "timeUnits": {
+    "am": "صباحاً",
+    "pm": "مساءً",
+    "hours": "ساعات",
+    "minutes": "دقائق",
+    "seconds": "ثواني"
+  },
+  "attendanceTable": {
+    "sortBy": "ترتيب حسب",
+    "sort": {
+      "newestFirst": "الأحدث أولاً",
+      "oldestFirst": "الأقدم أولاً"
+    },
+    "location": {
+      "title": "الموقع",
+      "all": "الكل",
+      "office": "العمل من المكتب",
+      "home": "العمل من المنزل",
+      "none": "بدون موقع"
+    },
+    "status": {
+      "title": "الحالة",
+      "all": "كل الحالات",
+      "present": "حاضر",
+      "absent": "غائب",
+      "late": "تأخر في الحضور"
+    },
+    "dateFrom": "من تاريخ",
+    "dateTo": "إلى تاريخ",
+    "showing": "عرض {{count}} من أصل {{total}} سجل",
+    "columns": {
+      "date": "التاريخ",
+      "day": "اليوم",
+      "checkIn": "تسجيل الدخول",
+      "checkOut": "تسجيل الخروج",
+      "workHours": "ساعات العمل",
+      "status": "الحالة",
+      "location": "الموقع"
+    },
+    "pageOf": "الصفحة {{page}} من {{total}}"
   }
 }

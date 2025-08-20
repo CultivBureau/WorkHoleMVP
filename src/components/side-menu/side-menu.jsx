@@ -293,7 +293,7 @@ export default function SideMenu() {
     if (location.pathname.startsWith("/pages/User/leaves")) return "leaves";
     if (location.pathname.startsWith("/pages/User/time_tracking"))
       return "time_tracking";
-    if (location.pathname.startsWith("/pages/User/attendance"))
+    if (location.pathname.startsWith("/pages/User/attendance-logs"))
       return "attendance";
     if (location.pathname.startsWith("/pages/User/break")) return "break";
     return "";
@@ -343,7 +343,7 @@ export default function SideMenu() {
     else if (key === "time_tracking") {
       navigate("/pages/User/time_tracking");
       // الـ dropdown هيفتح تلقائي من الـ useEffect
-    } else if (key === "attendance") navigate("/pages/User/attendance");
+    } else if (key === "attendance") navigate("/pages/User/attendance-logs");
     else if (key === "break") navigate("/pages/User/break");
     // أضف باقي الصفحات هنا
   };

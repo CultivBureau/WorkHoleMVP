@@ -12,6 +12,7 @@ const Card = ({
   statusDot,
   footer,
   children,
+  bottomContent,
 }) => {
   return (
     <div
@@ -29,11 +30,9 @@ const Card = ({
           </h3>
           {statusDot}
         </div>
+        {/* No background for top right icon */}
         {rightIcon && (
-          <div 
-            className="w-8 h-8 rounded-lg flex items-center justify-center"
-            style={{ backgroundColor: 'var(--hover-color)' }}
-          >
+          <div className="w-8 h-8 flex items-center justify-center">
             {rightIcon}
           </div>
         )}
@@ -48,13 +47,12 @@ const Card = ({
           {subTitle}
         </p>
         {children}
-        {button && <div className="mt-2">{button}</div>}
       </div>
 
       {/* Progress Bar */}
       {typeof bar === "number" && bar > 0 && (
         <div className="flex items-center gap-2">
-          <div 
+          <div
             className="flex-1 h-1.5 rounded-full overflow-hidden"
             style={{ backgroundColor: 'var(--container-color)' }}
           >
@@ -67,30 +65,41 @@ const Card = ({
               }}
             />
           </div>
-          {footer && <div className="flex-shrink-0">{footer}</div>}
+          {/* Gradient bg for bottom icon */}
+          {footer && (
+            <div
+              className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg"
+              style={{
+                background: 'var(--hover-color)'
+              }}
+            >
+              {footer}
+            </div>
+          )}
         </div>
       )}
 
       {/* Footer without progress bar */}
       {(!bar || bar === 0) && footer && (
-        <div className="flex justify-end">{footer}</div>
+        <div className="flex justify-end">
+          <div
+            className="w-8 h-8 flex items-center justify-center rounded-lg"
+            style={{
+              background: 'var(--hover-color)',
+            }}
+          >
+            {footer}
+          </div>
+        </div>
       )}
+
+      {/* Button always at the end of the card */}
+      {button && <div className="mt-3">{button}</div>}
+      
+      {/* Bottom Content */}
+      {bottomContent && <div className="mt-3">{bottomContent}</div>}
     </div>
   );
 };
 
 export default Card;
-
-// Example Usage:
-// <Card
-//   header="My Card"
-//   title="Some Value"
-//   subTitle="Some Subtitle"
-//   icon="/assets/myicon.svg"
-//   bar={60}
-//   percentage={12}
-//   button={<button className="btn">Click Me</button>}
-//   footer={<div>Custom Footer</div>}
-// >
-/* Any custom content here */
-// </Card>

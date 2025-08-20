@@ -147,5 +147,65 @@
       "phone": "Phone Call",
       "personal": "Personal"
     }
+  },
+  "attendanceStats": {
+    "totalDaysPresent": "Total Days Present",
+    "totalDaysAbsent": "Total Days Absent",
+    "lateArrivals": "Late Arrivals",
+    "averageClockIn": "Average Clock-in",
+    "hoursWorked": "Hours Worked",
+    "breakToday": "You've taken this much break today",
+    "lateThisMonth": "You arrived late this month",
+    "basedOnMonth": "Based on this month",
+    "upFromMonth": "Up from Month",
+    "downFromMonth": "Down from Month"
+  },
+  "stats": {
+    "thisWeek": "This Week",
+    "totalHoursWorked": "Total Hours Worked",
+    "breaksTaken": "Breaks Taken",
+    "totalOvertime": "Total Overtime",
+    "extraHoursThisMonth": "This month's extra hours worked"
+  },
+  "timeUnits": {
+    "am": "AM",
+    "pm": "PM",
+    "hours": "H",
+    "minutes": "M",
+    "seconds": "S"
+  },
+  "attendanceTable": {
+    "sortBy": "Sort By",
+    "sort": {
+      "newestFirst": "Newest First",
+      "oldestFirst": "Oldest First"
+    },
+    "location": {
+      "title": "Location",
+      "all": "All",
+      "office": "Work from office",
+      "home": "Work from home",
+      "none": "No location"
+    },
+    "status": {
+      "title": "Status",
+      "all": "All Status",
+      "present": "Present",
+      "absent": "Absent",
+      "late": "Late arrival"
+    },
+    "dateFrom": "Date from",
+    "dateTo": "Date to",
+    "showing": "Showing {{count}} of {{total}} records",
+    "columns": {
+      "date": "Date",
+      "day": "Day",
+      "checkIn": "Check-in",
+      "checkOut": "Check-out",
+      "workHours": "Work hours",
+      "status": "Status",
+      "location": "Location"
+    },
+    "pageOf": "Page {{page}} of {{total}}"
   }
 }

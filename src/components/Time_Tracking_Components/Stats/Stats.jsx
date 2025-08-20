@@ -5,34 +5,37 @@ import ClockIcon from "../../../../public/assets/dashboard_card/clock.svg";
 import ClockIcon2 from "../../../../public/assets/dashboard_card/clock2.svg";
 import ClockIcon3 from "../../../../public/assets/dashboard_card/clock3.svg";
 import BreakIcon from "../../../../public/assets/dashboard_card/break.svg";
+import { useTranslation } from "react-i18next";
 
 const Stats = () => {
+  const { t } = useTranslation();
+  
   const Card_Data = [
     {
-      header: "Daily shift",
-      title: "2:15:00",
-      subTitle: "Hours Worked",
+      header: t("dashboard.statusCards.dailyShift"),
+      title: `2:15:00`,
+      subTitle: t("dashboard.statusCards.hoursWorked"),
       icon: ClockIcon,
       bar: 45,
     },
     {
-      header: "This Week",
-      title: "34:15:00",
-      subTitle: "Total Hours Worked",
+      header: t("stats.thisWeek"),
+      title: `34:15:00`,
+      subTitle: t("stats.totalHoursWorked"),
       icon: ClockIcon2,
       bar: 75,
     },
     {
-      header: "Breaks Taken",
-      title: "22m",
-      subTitle: "You've taken this much break today",
+      header: t("stats.breaksTaken"),
+      title: `22${t("timeUnits.minutes")}`,
+      subTitle: t("breakTime.breakSummary"),
       icon: BreakIcon,
       bar: 30,
     },
     {
-      header: "Total Overtime",
-      title: "3h",
-      subTitle: "This month's extra hours worked",
+      header: t("stats.totalOvertime"),
+      title: `3${t("timeUnits.hours")}`,
+      subTitle: t("stats.extraHoursThisMonth"),
       icon: ClockIcon3,
       bar: 60,
       percentage: 1.3,
