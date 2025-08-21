@@ -44,11 +44,11 @@ const Stats = () => {
 
   return (
     <section
-      className="w-full flex justify-center items-center gap-6 p-6"
+      className="w-full h-[22vh] flex justify-center items-stretch gap-6 p-6"
       style={{ backgroundColor: "var(--bg-color)" }}
     >
       {Card_Data.map((card, index) => (
-        <Card key={index} {...card} />
+        <Card key={index} {...card} className="h-full" />
       ))}
     </section>
   );

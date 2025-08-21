@@ -207,5 +207,29 @@
       "location": "الموقع"
     },
     "pageOf": "الصفحة {{page}} من {{total}}"
+  },
+  "profile": {
+    "profile": "الملف الشخصي",
+    "personalInformation": "المعلومات الشخصية",
+    "firstName": "الاسم الأول",
+    "lastName": "اسم العائلة",
+    "mobileNumber": "رقم الهاتف",
+    "emailAddress": "البريد الإلكتروني",
+    "dateOfBirth": "تاريخ الميلاد",
+    "maritalStatus": "الحالة الاجتماعية",
+    "married": "متزوج",
+    "gender": "الجنس",
+    "female": "أنثى",
+    "nationality": "الجنسية",
+    "america": "أمريكا",
+    "address": "العنوان",
+    "city": "المدينة",
+    "state": "الولاية",
+    "unitedState": "الولايات المتحدة",
+    "zipCode": "الرمز البريدي",
+    "projectManager": "مدير المشروع",
+    "teamLead": "قائد الفريق",
+    "srProjectManager": "مدير المشروع الأول",
+    "editProfile": "تعديل الملف الشخصي"
   }
 }

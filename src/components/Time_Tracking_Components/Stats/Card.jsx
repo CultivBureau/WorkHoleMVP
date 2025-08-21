@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 const Card = ({
   header,
@@ -13,17 +14,20 @@ const Card = ({
   footer,
   children,
   bottomContent,
+  className,
 }) => {
+  const { i18n } = useTranslation();
+  const isRtl = i18n.dir() === "rtl";
   return (
     <div
-      className="w-full min-h-[170px] flex flex-col justify-between p-4 rounded-2xl border shadow-sm"
+      className={`w-full h-full min-h-[140px] flex flex-col justify-between p-3 rounded-2xl border shadow-sm ${isRtl ? 'text-right' : 'text-left'} ${className || ''}`}
       style={{
         backgroundColor: 'var(--bg-color)',
         borderColor: 'var(--border-color)',
       }}
     >
       {/* Header Row */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between">
         <div className="flex items-center">
           <h3 className="text-xs font-medium" style={{ color: 'var(--sub-text-color)' }}>
             {header}
@@ -39,11 +43,11 @@ const Card = ({
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col justify-center mb-3">
-        <h2 className="text-lg font-bold mb-1" style={{ color: 'var(--text-color)' }}>
+      <div className="flex-1 flex flex-col py-0 justify-center">
+        <h2 className="text-lg font-bold" style={{ color: 'var(--text-color)' }}>
           {title}
         </h2>
-        <p className="text-xs mb-2" style={{ color: 'var(--sub-text-color)' }}>
+        <p className="text-xs" style={{ color: 'var(--sub-text-color)' }}>
           {subTitle}
         </p>
         {children}
@@ -97,7 +101,7 @@ const Card = ({
       {button && <div className="mt-3">{button}</div>}
       
       {/* Bottom Content */}
-      {bottomContent && <div className="mt-3">{bottomContent}</div>}
+      {bottomContent && <div>{bottomContent}</div>}
     </div>
   );
 };

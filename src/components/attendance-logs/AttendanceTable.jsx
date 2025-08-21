@@ -213,7 +213,10 @@ const AttendanceTable = () => {
 	}
 
 	return (
-		<div className="bg-white rounded-lg border border-gray-200">
+		<div
+			className="rounded-lg border border-gray-200"
+			style={{ background: "var(--container-bg)" }}
+		>
 			{/* Filters */}
 			<div className="p-4 border-b border-gray-200">
 				<div className="flex flex-wrap items-center gap-4">
@@ -222,7 +225,7 @@ const AttendanceTable = () => {
 						<select
 							value={sortBy}
 							onChange={(e) => setSortBy(e.target.value)}
-							className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+							className="border border-gray-300 rounded-full px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
 						>
 							<option value="newest">{t("attendanceTable.sort.newestFirst")}</option>
 							<option value="oldest">{t("attendanceTable.sort.oldestFirst")}</option>
@@ -234,7 +237,7 @@ const AttendanceTable = () => {
 						<select
 							value={location}
 							onChange={(e) => setLocation(e.target.value)}
-							className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+							className="border border-gray-300 rounded-full px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
 						>
 							<option value="all">{t("attendanceTable.location.all")}</option>
 							<option value="office">{t("attendanceTable.location.office")}</option>
@@ -248,7 +251,7 @@ const AttendanceTable = () => {
 						<select
 							value={status}
 							onChange={(e) => setStatus(e.target.value)}
-							className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+							className="border border-gray-300 rounded-full px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
 						>
 							<option value="all">{t("attendanceTable.status.all")}</option>
 							<option value="present">{t("attendanceTable.status.present")}</option>
@@ -263,7 +266,7 @@ const AttendanceTable = () => {
 							type="date"
 							value={dateFrom}
 							onChange={(e) => setDateFrom(e.target.value)}
-							className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+							className="border border-gray-300 rounded-full px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
 						/>
 					</div>
 
@@ -273,7 +276,7 @@ const AttendanceTable = () => {
 							type="date"
 							value={dateTo}
 							onChange={(e) => setDateTo(e.target.value)}
-							className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+							className="border border-gray-300 rounded-full px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
 						/>
 					</div>
 
@@ -285,40 +288,56 @@ const AttendanceTable = () => {
 
 			{/* Table */}
 			<div className="overflow-x-auto">
-				<table className="w-full">
-					<thead className="bg-gray-50">
+				<table
+					className="w-full"
+					style={{
+						background: "var(--table-bg, #fff)",
+						color: "var(--table-text, #18181b)"
+					}}
+				>
+					<thead
+						style={{
+							background: "var(--table-header-bg, #f9fafb)",
+							color: "var(--table-text, #18181b)"
+						}}
+					>
 						<tr>
-							<th classNameName="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t("attendanceTable.columns.date")}</th>
-							<th classNameName="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t("attendanceTable.columns.day")}</th>
-							<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+							<th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">{t("attendanceTable.columns.date")}</th>
+							<th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">{t("attendanceTable.columns.day")}</th>
+							<th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
 								{t("attendanceTable.columns.checkIn")} <ChevronDown className="inline w-3 h-3 ml-1" />
 							</th>
-							<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+							<th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
 								{t("attendanceTable.columns.checkOut")} <ChevronDown className="inline w-3 h-3 ml-1" />
 							</th>
-							<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+							<th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
 								{t("attendanceTable.columns.workHours")} <ChevronDown className="inline w-3 h-3 ml-1" />
 							</th>
-							<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+							<th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
 								{t("attendanceTable.columns.status")} <ChevronDown className="inline w-3 h-3 ml-1" />
 							</th>
-							<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+							<th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
 								{t("attendanceTable.columns.location")} <ChevronDown className="inline w-3 h-3 ml-1" />
 							</th>
 						</tr>
 					</thead>
-					<tbody className="bg-white divide-y divide-gray-200">
+					<tbody
+						style={{
+							background: "var(--table-bg, #fff)",
+							color: "var(--table-text, #18181b)"
+						}}
+					>
 						{pageItems.map((record, index) => (
-							<tr key={index} className="hover:bg-gray-50">
-								<td className="px-4 py-3 text-sm text-gray-900">{record.date}</td>
-								<td className="px-4 py-3 text-sm text-gray-900">{record.day}</td>
-								<td className={`px-4 py-3 text-sm ${record.status === "Absent" ? "text-red-500" : "text-gray-900"}`}>
+							<tr key={index} className="attendance-table-row" style={{ color: "var(--table-text, #18181b)" }}>
+								<td className="px-4 py-3 text-sm">{record.date}</td>
+								<td className="px-4 py-3 text-sm">{record.day}</td>
+								<td className={`px-4 py-3 text-sm ${record.status === "Absent" ? "text-red-500" : ""}`}>
 									{translateTime(record.checkIn)}
 								</td>
-								<td className={`px-4 py-3 text-sm ${record.status === "Absent" ? "text-red-500" : "text-gray-900"}`}>
+								<td className={`px-4 py-3 text-sm ${record.status === "Absent" ? "text-red-500" : ""}`}>
 									{translateTime(record.checkOut)}
 								</td>
-								<td className="px-4 py-3 text-sm text-gray-900">{translateDuration(record.workHours)}</td>
+								<td className="px-4 py-3 text-sm">{translateDuration(record.workHours)}</td>
 								<td className="px-4 py-3">{getStatusBadge(record.status)}</td>
 								<td className="px-4 py-3">{getLocationBadge(record.location)}</td>
 							</tr>

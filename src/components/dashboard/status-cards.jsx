@@ -49,7 +49,7 @@ export default function StatusCards() {
   );
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-6">
+    <div className="w-full h-[22vh] flex justify-center items-stretch gap-6">
       {/* Status Card */}
       <Card
         header={t("dashboard.statusCards.status")}
@@ -58,6 +58,7 @@ export default function StatusCards() {
         statusDot={<span className="inline-block w-2 h-2 rounded-full bg-red-500 ml-2"></span>}
         rightIcon={CalendarIcon}
         button={GoToTimeTrackerBtn}
+        className="h-full"
       />
 
       {/* Leave Request Card */}
@@ -67,6 +68,7 @@ export default function StatusCards() {
         subTitle={t("dashboard.statusCards.noRequestText")}
         rightIcon={LeaveIcon}
         footer={BarChartIcon}
+        className="h-full"
       />
 
       {/* Daily Shift Card */}
@@ -77,6 +79,7 @@ export default function StatusCards() {
         rightIcon={ClockIcon}
         bar={45}
         footer={BarChartIcon}
+        className="h-full"
       />
 
       {/* Performance Card */}
@@ -87,6 +90,7 @@ export default function StatusCards() {
         rightIcon={PerformanceIcon}
         bar={75}
         footer={BarChartIcon}
+        className="h-full"
       />
     </div>
   );

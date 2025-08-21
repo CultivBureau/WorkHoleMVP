@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   Bell,
@@ -16,6 +17,7 @@ import AvatarIcon from "../../../public/assets/navbar/Avatar.png";
 
 const NavBar = ({ lang, setLang }) => {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -478,8 +480,12 @@ const NavBar = ({ lang, setLang }) => {
             tabIndex={0}
           >
             <div
-              className="w-8 h-8 rounded-full overflow-hidden ring-2 transition-all duration-200"
+              className="w-8 h-8 rounded-full overflow-hidden ring-2 transition-all duration-200 cursor-pointer hover:ring-4"
               style={{ borderColor: "var(--border-color)" }}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate("/pages/User/profile");
+              }}
             >
               <img
                 src={AvatarIcon}
@@ -577,7 +583,7 @@ const NavBar = ({ lang, setLang }) => {
                   }
                   onClick={() => {
                     setProfileOpen(false);
-                    /* handle profile click */
+                    navigate("/pages/User/profile");
                   }}
                 >
                   <User
@@ -718,10 +724,14 @@ const NavBar = ({ lang, setLang }) => {
               </div>
               {/* Mobile Profile */}
               <div
-                className="flex items-center gap-3 border rounded-2xl px-4 py-3"
+                className="flex items-center gap-3 border rounded-2xl px-4 py-3 cursor-pointer transition-all duration-200 hover:bg-opacity-80"
                 style={{
                   borderColor: "var(--border-color)",
                   backgroundColor: "var(--bg-color)",
+                }}
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  navigate("/pages/User/profile");
                 }}
               >
                 <div className="w-8 h-8 rounded-full overflow-hidden">

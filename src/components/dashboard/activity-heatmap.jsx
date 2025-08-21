@@ -38,8 +38,9 @@ export default function ActivityHeatmap() {
 
   return (
     <div
-      className="w-full bg-white rounded-lg shadow-sm border border-gray-100"
+      className="w-full rounded-lg shadow-sm border border-gray-100"
       style={{
+        background: "var(--container-bg)",
         padding: "24px 20px 16px 20px",
         boxSizing: "border-box",
       }}

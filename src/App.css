@@ -40,6 +40,10 @@ body {
   --warning-color: #f59e0b;
   --error-color: #ef4444;
   --info-color: #3b82f6;
+
+  --table-bg: #fff;
+  --table-header-bg: #f9fafb;
+  --table-text: #18181b;
 }
 
 /* Gradient Text Utilities */
@@ -89,6 +93,9 @@ body {
   --hover-color: #CDFFFC9C;
   --border-color: #374151;
   --divider-color: #4b5563;
+  --table-bg: #111827;
+  --table-header-bg: #4b5563;
+  --table-text: #fff;
 }
 
 /* Custom Scrollbar Styles */
@@ -180,4 +187,10 @@ body {
   font-family: 'Digital Numbers', 'Courier New', Courier, monospace;
   font-size: 2.5rem;
   letter-spacing: 0.08em;
+}
+
+/* Add this at the end of your CSS file or after the table styles */
+
+.attendance-table-row:hover {
+  background: var(--table-header-bg) !important;
 }

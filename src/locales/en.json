@@ -207,5 +207,30 @@
       "location": "Location"
     },
     "pageOf": "Page {{page}} of {{total}}"
+  },
+  "profile": {
+    "profile": "Profile",
+    "personalInformation": "Personal Information",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "mobileNumber": "Mobile Number",
+    "emailAddress": "Email Address",
+    "dateOfBirth": "Date of Birth",
+    "maritalStatus": "Marital Status",
+    "married": "Married",
+    "gender": "Gender",
+    "female": "Female",
+    "nationality": "Nationality",
+    "america": "America",
+    "address": "Address",
+    "city": "City",
+    "state": "State",
+    "unitedState": "United State",
+    "zipCode": "Zip Code",
+    "projectManager": "Project Manager",
+    "teamLead": "Team lead",
+    "srProjectManager": "Sr. Project Manager",
+    "editProfile": "Edit Profile"
   }
+
 }
