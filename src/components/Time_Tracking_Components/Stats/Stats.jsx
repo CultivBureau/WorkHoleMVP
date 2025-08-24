@@ -1,6 +1,5 @@
 import React from "react";
 import Card from "./Card";
-import { Clock, Calendar, Coffee, TrendingUp } from "lucide-react";
 import ClockIcon from "../../../../public/assets/dashboard_card/clock.svg";
 import ClockIcon2 from "../../../../public/assets/dashboard_card/clock2.svg";
 import ClockIcon3 from "../../../../public/assets/dashboard_card/clock3.svg";
