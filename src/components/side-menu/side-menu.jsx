@@ -295,7 +295,6 @@ export default function SideMenu() {
       return "time_tracking";
     if (location.pathname.startsWith("/pages/User/attendance-logs"))
       return "attendance";
-    if (location.pathname.startsWith("/pages/User/break")) return "break";
     if (location.pathname.startsWith("/pages/User/break-tracking"))
       return "break_tracking";
     return "";
@@ -307,7 +306,6 @@ export default function SideMenu() {
     if (
       active === "time_tracking" ||
       active === "attendance" ||
-      active === "break" ||
       active === "break_tracking"
     ) {
       setOpenDropdown("time_tracking");

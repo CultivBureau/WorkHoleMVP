@@ -142,13 +142,10 @@
     "reasons": {
       "prayer": "صلاة",
       "lunch": "غداء",
-      "meeting": "اجتماع",
-      "bathroom": "دورة مياه",
-      "coffee": "استراحة قهوة",
-      "phone": "مكالمة هاتفية",
+      "breakfast": "إفطار",
       "personal": "شخصي",
-      "breakfast": "إفطار",       
-      "emergency": "طارئة"
+      "emergency": "طارئة",
+      "coffee": "استراحة قهوة"
     }
   },
   "attendanceStats": {
@@ -241,6 +238,9 @@
     "avgBreakPerDay": "متوسط الاستراحة يومياً",
     "breaksOverLimit": "تجاوزت الحد المسموح",
     "timeTakenToday": "الوقت المستغرق اليوم",
+    "mostCommonThisWeek": "الأكثر هذا الأسبوع",
+    "basedOnLast7Days": "حسب آخر 7 أيام",
+    "exceededLimit": "لقد تجاوزت حد 30 دقيقة هذا الأسبوع",
     "period": {
       "lastWeek": "الأسبوع الماضي",
       "thisWeek": "هذا الأسبوع",
@@ -251,6 +251,28 @@
       "m20": "٢٠د",
       "m10": "١٠د",
       "m0": "٠"
+    }
+  },
+  "breakHistoryTable": {
+    "sortBy": "ترتيب حسب",
+    "date": "التاريخ",
+    "type": "النوع",
+    "allDates": "كل التواريخ",
+    "allTypes": "كل الأنواع",
+    "entries": "مدخل",
+    "of": "من",
+    "page": "صفحة",
+    "totalEntries": "إجمالي المدخلات",
+    "columns": {
+      "date": "التاريخ",
+      "breakType": "نوع الاستراحة",
+      "duration": "المدة",
+      "startTime": "وقت البداية",
+      "endTime": "وقت النهاية"
+    },
+    "sort": {
+      "newest": "الأحدث أولاً",
+      "oldest": "الأقدم أولاً"
     }
   }
 }

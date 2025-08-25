@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next"
 
 const AttendanceTable = () => {
 	const { t, i18n } = useTranslation()
-	const isRtl = i18n.dir() === "rtl"
+	const isArabic = i18n.language === "ar"
 
 	// Raw data stays in a consistent internal format (English keys)
 	const attendanceData = [
@@ -181,106 +181,190 @@ const AttendanceTable = () => {
 		switch (value) {
 			case "Present":
 				return (
-					<span className="px-2 py-1 bg-green-100 text-green-700 rounded-md text-xs font-medium">
+					<span className="px-3 py-1 rounded-full text-xs font-medium inline-block min-w-[80px] text-center"
+						style={{ backgroundColor: 'var(--tag-bg)', color: 'var(--tag-text)' }}>
 						{t("attendanceTable.status.present")}
 					</span>
 				)
 			case "Absent":
 				return (
-					<span className="px-2 py-1 bg-red-100 text-red-700 rounded-md text-xs font-medium">
+					<span className="px-3 py-1 rounded-full text-xs font-medium inline-block min-w-[80px] text-center bg-red-100 text-red-700">
 						{t("attendanceTable.status.absent")}
 					</span>
 				)
 			case "Late arrival":
 				return (
-					<span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-md text-xs font-medium">
+					<span className="px-3 py-1 rounded-full text-xs font-medium inline-block min-w-[80px] text-center bg-yellow-100 text-yellow-700">
 						{t("attendanceTable.status.late")}
 					</span>
 				)
 			default:
 				return (
-					<span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-medium">{value}</span>
+					<span className="px-3 py-1 rounded-full text-xs font-medium inline-block min-w-[80px] text-center"
+						style={{ backgroundColor: 'var(--tag-bg)', color: 'var(--tag-text)' }}>
+						{value}
+					</span>
 				)
 		}
 	}
 
 	const getLocationBadge = (loc) => {
 		if (loc === "------") {
-			return <span className="text-gray-400 text-sm">------</span>
+			return <span style={{ color: 'var(--sub-text-color)' }} className="text-sm">------</span>
 		}
 		const label = loc === "Work from office" ? t("attendanceTable.location.office") : t("attendanceTable.location.home")
-		return <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-medium">{label}</span>
+		return (
+			<span className="px-3 py-1 rounded-full text-xs font-medium inline-block min-w-[80px] text-center bg-blue-100 text-blue-700">
+				{label}
+			</span>
+		)
 	}
+
+	const SelectField = ({ value, onChange, options, label }) => (
+		<div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
+			<span className="text-xs font-medium whitespace-nowrap" style={{ color: 'var(--sub-text-color)' }}>
+				{label}
+			</span>
+			<div className="relative">
+				<select
+					value={value}
+					onChange={onChange}
+					className="border rounded-xl px-3 py-1.5 text-xs appearance-none focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200 min-w-[100px] font-medium"
+					style={{
+						borderColor: 'var(--border-color)',
+						backgroundColor: 'var(--bg-color)',
+						color: 'var(--text-color)',
+						focusRingColor: 'var(--accent-color)',
+						paddingRight: isArabic ? '12px' : '28px',
+						paddingLeft: isArabic ? '28px' : '12px',
+						direction: isArabic ? 'rtl' : 'ltr',
+						boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+						height: '32px'
+					}}
+				>
+					{options.map((option) => (
+						<option key={option.value} value={option.value}>
+							{option.label}
+						</option>
+					))}
+				</select>
+				<ChevronDown
+					className={`absolute top-1/2 transform -translate-y-1/2 w-3 h-3 pointer-events-none ${isArabic ? 'left-2' : 'right-2'
+						}`}
+					style={{ color: 'var(--sub-text-color)' }}
+				/>
+			</div>
+		</div>
+	)
+
+	const DateField = ({ value, onChange, label }) => (
+		<div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
+			<span className="text-xs font-medium whitespace-nowrap" style={{ color: 'var(--sub-text-color)' }}>
+				{label}
+			</span>
+			<input
+				type="date"
+				value={value}
+				onChange={onChange}
+				className="border rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200 min-w-[100px] font-medium date-input"
+				style={{
+					borderColor: 'var(--border-color)',
+					backgroundColor: 'var(--bg-color)',
+					color: 'var(--text-color)',
+					focusRingColor: 'var(--accent-color)',
+					direction: isArabic ? 'rtl' : 'ltr',
+					boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+					height: '32px'
+				}}
+			/>
+		</div>
+	)
 
 	return (
 		<div
-			className="rounded-lg border border-gray-200"
-			style={{ background: "var(--container-bg)" }}
+			className="rounded-xl border shadow-sm"
+			style={{
+				backgroundColor: 'var(--bg-color)',
+				borderColor: 'var(--border-color)'
+			}}
+			dir={isArabic ? "rtl" : "ltr"}
 		>
+			{/* Add global styles for date picker to match dropdown arrows */}
+			<style jsx global>{`
+                .date-input::-webkit-calendar-picker-indicator {
+                    cursor: pointer;
+                    opacity: 0.7;
+                    transition: opacity 0.2s;
+                }
+                
+                .date-input::-webkit-calendar-picker-indicator:hover {
+                    opacity: 1;
+                }
+
+                [data-theme="dark"] .date-input::-webkit-calendar-picker-indicator {
+                    filter: brightness(0) saturate(100%) invert(71%) sepia(6%) saturate(373%) hue-rotate(195deg) brightness(95%) contrast(87%);
+                }
+                
+                [data-theme="light"] .date-input::-webkit-calendar-picker-indicator {
+                    filter: brightness(0) saturate(100%) invert(46%) sepia(11%) saturate(200%) hue-rotate(212deg) brightness(97%) contrast(86%);
+                }
+            `}</style>
+
 			{/* Filters */}
-			<div className="p-4 border-b border-gray-200">
-				<div className="flex flex-wrap items-center gap-4">
-					<div className="flex items-center gap-2">
-						<span className="text-sm text-gray-600">{t("attendanceTable.sortBy")}</span>
-						<select
+			<div
+				className="p-6 border-b"
+				style={{ borderColor: 'var(--divider-color)' }}
+			>
+				<div className="flex flex-wrap items-center justify-between gap-3">
+					<div className="flex flex-wrap items-center gap-3">
+						<SelectField
 							value={sortBy}
 							onChange={(e) => setSortBy(e.target.value)}
-							className="border border-gray-300 rounded-full px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-						>
-							<option value="newest">{t("attendanceTable.sort.newestFirst")}</option>
-							<option value="oldest">{t("attendanceTable.sort.oldestFirst")}</option>
-						</select>
-					</div>
+							options={[
+								{ value: "newest", label: t("attendanceTable.sort.newestFirst") },
+								{ value: "oldest", label: t("attendanceTable.sort.oldestFirst") }
+							]}
+							label={t("attendanceTable.sortBy")}
+						/>
 
-					<div className="flex items-center gap-2">
-						<span className="text-sm text-gray-600">{t("attendanceTable.location.title")}</span>
-						<select
+						<SelectField
 							value={location}
 							onChange={(e) => setLocation(e.target.value)}
-							className="border border-gray-300 rounded-full px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-						>
-							<option value="all">{t("attendanceTable.location.all")}</option>
-							<option value="office">{t("attendanceTable.location.office")}</option>
-							<option value="home">{t("attendanceTable.location.home")}</option>
-							<option value="none">{t("attendanceTable.location.none")}</option>
-						</select>
-					</div>
+							options={[
+								{ value: "all", label: t("attendanceTable.location.all") },
+								{ value: "office", label: t("attendanceTable.location.office") },
+								{ value: "home", label: t("attendanceTable.location.home") },
+								{ value: "none", label: t("attendanceTable.location.none") }
+							]}
+							label={t("attendanceTable.location.title")}
+						/>
 
-					<div className="flex items-center gap-2">
-						<span className="text-sm text-gray-600">{t("attendanceTable.status.title")}</span>
-						<select
+						<SelectField
 							value={status}
 							onChange={(e) => setStatus(e.target.value)}
-							className="border border-gray-300 rounded-full px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-						>
-							<option value="all">{t("attendanceTable.status.all")}</option>
-							<option value="present">{t("attendanceTable.status.present")}</option>
-							<option value="absent">{t("attendanceTable.status.absent")}</option>
-							<option value="late">{t("attendanceTable.status.late")}</option>
-						</select>
-					</div>
+							options={[
+								{ value: "all", label: t("attendanceTable.status.all") },
+								{ value: "present", label: t("attendanceTable.status.present") },
+								{ value: "absent", label: t("attendanceTable.status.absent") },
+								{ value: "late", label: t("attendanceTable.status.late") }
+							]}
+							label={t("attendanceTable.status.title")}
+						/>
 
-					<div className="flex items-center gap-2">
-						<span className="text-sm text-gray-600">{t("attendanceTable.dateFrom")}</span>
-						<input
-							type="date"
+						<DateField
 							value={dateFrom}
 							onChange={(e) => setDateFrom(e.target.value)}
-							className="border border-gray-300 rounded-full px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+							label={t("attendanceTable.dateFrom")}
 						/>
-					</div>
 
-					<div className="flex items-center gap-2">
-						<span className="text-sm text-gray-600">{t("attendanceTable.dateTo")}</span>
-						<input
-							type="date"
+						<DateField
 							value={dateTo}
 							onChange={(e) => setDateTo(e.target.value)}
-							className="border border-gray-300 rounded-full px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+							label={t("attendanceTable.dateTo")}
 						/>
 					</div>
 
-					<div className="ml-auto text-sm text-gray-600">
+					<div className={`text-sm font-medium ${isArabic ? 'text-right' : 'text-left'}`} style={{ color: 'var(--sub-text-color)' }}>
 						{t("attendanceTable.showing", { count: pageItems.length, total: totalItems })}
 					</div>
 				</div>
@@ -288,58 +372,84 @@ const AttendanceTable = () => {
 
 			{/* Table */}
 			<div className="overflow-x-auto">
-				<table
-					className="w-full"
-					style={{
-						background: "var(--table-bg, #fff)",
-						color: "var(--table-text, #18181b)"
-					}}
-				>
-					<thead
-						style={{
-							background: "var(--table-header-bg, #f9fafb)",
-							color: "var(--table-text, #18181b)"
-						}}
-					>
+				<table className="w-full">
+					<thead style={{ backgroundColor: 'var(--table-header-bg)' }}>
 						<tr>
-							<th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">{t("attendanceTable.columns.date")}</th>
-							<th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">{t("attendanceTable.columns.day")}</th>
-							<th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
-								{t("attendanceTable.columns.checkIn")} <ChevronDown className="inline w-3 h-3 ml-1" />
+							<th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+								style={{ color: 'var(--table-header-text)' }}>
+								{t("attendanceTable.columns.date")}
 							</th>
-							<th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
-								{t("attendanceTable.columns.checkOut")} <ChevronDown className="inline w-3 h-3 ml-1" />
+							<th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+								style={{ color: 'var(--table-header-text)' }}>
+								{t("attendanceTable.columns.day")}
 							</th>
-							<th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
-								{t("attendanceTable.columns.workHours")} <ChevronDown className="inline w-3 h-3 ml-1" />
+							<th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+								style={{ color: 'var(--table-header-text)' }}>
+								{t("attendanceTable.columns.checkIn")}
 							</th>
-							<th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
-								{t("attendanceTable.columns.status")} <ChevronDown className="inline w-3 h-3 ml-1" />
+							<th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+								style={{ color: 'var(--table-header-text)' }}>
+								{t("attendanceTable.columns.checkOut")}
 							</th>
-							<th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
-								{t("attendanceTable.columns.location")} <ChevronDown className="inline w-3 h-3 ml-1" />
+							<th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+								style={{ color: 'var(--table-header-text)' }}>
+								{t("attendanceTable.columns.workHours")}
+							</th>
+							<th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+								style={{ color: 'var(--table-header-text)' }}>
+								{t("attendanceTable.columns.status")}
+							</th>
+							<th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+								style={{ color: 'var(--table-header-text)' }}>
+								{t("attendanceTable.columns.location")}
 							</th>
 						</tr>
 					</thead>
-					<tbody
-						style={{
-							background: "var(--table-bg, #fff)",
-							color: "var(--table-text, #18181b)"
-						}}
-					>
+					<tbody>
 						{pageItems.map((record, index) => (
-							<tr key={index} className="attendance-table-row" style={{ color: "var(--table-text, #18181b)" }}>
-								<td className="px-4 py-3 text-sm">{record.date}</td>
-								<td className="px-4 py-3 text-sm">{record.day}</td>
-								<td className={`px-4 py-3 text-sm ${record.status === "Absent" ? "text-red-500" : ""}`}>
+							<tr
+								key={index}
+								className="transition-colors duration-200 cursor-pointer hover:shadow-sm"
+								style={{
+									borderBottom: '1px solid var(--table-border)',
+									backgroundColor: index % 2 === 0 ? 'var(--table-row-bg)' : 'var(--table-row-alt-bg)'
+								}}
+								onMouseEnter={(e) => {
+									e.currentTarget.style.backgroundColor = 'var(--table-header-bg)';
+									e.currentTarget.style.transform = 'translateY(-1px)';
+								}}
+								onMouseLeave={(e) => {
+									e.currentTarget.style.backgroundColor =
+										index % 2 === 0 ? 'var(--table-row-bg)' : 'var(--table-row-alt-bg)';
+									e.currentTarget.style.transform = 'translateY(0)';
+								}}
+							>
+								<td className={`px-6 py-4 text-sm font-medium ${isArabic ? 'text-right' : 'text-left'}`}
+									style={{ color: 'var(--table-text)' }}>
+									{record.date}
+								</td>
+								<td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
+									style={{ color: 'var(--table-text)' }}>
+									{record.day}
+								</td>
+								<td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'} ${record.status === "Absent" ? "text-red-500" : ""}`}
+									style={{ color: record.status === "Absent" ? '#ef4444' : 'var(--table-text)' }}>
 									{translateTime(record.checkIn)}
 								</td>
-								<td className={`px-4 py-3 text-sm ${record.status === "Absent" ? "text-red-500" : ""}`}>
+								<td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'} ${record.status === "Absent" ? "text-red-500" : ""}`}
+									style={{ color: record.status === "Absent" ? '#ef4444' : 'var(--table-text)' }}>
 									{translateTime(record.checkOut)}
 								</td>
-								<td className="px-4 py-3 text-sm">{translateDuration(record.workHours)}</td>
-								<td className="px-4 py-3">{getStatusBadge(record.status)}</td>
-								<td className="px-4 py-3">{getLocationBadge(record.location)}</td>
+								<td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
+									style={{ color: 'var(--table-text)' }}>
+									{translateDuration(record.workHours)}
+								</td>
+								<td className={`px-6 py-4 ${isArabic ? 'text-right' : 'text-left'}`}>
+									{getStatusBadge(record.status)}
+								</td>
+								<td className={`px-6 py-4 ${isArabic ? 'text-right' : 'text-left'}`}>
+									{getLocationBadge(record.location)}
+								</td>
 							</tr>
 						))}
 					</tbody>
@@ -347,14 +457,37 @@ const AttendanceTable = () => {
 			</div>
 
 			{/* Pagination */}
-			<div className="px-4 py-3 border-t border-gray-200 flex items-center justify-between">
-				<div className="text-sm text-gray-600">{t("attendanceTable.pageOf", { page: safePage, total: totalPages })}</div>
-				<div className="flex items-center gap-2">
-					<button className="p-1 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50" onClick={goPrev} disabled={safePage === 1}>
-						{isRtl ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+			<div
+				className={`px-6 py-4 border-t flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
+				style={{ borderColor: 'var(--divider-color)' }}
+			>
+				<div className="text-sm font-medium" style={{ color: 'var(--sub-text-color)' }}>
+					{t("attendanceTable.pageOf", { page: safePage, total: totalPages })}
+				</div>
+				<div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
+					<button
+						className="p-2 rounded-lg border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+						onClick={goPrev}
+						disabled={safePage === 1}
+						style={{
+							borderColor: 'var(--border-color)',
+							backgroundColor: 'var(--bg-color)',
+							color: 'var(--text-color)'
+						}}
+					>
+						{isArabic ? <ChevronLeft className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
 					</button>
-					<button className="p-1 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50" onClick={goNext} disabled={safePage === totalPages}>
-						{isRtl ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+					<button
+						className="p-2 rounded-lg border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+						onClick={goNext}
+						disabled={safePage === totalPages}
+						style={{
+							borderColor: 'var(--border-color)',
+							backgroundColor: 'var(--bg-color)',
+							color: 'var(--text-color)'
+						}}
+					>
+						{isArabic ? <ChevronRight className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
 					</button>
 				</div>
 			</div>

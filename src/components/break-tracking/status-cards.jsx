@@ -29,7 +29,7 @@ const AttendanceStats = () => {
     {
       header: t("breakStats.mostUsedBreak"),
       title: t(`breakTime.reasons.${mostUsedBreakType}`),
-      subTitle: t("breakStats.mostCommonThisWeek", "Most common this week"),
+      subTitle: t("breakStats.mostCommonThisWeek"),
       rightIcon: (
         <img
           src="/assets/break_tracking/most-break.svg"
@@ -44,9 +44,9 @@ const AttendanceStats = () => {
       },
     },
     {
-      header: t("breakStats.avgBreakPerDay", "Avg. Break per Day"),
+      header: t("breakStats.avgBreakPerDay"),
       title: "00:22",
-      subTitle: t("breakStats.basedOnLast7Days", "Based on last 7 days"),
+      subTitle: t("breakStats.basedOnLast7Days"),
       rightIcon: (
         <img
           src="/assets/break_tracking/avg-break.svg"
@@ -61,12 +61,9 @@ const AttendanceStats = () => {
       },
     },
     {
-      header: t("breakStats.breaksOverLimit", "Breaks Over Limit"),
+      header: t("breakStats.breaksOverLimit"),
       title: "2",
-      subTitle: t(
-        "breakStats.exceededLimit",
-        "You exceeded 30m limit this week"
-      ),
+      subTitle: t("breakStats.exceededLimit"),
       rightIcon: (
         <img
           src="/assets/break_tracking/overlimit.svg"

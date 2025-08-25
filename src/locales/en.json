@@ -143,8 +143,9 @@
       "prayer": "Prayer",
       "lunch": "Lunch",
       "breakfast": "Break Fast",
-      "personal": "General",
-      "emergency": "Emergency"
+      "personal": "Personal",
+      "emergency": "Emergency",
+      "coffee": "Coffee Break"
     }
   },
   "attendanceStats": {
@@ -237,6 +238,9 @@
     "avgBreakPerDay": "Avg. Break per Day",
     "breaksOverLimit": "Breaks Over Limit",
     "timeTakenToday": "Time taken today",
+    "mostCommonThisWeek": "Most common this week",
+    "basedOnLast7Days": "Based on last 7 days",
+    "exceededLimit": "You exceeded 30m limit this week",
     "period": {
       "lastWeek": "Last Week",
       "thisWeek": "This Week",
@@ -247,6 +251,28 @@
       "m20": "20m",
       "m10": "10m",
       "m0": "0"
+    }
+  },
+  "breakHistoryTable": {
+    "sortBy": "Sort By",
+    "date": "Date",
+    "type": "Type",
+    "allDates": "All Dates",
+    "allTypes": "All Types",
+    "entries": "entries",
+    "of": "of",
+    "page": "page",
+    "totalEntries": "total entries",
+    "columns": {
+      "date": "Date",
+      "breakType": "Break Type",
+      "duration": "Duration",
+      "startTime": "Start Time",
+      "endTime": "End Time"
+    },
+    "sort": {
+      "newest": "Newest First",
+      "oldest": "Oldest First"
     }
   }
 }
