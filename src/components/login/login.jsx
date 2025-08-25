@@ -1,20 +1,29 @@
 import React, { useState } from "react";
+import { useLoginMutation } from "../../services/apis/AuthApi";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import LogoIcon from "../../assets/side-menu-icons/logo.svg";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Login = () => {
   const navigate = useNavigate();
+  const [login, { isLoading }] = useLoginMutation();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // هنا ممكن تضيف تحقق فعلي لو عايز
-    navigate("/pages/User/dashboard");
+    try {
+      const res = await login(formData).unwrap();
+      toast.success("Login successful");
+      navigate("/pages/User/dashboard");
+    } catch (err) {
+      toast.error(err?.data?.message || "Login failed");
+    }
   };
 
   const handleChange = (e) => {
@@ -187,37 +196,26 @@ const Login = () => {
                 Remember me
               </span>
             </label>
-            <a
-              href="#"
-              className="text-sm font-semibold hover:underline"
-              style={{ color: "var(--accent-color)" }}
-            >
-              Forgot Password?
-            </a>
+<Link
+  to="/forget-password"
+  className="text-sm font-semibold hover:underline"
+  style={{ color: "var(--accent-color)" }}
+>
+  Forgot Password?
+</Link>
           </div>
 
           {/* Login Button */}
           <button
             type="submit"
+            disabled={isLoading}
             className="w-full py-3 px-4 rounded-xl font-bold text-white text-lg transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] gradient-bg"
           >
-            Sign In
+            {isLoading ? "Signing In..." : "Sign In"}
           </button>
         </form>
 
-        {/* Footer */}
-        <div className="mt-6 text-center">
-          <p className="text-sm" style={{ color: "var(--sub-text-color)" }}>
-            Don't have an account?{" "}
-            <a
-              href="#"
-              className="font-semibold hover:underline"
-              style={{ color: "var(--accent-color)" }}
-            >
-              Sign up
-            </a>
-          </p>
-        </div>
+
       </div>
     </div>
   );

@@ -22,9 +22,9 @@
     "time_tracking": "تتبع الوقت",
     "break_tracking": "تتبع الاستراحة"
   },
-  "navbar": {
+  "navbar": {   
     "greeting": "صباح الخير",
-    "user": "، آدم",
+
     "online": "متصل الآن",
     "arabic": "العربية",
     "english": "الإنجليزية",

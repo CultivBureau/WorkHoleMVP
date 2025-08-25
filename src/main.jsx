@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
 import "./i18n";
-
+import ClientProvider from "./services/ClientProvider.jsx"; 
 export default function ThemeBootstrap({ children }) {
   useEffect(() => {
     const saved = (() => {
@@ -22,7 +22,9 @@ export default function ThemeBootstrap({ children }) {
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ThemeBootstrap>
-      <App />
+      <ClientProvider>
+        <App />
+      </ClientProvider>
     </ThemeBootstrap>
   </StrictMode>
 );

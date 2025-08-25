@@ -10,14 +10,20 @@ import {
   ChevronDown,
   X,
   Menu,
-  User, // Add this
-  LogOut, // Add this
+  User,
+  LogOut,
 } from "lucide-react";
 import AvatarIcon from "../../../public/assets/navbar/Avatar.png";
+import { useMeQuery, useLogoutMutation } from "../../services/apis/AuthApi";
+import { removeAuthToken } from "../../utils/page";
 
 const NavBar = ({ lang, setLang }) => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+
+  // جلب بيانات المستخدم من /me
+  const { data: user, isLoading: userLoading } = useMeQuery();
+  const [logout] = useLogoutMutation();
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -80,6 +86,13 @@ const NavBar = ({ lang, setLang }) => {
     document.documentElement.dir = lng === "ar" ? "rtl" : "ltr";
     localStorage.setItem("lang", lng);
     setLangOpen(false);
+  };
+
+  // زرار تسجيل الخروج
+  const handleLogout = async () => {
+    await logout();
+    removeAuthToken();
+    navigate("/");
   };
 
   // Format time and date based on language and locale
@@ -192,10 +205,11 @@ const NavBar = ({ lang, setLang }) => {
           <h1 className="text-xl font-bold tracking-tight">
             <span className="gradient-text">{getGreeting()}</span>
             <span
-              className="font-semibold"
+              className="font-semibold pl-2"
               style={{ color: "var(--text-color)" }}
             >
-              {t("navbar.user")}
+              {/* ديناميكي من الـ API */}
+              {userLoading ? "..." : user?.firstName }
             </span>
           </h1>
         </div>
@@ -488,9 +502,16 @@ const NavBar = ({ lang, setLang }) => {
               }}
             >
               <img
-                src={AvatarIcon}
+                src={
+                  user?.profileImage
+                    ? `${import.meta.env.VITE_API_URL}${user.profileImage}`
+                    : AvatarIcon
+                }
                 alt="Avatar"
-                className="w-full h-full object-cover"
+                className="w-10 h-10 rounded-full object-cover shadow-md"
+                style={{
+                  border: "3px solid var(--bg-color)",
+                }}
               />
             </div>
             <div className="flex flex-col items-start">
@@ -498,13 +519,13 @@ const NavBar = ({ lang, setLang }) => {
                 className="text-sm font-bold transition-colors duration-200"
                 style={{ color: "var(--text-color)" }}
               >
-                {t("navbar.profileName")}
+                {userLoading ? "..." : user?.firstName + " " + user?.lastName}
               </h3>
               <p
                 className="text-xs font-medium"
                 style={{ color: "var(--sub-text-color)" }}
               >
-                {t("navbar.role")}
+                {userLoading ? "..." : user?.role}
               </p>
             </div>
             <ChevronDown
@@ -535,7 +556,11 @@ const NavBar = ({ lang, setLang }) => {
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     <img
-                      src={AvatarIcon}
+                      src={
+                        user?.profileImage
+                          ? `${import.meta.env.VITE_API_URL}${user.profileImage}`
+                          : AvatarIcon
+                      }
                       alt="Avatar"
                       className="w-10 h-10 rounded-full object-cover shadow-md"
                       style={{
@@ -555,13 +580,13 @@ const NavBar = ({ lang, setLang }) => {
                       className="font-bold text-sm leading-tight"
                       style={{ color: "var(--text-color)" }}
                     >
-                      {t("navbar.profileName")}
+                      {userLoading ? "..." : user?.firstName + " " + user?.lastName}
                     </h3>
                     <p
                       className="text-xs"
                       style={{ color: "var(--sub-text-color)" }}
                     >
-                      {t("navbar.role")}
+                      {userLoading ? "..." : user?.role}
                     </p>
                   </div>
                 </div>
@@ -611,10 +636,7 @@ const NavBar = ({ lang, setLang }) => {
                   onMouseLeave={(e) =>
                     (e.target.style.backgroundColor = "transparent")
                   }
-                  onClick={() => {
-                    setProfileOpen(false);
-                    /* handle logout */
-                  }}
+                  onClick={handleLogout}
                 >
                   <LogOut
                     className="w-5 h-5"
@@ -736,7 +758,11 @@ const NavBar = ({ lang, setLang }) => {
               >
                 <div className="w-8 h-8 rounded-full overflow-hidden">
                   <img
-                    src={AvatarIcon}
+                    src={
+                      user?.profileImage
+                        ? `${import.meta.env.VITE_API_URL}${user.profileImage}`
+                        : AvatarIcon
+                    }
                     alt="Avatar"
                     className="w-full h-full object-cover"
                   />

@@ -6,8 +6,12 @@ import Leaves from "./pages/User/leaves/page";
 import TimeTracking from "./pages/User/time_tracking/page";
 import AttendanceLogs from "./pages/User/attendance-logs/page";
 import BreakTracking from "./pages/User/break-tracking/page";
-import Profile from "./pages/User/profile/page";
+import Profile from "./pages/Profile";
+import ForgetPassword from "./components/forget-password/ForgetPassword";
+import ResetPassword from "./components/reset-password/resetPassword";
 import { useState, useEffect } from "react";
+import ProtectedRoute from "./components/ProtectedRoute";
+
 
 function App() {
   const [lang, setLang] = useState(() => localStorage.getItem("lang") || "en");
@@ -29,28 +33,60 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route
+          path="/forget-password"
+          element={<ForgetPassword />}
+        />
+        <Route
+          path="/reset-password"
+          element={<ResetPassword />}
+        />
+        <Route
           path="/pages/User/dashboard"
-          element={<Dashboard lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} />}
+          element={
+            <ProtectedRoute>
+              <Dashboard lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/pages/User/leaves"
-          element={<Leaves lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} />}
+          element={
+            <ProtectedRoute>
+              <Leaves lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/pages/User/time_tracking"
-          element={<TimeTracking lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} />}
+          element={
+            <ProtectedRoute>
+              <TimeTracking lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/pages/User/attendance-logs"
-          element={<AttendanceLogs lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} />}
+          element={
+            <ProtectedRoute>
+              <AttendanceLogs lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/pages/User/break-tracking"
-          element={<BreakTracking lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} />}
+          element={
+            <ProtectedRoute>
+              <BreakTracking lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/pages/User/profile"
-          element={<Profile lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} />}
+          element={
+            <ProtectedRoute>
+              <Profile lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} />
+            </ProtectedRoute>
+          }
         />
       </Routes>
     </BrowserRouter>
