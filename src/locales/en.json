@@ -248,5 +248,36 @@
       "m10": "10m",
       "m0": "0"
     }
+  },
+  "mainContent": {
+    "currentStatus": "Current Status",
+    "notClockedIn": "Not Clocked in",
+    "activeWorkTime": "Active Work Time",
+    "todaysProgress": "Today's Progress",
+    "workHours": "Work Hours",
+    "break": "Break",
+    "efficiency": "Efficiency",
+    "complete": "Complete",
+    "remaining": "Remaining",
+    "tuesday": "Tuesday",
+    "mostProductiveDay": "Most Productive Day",
+    "thisWeek": "This Week",
+    "focusTime": "Focus Time",
+    "startYourDay": "Start Your Day",
+    "attendanceLogs": "Attendance Logs",
+    "attendanceLogsDesc": "Check your daily check-ins and hours worked.",
+    "viewAttendanceLogs": "View Attendance Logs",
+    "breakTracking": "Break Tracking",
+    "breakTrackingDesc": "Monitor and manage your break time easily.",
+    "viewBreakLogs": "View Break Logs",
+    "timerFocus": "Timer Focus",
+    "startTimer": "Start Timer"
+  },
+  "timerLogs": {
+    "title": "Time focus Logs",
+    "viewLogs": "View Logs",
+    "time": "Time",
+    "duration": "Duration",
+    "tag": "Tag"
   }
 }

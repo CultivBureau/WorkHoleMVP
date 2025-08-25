@@ -1,12 +1,23 @@
-import React from 'react'
-import WorkHoursCharts from '../WorkHoursChart/WorkHoursCharts'
+import WorkHoursCharts from "../WorkHoursChart/WorkHoursCharts"
+import TimeFocusLogs from "../timerLogs/TimerLogs"
+import MainContent from "../MainConent/MainContent"
+
 const MainSection = () => {
   return (
-    <div className='w-full h-full pb-5 flex justify-center items-center bg-red-500'>
-          <div className='w-[69%] h-full bg-green-500'></div>
-          <div className='w-[31%] h-full bg-blue-500 flex justify-center items-center'>
-            <WorkHoursCharts />
+    <div className="w-full h-max min-h-screen  p-6">
+      <div className="">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="lg:col-span-1">
+            <MainContent />
           </div>
+
+          {/* Right section - Charts and Logs */}
+          <div className="lg:col-span-1 space-y-6">
+            <WorkHoursCharts />
+            <TimeFocusLogs />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

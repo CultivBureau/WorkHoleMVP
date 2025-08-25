@@ -1,111 +1,75 @@
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+"use client"
+
+import { useState } from "react"
+import { ChevronDown } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 const WorkHoursCharts = () => {
-  const { t, i18n } = useTranslation();
-  const [selectedPeriod, setSelectedPeriod] = useState('lastWeek');
-  
-  // Sample data - replace with your actual data
+  const { t, i18n } = useTranslation()
+  const isAr = i18n.language === "ar"
+
   const workHoursData = {
     lastWeek: [7.2, 7.8, 8.5, 6.9, 6.2],
     thisWeek: [6.5, 8.2, 7.9, 8.1, 7.3],
-    lastMonth: [7.0, 7.5, 8.0, 7.2, 6.8]
-  };
+    lastMonth: [7.0, 7.5, 8.0, 7.2, 6.8],
+  }
 
   const filterOptions = [
-    { value: 'lastWeek', label: i18n.language === 'ar' ? 'الأسبوع الماضي' : 'Last Week' },
-    { value: 'thisWeek', label: i18n.language === 'ar' ? 'هذا الأسبوع' : 'This Week' },
-    { value: 'lastMonth', label: i18n.language === 'ar' ? 'الشهر الماضي' : 'Last Month' }
-  ];
+    { value: "lastWeek", label: t("breakStats.period.lastWeek") },
+    { value: "thisWeek", label: t("breakStats.period.thisWeek") },
+    { value: "lastMonth", label: t("breakStats.period.lastMonth") },
+  ]
 
-  const getDayLabels = () => {
-    const days = ['0', '1', '2', '3', '4']; // Sunday to Thursday
-    return days.map(day => {
-      const dayName = t(`navbar.days.${day}`);
-      return dayName.substring(0, 2); // Get first 2 characters
-    });
-  };
+  // Days labels from translation file
+  const dayLabels = [
+    t("navbar.days.0"),
+    t("navbar.days.1"),
+    t("navbar.days.2"),
+    t("navbar.days.3"),
+    t("navbar.days.4"),
+  ]
 
-  const maxHours = 8;
-  const data = workHoursData[selectedPeriod];
-  const dayLabels = getDayLabels();
+  const maxHours = 8
+  const [selectedPeriod, setSelectedPeriod] = useState("lastWeek")
+  const data = workHoursData[selectedPeriod]
 
   return (
-    <div className="work-hours-chart" style={{
-      backgroundColor: 'white',
-      borderRadius: '16px',
-      padding: '24px',
-      fontFamily: 'system-ui, -apple-system, sans-serif',
-      direction: i18n.language === 'ar' ? 'rtl' : 'ltr'
-    }}>
+    <div
+      className="bg-[var(--bg-color)] rounded-2xl p-6 shadow-sm border border-[var(--border-color)]"
+      style={{ direction: isAr ? "rtl" : "ltr" }}
+    >
       {/* Header */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '32px'
-      }}>
-        <h2 style={{
-          fontSize: '24px',
-          fontWeight: '400',
-          color: 'black',
-          margin: 0
-        }}>
-          {i18n.language === 'ar' ? 'ساعات العمل' : 'Work Hours'}
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-2xl font-normal" style={{ color: "var(--text-color)" }}>
+          {t("mainContent.workHours")}
         </h2>
-        
+
         {/* Filter Dropdown */}
-        <div style={{ position: 'relative' }}>
+        <div className="relative">
           <select
             value={selectedPeriod}
             onChange={(e) => setSelectedPeriod(e.target.value)}
+            className="appearance-none bg-teal-100 border-none rounded-2xl px-4 py-2 pr-8 text-sm font-medium text-black cursor-pointer outline-none"
             style={{
-              backgroundColor: '#CDFFFCE0',
-              border: 'none',
-              borderRadius: '20px',
-              padding: '8px 16px',
-              fontSize: '16px',
-              fontWeight: '400',
-              color: 'black',
-              cursor: 'pointer',
-              outline: 'none',
-              minWidth: '120px'
+              backgroundColor: "var(--hover-color)",
+              color: "var(--text-color)",
+              direction: isAr ? "rtl" : "ltr",
             }}
           >
-            {filterOptions.map(option => (
+            {filterOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
           </select>
+          <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-black pointer-events-none" />
         </div>
       </div>
 
       {/* Chart */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'end',
-        justifyContent: 'space-between',
-        height: '200px',
-        padding: '0 20px',
-        position: 'relative'
-      }}>
+      <div className="relative h-64">
         {/* Y-axis labels */}
-        <div style={{
-          position: 'absolute',
-          left: i18n.language === 'ar' ? 'auto' : '0',
-          right: i18n.language === 'ar' ? '0' : 'auto',
-          top: '0',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          fontSize: '16px',
-          fontWeight: '400',
-          color: '#999',
-          paddingRight: i18n.language === 'ar' ? '10px' : '0',
-          paddingLeft: i18n.language === 'ar' ? '0' : '10px'
-        }}>
+        <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-sm text-[var(--sub-text-color)] pr-4">
           <span>8</span>
           <span>6</span>
           <span>4</span>
@@ -114,72 +78,39 @@ const WorkHoursCharts = () => {
         </div>
 
         {/* Grid lines */}
-        <div style={{
-          position: 'absolute',
-          left: i18n.language === 'ar' ? '0' : '40px',
-          right: i18n.language === 'ar' ? '40px' : '0',
-          top: '0',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between'
-        }}>
-          {[0, 1, 2, 3, 4].map(i => (
-            <div key={i} style={{
-              height: '1px',
-              backgroundColor: '#E5E5E5',
-              width: '100%'
-            }} />
+        <div className="absolute left-8 right-0 top-0 h-full flex flex-col justify-between">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-px bg-[var(--divider-color)] w-full" style={{ opacity: i === 0 ? 0 : 1 }} />
           ))}
         </div>
 
-        {/* Bars */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'end',
-          justifyContent: 'space-between',
-          width: '100%',
-          height: '100%',
-          paddingLeft: i18n.language === 'ar' ? '0' : '40px',
-          paddingRight: i18n.language === 'ar' ? '40px' : '0'
-        }}>
+        {/* Chart area */}
+        <div className="ml-8 h-full flex items-end justify-between px-4">
           {data.map((hours, index) => {
-            const height = (hours / maxHours) * 100;
-            const isHighest = hours === Math.max(...data);
-            
+            const height = (hours / maxHours) * 100
+            const isHighest = hours === Math.max(...data)
+
             return (
-              <div key={index} style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                flex: 1,
-                maxWidth: '60px'
-              }}>
+              <div key={index} className="flex flex-col items-center flex-1 max-w-16">
                 {/* Bar */}
-                <div style={{
-                  width: '24px',
-                  height: `${height}%`,
-                  backgroundColor: isHighest ? '#75C8CF' : '#CDFFFCE0',
-                  borderRadius: '12px',
-                  marginBottom: '12px',
-                  transition: 'all 0.3s ease'
-                }} />
-                
+                <div
+                  className={`w-6 rounded-full mb-4 transition-all duration-300 ${
+                    isHighest ? "bg-[var(--accent-color)]" : "bg-[var(--hover-color)]"
+                  }`}
+                  style={{ height: `${height}%` }}
+                />
+
                 {/* Day label */}
-                <span style={{
-                  fontSize: '16px',
-                  fontWeight: '400',
-                  color: 'black'
-                }}>
+                <span className="text-sm font-medium" style={{ color: "var(--text-color)" }}>
                   {dayLabels[index]}
                 </span>
               </div>
-            );
+            )
           })}
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default WorkHoursCharts;
+export default WorkHoursCharts

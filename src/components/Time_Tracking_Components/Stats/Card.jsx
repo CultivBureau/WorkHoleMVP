@@ -29,7 +29,7 @@ const Card = ({
       {/* Header Row */}
       <div className="flex items-center justify-between">
         <div className="flex items-center">
-          <h3 className="text-xs font-medium" style={{ color: 'var(--sub-text-color)' }}>
+          <h3 className="text-[16px] font-semibold text-[#777D86]" style={{ color: 'var(--sub-text-color)' }}>
             {header}
           </h3>
           {statusDot}
