@@ -30,7 +30,7 @@ const mainMenuItems = [
     Icon: Clock,
     children: [
       { key: "attendance", Icon: CalendarCheck },
-      { key: "break", Icon: Coffee },
+      { key: "break_tracking", Icon: Coffee },
     ],
   },
   {
@@ -296,6 +296,8 @@ export default function SideMenu() {
     if (location.pathname.startsWith("/pages/User/attendance-logs"))
       return "attendance";
     if (location.pathname.startsWith("/pages/User/break")) return "break";
+    if (location.pathname.startsWith("/pages/User/break-tracking"))
+      return "break_tracking";
     return "";
   };
   const active = getActiveKey();
@@ -305,7 +307,8 @@ export default function SideMenu() {
     if (
       active === "time_tracking" ||
       active === "attendance" ||
-      active === "break"
+      active === "break" ||
+      active === "break_tracking"
     ) {
       setOpenDropdown("time_tracking");
     }
@@ -345,6 +348,7 @@ export default function SideMenu() {
       // الـ dropdown هيفتح تلقائي من الـ useEffect
     } else if (key === "attendance") navigate("/pages/User/attendance-logs");
     else if (key === "break") navigate("/pages/User/break");
+    else if (key === "break_tracking") navigate("/pages/User/break-tracking");
     // أضف باقي الصفحات هنا
   };
 

@@ -87,15 +87,15 @@ const BreakTime = () => {
             borderColor: 'var(--border-color)'
         }}>
             {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold gradient-text">{t('breakTime.title')}</h3>
+            <div className="flex items-center  mb-4">
+                <h3 className="w-[29%] text-start text-lg font-semibold gradient-text">{t('breakTime.title')}</h3>
                 <div className="flex items-center gap-2">
                     <div className="relative">
                         <select
                             value={selectedReason}
                             onChange={(e) => setSelectedReason(e.target.value)}
                             disabled={isBreakActive}
-                            className="border rounded font-bold px-2 py-2 pr-8 text-xs gradient-text appearance-none"
+                            className="w-[120px] border rounded font-bold px-2 py-2 pr-8 text-xs gradient-text appearance-none"
                             style={{
                                 borderColor: 'var(--accent-color)',
                                 backgroundColor: 'var(--bg-color)',
@@ -126,7 +126,7 @@ const BreakTime = () => {
                     </div>
                     <button
                         onClick={handleStartBreak}
-                        className="gradient-bg text-white px-3 py-2 rounded text-xs font-medium flex items-center gap-1 transition-all duration-200"
+                        className="w-[120px] gradient-bg text-white px-3 py-2 rounded text-xs font-medium flex items-center gap-1 transition-all duration-200"
                         style={{
                             backgroundColor: isBreakActive ? 'var(--error-color)' : undefined
                         }}

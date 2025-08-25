@@ -19,7 +19,8 @@
     "help": "مساعدة",
     "darkMode": "الوضع الليلي",
     "lightMode": "الوضع النهاري",
-    "time_tracking": "تتبع الوقت"
+    "time_tracking": "تتبع الوقت",
+    "break_tracking": "تتبع الاستراحة"
   },
   "navbar": {
     "greeting": "صباح الخير",
@@ -145,7 +146,9 @@
       "bathroom": "دورة مياه",
       "coffee": "استراحة قهوة",
       "phone": "مكالمة هاتفية",
-      "personal": "شخصي"
+      "personal": "شخصي",
+      "breakfast": "إفطار",       
+      "emergency": "طارئة"
     }
   },
   "attendanceStats": {
@@ -231,5 +234,23 @@
     "teamLead": "قائد الفريق",
     "srProjectManager": "مدير المشروع الأول",
     "editProfile": "تعديل الملف الشخصي"
+  },
+  "breakStats": {
+    "todaysBreakTime": "وقت الاستراحة اليوم",
+    "mostUsedBreak": "أكثر استراحة استخداماً",
+    "avgBreakPerDay": "متوسط الاستراحة يومياً",
+    "breaksOverLimit": "تجاوزت الحد المسموح",
+    "timeTakenToday": "الوقت المستغرق اليوم",
+    "period": {
+      "lastWeek": "الأسبوع الماضي",
+      "thisWeek": "هذا الأسبوع",
+      "lastMonth": "الشهر الماضي"
+    },
+    "yAxis": {
+      "m30": "٣٠د",
+      "m20": "٢٠د",
+      "m10": "١٠د",
+      "m0": "٠"
+    }
   }
 }

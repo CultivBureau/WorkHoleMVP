@@ -5,6 +5,7 @@ import Dashboard from "./pages/User/dashboard/page";
 import Leaves from "./pages/User/leaves/page";
 import TimeTracking from "./pages/User/time_tracking/page";
 import AttendanceLogs from "./pages/User/attendance-logs/page";
+import BreakTracking from "./pages/User/break-tracking/page";
 import Profile from "./pages/User/profile/page";
 import { useState, useEffect } from "react";
 
@@ -42,6 +43,10 @@ function App() {
         <Route
           path="/pages/User/attendance-logs"
           element={<AttendanceLogs lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} />}
+        />
+        <Route
+          path="/pages/User/break-tracking"
+          element={<BreakTracking lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} />}
         />
         <Route
           path="/pages/User/profile"

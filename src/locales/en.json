@@ -19,7 +19,8 @@
     "help": "Help",
     "darkMode": "Dark Mode",
     "lightMode": "Light Mode",
-    "time_tracking": "Time Tracking"
+    "time_tracking": "Time Tracking",
+    "break_tracking": "Break Tracking"
   },
   "navbar": {
     "greeting": "Good Morning",
@@ -141,11 +142,9 @@
     "reasons": {
       "prayer": "Prayer",
       "lunch": "Lunch",
-      "meeting": "Meeting",
-      "bathroom": "Bathroom",
-      "coffee": "Coffee Break",
-      "phone": "Phone Call",
-      "personal": "Personal"
+      "breakfast": "Break Fast",
+      "personal": "General",
+      "emergency": "Emergency"
     }
   },
   "attendanceStats": {
@@ -231,6 +230,23 @@
     "teamLead": "Team lead",
     "srProjectManager": "Sr. Project Manager",
     "editProfile": "Edit Profile"
+  },
+  "breakStats": {
+    "todaysBreakTime": "Today's Break Time",
+    "mostUsedBreak": "Most Used Break",
+    "avgBreakPerDay": "Avg. Break per Day",
+    "breaksOverLimit": "Breaks Over Limit",
+    "timeTakenToday": "Time taken today",
+    "period": {
+      "lastWeek": "Last Week",
+      "thisWeek": "This Week",
+      "lastMonth": "Last Month"
+    },
+    "yAxis": {
+      "m30": "30m",
+      "m20": "20m",
+      "m10": "10m",
+      "m0": "0"
+    }
   }
-
 }

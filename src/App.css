@@ -44,6 +44,15 @@ body {
   --table-bg: #fff;
   --table-header-bg: #f9fafb;
   --table-text: #18181b;
+
+  /* Chart Colors */
+  --chart-bar: #B2F1EA;
+  --chart-bar-highlight: #5EC6C6;
+  --chart-bg: #fff;
+  --chart-border: #E0FFFD;
+  --chart-label: #B0B0B0;
+  --chart-grid: #E0FFFD;
+  --chart-dashed: #B0B0B0;
 }
 
 /* Gradient Text Utilities */
@@ -96,6 +105,15 @@ body {
   --table-bg: #111827;
   --table-header-bg: #4b5563;
   --table-text: #fff;
+
+  /* Chart Colors for Dark Mode */
+  --chart-bar: #224e4e;
+  --chart-bar-highlight: #5EC6C6;
+  --chart-bg: #1a232e;
+  --chart-border: #374151;
+  --chart-label: #B0B0B0;
+  --chart-grid: #374151;
+  --chart-dashed: #5EC6C6;
 }
 
 /* Custom Scrollbar Styles */
