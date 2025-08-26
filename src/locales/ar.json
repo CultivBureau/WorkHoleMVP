@@ -274,5 +274,97 @@
       "newest": "الأحدث أولاً",
       "oldest": "الأقدم أولاً"
     }
+  },
+  "leaves": {
+    "statusCards": {
+      "annualLeave": "الإجازة السنوية",
+      "sickLeave": "الإجازة المرضية",
+      "emergencyLeave": "إجازة طوارئ",
+      "unpaidLeave": "إجازة بدون راتب",
+      "daysLeftThisYear": "لديك 12 يوم متبقي هذا العام",
+      "daysLeft": "لديك 4 أيام متبقية"
+    },
+    "summaryCards": {
+      "availableLeaves": "الإجازات المتاحة",
+      "rejectedLeaves": "الإجازات المرفوضة",
+      "pendingLeaves": "الإجازات المعلقة",
+      "approvedLeaves": "الإجازات المقبولة",
+      "totalAvailable": "المجموع المتاح",
+      "totalRejected": "المجموع المرفوض",
+      "awaitingApproval": "في انتظار الموافقة",
+      "totalApproved": "المجموع المقبول"
+    },
+    "types": {
+      "annual": "إجازة سنوية",
+      "sick": "إجازة مرضية",
+      "emergency": "إجازة طوارئ",
+      "unpaid": "إجازة بدون راتب"
+    },
+    "form": {
+      "step1Title": "الخطوة 1 - تفاصيل الإجازة",
+      "step2Title": "الخطوة 2 - السبب والمرفقات",
+      "step3Title": "الخطوة 3 - المراجعة والإرسال",
+      "fromDate": "من",
+      "toDate": "إلى",
+      "numberOfDays": "عدد الأيام",
+      "reason": "أدخل سبب الإجازة",
+      "reasonPlaceholder": "يرجى تقديم سبب طلب الإجازة...",
+      "attachment": "يمكنك إرفاق مستند طبي",
+      "uploadFile": "استيراد ملف، انقر هنا",
+      "supportedFormats": "الصيغ المدعومة: PDF, DOC, DOCX, JPG, PNG",
+      "type": "النوع",
+      "days": "الأيام",
+      "dates": "التواريخ",
+      "step": "خطوة",
+      "of": "من",
+      "back": "رجوع",
+      "next": "التالي",
+      "submit": "إرسال",
+      "submitMessage": "تم إرسال طلبك إلى مديرك للموافقة",
+      "successTitle": "تم إرسال طلب الإجازة",
+      "successMessage": "تم إرسال طلب الإجازة بنجاح وهو في انتظار الموافقة."
+    },
+    "table": {
+      "sortBy": "ترتيب حسب",
+      "leaveType": {
+        "label": "نوع الإجازة",
+        "all": "جميع الإجازات",
+        "annual": "سنوية",
+        "sick": "مرضية",
+        "emergency": "طوارئ",
+        "unpaid": "بدون راتب"
+      },
+      "status": {
+        "label": "الحالة",
+        "all": "جميع الحالات",
+        "pending": "معلقة",
+        "approved": "مقبولة",
+        "rejected": "مرفوضة"
+      },
+      "dateFrom": "من تاريخ",
+      "dateTo": "إلى تاريخ",
+      "of": "من",
+      "entries": "إدخالات",
+      "columns": {
+        "leaveType": "نوع الإجازة",
+        "from": "من",
+        "to": "إلى",
+        "days": "الأيام",
+        "status": "الحالة",
+        "reason": "السبب",
+        "approver": "المعتمد",
+        "action": "الإجراء"
+      },
+      "actions": {
+        "view": "عرض",
+        "edit": "تعديل"
+      },
+      "sort": {
+        "newest": "الأحدث أولاً",
+        "oldest": "الأقدم أولاً"
+      },
+      "page": "صفحة",
+      "totalEntries": "إجمالي الإدخالات"
+    }
   }
 }

@@ -274,5 +274,97 @@
       "newest": "Newest First",
       "oldest": "Oldest First"
     }
+  },
+  "leaves": {
+    "statusCards": {
+      "annualLeave": "Annual leave",
+      "sickLeave": "Sick leave",
+      "emergencyLeave": "Emergency leave",
+      "unpaidLeave": "Unpaid leave",
+      "daysLeftThisYear": "You have 12 days left this year",
+      "daysLeft": "You have 4 days left"
+    },
+    "summaryCards": {
+      "availableLeaves": "Available Leaves",
+      "rejectedLeaves": "Rejected Leaves",
+      "pendingLeaves": "Pending Leaves",
+      "approvedLeaves": "Approved Leaves",
+      "totalAvailable": "Total Available",
+      "totalRejected": "Total Rejected",
+      "awaitingApproval": "Awaiting Approval",
+      "totalApproved": "Total Approved"
+    },
+    "types": {
+      "annual": "Annual Leave",
+      "sick": "Sick Leave",
+      "emergency": "Emergency Leave",
+      "unpaid": "Unpaid Leave"
+    },
+    "form": {
+      "step1Title": "Step 1 - Leave Details",
+      "step2Title": "Step 2 - Reason & Attachment",
+      "step3Title": "Step 3 - Review & Submit",
+      "fromDate": "From",
+      "toDate": "To",
+      "numberOfDays": "No of Days",
+      "reason": "Enter Your leave reason",
+      "reasonPlaceholder": "Please provide the reason for your leave request...",
+      "attachment": "You can attach a medical document",
+      "uploadFile": "Import file, Click here",
+      "supportedFormats": "Supported formats: PDF, DOC, DOCX, JPG, PNG",
+      "type": "Type",
+      "days": "Days",
+      "dates": "Dates",
+      "step": "Step",
+      "of": "of",
+      "back": "Back",
+      "next": "Next",
+      "submit": "Submit",
+      "submitMessage": "Your request has been sent to your manager for approval",
+      "successTitle": "Leave Request Submitted",
+      "successMessage": "Your leave request has been successfully submitted and is pending approval."
+    },
+    "table": {
+      "sortBy": "Sort By",
+      "leaveType": {
+        "label": "Leave Type",
+        "all": "All Leaves",
+        "annual": "Annual",
+        "sick": "Sick",
+        "emergency": "Emergency",
+        "unpaid": "Unpaid"
+      },
+      "status": {
+        "label": "Status",
+        "all": "All Status",
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "dateFrom": "Date From",
+      "dateTo": "Date To",
+      "of": "of",
+      "entries": "entries",
+      "columns": {
+        "leaveType": "Leave Type",
+        "from": "From",
+        "to": "To",
+        "days": "Days",
+        "status": "Status",
+        "reason": "Reason",
+        "approver": "Approver",
+        "action": "Action"
+      },
+      "actions": {
+        "view": "View",
+        "edit": "Edit"
+      },
+      "sort": {
+        "newest": "Newest First",
+        "oldest": "Oldest First"
+      },
+      "page": "Page",
+      "totalEntries": "total entries"
+    }
   }
 }
