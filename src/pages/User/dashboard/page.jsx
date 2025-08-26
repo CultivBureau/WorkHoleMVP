@@ -6,6 +6,7 @@ import StatusCards from "../../../components/dashboard/status-cards";
 import QuickActions from "../../../components/dashboard/quick-actions";
 import BreakTime from "../../../components/dashboard/break-time";
 import { useTranslation } from "react-i18next";
+import { useGetDashboardQuery } from "../../../services/apis/DashboardApi";
 
 const Dashboard = () => {
   const { i18n } = useTranslation();
@@ -16,6 +17,9 @@ const Dashboard = () => {
     document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
     localStorage.setItem("lang", lang);
   }, [lang, i18n]);
+
+  // جلب بيانات الداشبورد من الـ API
+  const { data: dashboardData, isLoading, error } = useGetDashboardQuery();
 
   return (
     <div
@@ -39,21 +43,21 @@ const Dashboard = () => {
             {/* Dashboard content */}
             <div className="w-full h-max p-6">
               {/* Status Cards */}
-              <StatusCards />
+              <StatusCards dashboardData={dashboardData} isLoading={isLoading} error={error} />
 
               {/* Quick Actions & Break Time */}
               <div className="mt-6 flex flex-col md:flex-row gap-4">
                 <div className="flex-1 min-w-0">
-                  <QuickActions />
+                  <QuickActions dashboardData={dashboardData} isLoading={isLoading} error={error} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <BreakTime />
+                  <BreakTime dashboardData={dashboardData} isLoading={isLoading} error={error} />
                 </div>
               </div>
 
               {/* Activity Heatmap */}
               <div className="mt-6">
-                <ActivityHeatmap />
+                <ActivityHeatmap dashboardData={dashboardData} isLoading={isLoading} error={error} />
               </div>
             </div>
           </div>

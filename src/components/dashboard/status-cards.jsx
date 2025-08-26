@@ -2,8 +2,15 @@
 import { useTranslation } from "react-i18next";
 import Card from "../Time_Tracking_Components/Stats/Card";
 import { ChartColumn, Clock } from "lucide-react";
-export default function StatusCards() {
+
+export default function StatusCards({ dashboardData, isLoading, error }) {
   const { t } = useTranslation();
+
+  // Use API response fields
+  const status = dashboardData?.currentStatus || t("dashboard.statusCards.notClockedIn");
+  const leaveRequest = dashboardData?.leaveStatus || t("dashboard.statusCards.noLeaveRequest");
+  const dailyShift = dashboardData?.dailyShift || "0h 0m";
+  const performance = dashboardData?.performance || "coming soon"; // If you have performance in API
 
   // SVGs as <img> tags
   const CalendarIcon = (
@@ -30,15 +37,6 @@ export default function StatusCards() {
     </button>
   );
 
-  // Red status dot using error color
-  const RedDot = (
-    <span
-      className="inline-block w-2 h-2 rounded-full ml-2"
-      style={{ backgroundColor: 'var(--error-color)' }}
-    ></span>
-  );
-
-  // Gradient button using Tailwind and gradient-bg utility
   const GoToTimeTrackerBtn = (
     <button
       className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-white font-medium text-xs shadow-sm hover:shadow-md transition-all duration-200 gradient-bg"
@@ -48,47 +46,51 @@ export default function StatusCards() {
     </button>
   );
 
+  const shiftHours = dashboardData?.shiftHours || 8; // إجمالي ساعات الشيفت
+  const dailyShiftHours = dashboardData?.dailyShiftHours || 0; // ساعات العمل الفعلية اليوم
+  const dailyShiftBar = Math.min(Math.round((dailyShiftHours / shiftHours) * 100), 100); // النسبة %
+
+  if (isLoading) {
+    return <div className="w-full flex justify-center items-center py-8">Loading...</div>;
+  }
+  if (error) {
+    return <div className="w-full flex justify-center items-center py-8 text-red-500">Error loading dashboard data</div>;
+  }
+
   return (
     <div className="w-full h-[22vh] flex justify-center items-stretch gap-6">
-      {/* Status Card */}
       <Card
         header={t("dashboard.statusCards.status")}
-        title={t("dashboard.statusCards.notClockedIn")}
+        title={status}
         subTitle={t("dashboard.statusCards.goToTimeTracker")}
         statusDot={<span className="inline-block w-2 h-2 rounded-full bg-red-500 ml-2"></span>}
         rightIcon={CalendarIcon}
         button={GoToTimeTrackerBtn}
         className="h-full"
       />
-
-      {/* Leave Request Card */}
       <Card
         header={t("dashboard.statusCards.leaveRequest")}
-        title={t("dashboard.statusCards.noLeaveRequest")}
+        title={leaveRequest}
         subTitle={t("dashboard.statusCards.noRequestText")}
         rightIcon={LeaveIcon}
         footer={BarChartIcon}
         className="h-full"
       />
-
-      {/* Daily Shift Card */}
       <Card
         header={t("dashboard.statusCards.dailyShift")}
-        title={`2:15:00`}
+        title={dailyShift}
         subTitle={t("dashboard.statusCards.hoursWorked")}
         rightIcon={ClockIcon}
-        bar={45}
+        bar={dailyShiftBar}
         footer={BarChartIcon}
         className="h-full"
       />
-
-      {/* Performance Card */}
       <Card
         header={t("dashboard.statusCards.performance")}
-        title="75%"
+        title={performance}
         subTitle={t("dashboard.statusCards.tasksCompleted")}
         rightIcon={PerformanceIcon}
-        bar={75}
+        bar={dashboardData?.performanceBar || 75}
         footer={BarChartIcon}
         className="h-full"
       />

@@ -1,123 +1,87 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { useGetBreakStatsQuery } from "../../services/apis/BreakApi";
 
 const BreakHistoryTable = () => {
   const { t, i18n } = useTranslation();
   const [sortBy, setSortBy] = useState("newest");
-  const [selectedDate, setSelectedDate] = useState("all");
-  const [selectedType, setSelectedType] = useState("all");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedType, setSelectedType] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Reset to page 1 when filters change
-  React.useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedDate, selectedType]);
+  // Fetch data from API with filters
+  const { data: statsData, isLoading } = useGetBreakStatsQuery({
+    page: currentPage,
+    limit: 4,
+    sortBy,
+    date: selectedDate,
+    type: selectedType
+  });
 
-  // Enhanced sample break history data with more realistic entries
-  const breakHistoryData = [
-    {
-      date: "29 July 2023",
-      breakType: "Prayer",
-      duration: "22m",
-      startTime: "01:30 PM",
-      endTime: "01:52 PM"
-    },
-    {
-      date: "29 July 2023",
-      breakType: "Lunch",
-      duration: "32m",
-      startTime: "12:00 PM",
-      endTime: "12:32 PM"
-    },
-    {
-      date: "29 July 2023",
-      breakType: "Break Fast",
-      duration: "25m",
-      startTime: "06:00 AM",
-      endTime: "06:25 AM"
-    },
-    {
-      date: "28 July 2023",
-      breakType: "General",
-      duration: "18m",
-      startTime: "03:15 PM",
-      endTime: "03:33 PM"
-    },
-    {
-      date: "28 July 2023",
-      breakType: "Emergency",
-      duration: "12m",
-      startTime: "10:45 AM",
-      endTime: "10:57 AM"
-    },
-    {
-      date: "27 July 2023",
-      breakType: "Prayer",
-      duration: "20m",
-      startTime: "01:30 PM",
-      endTime: "01:50 PM"
-    },
-    {
-      date: "27 July 2023",
-      breakType: "Lunch",
-      duration: "28m",
-      startTime: "12:00 PM",
-      endTime: "12:28 PM"
-    }
-  ];
+  const breaks = statsData?.breaks || [];
+  const pagination = statsData?.pagination || {};
+  const availableFilters = statsData?.availableFilters || { dates: [], types: [] };
 
   const sortOptions = [
     { value: "newest", label: "Newest First" },
     { value: "oldest", label: "Oldest First" }
   ];
 
-  const dateOptions = [
-    { value: "all", label: "All Dates" },
-    { value: "29/07/2023", label: "29 July 2023" },
-    { value: "28/07/2023", label: "28 July 2023" },
-    { value: "27/07/2023", label: "27 July 2023" }
-  ];
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedDate, selectedType, sortBy]);
 
-  const typeOptions = [
-    { value: "all", label: "All" },
-    { value: "prayer", label: "Prayer" },
-    { value: "lunch", label: "Lunch" },
-    { value: "breakfast", label: "Break Fast" },
-    { value: "general", label: "General" },
-    { value: "emergency", label: "Emergency" }
-  ];
+  // Format time
+  const formatLocalTime = (dateString) => {
+    if (!dateString) return "--";
+    const date = new Date(dateString);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
 
-  // Filter data based on selected filters
-  const filteredData = breakHistoryData.filter(record => {
-    if (selectedType !== "all" && record.breakType.toLowerCase() !== selectedType.toLowerCase()) {
-      return false;
-    }
-    if (selectedDate !== "all") {
-      // Simple date filtering - in a real app you'd want more sophisticated date handling
-      return record.date.includes(selectedDate.split('/')[0]);
-    }
-    return true;
-  });
-
-  const itemsPerPage = 5;
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentPageData = filteredData.slice(startIndex, endIndex);
+  // Loading skeleton
+  if (isLoading) {
+    return (
+      <div className="rounded-2xl border shadow-lg backdrop-blur-sm p-6 animate-pulse"
+        style={{
+          background: "linear-gradient(135deg, var(--bg-color), rgba(255,255,255,0.02))",
+          borderColor: "var(--border-color)"
+        }}>
+        <div className="h-6 bg-gray-300 rounded mb-4"></div>
+        <div className="space-y-3">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-12 bg-gray-200 rounded"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+    <div className="rounded-2xl border shadow-lg transition-all duration-300 hover:shadow-xl backdrop-blur-sm"
+      style={{
+        background: "linear-gradient(135deg, var(--bg-color), rgba(255,255,255,0.02))",
+        borderColor: "var(--border-color)",
+        boxShadow: "0 8px 25px rgba(0,0,0,0.08)"
+      }}>
       {/* Table Controls */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-6 border-b border-opacity-20" style={{ borderColor: "var(--border-color)" }}>
         <div className="flex flex-wrap items-center gap-4">
+          {/* Sort By */}
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Sort By</span>
+            <span className="text-sm font-medium" style={{ color: "var(--sub-text-color)" }}>Sort By</span>
             <div className="relative">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-1 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent pr-8"
+                className="border rounded-full px-3 py-2 text-sm appearance-none focus:outline-none focus:ring-2 pr-8 transition-all duration-200"
+                style={{
+                  borderColor: "var(--border-color)",
+                  background: "var(--bg-color)",
+                  color: "var(--text-color)",
+                  focusRingColor: "#75C8CF"
+                }}
               >
                 {sortOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -125,48 +89,67 @@ const BreakHistoryTable = () => {
                   </option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
+              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none"
+                style={{ color: "var(--sub-text-color)" }} />
             </div>
           </div>
-
+          
+          {/* Date Filter */}
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Date</span>
+            <span className="text-sm font-medium" style={{ color: "var(--sub-text-color)" }}>Date</span>
             <div className="relative">
               <select
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-1 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent pr-8"
+                className="border rounded-full px-3 py-2 text-sm appearance-none focus:outline-none focus:ring-2 pr-8 transition-all duration-200"
+                style={{
+                  borderColor: "var(--border-color)",
+                  background: "var(--bg-color)",
+                  color: "var(--text-color)",
+                  focusRingColor: "#75C8CF"
+                }}
               >
-                {dateOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
+                <option value="">All Dates</option>
+                {availableFilters.dates.map(date => (
+                  <option key={date} value={date}>
+                    {date}
                   </option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
+              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none"
+                style={{ color: "var(--sub-text-color)" }} />
             </div>
           </div>
-
+          
+          {/* Type Filter */}
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Type</span>
+            <span className="text-sm font-medium" style={{ color: "var(--sub-text-color)" }}>Type</span>
             <div className="relative">
               <select
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-1 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent pr-8"
+                className="border rounded-full px-3 py-2 text-sm appearance-none focus:outline-none focus:ring-2 pr-8 transition-all duration-200"
+                style={{
+                  borderColor: "var(--border-color)",
+                  background: "var(--bg-color)",
+                  color: "var(--text-color)",
+                  focusRingColor: "#75C8CF"
+                }}
               >
-                {typeOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
+                <option value="">All Types</option>
+                {availableFilters.types.map(type => (
+                  <option key={type} value={type}>
+                    {t(`breakTime.reasons.${type}`, type)}
                   </option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
+              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none"
+                style={{ color: "var(--sub-text-color)" }} />
             </div>
           </div>
-
-          <div className="ml-auto text-sm text-gray-600">
-            {currentPageData.length} of {filteredData.length} entries
+          
+          <div className="ml-auto text-sm font-medium" style={{ color: "var(--sub-text-color)" }}>
+            {breaks.length} of {pagination.total} entries
           </div>
         </div>
       </div>
@@ -174,38 +157,66 @@ const BreakHistoryTable = () => {
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+          <thead>
+            <tr style={{ background: "var(--bg-color)" }}>
+              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider"
+                style={{ color: "var(--sub-text-color)" }}>
                 Date
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider"
+                style={{ color: "var(--sub-text-color)" }}>
                 Break Type
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider"
+                style={{ color: "var(--sub-text-color)" }}>
                 Duration
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider"
+                style={{ color: "var(--sub-text-color)" }}>
                 Start Time
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider"
+                style={{ color: "var(--sub-text-color)" }}>
                 End Time
+              </th>
+              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider"
+                style={{ color: "var(--sub-text-color)" }}>
+                Status
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {currentPageData.map((record, index) => (
-              <tr key={index} className="hover:bg-gray-50">
-                <td className="px-4 py-3 text-sm text-gray-900">{record.date}</td>
-                <td className="px-4 py-3 text-sm text-gray-900">{record.breakType}</td>
-                <td className="px-4 py-3 text-sm text-gray-900">
+          <tbody className="divide-y divide-opacity-20" style={{ divideColor: "var(--border-color)" }}>
+            {breaks.map((record, index) => (
+              <tr key={index} className="transition-all duration-200"
+                style={{ backgroundColor: "transparent" }}>
+                <td className="px-6 py-4 text-sm font-medium"
+                  style={{ color: "var(--text-color)" }}>
+                  {record.date}
+                </td>
+                <td className="px-6 py-4 text-sm font-semibold"
+                  style={{ color: "#75C8CF" }}>
+                  {t(`breakTime.reasons.${record.breakType}`, record.breakType)}
+                </td>
+                <td className="px-6 py-4 text-sm"
+                  style={{ color: "var(--sub-text-color)" }}>
                   {record.duration}
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-900">
-                  {record.startTime}
+                <td className="px-6 py-4 text-sm"
+                  style={{ color: "var(--sub-text-color)" }}>
+                  {formatLocalTime(record.startTime)}
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-900">
-                  {record.endTime}
+                <td className="px-6 py-4 text-sm"
+                  style={{ color: "var(--sub-text-color)" }}>
+                  {formatLocalTime(record.endTime)}
+                </td>
+                <td className="px-6 py-4 text-sm font-semibold">
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                    record.exceeded
+                      ? 'bg-red-100 text-red-700'
+                      : 'bg-green-100 text-green-700'
+                  }`}>
+                    {record.exceeded ? "Exceeded" : "Normal"}
+                  </span>
                 </td>
               </tr>
             ))}
@@ -214,22 +225,61 @@ const BreakHistoryTable = () => {
       </div>
 
       {/* Pagination */}
-      <div className="px-4 py-3 border-t border-gray-200 flex items-center justify-between">
-        <div className="text-sm text-gray-600">
-          {currentPage} of {totalPages} page ({filteredData.length} total entries)
+      <div className="px-6 py-4 border-t border-opacity-20 flex items-center justify-between"
+        style={{ borderColor: "var(--border-color)" }}>
+        <div className="text-sm font-medium" style={{ color: "var(--sub-text-color)" }}>
+          Page {pagination.page || 1} of {pagination.totalPages || 1}
+          ({pagination.total || 0} total entries)
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
-            className="p-1 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2 rounded-xl border transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md"
+            style={{
+              borderColor: "var(--border-color)",
+              background: "var(--container-color)",
+              color: "var(--text-color)"
+            }}
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
+          
+          <div className="flex items-center gap-1">
+            {[...Array(pagination.totalPages || 1)].map((_, i) => {
+              const pageNum = i + 1;
+              if (pageNum === currentPage) {
+                return (
+                  <span key={pageNum}
+                    className="px-3 py-2 rounded-xl text-sm font-bold text-white"
+                    style={{ background: "#75C8CF" }}>
+                    {pageNum}
+                  </span>
+                );
+              }
+              return (
+                <button key={pageNum}
+                  onClick={() => setCurrentPage(pageNum)}
+                  className="px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 hover:scale-105"
+                  style={{
+                    background: "var(--container-color)",
+                    color: "var(--sub-text-color)"
+                  }}>
+                  {pageNum}
+                </button>
+              );
+            })}
+          </div>
+
           <button
-            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-            disabled={currentPage === totalPages}
-            className="p-1 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => setCurrentPage(Math.min(pagination.totalPages || 1, currentPage + 1))}
+            disabled={currentPage === (pagination.totalPages || 1)}
+            className="p-2 rounded-xl border transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md"
+            style={{
+              borderColor: "var(--border-color)",
+              background: "var(--container-color)",
+              color: "var(--text-color)"
+            }}
           >
             <ChevronRight className="w-4 h-4" />
           </button>
