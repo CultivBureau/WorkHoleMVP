@@ -114,7 +114,7 @@ const LeaveTable = () => {
     };
 
     const config = statusConfig[status.toLowerCase()] || statusConfig.pending;
-    
+
     return (
       <span className={`px-3 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
         {config.label}
@@ -124,14 +124,14 @@ const LeaveTable = () => {
 
   const SelectField = ({ value, onChange, options, label }) => (
     <div className={`flex items-center gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
-      <span className="text-sm font-medium whitespace-nowrap" style={{ color: 'var(--sub-text-color)' }}>
+      <span className="text-xs font-medium whitespace-nowrap" style={{ color: 'var(--sub-text-color)' }}>
         {label}
       </span>
       <div className="relative">
         <select
           value={value}
           onChange={onChange}
-          className="border rounded-xl px-4 py-2 text-xs appearance-none focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200 min-w-[130px] font-medium"
+          className="border rounded-full px-4 py-2 text-xs appearance-none focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200 min-w-[130px] font-medium"
           style={{
             borderColor: 'var(--border-color)',
             backgroundColor: 'var(--bg-color)',
@@ -157,14 +157,14 @@ const LeaveTable = () => {
 
   const DateField = ({ value, onChange, label }) => (
     <div className={`flex items-center gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
-      <span className="text-sm font-medium whitespace-nowrap" style={{ color: 'var(--sub-text-color)' }}>
+      <span className="text-xs font-medium whitespace-nowrap" style={{ color: 'var(--sub-text-color)' }}>
         {label}
       </span>
       <input
         type="date"
         value={value}
         onChange={onChange}
-        className="border rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200 min-w-[130px] font-medium"
+        className="border rounded-full px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200 min-w-[130px] font-medium"
         style={{
           borderColor: 'var(--border-color)',
           backgroundColor: 'var(--bg-color)',
@@ -330,13 +330,13 @@ const LeaveTable = () => {
                 <td className={`px-6 py-4 ${isArabic ? 'text-right' : 'text-left'}`}>
                   <div className="flex items-center gap-2">
                     <button
-                      className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
+                      className="p-1 rounded-full hover:bg-gray-100 transition-colors"
                       title={t("leaves.table.actions.view")}
                     >
                       <Eye className="w-4 h-4" style={{ color: 'var(--sub-text-color)' }} />
                     </button>
                     <button
-                      className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
+                      className="p-1 rounded-full hover:bg-gray-100 transition-colors"
                       title={t("leaves.table.actions.edit")}
                     >
                       <Edit className="w-4 h-4" style={{ color: 'var(--sub-text-color)' }} />
@@ -355,21 +355,22 @@ const LeaveTable = () => {
         style={{ borderColor: 'var(--divider-color)' }}
       >
         <div className="text-sm font-medium" style={{ color: 'var(--sub-text-color)' }}>
-          {t("leaves.table.page")} {currentPage} {t("leaves.table.of")} {totalPages} 
+          {t("leaves.table.page")} {currentPage} {t("leaves.table.of")} {totalPages}
           ({filteredData.length} {t("leaves.table.totalEntries")})
         </div>
         <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
           <button
             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
-            className="p-2 rounded-lg border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2 rounded-full border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               borderColor: 'var(--border-color)',
               backgroundColor: 'var(--bg-color)',
               color: 'var(--text-color)'
             }}
           >
-            {isArabic ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            {/* In Arabic, previous is left arrow, next is right arrow */}
+            {isArabic ? <ChevronLeft className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </button>
           <button
             onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
@@ -381,7 +382,7 @@ const LeaveTable = () => {
               color: 'var(--text-color)'
             }}
           >
-            {isArabic ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+            {isArabic ? <ChevronRight className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           </button>
         </div>
       </div>

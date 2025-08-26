@@ -24,7 +24,7 @@ body {
   --hover-color: #CDFFFC9C;
   --border-color: #E0FFFD;
   --divider-color: #E0FFFD;
-    --text-color-2: #202224;
+  --text-color-2: #202224;
 
 
   /* bg for card in time tracking page */
@@ -58,6 +58,12 @@ body {
   --chart-label: #B0B0B0;
   --chart-grid: #E0FFFD;
   --chart-dashed: #B0B0B0;
+
+  /* Light mode - colored box backgrounds only */
+  --available-leave-box-bg: #DBEAFE;
+  --rejected-leave-box-bg: #FECACA;
+  --pending-leave-box-bg: #FED7AA;
+  --approved-leave-box-bg: #BBF7D0;
 }
 
 /* Gradient Text Utilities */
@@ -95,7 +101,7 @@ body {
   --border-color: #e5e7eb;
   --divider-color: #e5e7eb;
 
-    --card-color : #0000;
+  --card-color: #0000;
 
 
 }
@@ -117,9 +123,9 @@ body {
   --table-header-bg: #4b5563;
   --table-text: #fff;
 
-    /* bg for card in time tracking page */
+  /* bg for card in time tracking page */
   --card-bg: #111827;
-  --card-color : #ffffff;
+  --card-color: #ffffff;
 
   /* Chart Colors for Dark Mode */
   --chart-bar: #224e4e;
@@ -129,6 +135,12 @@ body {
   --chart-label: #B0B0B0;
   --chart-grid: #374151;
   --chart-dashed: #5EC6C6;
+
+  /* Dark mode - colored box backgrounds only */
+  --available-leave-box-bg: #075985;
+  --rejected-leave-box-bg: #991B1B;
+  --pending-leave-box-bg: #A16207;
+  --approved-leave-box-bg: #166534;
 }
 
 /* Custom Scrollbar Styles */
@@ -226,4 +238,25 @@ body {
 
 .attendance-table-row:hover {
   background: var(--table-header-bg) !important;
+}
+
+/* Colored box styles */
+.available-leave-box {
+  background-color: var(--available-leave-box-bg);
+  color: var(--sub-text-color);
+}
+
+.rejected-leave-box {
+  background-color: var(--rejected-leave-box-bg);
+  color: var(--sub-text-color);
+}
+
+.pending-leave-box {
+  background-color: var(--pending-leave-box-bg);
+  color: var(--sub-text-color);
+}
+
+.approved-leave-box {
+  background-color: var(--approved-leave-box-bg);
+  color: var(--sub-text-color);
 }

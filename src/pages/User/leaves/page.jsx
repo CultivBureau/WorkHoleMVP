@@ -7,7 +7,7 @@ import LeaveSummaryCards from "../../../components/leave-requests/leave-summary-
 import LeaveTable from "../../../components/leave-requests/table";
 import { useTranslation } from "react-i18next";
 
-const Leaves = ({ lang, setLang }) => {
+const Leaves = () => {
   const { i18n } = useTranslation();
   const [currentLang, setCurrentLang] = useState(i18n.language);
 
@@ -41,15 +41,15 @@ const Leaves = ({ lang, setLang }) => {
               {/* Top Status Cards - Leave Balances */}
               <StatusCards />
 
-              {/* Main Content Grid */}
-              <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
-                {/* Leave Request Form - Left Column (2/3 width) */}
-                <div className="xl:col-span-2">
+              {/* Main Content Grid - Leave Request and Summary Cards Side by Side */}
+              <div className="flex flex-col lg:flex-row gap-6 mb-6">
+                {/* Leave Request Form - Left Column - Takes half width */}
+                <div className="flex-1">
                   <LeaveRequest />
                 </div>
-                
-                {/* Leave Summary Cards - Right Column (1/3 width) */}
-                <div className="xl:col-span-1">
+
+                {/* Leave Summary Cards - Right Column - Takes half width */}
+                <div className="flex-1">
                   <LeaveSummaryCards />
                 </div>
               </div>
