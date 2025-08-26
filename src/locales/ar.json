@@ -22,9 +22,9 @@
     "time_tracking": "تتبع الوقت",
     "break_tracking": "تتبع الاستراحة"
   },
-  "navbar": {
+  "navbar": {   
     "greeting": "صباح الخير",
-    "user": "، آدم",
+
     "online": "متصل الآن",
     "arabic": "العربية",
     "english": "الإنجليزية",
@@ -366,5 +366,36 @@
       "page": "صفحة",
       "totalEntries": "إجمالي الإدخالات"
     }
+  },
+  "mainContent": {
+    "currentStatus": "الحالة الحالية",
+    "notClockedIn": "لم يتم تسجيل الدخول",
+    "activeWorkTime": "وقت العمل النشط",
+    "todaysProgress": "تقدم اليوم",
+    "workHours": "ساعات العمل",
+    "break": "استراحة",
+    "efficiency": "الكفاءة",
+    "complete": "مكتمل",
+    "remaining": "المتبقي",
+    "tuesday": "الثلاثاء",
+    "mostProductiveDay": "أكثر يوم إنتاجية",
+    "thisWeek": "هذا الأسبوع",
+    "focusTime": "وقت التركيز",
+    "startYourDay": "ابدأ يومك",
+    "attendanceLogs": "سجلات الحضور",
+    "attendanceLogsDesc": "تحقق من تسجيلات الحضور وساعات العمل اليومية.",
+    "viewAttendanceLogs": "عرض سجلات الحضور",
+    "breakTracking": "تتبع الاستراحة",
+    "breakTrackingDesc": "راقب وأدر وقت الاستراحة بسهولة.",
+    "viewBreakLogs": "عرض سجلات الاستراحة",
+    "timerFocus": "مؤقت التركيز",
+    "startTimer": "ابدأ المؤقت"
+  },
+  "timerLogs": {
+    "title": "سجلات تركيز الوقت",
+    "viewLogs": "عرض السجلات",
+    "time": "الوقت",
+    "duration": "المدة",
+    "tag": "المهمة"
   }
 }

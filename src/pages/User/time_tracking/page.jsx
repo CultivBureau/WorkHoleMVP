@@ -31,11 +31,11 @@ const TimeTracking = ({ lang, setLang }) => {
 
         {/* Main Content - Rest of the space */}
         <main
-          className="flex-1 overflow-auto p-4"
+          className="flex-1  overflow-auto p-4"
           style={{ background: "var(--bg-all)" }}
         >
           <div
-            className="h-full rounded-[39px] border border-white "
+            className=" rounded-[39px] border border-white "
             style={{ background: "var(--bg-color)" }}
           >
             {/* TimeTracking content */}

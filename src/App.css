@@ -24,6 +24,11 @@ body {
   --hover-color: #CDFFFC9C;
   --border-color: #E0FFFD;
   --divider-color: #E0FFFD;
+    --text-color-2: #202224;
+
+
+  /* bg for card in time tracking page */
+  --card-bg: #F3F3F3;
 
   /* Purple Gradient Colors */
   --gradient-start: #15919B;
@@ -81,6 +86,7 @@ body {
   --bg-color: #ffffff;
   --container-color: #e5e7eb;
   --text-color: #202224;
+  --text-color-2: rgba(23, 23, 24, 0.933);
   --sub-text-color: #777D86;
   --sub-text-color-2: #B0B0B0;
   --accent-color: #09D1C7;
@@ -88,6 +94,10 @@ body {
   --hover-color: #CDFFFC9C;
   --border-color: #e5e7eb;
   --divider-color: #e5e7eb;
+
+    --card-color : #0000;
+
+
 }
 
 [data-theme="dark"] {
@@ -95,6 +105,7 @@ body {
   --bg-color: #111827;
   --container-color: #4b5563;
   --text-color: #f9fafb;
+  --text-color-2: black;
   --sub-text-color: #d1d5db;
   --sub-text-color-2: #B0B0B0;
   --accent-color: #09D1C7;
@@ -105,6 +116,10 @@ body {
   --table-bg: #111827;
   --table-header-bg: #4b5563;
   --table-text: #fff;
+
+    /* bg for card in time tracking page */
+  --card-bg: #111827;
+  --card-color : #ffffff;
 
   /* Chart Colors for Dark Mode */
   --chart-bar: #224e4e;
