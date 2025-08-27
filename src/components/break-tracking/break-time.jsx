@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import CustomPopup from '../ui/custom-popup';
 import {
-  useGetBreakTypesQuery,
-  useStartBreakMutation,
-  useStopBreakMutation,
-  useGetBreakDashboardQuery,
+    useGetBreakTypesQuery,
+    useStartBreakMutation,
+    useStopBreakMutation,
+    useGetBreakDashboardQuery,
 } from "../../services/apis/BreakApi";
 
 const BreakTime = () => {
@@ -93,6 +93,7 @@ const BreakTime = () => {
                 setBreakDuration(0);
                 refetchDashboard();
             } catch (err) {
+                console.error(err); // Use err to avoid ESLint warning
                 setShowPopup(true);
             }
         } else {
@@ -104,6 +105,7 @@ const BreakTime = () => {
                 setSelectedReason("");
                 refetchDashboard();
             } catch (err) {
+                console.error(err); // Use err to avoid ESLint warning
                 setShowPopup(true);
             }
         }
@@ -131,20 +133,20 @@ const BreakTime = () => {
     const remainingSecs = Math.max(remainingSeconds % 60, 0);
 
     return (
-        <div className="rounded-2xl shadow-xl border p-6 h-full flex flex-col backdrop-blur-sm transition-all duration-300 hover:shadow-2xl group" 
-             style={{
+        <div className="rounded-2xl shadow-xl border p-6 h-full flex flex-col backdrop-blur-sm transition-all duration-300 hover:shadow-2xl group"
+            style={{
                 backgroundColor: 'var(--bg-color)',
                 borderColor: 'var(--border-color)',
                 boxShadow: '0 10px 30px rgba(0, 0, 0, 0.08), 0 4px 15px rgba(0, 0, 0, 0.05)',
                 border: '1px solid rgba(255, 255, 255, 0.15)'
-             }}>
-            
+            }}>
+
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold gradient-text tracking-tight transition-all duration-200 group-hover:scale-105">
                     {t('breakTime.title', 'Break Time')}
                 </h3>
-                
+
                 <div className="flex items-center gap-3">
                     {/* Enhanced Select */}
                     <div className="relative group/select">
@@ -189,19 +191,19 @@ const BreakTime = () => {
                         onClick={handleStartBreak}
                         className="text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all duration-300 transform hover:scale-105 hover:shadow-xl active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed group/btn"
                         style={{
-                            background: isBreakActive 
-                                ? 'linear-gradient(135deg, #ef4444, #dc2626)' 
+                            background: isBreakActive
+                                ? 'linear-gradient(135deg, #ef4444, #dc2626)'
                                 : 'linear-gradient(135deg, var(--gradient-start), var(--gradient-end))',
-                            boxShadow: isBreakActive 
-                                ? '0 8px 25px rgba(239, 68, 68, 0.4)' 
+                            boxShadow: isBreakActive
+                                ? '0 8px 25px rgba(239, 68, 68, 0.4)'
                                 : '0 8px 25px rgba(21, 145, 155, 0.4)'
                         }}
                         disabled={starting || stopping}
                     >
-                        <img 
-                            src="/assets/clock.svg" 
-                            alt={isBreakActive ? t('breakTime.endBreak', 'End Break') : t('breakTime.startBreak', 'Start Break')} 
-                            className="w-4 h-4 transition-transform duration-300 group-hover/btn:rotate-12" 
+                        <img
+                            src="/assets/clock.svg"
+                            alt={isBreakActive ? t('breakTime.endBreak', 'End Break') : t('breakTime.startBreak', 'Start Break')}
+                            className="w-4 h-4 transition-transform duration-300 group-hover/btn:rotate-12"
                         />
                         {(starting || stopping) ? (
                             <span className="animate-pulse">Loading...</span>
@@ -213,8 +215,8 @@ const BreakTime = () => {
             </div>
 
             {/* Enhanced Divider */}
-            <div className="w-full h-px mb-4 bg-gradient-to-r from-transparent via-gray-300 to-transparent opacity-30" 
-                 style={{ backgroundColor: 'var(--divider-color)' }}></div>
+            <div className="w-full h-px mb-4 bg-gradient-to-r from-transparent via-gray-300 to-transparent opacity-30"
+                style={{ backgroundColor: 'var(--divider-color)' }}></div>
 
             {/* Enhanced Clock Section */}
             <div className="flex flex-col items-center justify-center mt-3 mb-8" style={{ height: '110px', minHeight: '110px', maxHeight: '110px' }}>
@@ -232,7 +234,7 @@ const BreakTime = () => {
                             strokeWidth="2"
                             className="transition-all duration-300 group-hover/clock:fill-opacity-20"
                         />
-                        
+
                         {/* Outer ring */}
                         <circle
                             cx="22"
@@ -322,34 +324,34 @@ const BreakTime = () => {
                 </div>
 
                 {/* Enhanced Timer Display */}
-                <div className="flex items-center space-x-3 px-4 py-2 rounded-2xl backdrop-blur-sm transition-all duration-300 hover:scale-105 group/timer" 
-                     style={{
-                        background: isBreakActive 
-                            ? 'linear-gradient(135deg, var(--error-color), #dc2626)' 
+                <div className="flex items-center space-x-3 px-4 py-2 rounded-2xl backdrop-blur-sm transition-all duration-300 hover:scale-105 group/timer"
+                    style={{
+                        background: isBreakActive
+                            ? 'linear-gradient(135deg, var(--error-color), #dc2626)'
                             : 'linear-gradient(135deg, var(--hover-color), rgba(21, 145, 155, 0.15))',
-                        boxShadow: isBreakActive 
-                            ? '0 8px 25px rgba(239, 68, 68, 0.3), 0 2px 10px rgba(239, 68, 68, 0.15)' 
+                        boxShadow: isBreakActive
+                            ? '0 8px 25px rgba(239, 68, 68, 0.3), 0 2px 10px rgba(239, 68, 68, 0.15)'
                             : '0 8px 25px rgba(21, 145, 155, 0.2), 0 2px 10px rgba(21, 145, 155, 0.1)',
                         border: '1px solid rgba(255, 255, 255, 0.2)'
-                     }}>
+                    }}>
                     <div className="flex flex-col items-center">
-                        <div className="digital-numbers text-lg font-bold tracking-wider transition-all duration-200 group-hover/timer:scale-110" 
-                             style={{ color: 'var(--text-color)', lineHeight: '1' }}>
+                        <div className="digital-numbers text-lg font-bold tracking-wider transition-all duration-200 group-hover/timer:scale-110"
+                            style={{ color: 'var(--text-color)', lineHeight: '1' }}>
                             {timerMinutes}
                         </div>
-                        <div className="text-[9px] font-semibold tracking-widest opacity-75 uppercase transition-all duration-200" 
-                             style={{ color: 'var(--sub-text-color2)', lineHeight: '1' }}>
+                        <div className="text-[9px] font-semibold tracking-widest opacity-75 uppercase transition-all duration-200"
+                            style={{ color: 'var(--sub-text-color2)', lineHeight: '1' }}>
                             MIN
                         </div>
                     </div>
                     <div className="w-px h-8 bg-white bg-opacity-30"></div>
                     <div className="flex flex-col items-center">
-                        <div className="digital-numbers text-lg font-bold tracking-wider transition-all duration-200 group-hover/timer:scale-110" 
-                             style={{ color: 'var(--text-color)', lineHeight: '1' }}>
+                        <div className="digital-numbers text-lg font-bold tracking-wider transition-all duration-200 group-hover/timer:scale-110"
+                            style={{ color: 'var(--text-color)', lineHeight: '1' }}>
                             {timerSeconds}
                         </div>
-                        <div className="text-[9px] font-semibold tracking-widest opacity-75 uppercase transition-all duration-200" 
-                             style={{ color: 'var(--sub-text-color2)', lineHeight: '1' }}>
+                        <div className="text-[9px] font-semibold tracking-widest opacity-75 uppercase transition-all duration-200"
+                            style={{ color: 'var(--sub-text-color2)', lineHeight: '1' }}>
                             SEC
                         </div>
                     </div>
@@ -357,35 +359,35 @@ const BreakTime = () => {
             </div>
 
             {/* Enhanced Divider */}
-            <div className="w-full h-px mb-4 bg-gradient-to-r from-transparent via-gray-300 to-transparent opacity-30" 
-                 style={{ backgroundColor: 'var(--divider-color)' }}></div>
+            <div className="w-full h-px mb-4 bg-gradient-to-r from-transparent via-gray-300 to-transparent opacity-30"
+                style={{ backgroundColor: 'var(--divider-color)' }}></div>
 
             {/* Enhanced Summary Boxes */}
             <div className="flex gap-4 mt-4">
-                <div className="flex-1 rounded-xl p-4 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg group/box1" 
-                     style={{ backgroundColor: 'var(--container-color)', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05)' }}>
-                    <div className="text-xl font-bold mb-2 transition-all duration-200 group-hover/box1:scale-110" 
-                         style={{ color: 'var(--text-color)' }}>
+                <div className="flex-1 rounded-xl p-4 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg group/box1"
+                    style={{ backgroundColor: 'var(--container-color)', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05)' }}>
+                    <div className="text-xl font-bold mb-2 transition-all duration-200 group-hover/box1:scale-110"
+                        style={{ color: 'var(--text-color)' }}>
                         {breakTypeDuration ? `${breakTypeDuration}m` : "--"}
                     </div>
-                    <div className="text-xs font-medium transition-all duration-200" 
-                         style={{ color: 'var(--sub-text-color)' }}>
+                    <div className="text-xs font-medium transition-all duration-200"
+                        style={{ color: 'var(--sub-text-color)' }}>
                         {t("breakTime.breakTime", "Break Time")}
                     </div>
                 </div>
-                <div className="flex-1 rounded-xl p-4 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg group/box2" 
-                     style={{ backgroundColor: 'var(--container-color)', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05)' }}>
-                    <div className="text-xl font-bold mb-2 transition-all duration-200 group-hover/box2:scale-110" 
-                         style={{ 
+                <div className="flex-1 rounded-xl p-4 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg group/box2"
+                    style={{ backgroundColor: 'var(--container-color)', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05)' }}>
+                    <div className="text-xl font-bold mb-2 transition-all duration-200 group-hover/box2:scale-110"
+                        style={{
                             color: remainingSeconds <= 0 && isBreakActive ? '#ef4444' : 'var(--text-color)',
                             filter: remainingSeconds <= 0 && isBreakActive ? 'drop-shadow(0 0 8px rgba(239, 68, 68, 0.6))' : 'none'
-                         }}>
+                        }}>
                         {isBreakActive
                             ? `${remainingMinutes}m ${remainingSecs.toString().padStart(2, "0")}s`
                             : `${breakTypeDuration}m`}
                     </div>
-                    <div className="text-xs font-medium transition-all duration-200" 
-                         style={{ color: 'var(--sub-text-color)' }}>
+                    <div className="text-xs font-medium transition-all duration-200"
+                        style={{ color: 'var(--sub-text-color)' }}>
                         {t("breakTime.remaining", "Remaining")}
                     </div>
                 </div>

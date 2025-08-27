@@ -5,6 +5,7 @@ import { useGetBreakStatsQuery } from "../../services/apis/BreakApi";
 
 const BreakHistoryTable = () => {
   const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === "ar";
   const [sortBy, setSortBy] = useState("newest");
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedType, setSelectedType] = useState("");
@@ -24,8 +25,8 @@ const BreakHistoryTable = () => {
   const availableFilters = statsData?.availableFilters || { dates: [], types: [] };
 
   const sortOptions = [
-    { value: "newest", label: "Newest First" },
-    { value: "oldest", label: "Oldest First" }
+    { value: "newest", label: t("breakHistoryTable.sort.newest") },
+    { value: "oldest", label: t("breakHistoryTable.sort.oldest") }
   ];
 
   // Reset to page 1 when filters change
@@ -57,6 +58,43 @@ const BreakHistoryTable = () => {
       </div>
     );
   }
+
+  const SelectField = ({ value, onChange, options, label }) => (
+    <div className={`flex items-center gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
+      <span className="text-sm font-medium whitespace-nowrap" style={{ color: 'var(--sub-text-color)' }}>
+        {label}
+      </span>
+      <div className="relative">
+        <select
+          value={value}
+          onChange={onChange}
+          className="border rounded-2xl px-4 py-2 text-xs appearance-none focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200 min-w-[130px] font-medium"
+          style={{
+            borderColor: 'var(--border-color)',
+            backgroundColor: 'var(--bg-color)',
+            color: 'var(--text-color)',
+            focusRingColor: 'var(--accent-color)',
+            paddingRight: isArabic ? '16px' : '35px',
+            paddingLeft: isArabic ? '35px' : '16px',
+            direction: isArabic ? 'rtl' : 'ltr',
+            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+            height: '36px'
+          }}
+        >
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <ChevronDown
+          className={`absolute top-1/2 transform -translate-y-1/2 w-3 h-3 pointer-events-none ${isArabic ? 'left-3' : 'right-3'
+            }`}
+          style={{ color: 'var(--sub-text-color)' }}
+        />
+      </div>
+    </div>
+  );
 
   return (
     <div className="rounded-2xl border shadow-lg transition-all duration-300 hover:shadow-xl backdrop-blur-sm"
@@ -93,7 +131,7 @@ const BreakHistoryTable = () => {
                 style={{ color: "var(--sub-text-color)" }} />
             </div>
           </div>
-          
+
           {/* Date Filter */}
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium" style={{ color: "var(--sub-text-color)" }}>Date</span>
@@ -120,7 +158,7 @@ const BreakHistoryTable = () => {
                 style={{ color: "var(--sub-text-color)" }} />
             </div>
           </div>
-          
+
           {/* Type Filter */}
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium" style={{ color: "var(--sub-text-color)" }}>Type</span>
@@ -147,7 +185,7 @@ const BreakHistoryTable = () => {
                 style={{ color: "var(--sub-text-color)" }} />
             </div>
           </div>
-          
+
           <div className="ml-auto text-sm font-medium" style={{ color: "var(--sub-text-color)" }}>
             {breaks.length} of {pagination.total} entries
           </div>
@@ -210,11 +248,10 @@ const BreakHistoryTable = () => {
                   {formatLocalTime(record.endTime)}
                 </td>
                 <td className="px-6 py-4 text-sm font-semibold">
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                    record.exceeded
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${record.exceeded
                       ? 'bg-red-100 text-red-700'
                       : 'bg-green-100 text-green-700'
-                  }`}>
+                    }`}>
                     {record.exceeded ? "Exceeded" : "Normal"}
                   </span>
                 </td>
@@ -231,7 +268,7 @@ const BreakHistoryTable = () => {
           Page {pagination.page || 1} of {pagination.totalPages || 1}
           ({pagination.total || 0} total entries)
         </div>
-        <div className="flex items-center gap-2">
+        <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
           <button
             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
@@ -242,9 +279,9 @@ const BreakHistoryTable = () => {
               color: "var(--text-color)"
             }}
           >
-            <ChevronLeft className="w-4 h-4" />
+            {isArabic ? <ChevronLeft className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </button>
-          
+
           <div className="flex items-center gap-1">
             {[...Array(pagination.totalPages || 1)].map((_, i) => {
               const pageNum = i + 1;
@@ -281,7 +318,7 @@ const BreakHistoryTable = () => {
               color: "var(--text-color)"
             }}
           >
-            <ChevronRight className="w-4 h-4" />
+            {isArabic ? <ChevronRight className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           </button>
         </div>
       </div>

@@ -14,7 +14,7 @@ const breakTypeKeys = {
 };
 
 
-    
+
 // Filter options (week, month فقط)
 const filterOptions = [
   { value: "week", label: "Week" },
@@ -36,6 +36,34 @@ const BreakTypeChart = () => {
 
   const isArabic = i18n.language === "ar";
   const options = isArabic ? [...filterOptions].reverse() : filterOptions;
+
+  // Dynamic Y-axis configuration based on selected period
+  const getYAxisConfig = () => {
+    if (filter === "month") {
+      return {
+        labels: [6, 5, 4, 3, 2, 1, 0],
+        maxValue: 6,
+        unit: isArabic ? "س" : "h" // Hours
+      };
+    } else {
+      return {
+        labels: [60, 50, 40, 30, 20, 10, 0],
+        maxValue: 60,
+        unit: isArabic ? "د" : "m" // Minutes
+      };
+    }
+  };
+
+  // Show loading indicator if loading
+  if (isLoading) {
+    return (
+      <div className="rounded-2xl p-6 border shadow-lg text-center">
+        Loading...
+      </div>
+    );
+  }
+
+  const yAxisConfig = getYAxisConfig();
 
   return (
     <div
@@ -83,7 +111,7 @@ const BreakTypeChart = () => {
       </div>
 
       {/* Chart */}
-      <div className="relative h-48">
+      <div className="relative h-72">
         {/* Y-axis labels */}
         <div
           className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs font-semibold"
@@ -119,7 +147,7 @@ const BreakTypeChart = () => {
         </div>
 
         {/* Bars */}
-        <div className="absolute left-10 right-0 top-0 h-full flex items-end justify-between px-4">
+        <div className={`absolute ${isArabic ? 'right-12' : 'left-12'} ${isArabic ? 'left-0' : 'right-0'} top-0 h-full flex items-end justify-between px-4`}>
           {(isArabic ? [...breakData].reverse() : breakData).map((breakItem, index) => {
             const time = parseInt(breakItem.total.replace(" min", "")) || 0;
             const count = breakItem.count || 0;
@@ -150,11 +178,11 @@ const BreakTypeChart = () => {
                   </div>
                 </div>
                 <span className="text-xs mt-2 text-center font-semibold transition-all duration-200 group-hover:scale-105 group-hover:text-opacity-80"
-                      style={{ color: "var(--sub-text-color)" }}>
+                  style={{ color: "var(--sub-text-color)" }}>
                   {t(breakTypeKey, breakItem.type)}
                 </span>
                 <span className="text-[10px] mt-1 text-center font-medium opacity-70 transition-all duration-200 group-hover:opacity-100"
-                      style={{ color: "var(--sub-text-color2)" }}>
+                  style={{ color: "var(--sub-text-color2)" }}>
                   ({count}x)
                 </span>
               </div>

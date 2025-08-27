@@ -22,9 +22,8 @@
     "time_tracking": "تتبع الوقت",
     "break_tracking": "تتبع الاستراحة"
   },
-  "navbar": {   
+  "navbar": {
     "greeting": "صباح الخير",
-
     "online": "متصل الآن",
     "arabic": "العربية",
     "english": "الإنجليزية",
@@ -142,13 +141,10 @@
     "reasons": {
       "prayer": "صلاة",
       "lunch": "غداء",
-      "meeting": "اجتماع",
-      "bathroom": "دورة مياه",
-      "coffee": "استراحة قهوة",
-      "phone": "مكالمة هاتفية",
+      "breakfast": "إفطار",
       "personal": "شخصي",
-      "breakfast": "إفطار",       
-      "emergency": "طارئة"
+      "emergency": "طارئة",
+      "coffee": "استراحة قهوة"
     }
   },
   "attendanceStats": {
@@ -241,6 +237,9 @@
     "avgBreakPerDay": "متوسط الاستراحة يومياً",
     "breaksOverLimit": "تجاوزت الحد المسموح",
     "timeTakenToday": "الوقت المستغرق اليوم",
+    "mostCommonThisWeek": "الأكثر هذا الأسبوع",
+    "basedOnLast7Days": "حسب آخر 7 أيام",
+    "exceededLimit": "لقد تجاوزت حد 30 دقيقة هذا الأسبوع",
     "period": {
       "lastWeek": "الأسبوع الماضي",
       "thisWeek": "هذا الأسبوع",
@@ -251,6 +250,123 @@
       "m20": "٢٠د",
       "m10": "١٠د",
       "m0": "٠"
+    }
+  },
+  "breakHistoryTable": {
+    "sortBy": "ترتيب حسب",
+    "date": "التاريخ",
+    "type": "النوع",
+    "allDates": "كل التواريخ",
+    "allTypes": "كل الأنواع",
+    "entries": "مدخل",
+    "of": "من",
+    "page": "صفحة",
+    "totalEntries": "إجمالي المدخلات",
+    "columns": {
+      "date": "التاريخ",
+      "breakType": "نوع الاستراحة",
+      "duration": "المدة",
+      "startTime": "وقت البداية",
+      "endTime": "وقت النهاية"
+    },
+    "sort": {
+      "newest": "الأحدث أولاً",
+      "oldest": "الأقدم أولاً"
+    }
+  },
+  "leaves": {
+    "statusCards": {
+      "annualLeave": "الإجازة السنوية",
+      "sickLeave": "الإجازة المرضية",
+      "emergencyLeave": "إجازة طوارئ",
+      "unpaidLeave": "إجازة بدون راتب",
+      "daysLeftThisYear": "لديك 12 يوم متبقي هذا العام",
+      "daysLeft": "لديك 4 أيام متبقية"
+    },
+    "summaryCards": {
+      "availableLeaves": "الإجازات المتاحة",
+      "rejectedLeaves": "الإجازات المرفوضة",
+      "pendingLeaves": "الإجازات المعلقة",
+      "approvedLeaves": "الإجازات المقبولة",
+      "totalAvailable": "المجموع المتاح",
+      "totalRejected": "المجموع المرفوض",
+      "awaitingApproval": "في انتظار الموافقة",
+      "totalApproved": "المجموع المقبول"
+    },
+    "types": {
+      "annual": "إجازة سنوية",
+      "sick": "إجازة مرضية",
+      "emergency": "إجازة طوارئ",
+      "unpaid": "إجازة بدون راتب"
+    },
+    "form": {
+      "step1Title": "الخطوة 1 - تفاصيل الإجازة",
+      "step2Title": "الخطوة 2 - السبب والمرفقات",
+      "step3Title": "الخطوة 3 - المراجعة والإرسال",
+      "fromDate": "من",
+      "toDate": "إلى",
+      "numberOfDays": "عدد الأيام",
+      "reason": "أدخل سبب الإجازة",
+      "reasonPlaceholder": "يرجى تقديم سبب طلب الإجازة...",
+      "attachment": "يمكنك إرفاق مستند طبي",
+      "uploadFile": "استيراد ملف، انقر هنا",
+      "supportedFormats": "الصيغ المدعومة: PDF, DOC, DOCX, JPG, PNG",
+      "type": "النوع",
+      "days": "الأيام",
+      "dates": "التواريخ",
+      "step": "خطوة",
+      "of": "من",
+      "back": "رجوع",
+      "next": "التالي",
+      "submit": "إرسال",
+      "submitMessage": "تم إرسال طلبك إلى مديرك للموافقة",
+      "successTitle": "تم إرسال طلب الإجازة",
+      "successMessage": "تم إرسال طلب الإجازة بنجاح وهو في انتظار الموافقة.",
+      "uploadImageOrDocument": "رفع صورة أو مستند",
+      "upload": "رفع",
+      "browse": "تصفح"
+    },
+    "table": {
+      "sortBy": "ترتيب حسب",
+      "leaveType": {
+        "label": "نوع الإجازة",
+        "all": "جميع الإجازات",
+        "annual": "سنوية",
+        "sick": "مرضية",
+        "emergency": "طوارئ",
+        "unpaid": "بدون راتب"
+      },
+      "status": {
+        "label": "الحالة",
+        "all": "جميع الحالات",
+        "pending": "معلقة",
+        "approved": "مقبولة",
+        "rejected": "مرفوضة"
+      },
+      "dateFrom": "من تاريخ",
+      "dateTo": "إلى تاريخ",
+      "of": "من",
+      "entries": "إدخالات",
+      "columns": {
+        "leaveType": "نوع الإجازة",
+        "from": "من",
+        "to": "إلى",
+        "days": "الأيام",
+        "status": "الحالة",
+        "reason": "السبب",
+        "approver": "المعتمد",
+        "action": "الإجراء"
+      },
+      "actions": {
+        "view": "عرض",
+        "edit": "تعديل"
+      },
+      "sort": {
+        "newest": "الأحدث أولاً",
+        "oldest": "الأقدم أولاً"
+      },
+      "page": "صفحة",
+      "totalEntries": "إجمالي الإدخالات"
     }
   },
   "mainContent": {
