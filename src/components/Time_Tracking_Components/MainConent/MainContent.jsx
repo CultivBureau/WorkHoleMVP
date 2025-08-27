@@ -1,9 +1,35 @@
 import { Clock, ClipboardList, Coffee, BarChart3 } from "lucide-react"
 import { useTranslation } from "react-i18next"
+import { useGetDashboardQuery } from "../../../services/apis/AtteandanceApi"
 
 const MainContent = () => {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
+  const { data, isLoading, error } = useGetDashboardQuery({})
+
+  // fallback لو البيانات مش موجودة
+  const stats = data || {
+    dailyShift: "0h 0m",
+    thisWeek: "0h 0m",
+    breaksTaken: "0h 0m",
+    breaksCount: 0,
+    totalOvertime: "0h 0m",
+    currentStatus: "Clocked Out",
+    activeWorkTime: "0h 0m",
+    todayProgress: "0h 0m / 8h",
+    efficiency: 0,
+    completedShift: 0,
+    remainingTime: "0h 0m",
+    mostProductiveDay: { day: "-", time: "0h 0m" },
+  }
+
+  // حساب النسبة المئوية للتقدم اليومي
+  const todayProgressPercent = (() => {
+    const [worked, total] = stats.todayProgress?.split("/") || ["0h 0m", "8h"]
+    const workedMinutes = parseInt(worked) * 60 + parseInt(worked.split(" ")[1]?.replace("m", "") || "0")
+    const totalMinutes = parseInt(total) * 60 + parseInt(total.split(" ")[1]?.replace("m", "") || "0")
+    return totalMinutes ? Math.min(100, Math.round((workedMinutes / totalMinutes) * 100)) : 0
+  })()
 
   return (
     <div
@@ -25,10 +51,10 @@ const MainContent = () => {
           >
             <div className="flex items-center gap-2">
               <span className="text-[var(--sub-text-color)] text-sm">{t("mainContent.currentStatus")}</span>
-              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+              <div className={`w-2 h-2 rounded-full ${stats.currentStatus === "Clocked In" ? "bg-green-500" : "bg-red-500"}`}></div>
             </div>
             <h3 className="text-xl font-semibold" style={{ color: "var(--text-color)" }}>
-              {t("mainContent.notClockedIn")}
+              {stats.currentStatus === "Clocked In" ? t("mainContent.clockedIn") : t("mainContent.notClockedIn")}
             </h3>
           </div>
           <div
@@ -39,7 +65,7 @@ const MainContent = () => {
             }}
           >
             <span className="text-[var(--sub-text-color)] text-sm">{t("mainContent.activeWorkTime")}</span>
-            <h3 className="text-3xl font-bold" style={{ color: "var(--text-color)" }}>0h 0m</h3>
+            <h3 className="text-3xl font-bold" style={{ color: "var(--text-color)" }}>{stats.activeWorkTime}</h3>
           </div>
         </div>
 
@@ -58,10 +84,10 @@ const MainContent = () => {
                 <span className="text-sm font-medium" style={{ color: "var(--text-color)" }}>
                   {t("mainContent.workHours")}
                 </span>
-                <span className="text-sm" style={{ color: "var(--sub-text-color)" }}>0h 0m / 8h</span>
+                <span className="text-sm" style={{ color: "var(--sub-text-color)" }}>{stats.todayProgress}</span>
               </div>
               <div className="w-full bg-[var(--divider-color)] rounded-full h-2">
-                <div className="bg-[var(--accent-color)] h-2 rounded-full" style={{ width: "0%" }}></div>
+                <div className="bg-[var(--accent-color)] h-2 rounded-full transition-all duration-500" style={{ width: `${todayProgressPercent}%` }}></div>
               </div>
             </div>
           </div>
@@ -73,7 +99,7 @@ const MainContent = () => {
                 borderColor: "var(--border-color)",
               }}
             >
-              <h3 className="text-3xl font-bold" style={{ color: "var(--text-color)" }}>0</h3>
+              <h3 className="text-3xl font-bold" style={{ color: "var(--text-color)" }}>{stats.breaksCount}</h3>
               <span className="text-[var(--sub-text-color)] text-sm">{t("mainContent.break")}</span>
             </div>
             <div
@@ -83,7 +109,7 @@ const MainContent = () => {
                 borderColor: "var(--border-color)",
               }}
             >
-              <h3 className="text-3xl font-bold" style={{ color: "var(--text-color)" }}>92%</h3>
+              <h3 className="text-3xl font-bold" style={{ color: "var(--text-color)" }}>{stats.efficiency ? `${stats.efficiency}%` : "0%"}</h3>
               <span className="text-[var(--sub-text-color)] text-sm">{t("mainContent.efficiency")}</span>
             </div>
           </div>
@@ -99,7 +125,7 @@ const MainContent = () => {
                 borderColor: "var(--border-color)",
               }}
             >
-              <h3 className="text-3xl font-bold" style={{ color: "var(--text-color)" }}>0%</h3>
+              <h3 className="text-3xl font-bold" style={{ color: "var(--text-color)" }}>{stats.completedShift ? `${stats.completedShift}%` : "0%"}</h3>
               <span className="text-[var(--sub-text-color)] text-sm text-center leading-tight">
                 {t("mainContent.complete")}
               </span>
@@ -111,7 +137,7 @@ const MainContent = () => {
                 borderColor: "var(--border-color)",
               }}
             >
-              <h3 className="text-3xl font-bold" style={{ color: "var(--text-color)" }}>8h 0m</h3>
+              <h3 className="text-3xl font-bold" style={{ color: "var(--text-color)" }}>{stats.remainingTime}</h3>
               <span className="text-[var(--sub-text-color)] text-sm text-center leading-tight">
                 {t("mainContent.remaining")}
               </span>
@@ -126,9 +152,9 @@ const MainContent = () => {
               }}
             >
               <span className="text-[var(--sub-text-color)] text-xs mb-1 text-center leading-tight">
-                {t("mainContent.tuesday")}
+                {stats.mostProductiveDay?.day || t("mainContent.tuesday")}
               </span>
-              <h3 className="text-2xl font-bold" style={{ color: "var(--text-color)" }}>7h 45m</h3>
+              <h3 className="text-2xl font-bold" style={{ color: "var(--text-color)" }}>{stats.mostProductiveDay?.time || "0h 0m"}</h3>
               <span className="text-[var(--sub-text-color)] text-xs text-center leading-tight">
                 {t("mainContent.mostProductiveDay")}
               </span>
@@ -143,7 +169,7 @@ const MainContent = () => {
               <span className="text-[var(--sub-text-color)] text-xs mb-1 text-center leading-tight">
                 {t("mainContent.thisWeek")}
               </span>
-              <h3 className="text-2xl font-bold" style={{ color: "var(--text-color)" }}>1h 8m</h3>
+              <h3 className="text-2xl font-bold" style={{ color: "var(--text-color)" }}>{stats.thisWeek}</h3>
               <span className="text-[var(--sub-text-color)] text-xs text-center leading-tight">
                 {t("mainContent.focusTime")}
               </span>
