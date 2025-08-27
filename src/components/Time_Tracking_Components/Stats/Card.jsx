@@ -54,7 +54,7 @@ const Card = ({
       </div>
 
       {/* Progress Bar */}
-      {typeof bar === "number" && bar > 0 && (
+      {/* {typeof bar === "number" && bar > 0 && (
         <div className="flex items-center gap-2">
           <div
             className="flex-1 h-1.5 rounded-full overflow-hidden"
@@ -70,7 +70,7 @@ const Card = ({
             />
           </div>
           {/* Gradient bg for bottom icon */}
-          {footer && (
+          {/* {footer && (
             <div
               className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg"
               style={{
@@ -81,7 +81,7 @@ const Card = ({
             </div>
           )}
         </div>
-      )}
+      )} */} 
 
       {/* Footer without progress bar */}
       {(!bar || bar === 0) && footer && (
