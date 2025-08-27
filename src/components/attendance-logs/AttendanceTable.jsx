@@ -1,198 +1,71 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useState, useMemo } from "react"
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
 import { useTranslation } from "react-i18next"
+import { useGetStatsQuery } from "../../services/apis/AtteandanceApi"
 
 const AttendanceTable = () => {
 	const { t, i18n } = useTranslation()
 	const isArabic = i18n.language === "ar"
 
-	// Raw data stays in a consistent internal format (English keys)
-	const attendanceData = [
-		{
-			date: "29 July 2023",
-			day: "Monday",
-			checkIn: "09:00 AM",
-			checkOut: "05:00 PM",
-			workHours: "10h 2m",
-			status: "Present",
-			location: "Work from office",
-		},
-		{
-			date: "29 July 2023",
-			day: "Saturday",
-			checkIn: "00:00 AM",
-			checkOut: "00:00 PM",
-			workHours: "0m",
-			status: "Absent",
-			location: "------",
-		},
-		{
-			date: "29 July 2023",
-			day: "Saturday",
-			checkIn: "09:00 AM",
-			checkOut: "05:00 PM",
-			workHours: "8h 30m",
-			status: "Late arrival",
-			location: "Work from office",
-		},
-		{
-			date: "29 July 2023",
-			day: "Thursday",
-			checkIn: "09:00 AM",
-			checkOut: "05:00 PM",
-			workHours: "10h 5m",
-			status: "Present",
-			location: "Work from home",
-		},
-		{
-			date: "29 July 2023",
-			day: "Saturday",
-			checkIn: "09:00 AM",
-			checkOut: "05:00 PM",
-			workHours: "10h 2m",
-			status: "Late arrival",
-			location: "Work from office",
-		},
-		{
-			date: "29 July 2023",
-			day: "Saturday",
-			checkIn: "00:00 AM",
-			checkOut: "00:00 PM",
-			workHours: "0m",
-			status: "Absent",
-			location: "------",
-		},
-		{
-			date: "29 July 2023",
-			day: "Saturday",
-			checkIn: "09:00 AM",
-			checkOut: "05:00 PM",
-			workHours: "10h 2m",
-			status: "Present",
-			location: "Work from home",
-		},
-		{
-			date: "29 July 2023",
-			day: "Saturday",
-			checkIn: "09:00 AM",
-			checkOut: "05:00 PM",
-			workHours: "10h 2m",
-			status: "Present",
-			location: "Work from office",
-		},
-	]
-
-	// Helpers
-	const parseDate = (value) => new Date(value)
-	const toISODate = (date) => {
-		if (!date) return ""
-		const d = new Date(date)
-		const m = `${d.getMonth() + 1}`.padStart(2, "0")
-		const day = `${d.getDate()}`.padStart(2, "0")
-		return `${d.getFullYear()}-${m}-${day}`
-	}
-
-	const translateTime = (timeStr) => {
-		if (!timeStr) return timeStr
-		return timeStr
-			.replace(/\bAM\b/g, t("timeUnits.am"))
-			.replace(/\bPM\b/g, t("timeUnits.pm"))
-	}
-
-	const translateDuration = (durationStr) => {
-		if (!durationStr) return durationStr
-		return durationStr
-			.replace(/(\d+)\s*h/g, `$1${t("timeUnits.hours")}`)
-			.replace(/(\d+)\s*m/g, `$1${t("timeUnits.minutes")}`)
-			.replace(/(\d+)\s*s/g, `$1${t("timeUnits.seconds")}`)
-	}
-
-	// Filter state (use stable internal values)
-	const [sortBy, setSortBy] = useState("newest") // "newest" | "oldest"
-	const [location, setLocation] = useState("all") // "all" | office | home | none
-	const [status, setStatus] = useState("all") // "all" | present | absent | late
-	const [dateFrom, setDateFrom] = useState("") // YYYY-MM-DD
-	const [dateTo, setDateTo] = useState("") // YYYY-MM-DD
+	const [sortBy, setSortBy] = useState("newest")
+	const [location, setLocation] = useState("all")
+	const [status, setStatus] = useState("all")
+	const [dateFrom, setDateFrom] = useState("")
+	const [dateTo, setDateTo] = useState("")
 	const [currentPage, setCurrentPage] = useState(1)
-	const pageSize = 6
+	const pageSize = 8
 
-	// Derived filtered and sorted data
-	const normalized = useMemo(() => {
-		return attendanceData.map((r) => ({
-			...r,
-			parsedDate: parseDate(r.date),
-		}))
-	}, [attendanceData])
+	// Fetch attendance logs from API (pagination is backend)
+	const { data, isLoading } = useGetStatsQuery({ page: currentPage, limit: pageSize })
+	const attendanceLogs = data?.attendanceLogs || []
+	const pagination = data?.pagination || { page: 1, limit: pageSize, total: 0, totalPages: 1 }
 
+	// Client-side filters (on current page only)
 	const filtered = useMemo(() => {
-		let result = [...normalized]
+		let result = [...attendanceLogs]
 
-		// Filter by location
 		if (location !== "all") {
-			if (location === "office") result = result.filter((r) => r.location === "Work from office")
-			if (location === "home") result = result.filter((r) => r.location === "Work from home")
-			if (location === "none") result = result.filter((r) => r.location === "------")
+			if (location === "office") result = result.filter((r) => r.location === "office")
+			if (location === "home") result = result.filter((r) => r.location === "home")
 		}
-
-		// Filter by status
 		if (status !== "all") {
-			if (status === "present") result = result.filter((r) => r.status === "Present")
-			if (status === "absent") result = result.filter((r) => r.status === "Absent")
-			if (status === "late") result = result.filter((r) => r.status === "Late arrival")
+			result = result.filter((r) => r.status === status)
 		}
-
-		// Date range filter
 		if (dateFrom) {
 			const from = new Date(dateFrom)
-			result = result.filter((r) => r.parsedDate >= from)
+			result = result.filter((r) => new Date(r.date) >= from)
 		}
 		if (dateTo) {
 			const to = new Date(dateTo)
-			// include the end day by adding one day and checking < next day
-			const nextDay = new Date(to)
-			nextDay.setDate(nextDay.getDate() + 1)
-			result = result.filter((r) => r.parsedDate < nextDay)
+			result = result.filter((r) => new Date(r.date) <= to)
 		}
-
 		// Sort
-		result.sort((a, b) => (sortBy === "newest" ? b.parsedDate - a.parsedDate : a.parsedDate - b.parsedDate))
-
+		result.sort((a, b) =>
+			sortBy === "newest"
+				? new Date(b.date) - new Date(a.date)
+				: new Date(a.date) - new Date(b.date)
+		)
 		return result
-	}, [normalized, location, status, dateFrom, dateTo, sortBy])
-
-	// Pagination
-	const totalItems = filtered.length
-	const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
-	const safePage = Math.min(currentPage, totalPages)
-	const pageStart = (safePage - 1) * pageSize
-	const pageEnd = pageStart + pageSize
-	const pageItems = filtered.slice(pageStart, pageEnd)
-
-	const goPrev = () => setCurrentPage((p) => Math.max(1, p - 1))
-	const goNext = () => setCurrentPage((p) => Math.min(totalPages, p + 1))
-
-	// Reset to page 1 when filters change
-	// eslint-disable-next-line react-hooks/exhaustive-deps
-	useMemo(() => setCurrentPage(1), [location, status, dateFrom, dateTo, sortBy])
+	}, [attendanceLogs, location, status, dateFrom, dateTo, sortBy])
 
 	const getStatusBadge = (value) => {
 		switch (value) {
-			case "Present":
+			case "present":
 				return (
 					<span className="px-3 py-1 rounded-full text-xs font-medium inline-block min-w-[80px] text-center"
 						style={{ backgroundColor: 'var(--tag-bg)', color: 'var(--tag-text)' }}>
 						{t("attendanceTable.status.present")}
 					</span>
 				)
-			case "Absent":
+			case "absent":
 				return (
 					<span className="px-3 py-1 rounded-full text-xs font-medium inline-block min-w-[80px] text-center bg-red-100 text-red-700">
 						{t("attendanceTable.status.absent")}
 					</span>
 				)
-			case "Late arrival":
+			case "late":
 				return (
 					<span className="px-3 py-1 rounded-full text-xs font-medium inline-block min-w-[80px] text-center bg-yellow-100 text-yellow-700">
 						{t("attendanceTable.status.late")}
@@ -209,15 +82,11 @@ const AttendanceTable = () => {
 	}
 
 	const getLocationBadge = (loc) => {
-		if (loc === "------") {
-			return <span style={{ color: 'var(--sub-text-color)' }} className="text-sm">------</span>
-		}
-		const label = loc === "Work from office" ? t("attendanceTable.location.office") : t("attendanceTable.location.home")
-		return (
-			<span className="px-3 py-1 rounded-full text-xs font-medium inline-block min-w-[80px] text-center bg-blue-100 text-blue-700">
-				{label}
-			</span>
-		)
+		if (loc === "office")
+			return <span className="px-3 py-1 rounded-full text-xs font-medium inline-block min-w-[80px] text-center bg-blue-100 text-blue-700">{t("attendanceTable.location.office")}</span>
+		if (loc === "home")
+			return <span className="px-3 py-1 rounded-full text-xs font-medium inline-block min-w-[80px] text-center bg-blue-100 text-blue-700">{t("attendanceTable.location.home")}</span>
+		return <span style={{ color: 'var(--sub-text-color)' }} className="text-sm">------</span>
 	}
 
 	const SelectField = ({ value, onChange, options, label }) => (
@@ -289,27 +158,6 @@ const AttendanceTable = () => {
 			}}
 			dir={isArabic ? "rtl" : "ltr"}
 		>
-			{/* Add global styles for date picker to match dropdown arrows */}
-			<style jsx global>{`
-                .date-input::-webkit-calendar-picker-indicator {
-                    cursor: pointer;
-                    opacity: 0.7;
-                    transition: opacity 0.2s;
-                }
-                
-                .date-input::-webkit-calendar-picker-indicator:hover {
-                    opacity: 1;
-                }
-
-                [data-theme="dark"] .date-input::-webkit-calendar-picker-indicator {
-                    filter: brightness(0) saturate(100%) invert(71%) sepia(6%) saturate(373%) hue-rotate(195deg) brightness(95%) contrast(87%);
-                }
-                
-                [data-theme="light"] .date-input::-webkit-calendar-picker-indicator {
-                    filter: brightness(0) saturate(100%) invert(46%) sepia(11%) saturate(200%) hue-rotate(212deg) brightness(97%) contrast(86%);
-                }
-            `}</style>
-
 			{/* Filters */}
 			<div
 				className="p-6 border-b"
@@ -333,8 +181,7 @@ const AttendanceTable = () => {
 							options={[
 								{ value: "all", label: t("attendanceTable.location.all") },
 								{ value: "office", label: t("attendanceTable.location.office") },
-								{ value: "home", label: t("attendanceTable.location.home") },
-								{ value: "none", label: t("attendanceTable.location.none") }
+								{ value: "home", label: t("attendanceTable.location.home") }
 							]}
 							label={t("attendanceTable.location.title")}
 						/>
@@ -365,7 +212,7 @@ const AttendanceTable = () => {
 					</div>
 
 					<div className={`text-sm font-medium ${isArabic ? 'text-right' : 'text-left'}`} style={{ color: 'var(--sub-text-color)' }}>
-						{t("attendanceTable.showing", { count: pageItems.length, total: totalItems })}
+						{t("attendanceTable.showing", { count: filtered.length, total: pagination.total })}
 					</div>
 				</div>
 			</div>
@@ -406,52 +253,62 @@ const AttendanceTable = () => {
 						</tr>
 					</thead>
 					<tbody>
-						{pageItems.map((record, index) => (
-							<tr
-								key={index}
-								className="transition-colors duration-200 cursor-pointer hover:shadow-sm"
-								style={{
-									borderBottom: '1px solid var(--table-border)',
-									backgroundColor: index % 2 === 0 ? 'var(--table-row-bg)' : 'var(--table-row-alt-bg)'
-								}}
-								onMouseEnter={(e) => {
-									e.currentTarget.style.backgroundColor = 'var(--table-header-bg)';
-									e.currentTarget.style.transform = 'translateY(-1px)';
-								}}
-								onMouseLeave={(e) => {
-									e.currentTarget.style.backgroundColor =
-										index % 2 === 0 ? 'var(--table-row-bg)' : 'var(--table-row-alt-bg)';
-									e.currentTarget.style.transform = 'translateY(0)';
-								}}
-							>
-								<td className={`px-6 py-4 text-sm font-medium ${isArabic ? 'text-right' : 'text-left'}`}
-									style={{ color: 'var(--table-text)' }}>
-									{record.date}
-								</td>
-								<td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
-									style={{ color: 'var(--table-text)' }}>
-									{record.day}
-								</td>
-								<td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'} ${record.status === "Absent" ? "text-red-500" : ""}`}
-									style={{ color: record.status === "Absent" ? '#ef4444' : 'var(--table-text)' }}>
-									{translateTime(record.checkIn)}
-								</td>
-								<td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'} ${record.status === "Absent" ? "text-red-500" : ""}`}
-									style={{ color: record.status === "Absent" ? '#ef4444' : 'var(--table-text)' }}>
-									{translateTime(record.checkOut)}
-								</td>
-								<td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
-									style={{ color: 'var(--table-text)' }}>
-									{translateDuration(record.workHours)}
-								</td>
-								<td className={`px-6 py-4 ${isArabic ? 'text-right' : 'text-left'}`}>
-									{getStatusBadge(record.status)}
-								</td>
-								<td className={`px-6 py-4 ${isArabic ? 'text-right' : 'text-left'}`}>
-									{getLocationBadge(record.location)}
-								</td>
+						{isLoading ? (
+							<tr>
+								<td colSpan={7} className="text-center py-8">{t("attendanceTable.loading")}</td>
 							</tr>
-						))}
+						) : filtered.length === 0 ? (
+							<tr>
+								<td colSpan={7} className="text-center py-8">{t("attendanceTable.noData")}</td>
+							</tr>
+						) : (
+							filtered.map((record, index) => (
+								<tr
+									key={index}
+									className="transition-colors duration-200 cursor-pointer hover:shadow-sm"
+									style={{
+										borderBottom: '1px solid var(--table-border)',
+										backgroundColor: index % 2 === 0 ? 'var(--table-row-bg)' : 'var(--table-row-alt-bg)'
+									}}
+									onMouseEnter={(e) => {
+										e.currentTarget.style.backgroundColor = 'var(--table-header-bg)';
+										e.currentTarget.style.transform = 'translateY(-1px)';
+									}}
+									onMouseLeave={(e) => {
+										e.currentTarget.style.backgroundColor =
+											index % 2 === 0 ? 'var(--table-row-bg)' : 'var(--table-row-alt-bg)';
+										e.currentTarget.style.transform = 'translateY(0)';
+									}}
+								>
+									<td className={`px-6 py-4 text-sm font-medium ${isArabic ? 'text-right' : 'text-left'}`}
+										style={{ color: 'var(--table-text)' }}>
+										{record.date}
+									</td>
+									<td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
+										style={{ color: 'var(--table-text)' }}>
+										{record.day}
+									</td>
+									<td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
+										style={{ color: 'var(--table-text)' }}>
+										{record.checkInTime || "—"}
+									</td>
+									<td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
+										style={{ color: 'var(--table-text)' }}>
+										{record.checkOutTime || "—"}
+									</td>
+									<td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
+										style={{ color: 'var(--table-text)' }}>
+										{record.workHours}
+									</td>
+									<td className={`px-6 py-4 ${isArabic ? 'text-right' : 'text-left'}`}>
+										{getStatusBadge(record.status)}
+									</td>
+									<td className={`px-6 py-4 ${isArabic ? 'text-right' : 'text-left'}`}>
+										{getLocationBadge(record.location)}
+									</td>
+								</tr>
+							))
+						)}
 					</tbody>
 				</table>
 			</div>
@@ -462,13 +319,13 @@ const AttendanceTable = () => {
 				style={{ borderColor: 'var(--divider-color)' }}
 			>
 				<div className="text-sm font-medium" style={{ color: 'var(--sub-text-color)' }}>
-					{t("attendanceTable.pageOf", { page: safePage, total: totalPages })}
+					{t("attendanceTable.pageOf", { page: pagination.page, total: pagination.totalPages })}
 				</div>
 				<div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
 					<button
 						className="p-2 rounded-lg border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-						onClick={goPrev}
-						disabled={safePage === 1}
+						onClick={() => setCurrentPage(Math.max(1, pagination.page - 1))}
+						disabled={pagination.page === 1}
 						style={{
 							borderColor: 'var(--border-color)',
 							backgroundColor: 'var(--bg-color)',
@@ -479,8 +336,8 @@ const AttendanceTable = () => {
 					</button>
 					<button
 						className="p-2 rounded-lg border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-						onClick={goNext}
-						disabled={safePage === totalPages}
+						onClick={() => setCurrentPage(Math.min(pagination.totalPages, pagination.page + 1))}
+						disabled={pagination.page === pagination.totalPages}
 						style={{
 							borderColor: 'var(--border-color)',
 							backgroundColor: 'var(--bg-color)',
