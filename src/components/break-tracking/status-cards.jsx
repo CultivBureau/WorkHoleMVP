@@ -1,81 +1,69 @@
 import { TrendingUp, TrendingDown } from "lucide-react";
 import Card from "../Time_Tracking_Components/Stats/Card";
 import { useTranslation } from "react-i18next";
+import { useGetBreakDashboardQuery } from "../../services/apis/BreakApi";
 
 const AttendanceStats = () => {
   const { t, i18n } = useTranslation();
+  const { data: dashboard, isLoading } = useGetBreakDashboardQuery();
 
-  // Example: get most used break type dynamically, fallback to "prayer"
-  const mostUsedBreakType = "prayer"; // Replace with your dynamic value if available
+  // Dynamic values from backend
+  const todaysBreakTime = dashboard?.todaysBreakTime || "--";
+  const mostUsedBreakType = dashboard?.mostUsedBreak || "--";
+  const avgBreakPerDay = dashboard?.avgBreakPerDay || "--";
+  const breaksOverLimit = dashboard?.breaksOverLimit ?? "--";
 
   const statsData = [
     {
       header: t("breakStats.todaysBreakTime"),
-      title: "13m",
+      title: todaysBreakTime,
       subTitle: t("breakStats.timeTakenToday"),
       rightIcon: (
         <img
           src="/assets/break_tracking/break-time.svg"
           alt="present"
-          className="w-8 h-8"
+          className="w-8 h-8 transition-all duration-300 hover:scale-110 hover:rotate-3 drop-shadow-lg"
         />
       ),
-      trend: {
-        icon: <TrendingUp className="w-4 h-4 text-green-500" />,
-        text: `1.3% ${t("attendanceStats.upFromMonth")}`,
-        color: "text-green-600",
-      },
     },
     {
       header: t("breakStats.mostUsedBreak"),
-      title: t(`breakTime.reasons.${mostUsedBreakType}`),
-      subTitle: t("breakStats.mostCommonThisWeek"),
+      title: t(`breakTime.reasons.${mostUsedBreakType}`, mostUsedBreakType),
+      subTitle: t("breakStats.mostCommonThisWeek", "Most common this week"),
       rightIcon: (
         <img
           src="/assets/break_tracking/most-break.svg"
           alt="absent"
-          className="w-8 h-8"
+          className="w-8 h-8 transition-all duration-300 hover:scale-110 hover:rotate-3 drop-shadow-lg"
         />
       ),
-      trend: {
-        icon: <TrendingDown className="w-4 h-4 text-red-500" />,
-        text: `4.3% ${t("attendanceStats.downFromMonth")}`,
-        color: "text-red-600",
-      },
     },
     {
-      header: t("breakStats.avgBreakPerDay"),
-      title: "00:22",
-      subTitle: t("breakStats.basedOnLast7Days"),
+      header: t("breakStats.avgBreakPerDay", "Avg. Break per Day"),
+      title: avgBreakPerDay,
+      subTitle: t("breakStats.basedOnLast7Days", "Based on last 7 days"),
       rightIcon: (
         <img
           src="/assets/break_tracking/avg-break.svg"
           alt="late"
-          className="w-8 h-8"
+          className="w-8 h-8 transition-all duration-300 hover:scale-110 hover:rotate-3 drop-shadow-lg"
         />
       ),
-      trend: {
-        icon: <TrendingDown className="w-4 h-4 text-red-500" />,
-        text: `4.3% ${t("attendanceStats.downFromMonth")}`,
-        color: "text-red-600",
-      },
     },
     {
-      header: t("breakStats.breaksOverLimit"),
-      title: "2",
-      subTitle: t("breakStats.exceededLimit"),
+      header: t("breakStats.breaksOverLimit", "Breaks Over Limit"),
+      title: breaksOverLimit,
+      subTitle: t(
+        "breakStats.exceededLimit",
+        "You exceeded 30m limit this week"
+      ),
       rightIcon: (
         <img
           src="/assets/break_tracking/overlimit.svg"
           alt="average"
-          className="w-8 h-8"
+          className="w-8 h-8 transition-all duration-300 hover:scale-110 hover:rotate-3 drop-shadow-lg"
         />
       ),
-      trend: {
-        icon: <TrendingUp className="w-4 h-4 text-green-500" />,
-        text: `1.3% ${t("attendanceStats.upFromMonth")}`,
-        color: "text-green-600",
-      },
     },
   ];
 
@@ -85,18 +73,21 @@ const AttendanceStats = () => {
         <Card
           key={index}
           header={stat.header}
-          title={stat.title}
+          title={isLoading ? (
+            <div className="animate-pulse bg-gray-300 h-6 w-16 rounded"></div>
+          ) : (
+            <span className="transition-all duration-200 hover:scale-105 hover:text-shadow-lg">
+              {stat.title}
+            </span>
+          )}
           subTitle={stat.subTitle}
           rightIcon={stat.rightIcon}
-          className="h-full"
-          bottomContent={
-            <div className="flex items-center">
-              {stat.trend.icon}
-              <span className={`text-xs font-medium ${stat.trend.color}`}>
-                {stat.trend.text}
-              </span>
-            </div>
-          }
+          className="h-full transition-all duration-300 hover:scale-105 hover:shadow-xl backdrop-blur-sm border border-opacity-20 hover:border-opacity-40 group"
+          style={{
+            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.08), 0 4px 15px rgba(0, 0, 0, 0.05)',
+            borderColor: 'var(--border-color)',
+            background: 'linear-gradient(135deg, var(--bg-color), rgba(255, 255, 255, 0.02))'
+          }}
         />
       ))}
     </div>

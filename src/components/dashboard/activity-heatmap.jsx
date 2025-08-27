@@ -1,23 +1,17 @@
 "use client"
 import { useTranslation } from "react-i18next";
 
-export default function ActivityHeatmap() {
+export default function ActivityHeatmap({ dashboardData, isLoading, error }) {
   const { t } = useTranslation();
 
-  // Generate heatmap data (52 weeks * 7 days = 364 days)
-  const generateHeatmapData = () => {
-    const data = []
-    for (let week = 0; week < 52; week++) {
-      for (let day = 0; day < 7; day++) {
-        // Random activity level (0-4)
-        const activity = Math.floor(Math.random() * 5)
-        data.push(activity)
-      }
-    }
-    return data
-  }
+  // Use heatChart from API response
+  const heatChart = dashboardData?.heatChart || [];
 
-  const heatmapData = generateHeatmapData()
+  // Flatten heatChart to array of days (for grid)
+  const flatHeatmapData = [];
+  heatChart.forEach(monthObj => {
+    flatHeatmapData.push(...monthObj.days);
+  });
 
   // Use GitHub-like colors
   const getActivityColor = (level) => {
@@ -26,15 +20,26 @@ export default function ActivityHeatmap() {
       "#CBFBF9",
       "#97DBD9",
       "#09B2A9"
-    ]
-    return { backgroundColor: colors[level] || colors[0] }
-  }
+    ];
+    return { backgroundColor: colors[Math.min(Math.floor(level), 3)] || colors[0] };
+  };
 
   // Add translated week days
   const weekDays = t("dashboard.activityHeatmap.weekDays", {
     returnObjects: true,
     defaultValue: ["sat", "sun", "mon", "tue", "wed", "thu", "fri"],
   });
+
+  if (isLoading) {
+    return <div className="w-full flex justify-center items-center py-8">Loading...</div>;
+  }
+  if (error) {
+    return <div className="w-full flex justify-center items-center py-8 text-red-500">Error loading activity heatmap</div>;
+  }
+
+  // Calculate number of weeks (columns) and days (rows)
+  const totalDays = flatHeatmapData.length;
+  const weeks = Math.ceil(totalDays / 7);
 
   return (
     <div
@@ -51,7 +56,6 @@ export default function ActivityHeatmap() {
         <div className="flex items-start mb-3" style={{ gap: "8px" }}>
           {/* Empty space to align with weekdays column */}
           <div style={{ width: "20px", flexShrink: 0 }}></div>
-
           {/* Month Labels - aligned with grid */}
           <div
             className="text-xs text-gray-400"
@@ -59,24 +63,18 @@ export default function ActivityHeatmap() {
               fontSize: "11px",
               fontWeight: "500",
               display: "grid",
-              gridTemplateColumns: "repeat(52, 1fr)",
+              gridTemplateColumns: `repeat(${weeks}, 1fr)`,
               gap: "2px",
               height: "16px",
               flex: 1,
             }}
           >
-            {/* Show month every ~4.3 weeks */}
-            {Array.from({ length: 52 }, (_, weekIndex) => {
-              const monthIndex = Math.floor((weekIndex * 12) / 52);
-              const isMonthStart = weekIndex === 0 || Math.floor(((weekIndex - 1) * 12) / 52) !== monthIndex;
-              const months = t("dashboard.activityHeatmap.months", { returnObjects: true });
-
-              return (
-                <div key={weekIndex} className="text-left" style={{ gridColumn: `${weekIndex + 1}` }}>
-                  {isMonthStart ? months[monthIndex] : ""}
-                </div>
-              );
-            })}
+            {/* Show month at start of each month */}
+            {heatChart.map((monthObj, idx) => (
+              <div key={monthObj.month} className="text-left" style={{ gridColumn: `${idx * Math.ceil(monthObj.days.length / 7) + 1}` }}>
+                {t("dashboard.activityHeatmap.months", { returnObjects: true })[monthObj.month - 1]}
+              </div>
+            ))}
           </div>
         </div>
 
@@ -92,7 +90,6 @@ export default function ActivityHeatmap() {
               gridTemplateRows: "repeat(7, 1fr)",
               gap: "2px",
               height: "105px",
-
               width: "20px",
               flexShrink: 0,
             }}
@@ -117,14 +114,14 @@ export default function ActivityHeatmap() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(52, 1fr)",
+              gridTemplateColumns: `repeat(${weeks}, 1fr)`,
               gridTemplateRows: "repeat(7, 1fr)",
               gap: "2px",
               height: "105px",
               flex: 1,
             }}
           >
-            {heatmapData.map((day, idx) => (
+            {flatHeatmapData.map((day, idx) => (
               <div
                 key={idx}
                 style={{
@@ -136,7 +133,7 @@ export default function ActivityHeatmap() {
                   height: "100%",
                 }}
                 className="hover:ring-2 hover:ring-gray-300 hover:ring-opacity-50"
-                title={`${day} contributions`}
+                title={`${day} hours`}
               />
             ))}
           </div>
@@ -148,7 +145,6 @@ export default function ActivityHeatmap() {
         <p className="text-xs text-gray-500 order-2 sm:order-1">
           {t("dashboard.activityHeatmap.eachSquareRepresents")}
         </p>
-
         <div className="flex items-center gap-2 text-xs text-gray-500 order-1 sm:order-2 justify-end">
           <span>{t("dashboard.activityHeatmap.less")}</span>
           <div className="flex gap-1">
