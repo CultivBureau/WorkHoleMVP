@@ -5,6 +5,7 @@ import { useGetBreakStatsQuery } from "../../services/apis/BreakApi";
 
 const BreakHistoryTable = () => {
   const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === "ar";
   const [sortBy, setSortBy] = useState("newest");
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedType, setSelectedType] = useState("");
@@ -130,7 +131,7 @@ const BreakHistoryTable = () => {
                 style={{ color: "var(--sub-text-color)" }} />
             </div>
           </div>
-          
+
           {/* Date Filter */}
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium" style={{ color: "var(--sub-text-color)" }}>Date</span>
@@ -157,7 +158,7 @@ const BreakHistoryTable = () => {
                 style={{ color: "var(--sub-text-color)" }} />
             </div>
           </div>
-          
+
           {/* Type Filter */}
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium" style={{ color: "var(--sub-text-color)" }}>Type</span>
@@ -184,7 +185,7 @@ const BreakHistoryTable = () => {
                 style={{ color: "var(--sub-text-color)" }} />
             </div>
           </div>
-          
+
           <div className="ml-auto text-sm font-medium" style={{ color: "var(--sub-text-color)" }}>
             {breaks.length} of {pagination.total} entries
           </div>
@@ -247,11 +248,10 @@ const BreakHistoryTable = () => {
                   {formatLocalTime(record.endTime)}
                 </td>
                 <td className="px-6 py-4 text-sm font-semibold">
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                    record.exceeded
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${record.exceeded
                       ? 'bg-red-100 text-red-700'
                       : 'bg-green-100 text-green-700'
-                  }`}>
+                    }`}>
                     {record.exceeded ? "Exceeded" : "Normal"}
                   </span>
                 </td>
@@ -281,7 +281,7 @@ const BreakHistoryTable = () => {
           >
             {isArabic ? <ChevronLeft className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </button>
-          
+
           <div className="flex items-center gap-1">
             {[...Array(pagination.totalPages || 1)].map((_, i) => {
               const pageNum = i + 1;

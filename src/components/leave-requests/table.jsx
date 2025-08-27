@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronDown, ChevronLeft, ChevronRight, Eye, Edit } from "lucide-react";
+import { useGetMyLeavesQuery } from "../../services/apis/LeavesApi";
 
 const LeaveTable = () => {
   const { t, i18n } = useTranslation();
@@ -9,102 +10,49 @@ const LeaveTable = () => {
   const [sortBy, setSortBy] = useState("newest");
   const [leaveType, setLeaveType] = useState("all");
   const [status, setStatus] = useState("all");
-  const [dateFrom, setDateFrom] = useState("01/01/2025");
-  const [dateTo, setDateTo] = useState("01/01/2025");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 6;
 
-  // Sample leave data
-  const leaveData = [
-    {
-      id: 1,
-      leaveType: "Annual",
-      from: "31 Dec 2024",
-      to: "10 Jan 2025",
-      days: 1,
-      status: "Pending",
-      reason: "Travelling to village",
-      approver: "Avinash"
-    },
-    {
-      id: 2,
-      leaveType: "Sick",
-      from: "31 Dec 2024",
-      to: "31 Dec 2024",
-      days: 2,
-      status: "Rejected",
-      reason: "Sorry I can't approve",
-      approver: "Avinash"
-    },
-    {
-      id: 3,
-      leaveType: "Emergency",
-      from: "25 Dec 2024",
-      to: "25 Dec 2024",
-      days: 1,
-      status: "Approved",
-      reason: "Travelling to village",
-      approver: "Avinash"
-    },
-    {
-      id: 4,
-      leaveType: "Unpaid",
-      from: "10 Dec 2024",
-      to: "13 Dec 2024",
-      days: 3,
-      status: "Approved",
-      reason: "Travelling to village",
-      approver: "Avinash"
-    },
-    {
-      id: 5,
-      leaveType: "Annual",
-      from: "8 Nov 2024",
-      to: "13 Nov 2024",
-      days: 5,
-      status: "Approved",
-      reason: "Travelling to village",
-      approver: "Avinash"
-    },
-    {
-      id: 6,
-      leaveType: "Annual",
-      from: "8 Nov 2024",
-      to: "13 Nov 2024",
-      days: 5,
-      status: "Approved",
-      reason: "Travelling to village",
-      approver: "Avinash"
-    }
-  ];
+  // Fetch leaves from API
+  const { data, isLoading } = useGetMyLeavesQuery({ page: currentPage, limit: itemsPerPage });
+  const leaves = data?.leaves || [];
+  const pagination = data?.pagination || { page: 1, limit: itemsPerPage, total: 0, totalPages: 1 };
 
-  // Filter and sort data
+  // Filter and sort data (client-side)
   const filteredData = useMemo(() => {
-    let filtered = [...leaveData];
+    let filtered = [...leaves];
 
     if (leaveType !== "all") {
-      filtered = filtered.filter(item => item.leaveType.toLowerCase() === leaveType);
+      filtered = filtered.filter(item => item.leaveType.toLowerCase().includes(leaveType));
     }
 
     if (status !== "all") {
       filtered = filtered.filter(item => item.status.toLowerCase() === status);
     }
 
+    if (dateFrom) {
+      filtered = filtered.filter(item => new Date(item.startDate) >= new Date(dateFrom));
+    }
+    if (dateTo) {
+      filtered = filtered.filter(item => new Date(item.endDate) <= new Date(dateTo));
+    }
+
     // Sort data
     if (sortBy === "newest") {
-      filtered.sort((a, b) => new Date(b.from) - new Date(a.from));
+      filtered.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
     } else if (sortBy === "oldest") {
-      filtered.sort((a, b) => new Date(a.from) - new Date(b.from));
+      filtered.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
     }
 
     return filtered;
-  }, [leaveData, sortBy, leaveType, status]);
+  }, [leaves, sortBy, leaveType, status, dateFrom, dateTo]);
 
-  // Pagination
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentPageData = filteredData.slice(startIndex, endIndex);
+  // Pagination (API already paginates, but filters are client-side)
+  const totalPages = pagination.totalPages;
+  const totalEntries = pagination.total;
+  const currentPageData = filteredData;
 
   const getStatusBadge = (status) => {
     const statusConfig = {
@@ -113,7 +61,7 @@ const LeaveTable = () => {
       rejected: { bg: "bg-red-100", text: "text-red-700", label: t("leaves.table.status.rejected") }
     };
 
-    const config = statusConfig[status.toLowerCase()] || statusConfig.pending;
+    const config = statusConfig[status?.toLowerCase()] || statusConfig.pending;
 
     return (
       <span className={`px-3 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
@@ -237,7 +185,7 @@ const LeaveTable = () => {
           </div>
 
           <div className="text-sm font-medium" style={{ color: 'var(--sub-text-color)' }}>
-            {currentPageData.length} {t("leaves.table.of")} {filteredData.length} {t("leaves.table.entries")}
+            {isLoading ? "..." : `${currentPageData.length} ${t("leaves.table.of")} ${filteredData.length} ${t("leaves.table.entries")}`}
           </div>
         </div>
       </div>
@@ -275,76 +223,68 @@ const LeaveTable = () => {
                 style={{ color: 'var(--table-header-text)' }}>
                 {t("leaves.table.columns.approver")}
               </th>
-              <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
-                style={{ color: 'var(--table-header-text)' }}>
-                {t("leaves.table.columns.action")}
-              </th>
             </tr>
           </thead>
           <tbody>
-            {currentPageData.map((record, index) => (
-              <tr
-                key={record.id}
-                className="transition-colors duration-200 cursor-pointer hover:shadow-sm"
-                style={{
-                  borderBottom: '1px solid var(--table-border)',
-                  backgroundColor: index % 2 === 0 ? 'var(--table-row-bg)' : 'var(--table-row-alt-bg)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--table-header-bg)';
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor =
-                    index % 2 === 0 ? 'var(--table-row-bg)' : 'var(--table-row-alt-bg)';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-              >
-                <td className={`px-6 py-4 text-sm font-medium ${isArabic ? 'text-right' : 'text-left'}`}
-                  style={{ color: 'var(--table-text)' }}>
-                  {record.leaveType}
-                </td>
-                <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
-                  style={{ color: 'var(--table-text)' }}>
-                  {record.from}
-                </td>
-                <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
-                  style={{ color: 'var(--table-text)' }}>
-                  {record.to}
-                </td>
-                <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
-                  style={{ color: 'var(--table-text)' }}>
-                  {record.days}
-                </td>
-                <td className={`px-6 py-4 ${isArabic ? 'text-right' : 'text-left'}`}>
-                  {getStatusBadge(record.status)}
-                </td>
-                <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
-                  style={{ color: 'var(--table-text)' }}>
-                  {record.reason}
-                </td>
-                <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
-                  style={{ color: 'var(--table-text)' }}>
-                  {record.approver}
-                </td>
-                <td className={`px-6 py-4 ${isArabic ? 'text-right' : 'text-left'}`}>
-                  <div className="flex items-center gap-2">
-                    <button
-                      className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                      title={t("leaves.table.actions.view")}
-                    >
-                      <Eye className="w-4 h-4" style={{ color: 'var(--sub-text-color)' }} />
-                    </button>
-                    <button
-                      className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                      title={t("leaves.table.actions.edit")}
-                    >
-                      <Edit className="w-4 h-4" style={{ color: 'var(--sub-text-color)' }} />
-                    </button>
-                  </div>
-                </td>
+            {isLoading ? (
+              <tr>
+                <td colSpan={7} className="text-center py-8">{t("leaves.table.loading")}</td>
               </tr>
-            ))}
+            ) : currentPageData.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="text-center py-8">{t("leaves.table.noData")}</td>
+              </tr>
+            ) : (
+              currentPageData.map((record, index) => (
+                <tr
+                  key={record.id || record._id}
+                  className="transition-colors duration-200 cursor-pointer hover:shadow-sm"
+                  style={{
+                    borderBottom: '1px solid var(--table-border)',
+                    backgroundColor: index % 2 === 0 ? 'var(--table-row-bg)' : 'var(--table-row-alt-bg)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--table-header-bg)';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor =
+                      index % 2 === 0 ? 'var(--table-row-bg)' : 'var(--table-row-alt-bg)';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
+                  <td className={`px-6 py-4 text-sm font-medium ${isArabic ? 'text-right' : 'text-left'}`}
+                    style={{ color: 'var(--table-text)' }}>
+                    {record.leaveType}
+                  </td>
+                  <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
+                    style={{ color: 'var(--table-text)' }}>
+                    {record.startDate ? new Date(record.startDate).toLocaleDateString() : ""}
+                  </td>
+                  <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
+                    style={{ color: 'var(--table-text)' }}>
+                    {record.endDate ? new Date(record.endDate).toLocaleDateString() : ""}
+                  </td>
+                  <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
+                    style={{ color: 'var(--table-text)' }}>
+                    {record.days}
+                  </td>
+                  <td className={`px-6 py-4 ${isArabic ? 'text-right' : 'text-left'}`}>
+                    {getStatusBadge(record.status)}
+                  </td>
+                  <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
+                    style={{ color: 'var(--table-text)' }}>
+                    {record.reason}
+                  </td>
+                  <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
+                    style={{ color: 'var(--table-text)' }}>
+                    {record.actionBy
+                      ? `${record.actionBy}`
+                      : "-"}
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -355,13 +295,13 @@ const LeaveTable = () => {
         style={{ borderColor: 'var(--divider-color)' }}
       >
         <div className="text-sm font-medium" style={{ color: 'var(--sub-text-color)' }}>
-          {t("leaves.table.page")} {currentPage} {t("leaves.table.of")} {totalPages}
+          {t("leaves.table.page")} {pagination.page} {t("leaves.table.of")} {totalPages}
           ({filteredData.length} {t("leaves.table.totalEntries")})
         </div>
         <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
           <button
             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-            disabled={currentPage === 1}
+            disabled={pagination.page === 1}
             className="p-2 rounded-full border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               borderColor: 'var(--border-color)',
@@ -369,12 +309,11 @@ const LeaveTable = () => {
               color: 'var(--text-color)'
             }}
           >
-            {/* In Arabic, previous is left arrow, next is right arrow */}
             {isArabic ? <ChevronLeft className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </button>
           <button
             onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-            disabled={currentPage === totalPages}
+            disabled={pagination.page === totalPages}
             className="p-2 rounded-lg border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               borderColor: 'var(--border-color)',

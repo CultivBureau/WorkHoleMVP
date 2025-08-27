@@ -14,7 +14,7 @@ const breakTypeKeys = {
 };
 
 
-    
+
 // Filter options (week, month فقط)
 const filterOptions = [
   { value: "week", label: "Week" },
@@ -39,7 +39,7 @@ const BreakTypeChart = () => {
 
   // Dynamic Y-axis configuration based on selected period
   const getYAxisConfig = () => {
-    if (selectedPeriod === "lastMonth") {
+    if (filter === "month") {
       return {
         labels: [6, 5, 4, 3, 2, 1, 0],
         maxValue: 6,
@@ -53,6 +53,15 @@ const BreakTypeChart = () => {
       };
     }
   };
+
+  // Show loading indicator if loading
+  if (isLoading) {
+    return (
+      <div className="rounded-2xl p-6 border shadow-lg text-center">
+        Loading...
+      </div>
+    );
+  }
 
   const yAxisConfig = getYAxisConfig();
 
@@ -169,11 +178,11 @@ const BreakTypeChart = () => {
                   </div>
                 </div>
                 <span className="text-xs mt-2 text-center font-semibold transition-all duration-200 group-hover:scale-105 group-hover:text-opacity-80"
-                      style={{ color: "var(--sub-text-color)" }}>
+                  style={{ color: "var(--sub-text-color)" }}>
                   {t(breakTypeKey, breakItem.type)}
                 </span>
                 <span className="text-[10px] mt-1 text-center font-medium opacity-70 transition-all duration-200 group-hover:opacity-100"
-                      style={{ color: "var(--sub-text-color2)" }}>
+                  style={{ color: "var(--sub-text-color2)" }}>
                   ({count}x)
                 </span>
               </div>

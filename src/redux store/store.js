@@ -3,6 +3,7 @@ import { authApi } from "../services/apis/AuthApi";
 import { dashboardApi } from "../services/apis/DashboardApi";
 import { breakApi } from "../services/apis/BreakApi";
 import  {attendanceApi} from "../services/apis/AtteandanceApi"
+import { leavesApi } from "../services/apis/LeavesApi";
 
 export const store = configureStore({
   reducer: {
@@ -10,11 +11,12 @@ export const store = configureStore({
     [dashboardApi.reducerPath]: dashboardApi.reducer,
     [breakApi.reducerPath]: breakApi.reducer,
     [attendanceApi.reducerPath]: attendanceApi.reducer,
+    [leavesApi.reducerPath]: leavesApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }).concat(authApi.middleware, dashboardApi.middleware, breakApi.middleware, attendanceApi.middleware),
+    }).concat(authApi.middleware, dashboardApi.middleware, breakApi.middleware, attendanceApi.middleware, leavesApi.middleware),
 });
 
 export default store;

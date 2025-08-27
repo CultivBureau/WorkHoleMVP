@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Upload, File } from "lucide-react"
+import { useCreateLeaveMutation } from "../../services/apis/LeavesApi"
+import { toast } from "react-hot-toast"
 
 const LeaveRequest = () => {
   const { t, i18n } = useTranslation()
@@ -18,6 +20,9 @@ const LeaveRequest = () => {
     attachment: null,
   })
   const [showSuccess, setShowSuccess] = useState(false)
+
+  // RTK Query mutation
+  const [createLeave, { isLoading: isSubmitting }] = useCreateLeaveMutation()
 
   const leaveTypes = [
     { value: "annual", label: t("leaves.types.annual"), icon: "🗓️" },
@@ -52,10 +57,36 @@ const LeaveRequest = () => {
     })
   }
 
-  const handleNext = () => {
-    if (currentStep < 3) {
-      setCurrentStep(currentStep + 1)
-    } else if (currentStep === 3) {
+  // Map frontend leaveType to API value
+  const getApiLeaveType = (type) => {
+    switch (type) {
+      case "annual":
+        return "Annual Leave"
+      case "sick":
+        return "Sick Leave"
+      case "emergency":
+        return "Emergency Leave"
+      case "unpaid":
+        return "Unpaid Leave"
+      default:
+        return "Annual Leave"
+    }
+  }
+
+  const handleSubmit = async () => {
+    // Prepare data for API
+    const data = {
+      leaveType: getApiLeaveType(formData.leaveType),
+      startDate: formData.fromDate,
+      endDate: formData.toDate,
+      reason: formData.reason,
+    }
+    try {
+      await createLeave({
+        data,
+        file: formData.attachment || undefined,
+      }).unwrap()
+      toast.success(t("leaves.form.successToast", "Leave request submitted!"))
       setShowSuccess(true)
       setTimeout(() => {
         setCurrentStep(1)
@@ -69,6 +100,18 @@ const LeaveRequest = () => {
         })
         setShowSuccess(false)
       }, 3000)
+    } catch (err) {
+      toast.error(
+        t("leaves.form.errorToast", "Failed to submit leave request. Please try again.")
+      )
+    }
+  }
+
+  const handleNext = () => {
+    if (currentStep < 3) {
+      setCurrentStep(currentStep + 1)
+    } else if (currentStep === 3) {
+      handleSubmit()
     }
   }
 
@@ -432,6 +475,7 @@ const LeaveRequest = () => {
             )}
             <button
               onClick={handleNext}
+              disabled={isSubmitting}
               className="px-3 py-1 gradient-bg text-white rounded-md font-medium hover:opacity-90 transition-opacity text-xs"
             >
               {currentStep === 3 ? t("leaves.form.submit", "Submit") : t("leaves.form.next", "Next")}

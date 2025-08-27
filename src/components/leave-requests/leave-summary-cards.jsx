@@ -1,32 +1,40 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { useGetLeaveStatsQuery } from "../../services/apis/LeavesApi";
 
 const CompactLeaveSummaryCards = () => {
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === "ar";
 
+  // Fetch leave stats from API
+  const { data: stats, isLoading } = useGetLeaveStatsQuery();
+
+  // Fallbacks if stats not loaded yet
+  const statusCounts = stats?.statusCounts || {};
+  const availableLeaves = stats?.availableLeaves ?? 0;
+
   const summaryCardsData = [
     {
       id: 1,
-      count: "10",
+      count: isLoading ? "..." : availableLeaves,
       title: t("leaves.summaryCards.availableLeaves"),
       boxClass: "available-leave-box",
     },
     {
       id: 2,
-      count: "3",
+      count: isLoading ? "..." : (statusCounts.rejectedLeaves ?? 0),
       title: t("leaves.summaryCards.rejectedLeaves"),
       boxClass: "rejected-leave-box",
     },
     {
       id: 3,
-      count: "6",
+      count: isLoading ? "..." : (statusCounts.pendingLeaves ?? 0),
       title: t("leaves.summaryCards.pendingLeaves"),
       boxClass: "pending-leave-box",
     },
     {
       id: 4,
-      count: "4",
+      count: isLoading ? "..." : (statusCounts.approvedLeaves ?? 0),
       title: t("leaves.summaryCards.approvedLeaves"),
       boxClass: "approved-leave-box",
     },
