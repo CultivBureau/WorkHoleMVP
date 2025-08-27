@@ -1,12 +1,14 @@
+import React, { useEffect, useRef, useState } from "react"
 import { Clock, ClipboardList, Coffee, BarChart3 } from "lucide-react"
 import { useTranslation } from "react-i18next"
-import { useGetDashboardQuery } from "../../../services/apis/AtteandanceApi"
+import { useGetDashboardQuery, useClockInMutation, useClockOutMutation } from "../../../services/apis/AtteandanceApi"
 
 const MainContent = () => {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
-  const { data, isLoading, error } = useGetDashboardQuery({})
-
+  const { data, isLoading, error, refetch } = useGetDashboardQuery({})
+  const [clockIn, { isLoading: isClockingIn }] = useClockInMutation()
+  const [clockOut, { isLoading: isClockingOut }] = useClockOutMutation()
   // fallback لو البيانات مش موجودة
   const stats = data || {
     dailyShift: "0h 0m",
@@ -22,14 +24,97 @@ const MainContent = () => {
     remainingTime: "0h 0m",
     mostProductiveDay: { day: "-", time: "0h 0m" },
   }
+  const [activeWorkSeconds, setActiveWorkSeconds] = useState(0)
+  const timerRef = useRef(null)
 
-  // حساب النسبة المئوية للتقدم اليومي
+  // احسب وقت البداية من الـ backend لو موجود
+  const clockInTime = data?.clockInTime // لازم backend يرجع clockInTime بصيغة ISO
+
+  // شغل التايمر لو المستخدم Clocked In
+  useEffect(() => {
+    if (stats.currentStatus === "Clocked In" && clockInTime) {
+      const start = new Date(clockInTime)
+      const updateTimer = () => {
+        const now = new Date()
+        const diff = Math.floor((now - start) / 1000)
+        setActiveWorkSeconds(diff)
+      }
+      updateTimer()
+      timerRef.current = setInterval(updateTimer, 1000)
+      return () => clearInterval(timerRef.current)
+    } else {
+      setActiveWorkSeconds(0)
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+  }, [stats.currentStatus, clockInTime])
+
+  // دالة لتحويل الثواني إلى "xh ym"
+  const formatTime = (seconds) => {
+    const h = Math.floor(seconds / 3600)
+    const m = Math.floor((seconds % 3600) / 60)
+    return `${h}h ${m}m`
+  }
+
+  // استخدم الوقت الفعلي لو المستخدم Clocked In
+  const activeWorkTime = stats.currentStatus === "Clocked In"
+    ? formatTime(activeWorkSeconds)
+    : stats.activeWorkTime
+
+  const todayProgress = stats.currentStatus === "Clocked In"
+    ? `${formatTime(activeWorkSeconds)} / 8h`
+    : stats.todayProgress
+
+  // احسب النسبة المئوية للتقدم
   const todayProgressPercent = (() => {
-    const [worked, total] = stats.todayProgress?.split("/") || ["0h 0m", "8h"]
+    const [worked, total] = todayProgress?.split("/") || ["0h 0m", "8h"]
     const workedMinutes = parseInt(worked) * 60 + parseInt(worked.split(" ")[1]?.replace("m", "") || "0")
     const totalMinutes = parseInt(total) * 60 + parseInt(total.split(" ")[1]?.replace("m", "") || "0")
     return totalMinutes ? Math.min(100, Math.round((workedMinutes / totalMinutes) * 100)) : 0
   })()
+
+  // احسب Efficiency و Complete و Remaining بشكل حي لو المستخدم Clocked In
+  const shiftMinutes = 8 * 60 // لو الشيفت 8 ساعات
+  const workedMinutes = stats.currentStatus === "Clocked In"
+    ? Math.floor(activeWorkSeconds / 60)
+    : (() => {
+        const [worked] = stats.todayProgress?.split("/") || ["0h 0m"]
+        return parseInt(worked) * 60 + parseInt(worked.split(" ")[1]?.replace("m", "") || "0")
+      })()
+
+  const efficiency = stats.currentStatus === "Clocked In"
+    ? Math.min(100, Math.round((workedMinutes / shiftMinutes) * 100))
+    : stats.efficiency
+
+  const completedShift = stats.currentStatus === "Clocked In"
+    ? Math.min(100, Math.round((workedMinutes / shiftMinutes) * 100))
+    : stats.completedShift
+
+  const remainingMinutes = stats.currentStatus === "Clocked In"
+    ? Math.max(0, shiftMinutes - workedMinutes)
+    : (() => {
+        const [_, total] = stats.todayProgress?.split("/") || ["0h 0m", "8h"]
+        const totalMinutes = parseInt(total) * 60 + parseInt(total.split(" ")[1]?.replace("m", "") || "0"
+        )
+        return Math.max(0, totalMinutes - workedMinutes)
+      })()
+
+  const remainingTime = stats.currentStatus === "Clocked In"
+    ? formatTime(remainingMinutes * 60)
+    : stats.remainingTime
+
+  // زر Clock In/Out
+  const handleClock = async () => {
+    try {
+      if (stats.currentStatus === "Clocked In") {
+        await clockOut({ latitude: 0, longitude: 0 }).unwrap()
+      } else {
+        await clockIn({ location: "office", latitude: 0, longitude: 0 }).unwrap()
+      }
+      refetch()
+    } catch (e) {
+      // يمكنك إضافة رسالة خطأ هنا
+    }
+  }
 
   return (
     <div
@@ -54,7 +139,9 @@ const MainContent = () => {
               <div className={`w-2 h-2 rounded-full ${stats.currentStatus === "Clocked In" ? "bg-green-500" : "bg-red-500"}`}></div>
             </div>
             <h3 className="text-xl font-semibold" style={{ color: "var(--text-color)" }}>
-              {stats.currentStatus === "Clocked In" ? t("mainContent.clockedIn") : t("mainContent.notClockedIn")}
+              {stats.currentStatus === "Clocked In"
+                ? t("clockIn")
+                : t("clockOut")}
             </h3>
           </div>
           <div
@@ -65,7 +152,7 @@ const MainContent = () => {
             }}
           >
             <span className="text-[var(--sub-text-color)] text-sm">{t("mainContent.activeWorkTime")}</span>
-            <h3 className="text-3xl font-bold" style={{ color: "var(--text-color)" }}>{stats.activeWorkTime}</h3>
+            <h3 className="text-3xl font-bold" style={{ color: "var(--text-color)" }}>{activeWorkTime}</h3>
           </div>
         </div>
 
@@ -84,7 +171,7 @@ const MainContent = () => {
                 <span className="text-sm font-medium" style={{ color: "var(--text-color)" }}>
                   {t("mainContent.workHours")}
                 </span>
-                <span className="text-sm" style={{ color: "var(--sub-text-color)" }}>{stats.todayProgress}</span>
+                <span className="text-sm" style={{ color: "var(--sub-text-color)" }}>{todayProgress}</span>
               </div>
               <div className="w-full bg-[var(--divider-color)] rounded-full h-2">
                 <div className="bg-[var(--accent-color)] h-2 rounded-full transition-all duration-500" style={{ width: `${todayProgressPercent}%` }}></div>
@@ -109,7 +196,7 @@ const MainContent = () => {
                 borderColor: "var(--border-color)",
               }}
             >
-              <h3 className="text-3xl font-bold" style={{ color: "var(--text-color)" }}>{stats.efficiency ? `${stats.efficiency}%` : "0%"}</h3>
+              <h3 className="text-3xl font-bold" style={{ color: "var(--text-color)" }}>{efficiency ? `${efficiency}%` : "0%"}</h3>
               <span className="text-[var(--sub-text-color)] text-sm">{t("mainContent.efficiency")}</span>
             </div>
           </div>
@@ -125,7 +212,7 @@ const MainContent = () => {
                 borderColor: "var(--border-color)",
               }}
             >
-              <h3 className="text-3xl font-bold" style={{ color: "var(--text-color)" }}>{stats.completedShift ? `${stats.completedShift}%` : "0%"}</h3>
+              <h3 className="text-3xl font-bold" style={{ color: "var(--text-color)" }}>{completedShift ? `${completedShift}%` : "0%"}</h3>
               <span className="text-[var(--sub-text-color)] text-sm text-center leading-tight">
                 {t("mainContent.complete")}
               </span>
@@ -137,7 +224,7 @@ const MainContent = () => {
                 borderColor: "var(--border-color)",
               }}
             >
-              <h3 className="text-3xl font-bold" style={{ color: "var(--text-color)" }}>{stats.remainingTime}</h3>
+              <h3 className="text-3xl font-bold" style={{ color: "var(--text-color)" }}>{remainingTime}</h3>
               <span className="text-[var(--sub-text-color)] text-sm text-center leading-tight">
                 {t("mainContent.remaining")}
               </span>
@@ -180,13 +267,17 @@ const MainContent = () => {
         {/* Start Your Day Button */}
         <div className="w-full h-max pb-2 pt-2 flex justify-center items-center">
           <button
-            className="w-full text-white font-semibold py-4 px-6 rounded-2xl transition-colors flex items-center justify-center gap-3"
+            className="w-full text-white font-semibold py-4 px-6 rounded-2xl transition-colors flex items-center justify-center gap-3 disabled:opacity-60"
             style={{
               background: `linear-gradient(135deg, var(--accent-hover) 0%, var(--accent-color) 100%)`,
             }}
+            onClick={handleClock}
+            disabled={isClockingIn || isClockingOut}
           >
             <Clock className="w-6 h-6" />
-            {t("mainContent.startYourDay")}
+            {stats.currentStatus === "Clocked In"
+              ? "End Your Day"
+              : "Start Your Day"}
           </button>
         </div>
       </div>

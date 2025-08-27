@@ -30,17 +30,12 @@ const WorkHoursCharts = () => {
   const [filter, setFilter] = useState("week")
   const { data, isLoading } = useGetDashboardQuery({ filter })
 
-  // Extract chart data from response
+  // استخدم workHoursChart مباشرة من الريسبونس
   const workHoursChart = data?.workHoursChart || []
 
-  // Order days consistently
-  const daysOrder = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-  const chartData = daysOrder.map((day) =>
-    workHoursChart.find((d) => d.day === day) || { day, hours: 0 }
-  )
-
-  // Translate day labels
-  const dayLabels = daysOrder.map((_, i) => t(`navbar.days.${i}`))
+  // عرف chartData ليكون نفس workHoursChart
+  const chartData = workHoursChart
+  const dayLabels = chartData.map((item) => item.label)
 
   // Calculate maximum hours for scale
   const maxHours = Math.max(8, ...chartData.map((d) => d.hours))
