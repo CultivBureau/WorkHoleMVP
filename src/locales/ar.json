@@ -22,9 +22,8 @@
     "time_tracking": "تتبع الوقت",
     "break_tracking": "تتبع الاستراحة"
   },
-  "navbar": {   
+  "navbar": {
     "greeting": "صباح الخير",
-
     "online": "متصل الآن",
     "arabic": "العربية",
     "english": "الإنجليزية",
@@ -322,7 +321,10 @@
       "submit": "إرسال",
       "submitMessage": "تم إرسال طلبك إلى مديرك للموافقة",
       "successTitle": "تم إرسال طلب الإجازة",
-      "successMessage": "تم إرسال طلب الإجازة بنجاح وهو في انتظار الموافقة."
+      "successMessage": "تم إرسال طلب الإجازة بنجاح وهو في انتظار الموافقة.",
+      "uploadImageOrDocument": "رفع صورة أو مستند",
+      "upload": "رفع",
+      "browse": "تصفح"
     },
     "table": {
       "sortBy": "ترتيب حسب",

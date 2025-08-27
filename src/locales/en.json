@@ -321,7 +321,10 @@
       "submit": "Submit",
       "submitMessage": "Your request has been sent to your manager for approval",
       "successTitle": "Leave Request Submitted",
-      "successMessage": "Your leave request has been successfully submitted and is pending approval."
+      "successMessage": "Your leave request has been successfully submitted and is pending approval.",
+      "uploadImageOrDocument": "Upload Image or Document",
+      "upload": "Upload",
+      "browse": "Browse"
     },
     "table": {
       "sortBy": "Sort By",
