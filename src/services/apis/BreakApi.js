@@ -50,6 +50,12 @@ export const breakApi = createApi({
         method: "GET",
       }),
     }),
+    getActiveBreaksCount: builder.query({
+      query: () => ({
+        url: "active-count",
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -59,4 +65,5 @@ export const {
   useStopBreakMutation,
   useGetBreakDashboardQuery,
   useGetBreakStatsQuery,
+  useGetActiveBreaksCountQuery,
 } = breakApi;
