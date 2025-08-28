@@ -6,6 +6,11 @@ import Leaves from "./pages/User/leaves/page";
 import TimeTracking from "./pages/User/time_tracking/page";
 import AttendanceLogs from "./pages/User/attendance-logs/page";
 import BreakTracking from "./pages/User/break-tracking/page";
+import DashboardAdmin from "./pages/admin/dashboard/page";
+import AttendanceAdmin from "./pages/admin/attendance/page";
+import BreakAdmin from "./pages/admin/break/page";
+import LeavesAdmin from "./pages/admin/leaves/page";
+import UsersAdmin from "./pages/admin/users/page";
 import Profile from "./pages/Profile";
 import ForgetPassword from "./components/forget-password/ForgetPassword";
 import ResetPassword from "./components/reset-password/resetPassword";
@@ -80,6 +85,47 @@ function App() {
             element={
               <ProtectedRoute>
                 <Profile lang={lang} setLang={setLang} />
+              </ProtectedRoute>
+            }
+          />
+          {/* Admin Routes */}
+          <Route
+            path="/pages/admin/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardAdmin lang={lang} setLang={setLang} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pages/admin/attendance"
+            element={
+              <ProtectedRoute>
+                <AttendanceAdmin lang={lang} setLang={setLang} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pages/admin/break"
+            element={
+              <ProtectedRoute>
+                <BreakAdmin lang={lang} setLang={setLang} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pages/admin/leaves"
+            element={
+              <ProtectedRoute>
+                <LeavesAdmin lang={lang} setLang={setLang} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pages/admin/users"
+            element={
+              <ProtectedRoute>
+                <UsersAdmin lang={lang} setLang={setLang} />
               </ProtectedRoute>
             }
           />

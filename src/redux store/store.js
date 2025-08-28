@@ -5,6 +5,7 @@ import { breakApi } from "../services/apis/BreakApi";
 import { attendanceApi } from "../services/apis/AtteandanceApi";
 import { timerApi } from "../services/apis/TimerApi";
 import { leavesApi } from "../services/apis/LeavesApi";
+import { usersApi } from "../services/apis/UsersApi";
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     [attendanceApi.reducerPath]: attendanceApi.reducer,
     [timerApi.reducerPath]: timerApi.reducer,
     [leavesApi.reducerPath]: leavesApi.reducer,
+    [usersApi.reducerPath]: usersApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -24,7 +26,8 @@ export const store = configureStore({
       breakApi.middleware,
       attendanceApi.middleware,
       timerApi.middleware,
-      leavesApi.middleware
+      leavesApi.middleware,
+      usersApi.middleware
     ),
 });
 
