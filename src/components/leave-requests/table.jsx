@@ -302,26 +302,26 @@ const LeaveTable = () => {
           <button
             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
             disabled={pagination.page === 1}
-            className="p-2 rounded-full border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2 rounded-xl border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               borderColor: 'var(--border-color)',
               backgroundColor: 'var(--bg-color)',
               color: 'var(--text-color)'
             }}
           >
-            {isArabic ? <ChevronLeft className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            <ChevronLeft className="w-4 h-4" style={{ color: 'var(--sub-text-color)' }} />
           </button>
           <button
             onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
             disabled={pagination.page === totalPages}
-            className="p-2 rounded-lg border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2 rounded-xl border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               borderColor: 'var(--border-color)',
               backgroundColor: 'var(--bg-color)',
               color: 'var(--text-color)'
             }}
           >
-            {isArabic ? <ChevronRight className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+            <ChevronRight className="w-4 h-4" style={{ color: 'var(--sub-text-color)' }} />
           </button>
         </div>
       </div>

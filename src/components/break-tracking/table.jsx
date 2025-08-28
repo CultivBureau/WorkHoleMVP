@@ -249,8 +249,8 @@ const BreakHistoryTable = () => {
                 </td>
                 <td className="px-6 py-4 text-sm font-semibold">
                   <span className={`px-3 py-1 rounded-full text-xs font-bold ${record.exceeded
-                      ? 'bg-red-100 text-red-700'
-                      : 'bg-green-100 text-green-700'
+                    ? 'bg-red-100 text-red-700'
+                    : 'bg-green-100 text-green-700'
                     }`}>
                     {record.exceeded ? "Exceeded" : "Normal"}
                   </span>
@@ -279,34 +279,8 @@ const BreakHistoryTable = () => {
               color: "var(--text-color)"
             }}
           >
-            {isArabic ? <ChevronLeft className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            {isArabic ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </button>
-
-          <div className="flex items-center gap-1">
-            {[...Array(pagination.totalPages || 1)].map((_, i) => {
-              const pageNum = i + 1;
-              if (pageNum === currentPage) {
-                return (
-                  <span key={pageNum}
-                    className="px-3 py-2 rounded-xl text-sm font-bold text-white"
-                    style={{ background: "#75C8CF" }}>
-                    {pageNum}
-                  </span>
-                );
-              }
-              return (
-                <button key={pageNum}
-                  onClick={() => setCurrentPage(pageNum)}
-                  className="px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 hover:scale-105"
-                  style={{
-                    background: "var(--container-color)",
-                    color: "var(--sub-text-color)"
-                  }}>
-                  {pageNum}
-                </button>
-              );
-            })}
-          </div>
 
           <button
             onClick={() => setCurrentPage(Math.min(pagination.totalPages || 1, currentPage + 1))}
@@ -318,7 +292,7 @@ const BreakHistoryTable = () => {
               color: "var(--text-color)"
             }}
           >
-            {isArabic ? <ChevronRight className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+            {isArabic ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           </button>
         </div>
       </div>

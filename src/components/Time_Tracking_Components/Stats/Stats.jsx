@@ -9,10 +9,10 @@ import { useGetDashboardQuery } from "../../../services/apis/AtteandanceApi";
 
 const Stats = () => {
   const { t } = useTranslation();
-  const { data, isLoading, error } = useGetDashboardQuery({});
+  const { data} = useGetDashboardQuery({});
   const [activeWorkSeconds, setActiveWorkSeconds] = useState(0);
   const timerRef = useRef(null);
-
+  
   // fallback لو البيانات مش موجودة
   const stats = data || {
     thisWeek: "0h 0m",
@@ -102,7 +102,7 @@ const Stats = () => {
 
   return (
     <section
-      className="w-full min-h-[140px] flex justify-center items-stretch gap-6 p-6"
+      className="w-full rounded-2xl min-h-[140px] flex flex-col sm:flex-row justify-center items-stretch gap-4 sm:gap-6 p-4 sm:p-6"
       style={{ backgroundColor: "var(--bg-color)" }}
     >
       <TimerCard />

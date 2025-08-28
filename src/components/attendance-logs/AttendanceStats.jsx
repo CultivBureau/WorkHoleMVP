@@ -57,7 +57,7 @@ const AttendanceStats = () => {
   ]
 
   return (
-    <div className="w-full h-[22vh] flex justify-center items-stretch gap-6 mb-6">
+    <div className="w-full flex flex-col sm:flex-row justify-center items-stretch gap-4 sm:gap-6 mb-6">
       {statsData.map((stat, index) => (
         <Card
           key={index}

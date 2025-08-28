@@ -154,7 +154,7 @@ const BreakTime = ({ breakDashboard, refetch }) => {
 
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4 lg:mb-6 gap-2 sm:gap-3">
-                <h3 className="text-sm sm:text-base lg:text-lg font-bold gradient-text tracking-tight">
+                <h3 className="text-base sm:text-lg gradient-text font-semibold mb-1 sm:mb-2">
                     {t('breakTime.title')}
                 </h3>
 
@@ -396,16 +396,23 @@ const BreakTime = ({ breakDashboard, refetch }) => {
 
             {/* Enhanced Break Dashboard Summary - Responsive */}
             <div className="flex-1 flex flex-col min-h-0">
-                <h4 className={`text-xs sm:text-sm font-bold pb-2 sm:pb-4 mb-2 ${i18n.language === 'ar' ? 'text-right' : 'text-left'} transition-all duration-200`}
+                <h4 className={`text-xs sm:text-sm font-bold pb-1 sm:pb-2 mb-1 ${i18n.language === 'ar' ? 'text-right' : 'text-left'} transition-all duration-200`}
                     style={{ color: 'var(--text-color)' }}>
                     {t('breakTime.breakSummary')}
                 </h4>
 
-                <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 transition-all duration-200">
+                <div
+                    className="flex-1"
+                    style={{
+                        maxHeight: sortedBreaks.length > 2 ? "130px" : "none",
+                        overflowY: sortedBreaks.length > 2 ? "auto" : "visible",
+                        minHeight: 0,
+                    }}
+                >
                     {/* Mobile: Stack view, Desktop: Table view */}
-                    <div className="block sm:hidden space-y-2">
+                    <div className="block sm:hidden space-y-1">
                         {sortedBreaks.map((item, idx) => (
-                            <div key={idx} className="bg-gray-50 rounded-lg p-2 space-y-1" style={{ backgroundColor: 'var(--hover-color)' }}>
+                            <div key={idx} className="bg-gray-50 rounded-lg p-1 space-y-0.5" style={{ backgroundColor: 'var(--hover-color)' }}>
                                 <div className="flex justify-between items-center">
                                     <span className="text-xs font-medium" style={{ color: 'var(--text-color)' }}>
                                         {item.date}
@@ -429,27 +436,27 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                     <table className="w-full hidden sm:table">
                         <thead className="sticky top-0 z-10" style={{ backgroundColor: 'var(--bg-color)' }}>
                             <tr>
-                                <th className="text-[10px] sm:text-xs font-bold py-1 sm:py-2 transition-colors duration-200 hover:opacity-80"
+                                <th className="text-[10px] sm:text-xs font-bold py-0.5 sm:py-1 transition-colors duration-200 hover:opacity-80"
                                     style={{ color: 'var(--sub-text-color)' }}>
                                     {t('breakTime.date', 'Date')}
                                 </th>
-                                <th className="text-[10px] sm:text-xs font-bold py-1 sm:py-2 transition-colors duration-200 hover:opacity-80"
+                                <th className="text-[10px] sm:text-xs font-bold py-0.5 sm:py-1 transition-colors duration-200 hover:opacity-80"
                                     style={{ color: 'var(--sub-text-color)' }}>
                                     {t('breakTime.breakType', 'Break Type')}
                                 </th>
-                                <th className="text-[10px] sm:text-xs font-bold py-1 sm:py-2 transition-colors duration-200 hover:opacity-80"
+                                <th className="text-[10px] sm:text-xs font-bold py-0.5 sm:py-1 transition-colors duration-200 hover:opacity-80"
                                     style={{ color: 'var(--sub-text-color)' }}>
                                     {t('breakTime.duration', 'Duration')}
                                 </th>
-                                <th className="text-[10px] sm:text-xs font-bold py-1 sm:py-2 transition-colors duration-200 hover:opacity-80 hidden lg:table-cell"
+                                <th className="text-[10px] sm:text-xs font-bold py-0.5 sm:py-1 transition-colors duration-200 hover:opacity-80 hidden lg:table-cell"
                                     style={{ color: 'var(--sub-text-color)' }}>
                                     {t('breakTime.startTime', 'Start')}
                                 </th>
-                                <th className="text-[10px] sm:text-xs font-bold py-1 sm:py-2 transition-colors duration-200 hover:opacity-80 hidden lg:table-cell"
+                                <th className="text-[10px] sm:text-xs font-bold py-0.5 sm:py-1 transition-colors duration-200 hover:opacity-80 hidden lg:table-cell"
                                     style={{ color: 'var(--sub-text-color)' }}>
                                     {t('breakTime.endTime', 'End')}
                                 </th>
-                                <th className="text-[10px] sm:text-xs font-bold py-1 sm:py-2 transition-colors duration-200 hover:opacity-80"
+                                <th className="text-[10px] sm:text-xs font-bold py-0.5 sm:py-1 transition-colors duration-200 hover:opacity-80"
                                     style={{ color: 'var(--sub-text-color)' }}>
                                     {t('breakTime.exceeded', 'Exceeded')}
                                 </th>
@@ -458,22 +465,22 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                         <tbody>
                             {sortedBreaks.map((item, idx) => (
                                 <tr key={idx} className="hover:bg-opacity-50 transition-all duration-200 group/row" style={{ backgroundColor: 'transparent' }}>
-                                    <td className="py-2 sm:py-3 text-[10px] sm:text-xs font-medium transition-all duration-200 group-hover/row:opacity-80" style={{ color: 'var(--text-color)' }}>
+                                    <td className="py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium transition-all duration-200 group-hover/row:opacity-80" style={{ color: 'var(--text-color)' }}>
                                         {item.date}
                                     </td>
-                                    <td className="py-2 sm:py-3 text-[10px] sm:text-xs font-semibold transition-all duration-200 group-hover/row:scale-105" style={{ color: 'var(--accent-color)' }}>
+                                    <td className="py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold transition-all duration-200 group-hover/row:scale-105" style={{ color: 'var(--accent-color)' }}>
                                         {t(`breakTime.reasons.${item.breakType}`, item.breakType)}
                                     </td>
-                                    <td className="py-2 sm:py-3 text-[10px] sm:text-xs transition-all duration-200 group-hover/row:opacity-80" style={{ color: 'var(--sub-text-color)' }}>
+                                    <td className="py-1 sm:py-1.5 text-[10px] sm:text-xs transition-all duration-200 group-hover/row:opacity-80" style={{ color: 'var(--sub-text-color)' }}>
                                         {formatMinutes(item.duration.replace(' min', ''))}
                                     </td>
-                                    <td className="py-2 sm:py-3 text-[10px] sm:text-xs transition-all duration-200 group-hover/row:opacity-80 hidden lg:table-cell" style={{ color: 'var(--sub-text-color)' }}>
+                                    <td className="py-1 sm:py-1.5 text-[10px] sm:text-xs transition-all duration-200 group-hover/row:opacity-80 hidden lg:table-cell" style={{ color: 'var(--sub-text-color)' }}>
                                         {formatLocalTime(item.startTime)}
                                     </td>
-                                    <td className="py-2 sm:py-3 text-[10px] sm:text-xs transition-all duration-200 group-hover/row:opacity-80 hidden lg:table-cell" style={{ color: 'var(--sub-text-color)' }}>
+                                    <td className="py-1 sm:py-1.5 text-[10px] sm:text-xs transition-all duration-200 group-hover/row:opacity-80 hidden lg:table-cell" style={{ color: 'var(--sub-text-color)' }}>
                                         {formatLocalTime(item.endTime)}
                                     </td>
-                                    <td className="py-2 sm:py-3 text-[10px] sm:text-xs font-semibold transition-all duration-200 group-hover/row:scale-105" style={{ color: item.exceeded ? '#ef4444' : 'var(--sub-text-color)' }}>
+                                    <td className="py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold transition-all duration-200 group-hover/row:scale-105" style={{ color: item.exceeded ? '#ef4444' : 'var(--sub-text-color)' }}>
                                         {item.exceeded ? t('breakTime.exceededYes', 'Yes') : t('breakTime.exceededNo', 'No')}
                                     </td>
                                 </tr>

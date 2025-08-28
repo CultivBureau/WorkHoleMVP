@@ -35,7 +35,7 @@ const TimeTracking = ({ lang, setLang }) => {
           style={{ background: "var(--bg-all)" }}
         >
           <div
-            className=" rounded-[39px] border border-white "
+            className=" rounded-2xl border border-white "
             style={{ background: "var(--bg-color)" }}
           >
             {/* TimeTracking content */}
