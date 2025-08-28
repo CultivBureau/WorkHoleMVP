@@ -9,15 +9,17 @@ import {
   useGetBreakDashboardQuery,
   useGetBreakStatsQuery,
 } from "../../services/apis/BreakApi";
+import { useNavigate } from "react-router-dom";
 
-const BreakTime = () => {
+const BreakTime = ({ breakDashboard, refetch }) => {
     const { t, i18n } = useTranslation();
+    const navigate = useNavigate();
 
     // API hooks
     const { data: breakTypes = [], isLoading: typesLoading } = useGetBreakTypesQuery();
     const [startBreak, { isLoading: starting }] = useStartBreakMutation();
     const [stopBreak, { isLoading: stopping }] = useStopBreakMutation();
-    const { data: breakDashboard, refetch: refetchDashboard } = useGetBreakDashboardQuery();
+    const { data: breakDashboardData, refetch: refetchDashboard } = useGetBreakDashboardQuery();
     const { data: breakStats, refetch: refetchStats } = useGetBreakStatsQuery({ page: 1, limit: 10 });
 
     // UI state
@@ -85,36 +87,36 @@ const BreakTime = () => {
     ];
 
     // Start/Stop break integration
-    const handleStartBreak = async () => {
-        if (!selectedReason) {
-            setShowPopup(true);
-            return;
-        }
-        if (!isBreakActive) {
-            try {
-                await startBreak(selectedReason).unwrap();
-                setIsBreakActive(true);
-                setBreakStartTime(new Date());
-                setBreakDuration(0);
-                refetchDashboard();
-                refetchStats();
-            } catch (err) {
+        const handleStartBreak = async () => {
+            if (!selectedReason) {
                 setShowPopup(true);
+                return;
             }
-        } else {
-            try {
-                await stopBreak().unwrap();
-                setIsBreakActive(false);
-                setBreakStartTime(null);
-                setBreakDuration(0);
-                setSelectedReason("");
-                refetchDashboard();
-                refetchStats();
-            } catch (err) {
-                setShowPopup(true);
+            if (!isBreakActive) {
+                try {
+                    await startBreak(selectedReason).unwrap();
+                    setIsBreakActive(true);
+                    setBreakStartTime(new Date());
+                    setBreakDuration(0);
+                    if (refetchDashboard) refetchDashboard(); // تأكد من وجود الدالة
+                    if (refetchStats) refetchStats();         // تأكد من وجود الدالة
+                } catch (err) {
+                    setShowPopup(true);
+                }
+            } else {
+                try {
+                    await stopBreak().unwrap();
+                    setIsBreakActive(false);
+                    setBreakStartTime(null);
+                    setBreakDuration(0);
+                    setSelectedReason("");
+                    if (refetchDashboard) refetchDashboard(); // تأكد من وجود الدالة
+                    if (refetchStats) refetchStats();         // تأكد من وجود الدالة
+                } catch (err) {
+                    setShowPopup(true);
+                }
             }
-        }
-    };
+        };
 
     // Sort break summary by date (latest first)
     const sortedBreaks = breakStats?.breaks
@@ -229,6 +231,7 @@ const BreakTime = () => {
                             color: 'var(--accent-color)',
                             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
                         }}
+                        onClick={() => navigate("/pages/User/break-tracking")} // أضف هذا السطر
                     >
                         <ChartColumn size={22} strokeWidth={2.5} className="gradient-color transition-transform duration-200 group-hover/chart:rotate-6" />
                     </button>

@@ -27,6 +27,18 @@ export const timerApi = createApi({
         method: "GET",
       }),
     }),
+    pauseTimer: builder.mutation({
+      query: (id) => ({
+        url: `/api/timer/${id}/pause`,
+        method: "PUT",
+      }),
+    }),
+    resumeTimer: builder.mutation({
+      query: (id) => ({
+        url: `/api/timer/${id}/resume`,
+        method: "PUT",
+      }),
+    }),
     completeTimer: builder.mutation({
       query: ({ id, ...body }) => ({
         url: `/api/timer/${id}/complete`,
@@ -41,26 +53,14 @@ export const timerApi = createApi({
         body,
       }),
     }),
-    getMyTimers: builder.query({
-      query: () => ({
-        url: "/api/timer/me",
-        method: "GET",
-      }),
-    }),
-    getTimerStats: builder.query({
-      query: () => ({
-        url: "/api/timer/stats",
-        method: "GET",
-      }),
-    }),
   }),
 });
 
 export const {
   useStartTimerMutation,
   useGetCurrentTimerQuery,
+  usePauseTimerMutation,
+  useResumeTimerMutation,
   useCompleteTimerMutation,
   useCancelTimerMutation,
-  useGetMyTimersQuery,
-  useGetTimerStatsQuery,
 } = timerApi;

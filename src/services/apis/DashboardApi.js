@@ -21,6 +21,9 @@ export const dashboardApi = createApi({
         url: "me",
         method: "GET",
       }),
+      // دايماً يحدث البيانات عند فتح الصفحة أو تغيير الـ window
+      refetchOnMountOrArgChange: true,
+      refetchOnWindowFocus: true,
     }),
   }),
 });

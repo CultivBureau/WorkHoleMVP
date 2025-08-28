@@ -5,6 +5,7 @@ import ActivityHeatmap from "../../../components/dashboard/activity-heatmap";
 import StatusCards from "../../../components/dashboard/status-cards";
 import QuickActions from "../../../components/dashboard/quick-actions";
 import BreakTime from "../../../components/dashboard/break-time";
+import LeaveRequest from "../../../components/leave-requests/leave-request";
 import { useTranslation } from "react-i18next";
 import { useGetDashboardQuery } from "../../../services/apis/DashboardApi";
 
@@ -18,8 +19,8 @@ const Dashboard = () => {
     localStorage.setItem("lang", lang);
   }, [lang, i18n]);
 
-  // جلب بيانات الداشبورد من الـ API
-  const { data: dashboardData, isLoading, error } = useGetDashboardQuery();
+  // جلب بيانات الداشبورد من الـ API مع refetch
+  const { data: dashboardData, isLoading, error, refetch } = useGetDashboardQuery();
 
   return (
     <div
@@ -43,21 +44,26 @@ const Dashboard = () => {
             {/* Dashboard content */}
             <div className="w-full h-max p-6">
               {/* Status Cards */}
-              <StatusCards dashboardData={dashboardData} isLoading={isLoading} error={error} />
+              <StatusCards dashboardData={dashboardData} isLoading={isLoading} error={error} refetch={refetch} />
 
               {/* Quick Actions & Break Time */}
               <div className="mt-6 flex flex-col md:flex-row gap-4">
                 <div className="flex-1 min-w-0">
-                  <QuickActions dashboardData={dashboardData} isLoading={isLoading} error={error} />
+                  <QuickActions dashboardData={dashboardData} isLoading={isLoading} error={error} refetch={refetch} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <BreakTime dashboardData={dashboardData} isLoading={isLoading} error={error} />
+                  <BreakTime dashboardData={dashboardData} isLoading={isLoading} error={error} refetch={refetch} />
                 </div>
               </div>
 
               {/* Activity Heatmap */}
               <div className="mt-6">
-                <ActivityHeatmap dashboardData={dashboardData} isLoading={isLoading} error={error} />
+                <ActivityHeatmap dashboardData={dashboardData} isLoading={isLoading} error={error} refetch={refetch} />
+              </div>
+
+              {/* Leave Request */}
+              <div className="mt-6">
+                <LeaveRequest refetch={refetch} />
               </div>
             </div>
           </div>

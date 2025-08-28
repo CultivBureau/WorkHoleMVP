@@ -8,7 +8,7 @@ import {
     useGetBreakDashboardQuery,
 } from "../../services/apis/BreakApi";
 
-const BreakTime = () => {
+const BreakTime = ({ breakDashboard, refetch }) => {
     const { t, i18n } = useTranslation();
 
     // مزامنة اللغة من localStorage
@@ -22,7 +22,7 @@ const BreakTime = () => {
     const { data: breakTypes = [] } = useGetBreakTypesQuery();
     const [startBreak, { isLoading: starting }] = useStartBreakMutation();
     const [stopBreak, { isLoading: stopping }] = useStopBreakMutation();
-    const { data: breakDashboard, refetch: refetchDashboard } = useGetBreakDashboardQuery();
+    const { data: breakDashboardData, refetch: refetchDashboard } = useGetBreakDashboardQuery();
 
     // UI state
     const [time, setTime] = useState(new Date());
@@ -91,9 +91,8 @@ const BreakTime = () => {
                 setIsBreakActive(true);
                 setBreakStartTime(new Date());
                 setBreakDuration(0);
-                refetchDashboard();
+                if (refetch) refetch(); // هنا التحديث بعد بدء البريك
             } catch (err) {
-                console.error(err); // Use err to avoid ESLint warning
                 setShowPopup(true);
             }
         } else {
@@ -103,9 +102,8 @@ const BreakTime = () => {
                 setBreakStartTime(null);
                 setBreakDuration(0);
                 setSelectedReason("");
-                refetchDashboard();
+                if (refetch) refetch(); // هنا التحديث بعد إنهاء البريك
             } catch (err) {
-                console.error(err); // Use err to avoid ESLint warning
                 setShowPopup(true);
             }
         }
@@ -340,7 +338,7 @@ const BreakTime = () => {
                             {timerMinutes}
                         </div>
                         <div className="text-[9px] font-semibold tracking-widest opacity-75 uppercase transition-all duration-200"
-                            style={{ color: 'var(--sub-text-color2)', lineHeight: '1' }}>
+                            style={{ color: 'var(--sub-text-color)', lineHeight: '1' }}>
                             MIN
                         </div>
                     </div>
@@ -351,7 +349,7 @@ const BreakTime = () => {
                             {timerSeconds}
                         </div>
                         <div className="text-[9px] font-semibold tracking-widest opacity-75 uppercase transition-all duration-200"
-                            style={{ color: 'var(--sub-text-color2)', lineHeight: '1' }}>
+                            style={{ color: 'var(--sub-text-color)', lineHeight: '1' }}>
                             SEC
                         </div>
                     </div>

@@ -6,7 +6,7 @@ import { Upload, File } from "lucide-react"
 import { useCreateLeaveMutation } from "../../services/apis/LeavesApi"
 import { toast } from "react-hot-toast"
 
-const LeaveRequest = () => {
+const LeaveRequest = ({ refetch }) => { // استقبل refetch كـ prop
   const { t, i18n } = useTranslation()
   const isArabic = i18n.language === "ar"
 
@@ -88,6 +88,7 @@ const LeaveRequest = () => {
       }).unwrap()
       toast.success(t("leaves.form.successToast", "Leave request submitted!"))
       setShowSuccess(true)
+      if (refetch) refetch(); // هنا التحديث بعد نجاح الإضافة
       setTimeout(() => {
         setCurrentStep(1)
         setFormData({

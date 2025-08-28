@@ -22,6 +22,7 @@ import {
   FileBarChart2,
 } from "lucide-react";
 import logo from "../../assets/side-menu-icons/logo.svg?url";
+import { useTheme } from "../../contexts/ThemeContext";
 
 const mainMenuItems = [
   { key: "dashboard", Icon: LayoutDashboard },
@@ -279,12 +280,12 @@ function ThemeToggle({ theme, onToggle, collapsed, t, isArabic }) {
 export default function SideMenu() {
   const { t, i18n } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
-  const [theme, setTheme] = useState("light");
   const [openDropdown, setOpenDropdown] = useState(null);
 
   const navigate = useNavigate();
   const location = useLocation();
   const isArabic = i18n.language === "ar";
+  const { theme, setTheme } = useTheme(); // استخدم الـ context هنا
 
   // تحديد الـ active بناءً على الـ route الحالي
   const getActiveKey = () => {
@@ -318,15 +319,6 @@ export default function SideMenu() {
     if (i18n.language !== lang) i18n.changeLanguage(lang);
     document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
   }, [i18n]);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("theme");
-      if (saved) setTheme(saved);
-    } catch {
-      // Ignore errors
-    }
-  }, []);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
