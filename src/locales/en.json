@@ -22,6 +22,7 @@
     "time_tracking": "Time Tracking",
     "break_tracking": "Break Tracking"
   },
+  "comingSoon": "Coming Soon",
   "navbar": {
     "greeting": "Good Morning",
     "online": "Online",
@@ -319,7 +320,7 @@
       "back": "Back",
       "next": "Next",
       "submit": "Submit",
-      "submitMessage": "Your request has been sent to your manager for approval",
+      "submitting": "Submitting...",
       "successTitle": "Leave Request Submitted",
       "successMessage": "Your leave request has been successfully submitted and is pending approval.",
       "uploadImageOrDocument": "Upload Image or Document",

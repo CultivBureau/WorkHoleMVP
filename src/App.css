@@ -260,3 +260,52 @@ body {
   background-color: var(--approved-leave-box-bg);
   color: var(--sub-text-color);
 }
+
+/* Add this to your global CSS file (e.g., index.css or App.css) */
+@keyframes toast-slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes toast-slide-in-rtl {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes popup-scale {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-toast-slide-in {
+  animation: toast-slide-in 0.3s ease-out;
+}
+
+.animate-toast-slide-in-rtl {
+  animation: toast-slide-in-rtl 0.3s ease-out;
+}
+
+.animate-popup-scale {
+  animation: popup-scale 0.2s ease-out;
+}

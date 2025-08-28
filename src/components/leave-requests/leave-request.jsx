@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import { Upload, File } from "lucide-react"
+import { Upload, File, Loader2 } from "lucide-react"
 import { useCreateLeaveMutation } from "../../services/apis/LeavesApi"
 import { toast } from "react-hot-toast"
 
@@ -25,26 +25,42 @@ const LeaveRequest = () => {
   const [createLeave, { isLoading: isSubmitting }] = useCreateLeaveMutation()
 
   const leaveTypes = [
-    { value: "annual", label: t("leaves.types.annual"), icon: "🗓️" },
-    { value: "sick", label: t("leaves.types.sick"), icon: "🤒" },
-    { value: "emergency", label: t("leaves.types.emergency"), icon: "🚨" },
-    { value: "unpaid", label: t("leaves.types.unpaid"), icon: "💼" },
+    { value: "annual", label: t("leaves.types.annual") },
+    { value: "sick", label: t("leaves.types.sick") },
+    { value: "emergency", label: t("leaves.types.emergency") },
+    { value: "unpaid", label: t("leaves.types.unpaid") },
   ]
 
   const today = new Date().toISOString().split("T")[0]
 
+  // Helper to count only weekdays (Sun-Thu), skipping Fri (5) and Sat (6)
   const calculateDays = (from, to) => {
     if (from && to) {
-      const fromDate = new Date(from)
-      const toDate = new Date(to)
-      const diffTime = Math.abs(toDate - fromDate)
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
-      return diffDays
+      let fromDate = new Date(from)
+      let toDate = new Date(to)
+      if (toDate < fromDate) return 0
+      let count = 0
+      while (fromDate <= toDate) {
+        const day = fromDate.getDay()
+        // In JS: 0=Sun, 1=Mon, ..., 4=Thu, 5=Fri, 6=Sat
+        if (day !== 5 && day !== 6) count++
+        fromDate.setDate(fromDate.getDate() + 1)
+      }
+      return count
     }
     return 0
   }
 
   const handleDateChange = (field, value) => {
+    const selectedDate = new Date(value)
+    const day = selectedDate.getDay()
+    // 5 = Friday, 6 = Saturday
+    if (day === 5 || day === 6) {
+      toast.error(
+        t("leaves.form.noWeekend", "You cannot select Friday or Saturday.")
+      )
+      return
+    }
     setFormData((prev) => {
       const newData = { ...prev, [field]: value }
       if (field === "fromDate" || field === "toDate") {
@@ -101,6 +117,7 @@ const LeaveRequest = () => {
         setShowSuccess(false)
       }, 3000)
     } catch (err) {
+      console.error("Error submitting leave request:", err)
       toast.error(
         t("leaves.form.errorToast", "Failed to submit leave request. Please try again.")
       )
@@ -211,7 +228,7 @@ const LeaveRequest = () => {
             </label>
             <input
               type="date"
-              min={today}
+              min={formData.fromDate || today}
               value={formData.toDate}
               onChange={(e) => handleDateChange("toDate", e.target.value)}
               className="w-full p-1.5 text-xs border rounded-md focus:outline-none focus:ring-1 transition-colors"
@@ -463,6 +480,7 @@ const LeaveRequest = () => {
             {currentStep !== 1 && (
               <button
                 onClick={handleBack}
+                disabled={isSubmitting}
                 className="px-3 py-1 border rounded-md font-medium hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed text-xs"
                 style={{
                   borderColor: "var(--border-color)",
@@ -476,9 +494,17 @@ const LeaveRequest = () => {
             <button
               onClick={handleNext}
               disabled={isSubmitting}
-              className="px-3 py-1 gradient-bg text-white rounded-md font-medium hover:opacity-90 transition-opacity text-xs"
+              className="px-3 py-1 gradient-bg text-white rounded-md font-medium hover:opacity-90 transition-opacity disabled:opacity-70 disabled:cursor-not-allowed text-xs flex items-center gap-2"
             >
-              {currentStep === 3 ? t("leaves.form.submit", "Submit") : t("leaves.form.next", "Next")}
+              {isSubmitting && currentStep === 3 && (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              )}
+              {currentStep === 3
+                ? isSubmitting
+                  ? t("leaves.form.submitting", "Submitting...")
+                  : t("leaves.form.submit", "Submit")
+                : t("leaves.form.next", "Next")
+              }
             </button>
           </div>
         </div>
