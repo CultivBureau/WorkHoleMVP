@@ -61,10 +61,7 @@ const Dashboard = () => {
                 <ActivityHeatmap dashboardData={dashboardData} isLoading={isLoading} error={error} refetch={refetch} />
               </div>
 
-              {/* Leave Request */}
-              <div className="mt-6">
-                <LeaveRequest refetch={refetch} />
-              </div>
+
             </div>
           </div>
         </main>
