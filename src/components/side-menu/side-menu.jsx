@@ -20,44 +20,99 @@ import {
   FolderKanban,
   LayoutGrid,
   FileBarChart2,
+  X,
+  Rocket,
 } from "lucide-react";
 import logo from "../../assets/side-menu-icons/logo.svg?url";
 import { useTheme } from "../../contexts/ThemeContext";
 
+// Custom Toast Component
+const Toast = ({ message, isVisible, onClose, type = 'info', isArabic = false }) => {
+  useEffect(() => {
+    if (isVisible) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [isVisible, onClose]);
+
+  if (!isVisible) return null;
+
+  return (
+    <div
+      className={`fixed top-4 z-[9999] ${isArabic
+        ? 'left-4 animate-toast-slide-in-rtl'
+        : 'right-4 animate-toast-slide-in'
+        }`}
+    >
+      <div
+        className="flex items-center gap-3 px-5 py-4 rounded-xl shadow-xl border backdrop-blur-sm min-w-[280px]"
+        style={{
+          background: 'var(--bg-color)',
+          borderColor: 'var(--border-color)',
+          color: 'var(--text-color)',
+          boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+          direction: isArabic ? 'rtl' : 'ltr',
+        }}
+      >
+        <div className="flex-shrink-0">
+          <Rocket className="w-6 h-6 text-blue-500" />
+        </div>
+        <div className="flex-1">
+          <span className="font-semibold text-lg">{message}</span>
+        </div>
+        <button
+          onClick={onClose}
+          className="flex-shrink-0 p-1 rounded-lg hover:bg-gray-100 transition-colors"
+          style={{
+            color: 'var(--sub-text-color)',
+          }}
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const mainMenuItems = [
-  { key: "dashboard", Icon: LayoutDashboard },
+  { key: "dashboard", Icon: LayoutDashboard, implemented: true },
   {
-    key: "time_tracking", // غير من "time" إلى "time_tracking"
+    key: "time_tracking",
     Icon: Clock,
+    implemented: true,
     children: [
-      { key: "attendance", Icon: CalendarCheck },
-      { key: "break_tracking", Icon: Coffee },
+      { key: "attendance", Icon: CalendarCheck, implemented: true },
+      { key: "break_tracking", Icon: Coffee, implemented: true },
     ],
   },
   {
     key: "tasks",
     Icon: ListTodo,
+    implemented: false,
     children: [
-      { key: "tasks-list", Icon: ListChecks },
-      { key: "projects", Icon: FolderKanban },
+      { key: "tasks-list", Icon: ListChecks, implemented: false },
+      { key: "projects", Icon: FolderKanban, implemented: false },
     ],
   },
   {
     key: "performance",
     Icon: BarChart3,
+    implemented: false,
     children: [
-      { key: "overview", Icon: LayoutGrid },
-      { key: "reports", Icon: FileBarChart2 },
+      { key: "overview", Icon: LayoutGrid, implemented: false },
+      { key: "reports", Icon: FileBarChart2, implemented: false },
     ],
   },
-  { key: "leaves", Icon: LogOut },
-  { key: "wallet", Icon: Wallet },
+  { key: "leaves", Icon: LogOut, implemented: true },
+  { key: "wallet", Icon: Wallet, implemented: false },
 ];
 
 const settingsItems = [
-  { key: "settingsItem", Icon: SettingsIcon },
-  { key: "subscriptions", Icon: RefreshCw },
-  { key: "help", Icon: Bot },
+  { key: "settingsItem", Icon: SettingsIcon, implemented: false },
+  { key: "subscriptions", Icon: RefreshCw, implemented: false },
+  { key: "help", Icon: Bot, implemented: false },
 ];
 
 function SideMenuItem({
@@ -70,29 +125,36 @@ function SideMenuItem({
   setCollapsed,
   t,
   isArabic,
+  onShowToast,
 }) {
   const isActive = active === item.key;
   const hasChildren = !!item.children;
   const isOpen = openDropdown === item.key;
+  const isImplemented = item.implemented !== false;
+
+  const handleClick = () => {
+    if (!isImplemented) {
+      onShowToast(t('comingSoon') || 'Coming Soon!');
+      return;
+    }
+
+    if (hasChildren) {
+      if (collapsed) {
+        setCollapsed(false);
+        setTimeout(() => setOpenDropdown(item.key), 200);
+      } else {
+        setOpenDropdown(isOpen ? null : item.key);
+      }
+      onClick(item.key);
+    } else {
+      onClick(item.key);
+    }
+  };
 
   return (
     <>
       <button
-        onClick={() => {
-          if (hasChildren) {
-            if (collapsed) {
-              setCollapsed(false);
-              setTimeout(() => setOpenDropdown(item.key), 200);
-            } else {
-              // toggle dropdown
-              setOpenDropdown(isOpen ? null : item.key);
-            }
-            // لو ضغطت على العنصر الأساسي، روح للصفحة
-            onClick(item.key);
-          } else {
-            onClick(item.key);
-          }
-        }}
+        onClick={handleClick}
         className={[
           "group w-full flex items-center gap-2 rounded-2xl px-2 py-1.5 transition-all duration-200",
           "outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-hover)]",
@@ -100,6 +162,7 @@ function SideMenuItem({
             ? "gradient-bg text-white shadow"
             : "bg-transparent hover:bg-[var(--hover-color)]",
           collapsed ? "justify-center " : "justify-start",
+          !isImplemented ? "opacity-60" : "",
         ].join(" ")}
         style={{
           color: isActive ? "white" : "var(--text-color)",
@@ -113,7 +176,9 @@ function SideMenuItem({
             collapsed ? "w-6 h-6" : "w-4 h-4",
             isActive
               ? "text-white"
-              : "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]",
+              : isImplemented
+                ? "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]"
+                : "text-[var(--sub-text-color)]",
           ].join(" ")}
         />
         {!collapsed && (
@@ -122,7 +187,9 @@ function SideMenuItem({
               "font-medium transition-colors",
               isActive
                 ? "text-white"
-                : "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]",
+                : isImplemented
+                  ? "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]"
+                  : "text-[var(--sub-text-color)]",
             ].join(" ")}
           >
             {t(`aside.${item.key}`)}
@@ -136,7 +203,9 @@ function SideMenuItem({
               isOpen ? "rotate-180" : "",
               isActive
                 ? "text-white"
-                : "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]",
+                : isImplemented
+                  ? "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]"
+                  : "text-[var(--sub-text-color)]",
             ].join(" ")}
             size={16}
           />
@@ -151,40 +220,54 @@ function SideMenuItem({
               : "pl-6 flex flex-col gap-0.5"
           }
         >
-          {item.children.map((child) => (
-            <button
-              key={child.key}
-              onClick={() => onClick(child.key)}
-              className={[
-                "group w-full flex items-center gap-2 rounded-2xl px-1.5 py-1 text-[13px] font-medium transition-all duration-200",
-                active === child.key
-                  ? "gradient-bg text-white shadow"
-                  : "bg-transparent text-[var(--sub-text-color)] hover:bg-[var(--hover-color)] hover:text-[var(--accent-color)]",
-              ].join(" ")}
-              style={{
-                fontSize: "13px",
-                direction: isArabic ? "rtl" : "ltr",
-              }}
-            >
-              <child.Icon
+          {item.children.map((child) => {
+            const childImplemented = child.implemented !== false;
+            return (
+              <button
+                key={child.key}
+                onClick={() => {
+                  if (!childImplemented) {
+                    onShowToast(t('comingSoon') || 'Coming Soon!');
+                    return;
+                  }
+                  onClick(child.key);
+                }}
                 className={[
-                  "shrink-0 transition-colors w-4 h-4",
+                  "group w-full flex items-center gap-2 rounded-2xl px-1.5 py-1 text-[13px] font-medium transition-all duration-200",
                   active === child.key
-                    ? "text-white"
-                    : "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]",
+                    ? "gradient-bg text-white shadow"
+                    : "bg-transparent text-[var(--sub-text-color)] hover:bg-[var(--hover-color)] hover:text-[var(--accent-color)]",
+                  !childImplemented ? "opacity-60" : "",
                 ].join(" ")}
-              />
-              <span
-                className={[
-                  active === child.key
-                    ? "text-white"
-                    : "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]",
-                ].join(" ")}
+                style={{
+                  fontSize: "13px",
+                  direction: isArabic ? "rtl" : "ltr",
+                }}
               >
-                {t(`aside.${child.key}`)}
-              </span>
-            </button>
-          ))}
+                <child.Icon
+                  className={[
+                    "shrink-0 transition-colors w-4 h-4",
+                    active === child.key
+                      ? "text-white"
+                      : childImplemented
+                        ? "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]"
+                        : "text-[var(--sub-text-color)]",
+                  ].join(" ")}
+                />
+                <span
+                  className={[
+                    active === child.key
+                      ? "text-white"
+                      : childImplemented
+                        ? "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]"
+                        : "text-[var(--sub-text-color)]",
+                  ].join(" ")}
+                >
+                  {t(`aside.${child.key}`)}
+                </span>
+              </button>
+            );
+          })}
         </div>
       )}
     </>
@@ -277,15 +360,45 @@ function ThemeToggle({ theme, onToggle, collapsed, t, isArabic }) {
   );
 }
 
-export default function SideMenu() {
+export default function SideMenu({ isMobileOpen, onMobileClose }) {
   const { t, i18n } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+
+  // Add this temporary state for testing
+  const [tempMobileOpen, setTempMobileOpen] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
   const isArabic = i18n.language === "ar";
   const { theme, setTheme } = useTheme(); // استخدم الـ context هنا
+
+  // Use temporary state if props are not provided
+  const actualIsMobileOpen = isMobileOpen !== undefined ? isMobileOpen : tempMobileOpen;
+  const actualOnMobileClose = onMobileClose || (() => setTempMobileOpen(false));
+
+  // Custom toast function
+  const showToast = (message) => {
+    setToastMessage(message);
+    setToastVisible(true);
+  };
+
+  const hideToast = () => {
+    setToastVisible(false);
+  };
+
+  // Add temporary button to test mobile sidebar (remove this after fixing)
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === 'm' && e.ctrlKey) {
+        setTempMobileOpen(!tempMobileOpen);
+      }
+    };
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [tempMobileOpen]);
 
   // تحديد الـ active بناءً على الـ route الحالي
   const getActiveKey = () => {
@@ -335,40 +448,109 @@ export default function SideMenu() {
     else if (key === "leaves") navigate("/pages/User/leaves");
     else if (key === "time_tracking") {
       navigate("/pages/User/time_tracking");
-      // الـ dropdown هيفتح تلقائي من الـ useEffect
     } else if (key === "attendance") navigate("/pages/User/attendance-logs");
     else if (key === "break") navigate("/pages/User/break");
     else if (key === "break_tracking") navigate("/pages/User/break-tracking");
-    // أضف باقي الصفحات هنا
   };
 
-  // استخدم دالة فارغة بدل setActive
-  const handleSettingsClick = () => { };
+  // Settings click handler
+  const handleSettingsClick = (key) => {
+    const settingsItem = settingsItems.find(item => item.key === key);
+    if (!settingsItem?.implemented) {
+      showToast(t('comingSoon'));
+      return;
+    }
+  };
 
-  const containerBase =
-    "flex flex-col min-h-0 overflow-hidden rounded-3xl shadow-sm";
-  const containerWidth = collapsed ? "w-20" : "w-[280px]";
+  // Handle mobile menu item click
+  const handleMobileMenuClick = (key) => {
+    const allItems = [...mainMenuItems, ...settingsItems];
+    const item = allItems.find(item => item.key === key) ||
+      allItems.flatMap(item => item.children || []).find(child => child.key === key);
 
-  // Remove scroll when collapsed
-  const scrollableContentClass = collapsed
-    ? "min-h-0 flex-1 pr-1" // No overflow-y-auto when collapsed
-    : "min-h-0 flex-1 overflow-y-auto pr-1";
+    if (!item?.implemented) {
+      showToast(t('comingSoon'));
+      actualOnMobileClose();
+      return;
+    }
 
-  return (
-    <aside
-      className={[
-        containerBase,
-        containerWidth,
-        "ml-4 mr-2 my-4 p-3 border",
-      ].join(" ")}
-      style={{
-        background: "var(--bg-color)",
-        borderColor: "var(--border-color)",
-        height: "calc(100vh - 96px)",
-      }}
-    >
-      {/* Collapse/Expand button when collapsed */}
-      {collapsed && (
+    handleMenuClick(key);
+    actualOnMobileClose();
+  };
+
+  // Desktop sidebar classes
+  const desktopSidebarClasses = [
+    "hidden lg:flex flex-col min-h-0 overflow-hidden rounded-3xl shadow-sm",
+    collapsed ? "w-20" : "w-[280px]",
+    "ml-4 mr-2 my-4 p-3 border",
+  ].join(" ");
+
+  // Mobile sidebar classes
+  const mobileSidebarClasses = [
+    "fixed inset-y-0 left-0 z-50 w-80 flex flex-col bg-[var(--bg-color)] border-r border-[var(--border-color)]",
+    "transform transition-transform duration-300 ease-in-out lg:hidden",
+    actualIsMobileOpen ? "translate-x-0" : "-translate-x-full",
+  ].join(" ");
+
+  // Mobile overlay
+  const MobileOverlay = () => {
+    if (!actualIsMobileOpen) return null;
+    return (
+      <div
+        className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+        onClick={actualOnMobileClose}
+      />
+    );
+  };
+
+  // Sidebar content component
+  const SidebarContent = ({ isMobile = false }) => (
+    <>
+      {/* Header */}
+      <div className="flex items-center justify-between shrink-0 mb-4 p-2">
+        <div className="flex items-center gap-3">
+          <div className="size-10 grid place-items-center">
+            <img src={logo} alt="WorkHole" className="h-10" />
+          </div>
+          {(!collapsed || isMobile) && (
+            <div className="text-left flex items-center" dir="ltr">
+              <span className="text-lg font-bold gradient-text">Work</span>
+              <span className="text-lg font-bold text-[var(--sub-text-color]">
+                Hole
+              </span>
+            </div>
+          )}
+        </div>
+
+        {isMobile ? (
+          <button
+            onClick={actualOnMobileClose}
+            className="rounded-xl p-2 hover:bg-[var(--hover-color)] transition-colors"
+            title="Close"
+          >
+            <X
+              className="w-5 h-5"
+              style={{ color: "var(--text-color)" }}
+            />
+          </button>
+        ) : (
+          !collapsed && (
+            <button
+              onClick={() => setCollapsed((v) => !v)}
+              className="rounded-xl p-2 hover:bg-[var(--hover-color)] transition-colors"
+              title="Collapse"
+            >
+              <ChevronLeft
+                className="w-5 h-5 transition-transform"
+                style={{ color: "var(--text-color)" }}
+              />
+            </button>
+          )
+        )}
+      </div>
+
+      {/* Collapse/Expand button when collapsed (desktop only) */}
+      {collapsed && !isMobile && (
         <div className="flex justify-center mb-3">
           <button
             onClick={() => setCollapsed((v) => !v)}
@@ -383,39 +565,9 @@ export default function SideMenu() {
         </div>
       )}
 
-      {/* Header */}
-      <div className="flex items-center justify-between shrink-0 mb-4">
-        <div className="flex items-center p-2 gap-3">
-          <div className="size-10 grid place-items-center">
-            <img src={logo} alt="WorkHole" className="h-10" />
-          </div>
-          {!collapsed && (
-            // ثابت بالإنجليزي واتجاهه يسار دائماً
-            <div className="text-left flex items-center" dir="ltr">
-              <span className="text-lg font-bold gradient-text">Work</span>
-              <span className="text-lg font-bold text-[var(--sub-text-color]">
-                Hole
-              </span>
-            </div>
-          )}
-        </div>
-        {!collapsed && (
-          <button
-            onClick={() => setCollapsed((v) => !v)}
-            className="rounded-xl p-2 hover:bg-[var(--hover-color)] transition-colors"
-            title="Collapse"
-          >
-            <ChevronLeft
-              className="w-5 h-5 transition-transform"
-              style={{ color: "var(--text-color)" }}
-            />
-          </button>
-        )}
-      </div>
-
       {/* Scrollable content */}
-      <div className={scrollableContentClass}>
-        {!collapsed && (
+      <div className={collapsed && !isMobile ? "min-h-0 flex-1 pr-1" : "min-h-0 flex-1 overflow-y-auto pr-1"}>
+        {(!collapsed || isMobile) && (
           <p
             className={`px-3 pb-2 text-xs tracking-wide uppercase font-semibold ${isArabic ? "text-right" : "text-left"
               }`}
@@ -429,25 +581,26 @@ export default function SideMenu() {
         )}
         <nav
           className="flex px-2 flex-col gap-1"
-          style={{ alignItems: collapsed ? "center" : "stretch" }}
+          style={{ alignItems: collapsed && !isMobile ? "center" : "stretch" }}
         >
           {mainMenuItems.map((item) => (
             <SideMenuItem
               key={item.key}
               item={item}
-              active={active}
-              collapsed={collapsed}
-              onClick={handleMenuClick}
+              active={getActiveKey()}
+              collapsed={collapsed && !isMobile}
+              onClick={isMobile ? handleMobileMenuClick : handleMenuClick}
               openDropdown={openDropdown}
               setOpenDropdown={setOpenDropdown}
               setCollapsed={setCollapsed}
               t={t}
               isArabic={isArabic}
+              onShowToast={showToast}
             />
           ))}
         </nav>
 
-        {!collapsed && (
+        {(!collapsed || isMobile) && (
           <p
             className={`px-3 pt-4 pb-2 text-xs tracking-wide uppercase font-semibold ${isArabic ? "text-right" : "text-left"
               }`}
@@ -461,20 +614,21 @@ export default function SideMenu() {
         )}
         <nav
           className="flex px-2 flex-col gap-1 pb-2"
-          style={{ alignItems: collapsed ? "center" : "stretch" }}
+          style={{ alignItems: collapsed && !isMobile ? "center" : "stretch" }}
         >
           {settingsItems.map((item) => (
             <SideMenuItem
               key={item.key}
               item={item}
-              active={active}
-              collapsed={collapsed}
-              onClick={handleSettingsClick} // هنا التغيير
+              active={getActiveKey()}
+              collapsed={collapsed && !isMobile}
+              onClick={isMobile ? handleMobileMenuClick : handleSettingsClick}
               openDropdown={openDropdown}
               setOpenDropdown={setOpenDropdown}
               setCollapsed={setCollapsed}
               t={t}
               isArabic={isArabic}
+              onShowToast={showToast}
             />
           ))}
         </nav>
@@ -485,11 +639,57 @@ export default function SideMenu() {
         <ThemeToggle
           theme={theme}
           onToggle={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
-          collapsed={collapsed}
+          collapsed={collapsed && !isMobile}
           t={t}
           isArabic={isArabic}
         />
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Custom Toast - pass isArabic prop */}
+      <Toast
+        message={toastMessage}
+        isVisible={toastVisible}
+        onClose={hideToast}
+        isArabic={isArabic}
+      />
+
+      {/* Temporary test button - remove after fixing */}
+      <button
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-blue-500 text-white rounded"
+        onClick={() => setTempMobileOpen(!tempMobileOpen)}
+      >
+        Toggle Menu (Test)
+      </button>
+
+      {/* Mobile Overlay */}
+      <MobileOverlay />
+
+      {/* Mobile Sidebar */}
+      <aside
+        className={mobileSidebarClasses}
+        style={{
+          height: "100vh",
+          padding: "1rem",
+        }}
+      >
+        <SidebarContent isMobile={true} />
+      </aside>
+
+      {/* Desktop Sidebar */}
+      <aside
+        className={desktopSidebarClasses}
+        style={{
+          background: "var(--bg-color)",
+          borderColor: "var(--border-color)",
+          height: "calc(100vh - 96px)",
+        }}
+      >
+        <SidebarContent isMobile={false} />
+      </aside>
+    </>
   );
 }

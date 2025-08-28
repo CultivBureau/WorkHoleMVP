@@ -41,7 +41,7 @@ const CompactLeaveSummaryCards = () => {
   ];
 
   return (
-    <div className="w-full border rounded-xl shadow-lg py-8 px-4" style={{ border: `1px solid var(--border-color)` }}>
+    <div className="w-full  h-full border rounded-xl shadow-sm py-8 px-4" style={{ border: `1px solid var(--border-color)` }}>
       <div
         className="grid grid-cols-2 gap-4"
         dir={isArabic ? "rtl" : "ltr"}

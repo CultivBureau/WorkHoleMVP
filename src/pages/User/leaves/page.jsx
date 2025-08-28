@@ -49,7 +49,7 @@ const Leaves = () => {
                 </div>
 
                 {/* Leave Summary Cards - Right Column - Takes half width */}
-                <div className="flex-1">
+                <div className="flex-1 ">
                   <LeaveSummaryCards />
                 </div>
               </div>
