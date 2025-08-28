@@ -201,27 +201,6 @@ const NavBar = ({ lang, setLang, onMobileSidebarToggle, isMobileSidebarOpen }) =
     >
       {/* Mobile Left Section - Hamburger + Profile */}
       <div className="lg:hidden flex items-center gap-3">
-        <button
-          onClick={onMobileSidebarToggle}
-          className="p-2.5 rounded-2xl border transition-all duration-200"
-          style={{
-            borderColor: "var(--border-color)",
-            backgroundColor: "var(--bg-color)",
-          }}
-        >
-          {isMobileSidebarOpen ? (
-            <X
-              className="w-5 h-5 transition-transform duration-200"
-              style={{ color: "var(--text-color)" }}
-            />
-          ) : (
-            <Menu
-              className="w-5 h-5 transition-transform duration-200"
-              style={{ color: "var(--text-color)" }}
-            />
-          )}
-        </button>
-
         {/* Mobile Profile */}
         <div className="relative" ref={profileRef}>
           <button

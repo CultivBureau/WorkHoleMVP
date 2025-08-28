@@ -41,32 +41,32 @@ const CompactLeaveSummaryCards = () => {
   ];
 
   return (
-    <div className="w-full  h-full border rounded-xl shadow-sm py-8 px-4" style={{ border: `1px solid var(--border-color)` }}>
+    <div className="w-full h-full border rounded-xl shadow-sm py-4 sm:py-6 lg:py-8 px-3 sm:px-4" style={{ border: `1px solid var(--border-color)` }}>
       <div
-        className="grid grid-cols-2 gap-4"
+        className="grid grid-cols-2 gap-2 sm:gap-3 lg:gap-4"
         dir={isArabic ? "rtl" : "ltr"}
       >
         {summaryCardsData.map((card) => (
           <div
             key={card.id}
-            className="rounded-2xl p-4 transition-all duration-300 hover:shadow-md hover:-translate-y-1"
+            className="rounded-lg sm:rounded-xl lg:rounded-2xl p-2 sm:p-3 lg:p-4 transition-all duration-300 hover:shadow-md hover:-translate-y-1"
             style={{
               backgroundColor: "var(--bg-color)",
               border: `1px solid var(--border-color)`,
             }}
           >
-            <div className="flex items-center gap-4">
-              {/* Colored Box with Number */}
+            <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
+              {/* Colored Box with Number - Responsive sizing */}
               <div
-                className={`w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-bold flex-shrink-0 ${card.boxClass}`}
+                className={`w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 rounded-lg sm:rounded-xl flex items-center justify-center text-sm sm:text-lg lg:text-2xl font-bold flex-shrink-0 ${card.boxClass}`}
               >
                 {card.count}
               </div>
 
-              {/* Title */}
-              <div className="flex-1">
+              {/* Title - Responsive text */}
+              <div className="flex-1 min-w-0">
                 <h3
-                  className="text-lg font-semibold leading-tight"
+                  className="text-xs sm:text-sm lg:text-lg font-semibold leading-tight break-words"
                   style={{ color: "var(--text-color)" }}
                 >
                   {card.title}

@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useGetBreakDashboardQuery } from "../../services/apis/BreakApi";
 
 const AttendanceStats = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { data: dashboard, isLoading } = useGetBreakDashboardQuery();
 
   // Dynamic values from backend
@@ -22,7 +22,7 @@ const AttendanceStats = () => {
         <img
           src="/assets/break_tracking/break-time.svg"
           alt="present"
-          className="w-8 h-8 transition-all duration-300 hover:scale-110 hover:rotate-3 drop-shadow-lg"
+          className="w-8 h-8 drop-shadow-lg"
         />
       ),
     },
@@ -34,7 +34,7 @@ const AttendanceStats = () => {
         <img
           src="/assets/break_tracking/most-break.svg"
           alt="absent"
-          className="w-8 h-8 transition-all duration-300 hover:scale-110 hover:rotate-3 drop-shadow-lg"
+          className="w-8 h-8 drop-shadow-lg"
         />
       ),
     },
@@ -46,7 +46,7 @@ const AttendanceStats = () => {
         <img
           src="/assets/break_tracking/avg-break.svg"
           alt="late"
-          className="w-8 h-8 transition-all duration-300 hover:scale-110 hover:rotate-3 drop-shadow-lg"
+          className="w-8 h-8 drop-shadow-lg"
         />
       ),
     },
@@ -61,7 +61,7 @@ const AttendanceStats = () => {
         <img
           src="/assets/break_tracking/overlimit.svg"
           alt="average"
-          className="w-8 h-8 transition-all duration-300 hover:scale-110 hover:rotate-3 drop-shadow-lg"
+          className="w-8 h-8 drop-shadow-lg"
         />
       ),
     },
@@ -76,13 +76,13 @@ const AttendanceStats = () => {
           title={isLoading ? (
             <div className="animate-pulse bg-gray-300 h-6 w-16 rounded"></div>
           ) : (
-            <span className="transition-all duration-200 hover:scale-105 hover:text-shadow-lg">
+            <span>
               {stat.title}
             </span>
           )}
           subTitle={stat.subTitle}
           rightIcon={stat.rightIcon}
-          className="h-full transition-all duration-300 hover:scale-105 hover:shadow-xl backdrop-blur-sm border border-opacity-20 hover:border-opacity-40 group"
+          className="h-full backdrop-blur-sm border border-opacity-20"
           style={{
             boxShadow: '0 8px 25px rgba(0, 0, 0, 0.08), 0 4px 15px rgba(0, 0, 0, 0.05)',
             borderColor: 'var(--border-color)',
