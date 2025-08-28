@@ -6,9 +6,11 @@ import BreakTime from "../../../components/break-tracking/break-time";
 import BreakTypeChart from "../../../components/break-tracking/chart";
 import BreakHistoryTable from "../../../components/break-tracking/table";
 import { useTranslation } from "react-i18next";
+import { useGetBreakDashboardQuery } from "../../../services/apis/BreakApi";
 
 const BreakTrackingPage = ({ lang, setLang, theme, setTheme }) => {
   const { i18n } = useTranslation();
+  const { data: breakDashboard, refetch } = useGetBreakDashboardQuery();
 
   useEffect(() => {
     i18n.changeLanguage(lang);
@@ -37,27 +39,23 @@ const BreakTrackingPage = ({ lang, setLang, theme, setTheme }) => {
           >
             {/* Break Tracking content */}
             <div className="w-full h-max p-6">
-              
-
               {/* Status Cards Row */}
-              <StatusCards />
+              <StatusCards breakDashboard={breakDashboard} refetch={refetch} />
 
-                             {/* Main Content Grid */}
-               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                 {/* Break Time Controls - Left Column */}
-                 <div className="lg:col-span-1">
-                   <BreakTime />
-                 </div>
- 
-                 {/* Break Type Usage Chart - Right Column */}
-                 <div className="lg:col-span-1">
-                   <BreakTypeChart />
-                 </div>
-               </div>
-
+              {/* Main Content Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                {/* Break Time Controls - Left Column */}
+                <div className="lg:col-span-1">
+                  <BreakTime breakDashboard={breakDashboard} refetch={refetch} />
+                </div>
+                {/* Break Type Usage Chart - Right Column */}
+                <div className="lg:col-span-1">
+                  <BreakTypeChart breakDashboard={breakDashboard} refetch={refetch} />
+                </div>
+              </div>
               {/* Break History Table - Full Width */}
               <div className="mb-6">
-                <BreakHistoryTable />
+                <BreakHistoryTable breakDashboard={breakDashboard} refetch={refetch} />
               </div>
             </div>
           </div>

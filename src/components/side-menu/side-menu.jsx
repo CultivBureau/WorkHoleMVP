@@ -24,6 +24,7 @@ import {
   Rocket,
 } from "lucide-react";
 import logo from "../../assets/side-menu-icons/logo.svg?url";
+import { useTheme } from "../../contexts/ThemeContext";
 
 // Custom Toast Component
 const Toast = ({ message, isVisible, onClose, type = 'info', isArabic = false }) => {
@@ -362,7 +363,6 @@ function ThemeToggle({ theme, onToggle, collapsed, t, isArabic }) {
 export default function SideMenu({ isMobileOpen, onMobileClose }) {
   const { t, i18n } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
-  const [theme, setTheme] = useState("light");
   const [openDropdown, setOpenDropdown] = useState(null);
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -373,6 +373,7 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
   const navigate = useNavigate();
   const location = useLocation();
   const isArabic = i18n.language === "ar";
+  const { theme, setTheme } = useTheme(); // استخدم الـ context هنا
 
   // Use temporary state if props are not provided
   const actualIsMobileOpen = isMobileOpen !== undefined ? isMobileOpen : tempMobileOpen;
@@ -431,15 +432,6 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
     if (i18n.language !== lang) i18n.changeLanguage(lang);
     document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
   }, [i18n]);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("theme");
-      if (saved) setTheme(saved);
-    } catch {
-      // Ignore errors
-    }
-  }, []);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;

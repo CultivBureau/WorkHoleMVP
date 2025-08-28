@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react"
 import { Clock, ClipboardList, Coffee, BarChart3 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useGetDashboardQuery, useClockInMutation, useClockOutMutation } from "../../../services/apis/AtteandanceApi"
+import { useNavigate } from "react-router-dom";
 
 const MainContent = () => {
   const { t, i18n } = useTranslation()
@@ -9,6 +10,8 @@ const MainContent = () => {
   const { data, isLoading, error, refetch } = useGetDashboardQuery({})
   const [clockIn, { isLoading: isClockingIn }] = useClockInMutation()
   const [clockOut, { isLoading: isClockingOut }] = useClockOutMutation()
+  const navigate = useNavigate();
+
   // fallback لو البيانات مش موجودة
   const stats = data || {
     dailyShift: "0h 0m",
@@ -307,6 +310,7 @@ const MainContent = () => {
             style={{
               background: `linear-gradient(135deg, var(--accent-hover) 0%, var(--accent-color) 100%)`,
             }}
+            onClick={() => navigate("/pages/User/attendance-logs")}
           >
             <BarChart3 className="w-5 h-5" />
             {t("mainContent.viewAttendanceLogs")}
@@ -335,6 +339,7 @@ const MainContent = () => {
             style={{
               background: `linear-gradient(135deg, var(--accent-hover) 0%, var(--accent-color) 100%)`,
             }}
+            onClick={() => navigate("/pages/User/break-tracking")}
           >
             <BarChart3 className="w-5 h-5" />
             {t("mainContent.viewBreakLogs")}
