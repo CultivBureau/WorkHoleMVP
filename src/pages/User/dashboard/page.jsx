@@ -32,22 +32,26 @@ const Dashboard = () => {
 
       {/* Content Area with SideMenu and Main Content */}
       <div className="flex flex-1 min-h-0" style={{ background: "var(--bg-all)" }}>
-        {/* Side Menu - Left side under navbar */}
-        <SideMenu lang={lang} />
+        {/* Side Menu - Hidden on mobile, visible on desktop */}
+        <div className="hidden lg:block">
+          <SideMenu lang={lang} />
+        </div>
 
-        {/* Main Content - Rest of the space */}
-        <main className="flex-1 overflow-auto p-4" style={{ background: "var(--bg-all)" }}>
+        {/* Main Content - Full width on mobile, adjusted on desktop */}
+        <main className="flex-1 overflow-auto p-2 sm:p-3 lg:p-4" style={{ background: "var(--bg-all)" }}>
           <div
-            className="h-max rounded-2xl border border-gray-200"
+            className="h-max rounded-xl lg:rounded-2xl border border-gray-200"
             style={{ background: "var(--bg-color)" }}
           >
-            {/* Dashboard content */}
-            <div className="w-full h-max p-6">
-              {/* Status Cards */}
-              <StatusCards dashboardData={dashboardData} isLoading={isLoading} error={error} refetch={refetch} />
+            {/* Dashboard content with responsive padding */}
+            <div className="w-full h-max p-3 sm:p-4 lg:p-6">
+              {/* Status Cards - Always full width and responsive */}
+              <div className="w-full">
+                <StatusCards dashboardData={dashboardData} isLoading={isLoading} error={error} refetch={refetch} />
+              </div>
 
-              {/* Quick Actions & Break Time */}
-              <div className="mt-6 flex flex-col md:flex-row gap-4">
+              {/* Quick Actions & Break Time - Stack on mobile, side by side on tablet+ */}
+              <div className="mt-4 sm:mt-5 lg:mt-6 flex flex-col lg:flex-row gap-3 sm:gap-4 lg:gap-6">
                 <div className="flex-1 min-w-0">
                   <QuickActions dashboardData={dashboardData} isLoading={isLoading} error={error} refetch={refetch} />
                 </div>
@@ -56,12 +60,10 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Activity Heatmap */}
-              <div className="mt-6">
+              {/* Activity Heatmap - Full width and responsive */}
+              <div className="mt-4 sm:mt-5 lg:mt-6">
                 <ActivityHeatmap dashboardData={dashboardData} isLoading={isLoading} error={error} refetch={refetch} />
               </div>
-
-
             </div>
           </div>
         </main>

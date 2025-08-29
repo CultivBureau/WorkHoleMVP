@@ -22,6 +22,7 @@ import {
   FileBarChart2,
   X,
   Rocket,
+  Menu,
 } from "lucide-react";
 import logo from "../../assets/side-menu-icons/logo.svg?url";
 import { useTheme } from "../../contexts/ThemeContext";
@@ -373,7 +374,7 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
   const navigate = useNavigate();
   const location = useLocation();
   const isArabic = i18n.language === "ar";
-  const { theme, setTheme } = useTheme(); // استخدم الـ context هنا
+  const { theme, setTheme } = useTheme();
 
   // Use temporary state if props are not provided
   const actualIsMobileOpen = isMobileOpen !== undefined ? isMobileOpen : tempMobileOpen;
@@ -657,12 +658,22 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
         isArabic={isArabic}
       />
 
-      {/* Temporary test button - remove after fixing */}
+      {/* Mobile Hamburger Menu Button - NEW */}
       <button
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-blue-500 text-white rounded"
+        className="lg:hidden fixed top-2 left-2 z-50 p-3 rounded-xl shadow-lg transition-all duration-300 hover:scale-105 active:scale-95"
+        style={{
+          background: 'var(--bg-color)',
+          borderColor: 'var(--border-color)',
+          border: '1px solid',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+        }}
         onClick={() => setTempMobileOpen(!tempMobileOpen)}
+        aria-label="Toggle Menu"
       >
-        Toggle Menu (Test)
+        <Menu
+          className="w-6 h-6 transition-colors"
+          style={{ color: 'var(--text-color)' }}
+        />
       </button>
 
       {/* Mobile Overlay */}
