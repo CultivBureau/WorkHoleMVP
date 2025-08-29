@@ -5,23 +5,13 @@ import { useTranslation } from "react-i18next";
 import {
   Coffee,
   Clock,
-  Users,
   Plus,
   Edit,
   Trash2,
   Search,
-  Filter,
-  MoreVertical,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  Activity,
-  Play,
-  Pause,
-  StopCircle,
-  Timer,
 } from "lucide-react";
 import { useGetBreakTypesQuery } from "../../../services/apis/BreakApi";
+import BreakTypeModal from "../../../components/admin/BreakTypeModal";
 
 const BreakAdmin = ({ lang, setLang }) => {
   const { i18n } = useTranslation();
@@ -29,7 +19,7 @@ const BreakAdmin = ({ lang, setLang }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTab, setSelectedTab] = useState("types");
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [filterType, setFilterType] = useState("all");
+  const [editBreakType, setEditBreakType] = useState(null);
 
   useEffect(() => {
     i18n.changeLanguage(lang);
@@ -37,104 +27,52 @@ const BreakAdmin = ({ lang, setLang }) => {
     localStorage.setItem("lang", lang);
   }, [lang, i18n]);
 
-  const { data: breakTypes, isLoading } = useGetBreakTypesQuery();
-
+  const { data: breakTypes, isLoading, refetch } = useGetBreakTypesQuery();
   const isRtl = lang === "ar";
-
-  // Mock data for active breaks
-  const activeBreaks = [
-    {
-      id: 1,
-      user: { firstName: "John", lastName: "Doe", email: "john@company.com", avatar: "JD" },
-      breakType: "Lunch",
-      startTime: "12:30 PM",
-      duration: 25,
-      expectedDuration: 30,
-      status: "active",
-      location: "office"
-    },
-    {
-      id: 2,
-      user: { firstName: "Sarah", lastName: "Smith", email: "sarah@company.com", avatar: "SS" },
-      breakType: "Coffee Break",
-      startTime: "3:15 PM", 
-      duration: 18,
-      expectedDuration: 15,
-      status: "exceeded",
-      location: "remote"
-    },
-    {
-      id: 3,
-      user: { firstName: "Ahmed", lastName: "Ali", email: "ahmed@company.com", avatar: "AA" },
-      breakType: "Personal",
-      startTime: "2:00 PM",
-      duration: 8,
-      expectedDuration: 10,
-      status: "active",
-      location: "office"
-    }
-  ];
 
   const tabs = [
     { key: "types", label: isRtl ? "أنواع الراحة" : "Break Types", icon: Coffee },
-    { key: "active", label: isRtl ? "فترات الراحة النشطة" : "Active Breaks", icon: Activity },
     { key: "history", label: isRtl ? "السجل" : "History", icon: Clock }
   ];
 
   const breakTypeStats = {
     totalTypes: breakTypes?.length || 0,
-    activeBreaks: activeBreaks.length,
-    exceededBreaks: activeBreaks.filter(b => b.status === 'exceeded').length,
     avgDuration: 15
   };
 
-  const getBreakStatusColor = (status) => {
-    switch (status) {
-      case 'active': return { bg: 'bg-blue-100', text: 'text-blue-800', color: '#3B82F6' };
-      case 'exceeded': return { bg: 'bg-red-100', text: 'text-red-800', color: '#EF4444' };
-      case 'completed': return { bg: 'bg-green-100', text: 'text-green-800', color: '#10B981' };
-      default: return { bg: 'bg-gray-100', text: 'text-gray-800', color: '#6B7280' };
+  const statsCards = [
+    {
+      title: isRtl ? "أنواع الراحة" : "Break Types",
+      value: breakTypeStats.totalTypes,
+      icon: Coffee,
+      color: "#8B5CF6",
+      bgColor: "#F3E8FF"
+    },
+    {
+      title: isRtl ? "متوسط المدة" : "Avg Duration",
+      value: `${breakTypeStats.avgDuration}${isRtl ? ' د' : 'm'}`,
+      icon: Clock,
+      color: "#10B981",
+      bgColor: "#ECFDF5"
     }
-  };
-
-  const getProgressPercentage = (current, expected) => {
-    return Math.min((current / expected) * 100, 100);
-  };
-
-  const filteredActiveBreaks = activeBreaks.filter(brk => 
-    (brk.user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     brk.user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     brk.breakType.toLowerCase().includes(searchTerm.toLowerCase())) &&
-    (filterType === "all" || brk.status === filterType)
-  );
+  ];
 
   return (
-    <div 
-      className="w-full h-screen flex flex-col"
-      style={{ background: "var(--bg-all)" }}
-    >
-      {/* Navigation Bar */}
+    <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
       <NavBarAdmin 
         lang={lang} 
         setLang={setLang}
         onMobileSidebarToggle={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
         isMobileSidebarOpen={isMobileSidebarOpen}
       />
-
-      {/* Content Area */}
       <div className="flex flex-1 min-h-0">
-        {/* Sidebar */}
         <SideBarAdmin 
           lang={lang}
           isMobileOpen={isMobileSidebarOpen}
           onMobileClose={() => setIsMobileSidebarOpen(false)}
         />
-
-        {/* Main Content */}
         <main className="flex-1 overflow-auto p-6" style={{ background: "var(--bg-all)" }}>
           <div className="max-w-7xl mx-auto space-y-6">
-            
-            {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div>
                 <h1 className="text-3xl font-bold gradient-text">
@@ -144,10 +82,12 @@ const BreakAdmin = ({ lang, setLang }) => {
                   {isRtl ? "إدارة أنواع الراحة ومراقبة النشاط الحالي" : "Manage break types and monitor current activity"}
                 </p>
               </div>
-              
               <div className="flex items-center gap-3">
                 <button 
-                  onClick={() => setShowCreateModal(true)}
+                  onClick={() => {
+                    setEditBreakType(null);
+                    setShowCreateModal(true);
+                  }}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium gradient-bg"
                 >
                   <Plus size={16} />
@@ -155,39 +95,8 @@ const BreakAdmin = ({ lang, setLang }) => {
                 </button>
               </div>
             </div>
-
-            {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-              {[
-                {
-                  title: isRtl ? "أنواع الراحة" : "Break Types",
-                  value: breakTypeStats.totalTypes,
-                  icon: Coffee,
-                  color: "#8B5CF6",
-                  bgColor: "#F3E8FF"
-                },
-                {
-                  title: isRtl ? "فترات نشطة" : "Active Breaks",
-                  value: breakTypeStats.activeBreaks,
-                  icon: Activity,
-                  color: "#3B82F6",
-                  bgColor: "#EFF6FF"
-                },
-                {
-                  title: isRtl ? "تجاوز الوقت" : "Exceeded Time",
-                  value: breakTypeStats.exceededBreaks,
-                  icon: AlertTriangle,
-                  color: "#EF4444",
-                  bgColor: "#FEF2F2"
-                },
-                {
-                  title: isRtl ? "متوسط المدة" : "Avg Duration",
-                  value: `${breakTypeStats.avgDuration}${isRtl ? ' د' : 'm'}`,
-                  icon: Clock,
-                  color: "#10B981",
-                  bgColor: "#ECFDF5"
-                }
-              ].map((card, index) => (
+              {statsCards.map((card, index) => (
                 <div
                   key={index}
                   className="p-6 rounded-2xl border transition-all duration-300 hover:shadow-lg"
@@ -215,15 +124,7 @@ const BreakAdmin = ({ lang, setLang }) => {
                 </div>
               ))}
             </div>
-
-            {/* Tabs */}
-            <div 
-              className="rounded-2xl border"
-              style={{
-                backgroundColor: "var(--bg-color)",
-                borderColor: "var(--border-color)",
-              }}
-            >
+            <div className="rounded-2xl border" style={{ backgroundColor: "var(--bg-color)", borderColor: "var(--border-color)" }}>
               <div className="flex border-b" style={{ borderColor: "var(--border-color)" }}>
                 {tabs.map((tab) => (
                   <button
@@ -242,9 +143,7 @@ const BreakAdmin = ({ lang, setLang }) => {
                   </button>
                 ))}
               </div>
-
               <div className="p-6">
-                {/* Search and Filters */}
                 <div className="flex flex-col lg:flex-row gap-4 mb-6">
                   <div className="flex-1">
                     <div className="relative">
@@ -270,30 +169,8 @@ const BreakAdmin = ({ lang, setLang }) => {
                       />
                     </div>
                   </div>
-
-                  {selectedTab === 'active' && (
-                    <div className="lg:w-48">
-                      <select
-                        value={filterType}
-                        onChange={(e) => setFilterType(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border outline-none transition-all duration-200"
-                        style={{
-                          backgroundColor: "var(--bg-color)",
-                          borderColor: "var(--border-color)",
-                          color: "var(--text-color)",
-                        }}
-                      >
-                        <option value="all">{isRtl ? "جميع الحالات" : "All Status"}</option>
-                        <option value="active">{isRtl ? "نشط" : "Active"}</option>
-                        <option value="exceeded">{isRtl ? "تجاوز الوقت" : "Exceeded"}</option>
-                      </select>
-                    </div>
-                  )}
                 </div>
-
-                {/* Content based on selected tab */}
                 {selectedTab === 'types' ? (
-                  // Break Types Grid
                   <div className="space-y-4">
                     {isLoading ? (
                       <div className="flex items-center justify-center py-20">
@@ -327,13 +204,21 @@ const BreakAdmin = ({ lang, setLang }) => {
                                   </p>
                                 </div>
                               </div>
-                              
                               <div className="flex items-center gap-2">
-                                <button 
+                                <button
                                   className="p-2 rounded-lg transition-colors hover:bg-blue-50"
                                   style={{
                                     backgroundColor: "var(--bg-color)",
                                     color: "var(--text-color)"
+                                  }}
+                                  onClick={() => {
+                                    setEditBreakType({
+                                      id: breakType._id,
+                                      name: breakType.name,
+                                      duration: breakType.duration,
+                                      isActive: breakType.isActive
+                                    });
+                                    setShowCreateModal(true);
                                   }}
                                 >
                                   <Edit size={16} />
@@ -349,7 +234,6 @@ const BreakAdmin = ({ lang, setLang }) => {
                                 </button>
                               </div>
                             </div>
-
                             <div className="space-y-3">
                               <div className="flex items-center justify-between text-sm">
                                 <span style={{ color: "var(--sub-text-color)" }}>
@@ -364,7 +248,6 @@ const BreakAdmin = ({ lang, setLang }) => {
                                   }
                                 </span>
                               </div>
-                              
                               <div className="flex items-center justify-between text-sm">
                                 <span style={{ color: "var(--sub-text-color)" }}>
                                   {isRtl ? "الاستخدام اليومي:" : "Daily Usage:"}
@@ -373,7 +256,6 @@ const BreakAdmin = ({ lang, setLang }) => {
                                   {Math.floor(Math.random() * 10) + 1} {isRtl ? "مرة" : "times"}
                                 </span>
                               </div>
-
                               <div className="flex items-center justify-between text-sm">
                                 <span style={{ color: "var(--sub-text-color)" }}>
                                   {isRtl ? "متوسط الاستخدام:" : "Avg Usage:"}
@@ -388,125 +270,7 @@ const BreakAdmin = ({ lang, setLang }) => {
                       </div>
                     )}
                   </div>
-                ) : selectedTab === 'active' ? (
-                  // Active Breaks Table
-                  <div className="space-y-4">
-                    {filteredActiveBreaks.map((breakItem, index) => {
-                      const statusStyle = getBreakStatusColor(breakItem.status);
-                      const progress = getProgressPercentage(breakItem.duration, breakItem.expectedDuration);
-                      
-                      return (
-                        <div
-                          key={index}
-                          className="p-6 rounded-xl border transition-all duration-300 hover:shadow-lg"
-                          style={{
-                            backgroundColor: "var(--hover-color)",
-                            borderColor: "var(--border-color)",
-                          }}
-                        >
-                          <div className="flex items-center justify-between">
-                            {/* User Info */}
-                            <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
-                                {breakItem.user.avatar}
-                              </div>
-                              <div>
-                                <h3 className="font-semibold" style={{ color: "var(--text-color)" }}>
-                                  {breakItem.user.firstName} {breakItem.user.lastName}
-                                </h3>
-                                <p className="text-sm" style={{ color: "var(--sub-text-color)" }}>
-                                  {breakItem.user.email}
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* Break Info */}
-                            <div className="flex-1 mx-6">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                  <Coffee size={16} style={{ color: "#8B5CF6" }} />
-                                  <span className="font-medium" style={{ color: "var(--text-color)" }}>
-                                    {breakItem.breakType}
-                                  </span>
-                                </div>
-                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusStyle.bg} ${statusStyle.text}`}>
-                                  {breakItem.status === 'active' ? (isRtl ? 'نشط' : 'Active') :
-                                   breakItem.status === 'exceeded' ? (isRtl ? 'تجاوز الوقت' : 'Exceeded') :
-                                   (isRtl ? 'مكتمل' : 'Completed')}
-                                </span>
-                              </div>
-
-                              {/* Progress Bar */}
-                              <div className="mb-2">
-                                <div className="flex items-center justify-between text-sm mb-1">
-                                  <span style={{ color: "var(--sub-text-color)" }}>
-                                    {breakItem.duration} / {breakItem.expectedDuration} {isRtl ? "دقيقة" : "minutes"}
-                                  </span>
-                                  <span style={{ color: "var(--sub-text-color)" }}>
-                                    {isRtl ? `بدأ في ${breakItem.startTime}` : `Started at ${breakItem.startTime}`}
-                                  </span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                  <div 
-                                    className={`h-2 rounded-full transition-all duration-300 ${
-                                      breakItem.status === 'exceeded' ? 'bg-red-500' : 'bg-blue-500'
-                                    }`}
-                                    style={{ width: `${Math.min(progress, 100)}%` }}
-                                  />
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Actions */}
-                            <div className="flex items-center gap-2">
-                              <button 
-                                className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm font-medium"
-                                style={{
-                                  backgroundColor: breakItem.status === 'exceeded' ? "#FEF2F2" : "#EFF6FF",
-                                  color: breakItem.status === 'exceeded' ? "#EF4444" : "#3B82F6"
-                                }}
-                              >
-                                {breakItem.status === 'exceeded' ? (
-                                  <>
-                                    <AlertTriangle size={16} />
-                                    {isRtl ? "تنبيه" : "Alert"}
-                                  </>
-                                ) : (
-                                  <>
-                                    <Timer size={16} />
-                                    {isRtl ? "جاري" : "Active"}
-                                  </>
-                                )}
-                              </button>
-                              <button 
-                                className="p-2 rounded-lg transition-colors"
-                                style={{
-                                  backgroundColor: "var(--bg-color)",
-                                  color: "var(--text-color)"
-                                }}
-                              >
-                                <MoreVertical size={16} />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    {filteredActiveBreaks.length === 0 && (
-                      <div className="text-center py-12">
-                        <Coffee size={48} className="mx-auto mb-4" style={{ color: "var(--sub-text-color)" }} />
-                        <h3 className="text-lg font-semibold mb-2" style={{ color: "var(--text-color)" }}>
-                          {isRtl ? "لا توجد فترات راحة نشطة" : "No Active Breaks"}
-                        </h3>
-                        <p style={{ color: "var(--sub-text-color)" }}>
-                          {isRtl ? "جميع الموظفين يعملون حالياً" : "All employees are currently working"}
-                        </p>
-                      </div>
-                    )}
-                  </div>
                 ) : (
-                  // History Tab
                   <div className="text-center py-12">
                     <Clock size={48} className="mx-auto mb-4" style={{ color: "var(--sub-text-color)" }} />
                     <h3 className="text-lg font-semibold mb-2" style={{ color: "var(--text-color)" }}>
@@ -519,7 +283,16 @@ const BreakAdmin = ({ lang, setLang }) => {
                 )}
               </div>
             </div>
-
+            <BreakTypeModal
+              show={showCreateModal}
+              onClose={() => setShowCreateModal(false)}
+              initialData={editBreakType}
+              isRtl={isRtl}
+              onSuccess={() => {
+                refetch();
+                setShowCreateModal(false);
+              }}
+            />
           </div>
         </main>
       </div>

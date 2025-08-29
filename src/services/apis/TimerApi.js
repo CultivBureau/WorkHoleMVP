@@ -40,17 +40,29 @@ export const timerApi = createApi({
       }),
     }),
     completeTimer: builder.mutation({
-      query: ({ id, ...body }) => ({
+      query: ({ id, note }) => ({
         url: `/api/timer/${id}/complete`,
         method: "PUT",
-        body,
+        body: { 
+          status: 'completed',
+          note: note || '' 
+        },
       }),
     }),
     cancelTimer: builder.mutation({
-      query: ({ id, ...body }) => ({
+      query: ({ id, note }) => ({
         url: `/api/timer/${id}/cancel`,
         method: "PUT",
-        body,
+        body: { 
+          status: 'cancelled',
+          note: note || '' 
+        },
+      }),
+    }),
+    getTimerLogs: builder.query({
+      query: () => ({
+        url: "/api/timer/logs",
+        method: "GET",
       }),
     }),
   }),
@@ -63,4 +75,5 @@ export const {
   useResumeTimerMutation,
   useCompleteTimerMutation,
   useCancelTimerMutation,
+  useGetTimerLogsQuery,
 } = timerApi;

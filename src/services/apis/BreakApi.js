@@ -56,6 +56,22 @@ export const breakApi = createApi({
         method: "GET",
       }),
     }),
+    createBreakType: builder.mutation({
+      query: (body) => ({
+        url: "type",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["BreakTypes"],
+    }),
+    updateBreakType: builder.mutation({
+      query: ({ id, ...body }) => ({
+        url: `type/${id}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["BreakTypes"],
+    }),
   }),
 });
 
@@ -66,4 +82,6 @@ export const {
   useGetBreakDashboardQuery,
   useGetBreakStatsQuery,
   useGetActiveBreaksCountQuery,
+  useCreateBreakTypeMutation,
+  useUpdateBreakTypeMutation,
 } = breakApi;

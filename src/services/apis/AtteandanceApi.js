@@ -50,8 +50,8 @@ export const attendanceApi = createApi({
     }),
     // Admin: Get all users attendance
     getAllUsersAttendance: builder.query({
-      query: () => ({
-        url: "/api/attendance/all",
+      query: (range = "today") => ({
+        url: `/api/attendance/all?range=${range}`,
         method: "GET",
       }),
     }),

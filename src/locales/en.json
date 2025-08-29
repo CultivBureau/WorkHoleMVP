@@ -395,19 +395,87 @@
     "timerFocus": "Focus Timer",
     "startTimer": "Start Timer",
     "timerRunning": "Timer Running...",
+    "timerPaused": "Timer Paused",
     "taskName": "Task Name",
     "taskPlaceholder": "Enter your task (e.g. Coding API)",
     "note": "Note",
     "notePlaceholder": "Optional note...",
-    "startNow": "Start Now",
+    "startNow": "Start",
     "starting": "Starting...",
     "cancel": "Cancel"
   },
+  "timer": {
+    "quickStart": "Quick Start Timer",
+    "timerControl": "Timer Control",
+    "currentTask": "Current Task",
+    "remainingTime": "Remaining Time",
+    "status": "Status",
+    "running": "Running",
+    "paused": "Paused",
+    "pause": "Pause",
+    "pausing": "Pausing...",
+    "resume": "Resume",
+    "resuming": "Resuming...",
+    "complete": "Complete",
+    "completeTimer": "Complete Timer",
+    "cancel": "Cancel Timer",
+    "close": "Close",
+    "task": "Task",
+    "addNote": "Add Note",
+    "optional": "optional",
+    "notePlaceholder": "Add any notes about this task...",
+    "back": "Back",
+    "processing": "Processing...",
+    "startNewTimer": "Start New Timer",
+    "clickToControl": "Click to Control",
+    "duration": "Duration",
+    "durationPlaceholder": "Minutes",
+    "started": "Timer started successfully!",
+    "startError": "Failed to start timer",
+    "invalidInput": "Please enter a valid task name and duration"
+  },
+  "dashboard": {
+    "quickActions": {
+      "clockIn": {
+        "title": "Clock In/Out",
+        "subtitle": "Track your work hours"
+      },
+      "startTimer": {
+        "title": "Start Timer",
+        "subtitle": "Quick focus session"
+      },
+      "requestLeave": {
+        "title": "Request Leave",
+        "subtitle": "Submit leave request"
+      },
+      "newTask": {
+        "title": "New Task",
+        "subtitle": "Create a new task"
+      },
+      "myKpis": {
+        "title": "My KPIs",
+        "subtitle": "View performance metrics"
+      },
+      "askAi": {
+        "title": "Ask AI",
+        "subtitle": "Get AI assistance"
+      },
+      "myTasks": {
+        "title": "My Tasks",
+        "subtitle": "View assigned tasks"
+      }
+    }
+  },
   "timerLogs": {
-    "title": "Time focus Logs",
-    "viewLogs": "View Logs",
+    "title": "Timer Logs",
+    "viewLogs": "View All",
     "time": "Time",
     "duration": "Duration",
-    "tag": "Tag"
+    "tag": "Task",
+    "status": "Status",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "paused": "Paused",
+    "running": "Running"
   }
 }

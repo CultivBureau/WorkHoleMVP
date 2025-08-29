@@ -26,6 +26,8 @@ const AttendanceAdmin = ({ lang, setLang }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterLocation, setFilterLocation] = useState("all");
+  const [dateFilter, setDateFilter] = useState("today");
+  const { data: attendanceData, isLoading, refetch } = useGetAllUsersAttendanceQuery(dateFilter);
 
   useEffect(() => {
     i18n.changeLanguage(lang);
@@ -33,9 +35,27 @@ const AttendanceAdmin = ({ lang, setLang }) => {
     localStorage.setItem("lang", lang);
   }, [lang, i18n]);
 
-  const { data: attendanceData, isLoading, refetch } = useGetAllUsersAttendanceQuery();
-
   const isRtl = lang === "ar";
+
+  // فلترة حسب الفترة المختارة
+  const filterByDate = (attendance) => {
+    const date = new Date(attendance.date); // تأكد أن لديك حقل date في attendance
+    const now = new Date();
+    if (dateFilter === "today") {
+      return date.toDateString() === now.toDateString();
+    }
+    if (dateFilter === "lastWeek") {
+      const lastWeek = new Date(now);
+      lastWeek.setDate(now.getDate() - 7);
+      return date >= lastWeek && date <= now;
+    }
+    if (dateFilter === "lastMonth") {
+      const lastMonth = new Date(now);
+      lastMonth.setMonth(now.getMonth() - 1);
+      return date >= lastMonth && date <= now;
+    }
+    return true;
+  };
 
   // Filter attendance data
   const filteredData = attendanceData?.filter(attendance => {
@@ -47,7 +67,7 @@ const AttendanceAdmin = ({ lang, setLang }) => {
     const matchesStatus = filterStatus === "all" || attendance.status === filterStatus;
     const matchesLocation = filterLocation === "all" || attendance.location === filterLocation;
     
-    return matchesSearch && matchesStatus && matchesLocation;
+    return matchesSearch && matchesStatus && matchesLocation && filterByDate(attendance);
   }) || [];
 
   const getStatusColor = (status) => {
@@ -139,26 +159,7 @@ const AttendanceAdmin = ({ lang, setLang }) => {
                 </p>
               </div>
               
-              <div className="flex items-center gap-3">
-                <button 
-                  onClick={refetch}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors"
-                  style={{
-                    backgroundColor: "var(--bg-color)",
-                    borderColor: "var(--border-color)",
-                    color: "var(--text-color)"
-                  }}
-                >
-                  <RefreshCw size={16} />
-                  {isRtl ? "تحديث" : "Refresh"}
-                </button>
-                <button 
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium gradient-bg"
-                >
-                  <Download size={16} />
-                  {isRtl ? "تصدير" : "Export"}
-                </button>
-              </div>
+
             </div>
 
             {/* Stats Cards */}
@@ -259,6 +260,24 @@ const AttendanceAdmin = ({ lang, setLang }) => {
                     <option value="all">{isRtl ? "جميع المواقع" : "All Locations"}</option>
                     <option value="office">{isRtl ? "المكتب" : "Office"}</option>
                     <option value="home">{isRtl ? "من المنزل" : "Remote"}</option>
+                  </select>
+                </div>
+
+                {/* Date Filter */}
+                <div className="lg:w-48">
+                  <select
+                    value={dateFilter}
+                    onChange={(e) => setDateFilter(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border outline-none transition-all duration-200"
+                    style={{
+                      backgroundColor: "var(--bg-color)",
+                      borderColor: "var(--border-color)",
+                      color: "var(--text-color)",
+                    }}
+                  >
+                    <option value="today">{isRtl ? "اليوم" : "Today"}</option>
+                    <option value="lastWeek">{isRtl ? "الأسبوع الماضي" : "Last Week"}</option>
+                    <option value="lastMonth">{isRtl ? "الشهر الماضي" : "Last Month"}</option>
                   </select>
                 </div>
               </div>
@@ -415,4 +434,4 @@ const AttendanceAdmin = ({ lang, setLang }) => {
   );
 };
 
-export default AttendanceAdmin; 
+export default AttendanceAdmin;

@@ -388,13 +388,89 @@
     "breakTrackingDesc": "راقب وأدر وقت الاستراحة بسهولة.",
     "viewBreakLogs": "عرض سجلات الاستراحة",
     "timerFocus": "مؤقت التركيز",
-    "startTimer": "ابدأ المؤقت"
+    "startTimer": "ابدأ المؤقت",
+    "timerRunning": "المؤقت يعمل...",
+    "timerPaused": "المؤقت متوقف",
+    "taskName": "اسم المهمة",
+    "taskPlaceholder": "أدخل مهمتك (مثل: برمجة API)",
+    "note": "ملاحظة",
+    "notePlaceholder": "ملاحظة اختيارية...",
+    "startNow": "ابدأ الآن",
+    "starting": "جاري البدء...",
+    "cancel": "إلغاء"
+  },
+  "timer": {
+    "quickStart": "بدء سريع للمؤقت",
+    "timerControl": "تحكم في المؤقت",
+    "currentTask": "المهمة الحالية",
+    "remainingTime": "الوقت المتبقي",
+    "status": "الحالة",
+    "running": "يعمل",
+    "paused": "متوقف",
+    "pause": "إيقاف",
+    "pausing": "جاري الإيقاف...",
+    "resume": "استئناف",
+    "resuming": "جاري الاستئناف...",
+    "complete": "إكمال",
+    "completeTimer": "إكمال المؤقت",
+    "cancel": "إلغاء المؤقت",
+    "close": "إغلاق",
+    "task": "المهمة",
+    "addNote": "إضافة ملاحظة",
+    "optional": "اختياري",
+    "notePlaceholder": "أضف أي ملاحظات حول هذه المهمة...",
+    "back": "رجوع",
+    "processing": "جاري المعالجة...",
+    "startNewTimer": "بدء مؤقت جديد",
+    "clickToControl": "انقر للتحكم",
+    "duration": "المدة",
+    "durationRange": "النطاق: 1-240 دقيقة",
+    "started": "تم بدء المؤقت بنجاح!",
+    "startError": "فشل في بدء المؤقت",
+    "invalidInput": "يرجى إدخال اسم مهمة ومدة صحيحة"
+  },
+  "dashboard": {
+    "quickActions": {
+      "clockIn": {
+        "title": "تسجيل الحضور/الانصراف",
+        "subtitle": "تتبع ساعات عملك"
+      },
+      "startTimer": {
+        "title": "بدء المؤقت",
+        "subtitle": "جلسة تركيز سريعة"
+      },
+      "requestLeave": {
+        "title": "طلب إجازة",
+        "subtitle": "تقديم طلب إجازة"
+      },
+      "newTask": {
+        "title": "مهمة جديدة",
+        "subtitle": "إنشاء مهمة جديدة"
+      },
+      "myKpis": {
+        "title": "مؤشراتي",
+        "subtitle": "عرض مقاييس الأداء"
+      },
+      "askAi": {
+        "title": "اسأل الذكي",
+        "subtitle": "احصل على مساعدة ذكية"
+      },
+      "myTasks": {
+        "title": "مهامي",
+        "subtitle": "عرض المهام المخصصة"
+      }
+    }
   },
   "timerLogs": {
-    "title": "سجلات تركيز الوقت",
-    "viewLogs": "عرض السجلات",
+    "title": "سجلات المؤقت",
+    "viewLogs": "عرض الكل",
     "time": "الوقت",
     "duration": "المدة",
-    "tag": "المهمة"
+    "tag": "المهمة",
+    "status": "الحالة",
+    "completed": "مكتمل",
+    "cancelled": "ملغي",
+    "paused": "متوقف",
+    "running": "يعمل"
   }
 }
