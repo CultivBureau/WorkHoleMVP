@@ -65,28 +65,28 @@
       "title": "Quick Actions",
       "subtitle": "Access your most-used actions in one click",
       "clockIn": {
-        "title": "Clock In",
-        "subtitle": "Not Clocked In"
+        "title": "Clock In/Out",
+        "subtitle": "Track your work hours"
       },
       "requestLeave": {
         "title": "Request Leave",
-        "subtitle": "You have 3 annual leave days"
+        "subtitle": "Submit leave request"
       },
       "newTask": {
         "title": "New Task",
-        "subtitle": "Assign or Create task"
+        "subtitle": "Create a new task"
       },
       "myKpis": {
         "title": "My KPIs",
-        "subtitle": "August score: 73%"
+        "subtitle": "View performance metrics"
       },
       "askAi": {
-        "title": "Ask AI Assistant",
-        "subtitle": "Available for requests"
+        "title": "Ask AI",
+        "subtitle": "Get AI assistance"
       },
       "myTasks": {
         "title": "My Tasks",
-        "subtitle": "View and manage your tasks"
+        "subtitle": "View assigned tasks"
       }
     },
     "activityHeatmap": {
@@ -127,7 +127,11 @@
       "dailyShift": "Daily Shift",
       "hoursWorked": "Hours Worked",
       "performance": "Performance",
-      "tasksCompleted": "Tasks completed this week"
+      "tasksCompleted": "Tasks completed this week",
+      "leave": "Leave",
+      "pending": "Pending",
+      "clock": "Clock",
+      "comingSoon": "Coming Soon"
     }
   },
   "breakTime": {
@@ -433,38 +437,6 @@
     "started": "Timer started successfully!",
     "startError": "Failed to start timer",
     "invalidInput": "Please enter a valid task name and duration"
-  },
-  "dashboard": {
-    "quickActions": {
-      "clockIn": {
-        "title": "Clock In/Out",
-        "subtitle": "Track your work hours"
-      },
-      "startTimer": {
-        "title": "Start Timer",
-        "subtitle": "Quick focus session"
-      },
-      "requestLeave": {
-        "title": "Request Leave",
-        "subtitle": "Submit leave request"
-      },
-      "newTask": {
-        "title": "New Task",
-        "subtitle": "Create a new task"
-      },
-      "myKpis": {
-        "title": "My KPIs",
-        "subtitle": "View performance metrics"
-      },
-      "askAi": {
-        "title": "Ask AI",
-        "subtitle": "Get AI assistance"
-      },
-      "myTasks": {
-        "title": "My Tasks",
-        "subtitle": "View assigned tasks"
-      }
-    }
   },
   "timerLogs": {
     "title": "Timer Logs",

@@ -9,11 +9,11 @@ export default function StatusCards({ dashboardData, isLoading, error }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  // Use API response fields
+  // Use API response fields with proper fallbacks
   const status = dashboardData?.currentStatus || t("dashboard.statusCards.notClockedIn");
-  const leaveRequest = dashboardData?.leaveStatus || t("dashboard.statusCards.noLeaveRequest");
+  const leaveStatus = dashboardData?.leaveStatus || t("dashboard.statusCards.pending");
   const dailyShift = dashboardData?.dailyShift || "0h 0m";
-  const performance = dashboardData?.performance || "coming soon";
+  const performance = dashboardData?.performance || t("dashboard.statusCards.comingSoon");
 
   // SVGs as <img> tags with responsive sizing
   const CalendarIcon = (
@@ -111,7 +111,7 @@ export default function StatusCards({ dashboardData, isLoading, error }) {
         />
         <Card
           header={t("dashboard.statusCards.leaveRequest")}
-          title={leaveRequest}
+          title={leaveStatus}
           subTitle={t("dashboard.statusCards.noRequestText")}
           rightIcon={LeaveIcon}
           footer={BarChartIcon}

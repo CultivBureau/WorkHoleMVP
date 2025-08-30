@@ -65,28 +65,32 @@
       "title": "الإجراءات السريعة",
       "subtitle": "وصول سريع لأكثر الإجراءات استخدامًا",
       "clockIn": {
-        "title": "تسجيل الدخول",
-        "subtitle": "لم يتم تسجيل الدخول"
+        "title": "تسجيل الحضور/الانصراف",
+        "subtitle": "تتبع ساعات عملك"
+      },
+      "startTimer": {
+        "title": "بدء المؤقت",
+        "subtitle": "جلسة تركيز سريعة"
       },
       "requestLeave": {
         "title": "طلب إجازة",
-        "subtitle": "لديك 3 أيام إجازة سنوية"
+        "subtitle": "تقديم طلب إجازة"
       },
       "newTask": {
         "title": "مهمة جديدة",
-        "subtitle": "تعيين أو إنشاء مهمة"
+        "subtitle": "إنشاء مهمة جديدة"
       },
       "myKpis": {
         "title": "مؤشرات الأداء",
-        "subtitle": "نتيجة أغسطس: 73%"
+        "subtitle": "عرض مقاييس الأداء"
       },
       "askAi": {
         "title": "اسأل المساعد الذكي",
-        "subtitle": "متاح للطلبات"
+        "subtitle": "احصل على مساعدة ذكية"
       },
       "myTasks": {
         "title": "مهامي",
-        "subtitle": "عرض وإدارة مهامك"
+        "subtitle": "عرض المهام المخصصة"
       }
     },
     "activityHeatmap": {
@@ -127,7 +131,11 @@
       "dailyShift": "الوردية اليومية",
       "hoursWorked": "ساعات العمل",
       "performance": "الأداء",
-      "tasksCompleted": "المهام المكتملة هذا الأسبوع"
+      "tasksCompleted": "المهام المكتملة هذا الأسبوع",
+      "leave": "إجازة",
+      "pending": "معلق",
+      "clock": "ساعة",
+      "comingSoon": "قريباً"
     }
   },
   "breakTime": {
@@ -428,38 +436,6 @@
     "started": "تم بدء المؤقت بنجاح!",
     "startError": "فشل في بدء المؤقت",
     "invalidInput": "يرجى إدخال اسم مهمة ومدة صحيحة"
-  },
-  "dashboard": {
-    "quickActions": {
-      "clockIn": {
-        "title": "تسجيل الحضور/الانصراف",
-        "subtitle": "تتبع ساعات عملك"
-      },
-      "startTimer": {
-        "title": "بدء المؤقت",
-        "subtitle": "جلسة تركيز سريعة"
-      },
-      "requestLeave": {
-        "title": "طلب إجازة",
-        "subtitle": "تقديم طلب إجازة"
-      },
-      "newTask": {
-        "title": "مهمة جديدة",
-        "subtitle": "إنشاء مهمة جديدة"
-      },
-      "myKpis": {
-        "title": "مؤشراتي",
-        "subtitle": "عرض مقاييس الأداء"
-      },
-      "askAi": {
-        "title": "اسأل الذكي",
-        "subtitle": "احصل على مساعدة ذكية"
-      },
-      "myTasks": {
-        "title": "مهامي",
-        "subtitle": "عرض المهام المخصصة"
-      }
-    }
   },
   "timerLogs": {
     "title": "سجلات المؤقت",
