@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ChevronDown } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useGetDashboardQuery } from "../../../services/apis/AtteandanceApi"
@@ -22,6 +22,12 @@ const filterOptions = [
   { value: "month", label: "Month" },
 ]
 
+// Use the same bar color for both light and dark mode, but get from CSS variable for live theme update
+const getCssVar = (name, fallback) => {
+  if (typeof window === "undefined") return fallback
+  return getComputedStyle(document.documentElement).getPropertyValue(name)?.trim() || fallback
+}
+
 const WorkHoursCharts = () => {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
@@ -29,6 +35,37 @@ const WorkHoursCharts = () => {
   // Filter state for week/month
   const [filter, setFilter] = useState("week")
   const { data, isLoading } = useGetDashboardQuery({ filter })
+
+  // Theme reactivity: update chart colors when theme changes
+  const [chartColors, setChartColors] = useState({
+    chartBarColor: getCssVar('--chart-bar', '#5EC6C6'),
+    chartLabelColor: getCssVar('--chart-label', '#B0B0B0'),
+    chartGridColor: getCssVar('--chart-grid', '#E0FFFD'),
+    chartBg: getCssVar('--chart-bg', '#fff'),
+    chartBorder: getCssVar('--chart-border', '#E0FFFD'),
+  })
+
+  useEffect(() => {
+    const updateColors = () => {
+      setChartColors({
+        chartBarColor: getCssVar('--chart-bar', '#5EC6C6'),
+        chartLabelColor: getCssVar('--chart-label', '#B0B0B0'),
+        chartGridColor: getCssVar('--chart-grid', '#E0FFFD'),
+        chartBg: getCssVar('--chart-bg', '#fff'),
+        chartBorder: getCssVar('--chart-border', '#E0FFFD'),
+      })
+    }
+
+    // Listen for theme changes (class or attribute changes on <html> or <body>)
+    const observer = new MutationObserver(updateColors)
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] })
+    observer.observe(document.body, { attributes: true, attributeFilter: ['data-theme', 'class'] })
+
+    // Also update on mount
+    updateColors()
+
+    return () => observer.disconnect()
+  }, [])
 
   // استخدم workHoursChart مباشرة من الريسبونس
   const workHoursChart = data?.workHoursChart || []
@@ -47,11 +84,7 @@ const WorkHoursCharts = () => {
       {
         label: t("mainContent.workHours"),
         data: chartData.map((item) => item.hours),
-        backgroundColor: chartData.map((item) =>
-          item.hours === Math.max(...chartData.map((d) => d.hours))
-            ? "#75C8CF"
-            : "#C0E8EC"
-        ),
+        backgroundColor: chartColors.chartBarColor,
         borderRadius: 16,
         barThickness: 32,
       },
@@ -78,19 +111,19 @@ const WorkHoursCharts = () => {
         max: Math.ceil(maxHours),
         ticks: {
           stepSize: Math.ceil(maxHours / 4),
-          color: "#666",
+          color: chartColors.chartLabelColor,
           font: {
             size: 12,
           },
         },
         grid: {
-          color: "#E0E0E0",
+          color: chartColors.chartGridColor,
           drawBorder: false,
         },
       },
       x: {
         ticks: {
-          color: "#333",
+          color: chartColors.chartLabelColor,
           font: {
             size: 12,
           },
@@ -104,23 +137,29 @@ const WorkHoursCharts = () => {
 
   return (
     <div
-      className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100"
-      style={{ direction: isAr ? "rtl" : "ltr" }}
+      className="rounded-2xl p-6 shadow-lg border"
+      style={{
+        direction: isAr ? "rtl" : "ltr",
+        background: chartColors.chartBg,
+        borderColor: chartColors.chartBorder,
+      }}
     >
       {/* Header + Filter */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold text-gray-900">
+        <h2 className="text-2xl font-bold" style={{ color: "var(--text-color)" }}>
           {t("mainContent.workHours")}
         </h2>
         <div className="relative flex items-center">
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="rounded-full px-4 py-2 pr-8 text-sm font-medium appearance-none focus:outline-none bg-[#E6F4F4] text-gray-700 hover:bg-[#D1EDED] transition-all duration-200"
+            className="rounded-full px-5 py-2 pr-10 text-sm font-semibold appearance-none focus:outline-none transition-all duration-200 hover:scale-105"
             style={{
               minWidth: 120,
+              background: chartColors.chartBarColor,
+              color: "#222",
               border: "none",
-              direction: isAr ? "rtl" : "ltr",
+              direction: isAr ? "rtl" : "ltr"
             }}
           >
             {(isAr ? [...filterOptions].reverse() : filterOptions).map((option) => (
@@ -130,7 +169,8 @@ const WorkHoursCharts = () => {
             ))}
           </select>
           <ChevronDown
-            className={`absolute ${isAr ? "left-3" : "right-3"} top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-700`}
+            className={`absolute ${isAr ? "left-4" : "right-4"} top-1/2 transform -translate-y-1/2 w-4 h-4`}
+            style={{ color: "#222" }}
           />
         </div>
       </div>

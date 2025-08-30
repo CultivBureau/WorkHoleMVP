@@ -98,7 +98,7 @@ const AttendanceTable = () => {
 				<select
 					value={value}
 					onChange={onChange}
-					className="border rounded-xl px-3 py-1.5 text-xs appearance-none focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200 min-w-[100px] font-medium"
+					className="border rounded-full px-3 py-1.5 text-xs appearance-none focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200 min-w-[100px] font-medium"
 					style={{
 						borderColor: 'var(--border-color)',
 						backgroundColor: 'var(--bg-color)',
@@ -135,7 +135,7 @@ const AttendanceTable = () => {
 				type="date"
 				value={value}
 				onChange={onChange}
-				className="border rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200 min-w-[100px] font-medium date-input"
+				className="border rounded-full px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200 min-w-[100px] font-medium date-input"
 				style={{
 					borderColor: 'var(--border-color)',
 					backgroundColor: 'var(--bg-color)',

@@ -1,7 +1,7 @@
+import { useState, useEffect } from "react"
 import { Eye } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useGetTimerLogsQuery } from "../../../services/apis/TimerApi"
-import React, { useState, useEffect } from "react"
 
 export function TimeFocusLogs({ refreshTrigger }) {
   const { t, i18n } = useTranslation()
@@ -28,61 +28,83 @@ export function TimeFocusLogs({ refreshTrigger }) {
 
   // Format time
   const formatTime = (dateStr) => {
-    const d = new Date(dateStr)
-    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    const date = new Date(dateStr)
+    return date.toLocaleTimeString(isAr ? "ar-EG" : "en-US", { hour: "2-digit", minute: "2-digit" })
   }
 
-  // Main logs (show only 3)
-  const mainLogs = logs.slice(0, 3)
+  // Theme reactivity for tag colors
+  const getTagColors = () => {
+    const theme = document.documentElement.getAttribute("data-theme") || "light"
+    const isDark = theme === "dark"
+    return {
+      tagBg: isDark ? "#232b32" : "#F5F5F5",
+      tagText: isDark ? "#E6F4F4" : "var(--text-color)",
+    }
+  }
+
+  const [tagColors, setTagColors] = useState(getTagColors())
+
+  useEffect(() => {
+    const updateColors = () => setTagColors(getTagColors())
+    const observer = new MutationObserver(updateColors)
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] })
+    observer.observe(document.body, { attributes: true, attributeFilter: ['data-theme', 'class'] })
+    updateColors()
+    return () => observer.disconnect()
+  }, [])
+
+  // Use logs for mainLogs (remove mockLogs)
+  const mainLogs = logs
 
   return (
-    <>
-      <div
-        className="bg-[var(--bg-color)] rounded-2xl p-6 shadow-sm border border-[var(--border-color)]"
-        style={{ direction: isAr ? "rtl" : "ltr" }}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-normal" style={{ color: "var(--text-color)" }}>
-            {t("timerLogs.title")}
-          </h1>
-          <button
-            className="flex items-center gap-2 text-[var(--accent-color)] border border-[var(--border-color)] bg-[var(--bg-color)] px-4 py-2 rounded-xl font-medium text-sm transition-colors hover:bg-[var(--hover-color)]"
-            onClick={() => setShowModal(true)}
+    <div
+      className="bg-[var(--bg-color)] rounded-2xl p-6 shadow-sm border border-[var(--border-color)]"
+      style={{ direction: isAr ? "rtl" : "ltr" }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-normal" style={{ color: "var(--text-color)" }}>
+          {t("timerLogs.title")}
+        </h1>
+        <button
+          className="flex items-center gap-2 text-[var(--accent-color)] border border-[var(--border-color)] bg-[var(--bg-color)] px-4 py-2 rounded-xl font-medium text-sm transition-colors hover:bg-[var(--hover-color)]"
+          onClick={() => setShowModal(true)}
+        >
+          <Eye className="w-5 h-5" style={{ color: "var(--sub-text-color)" }} />
+          {t("timerLogs.viewLogs")}
+        </button>
+      </div>
+
+      {/* Column Headers */}
+      <div className="grid grid-cols-3 gap-4 mb-4 pb-3 border-b border-[var(--divider-color)]">
+        <div className="text-[var(--sub-text-color)] text-sm font-medium">{t("timerLogs.time")}</div>
+        <div className="text-[var(--sub-text-color)] text-sm font-medium">{t("timerLogs.duration")}</div>
+        <div className="text-[var(--sub-text-color)] text-sm font-medium">{t("timerLogs.tag")}</div>
+      </div>
+
+      {/* Log Entries */}
+      <div className="space-y-4">
+        {(isLoading ? [] : mainLogs).map((log, idx) => (
+          <div
+            key={log._id}
+            className={`grid grid-cols-3 gap-4 items-center py-3 ${
+              idx !== mainLogs.length - 1 ? "border-b border-[var(--divider-color)]" : ""
+            }`}
           >
-            <Eye className="w-5 h-5" />
-            {t("timerLogs.viewLogs")}
-          </button>
-        </div>
-
-        {/* Column Headers */}
-        <div className="grid grid-cols-3 gap-4 mb-4 pb-3 border-b border-[var(--divider-color)]">
-          <div className="text-[var(--sub-text-color)] text-sm font-medium">{t("timerLogs.time")}</div>
-          <div className="text-[var(--sub-text-color)] text-sm font-medium">{t("timerLogs.duration")}</div>
-          <div className="text-[var(--sub-text-color)] text-sm font-medium">{t("timerLogs.tag")}</div>
-        </div>
-
-        {/* Log Entries */}
-        <div className="space-y-4">
-          {(isLoading ? [] : mainLogs).map((log, idx) => (
-            <div
-              key={log._id}
-              className={`grid grid-cols-3 gap-4 items-center py-3 ${
-                idx !== mainLogs.length - 1 ? "border-b border-[var(--divider-color)]" : ""
-              }`}
-            >
-              <div className="text-[var(--sub-text-color)] text-sm">{formatTime(log.startTime)}</div>
-              <div className="text-[var(--text-color)] text-sm font-medium">
-                {localizeMin(formatDuration(log))}
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="bg-[#F5F5F5] px-3 py-1 rounded-lg text-xs" style={{ color: "var(--text-color)" }}>
-                  {log.tag}
-                </span>
-              </div>
+            <div className="text-[var(--sub-text-color)] text-sm">{formatTime(log.startTime)}</div>
+            <div className="text-[var(--text-color)] text-sm font-medium">
+              {localizeMin(formatDuration(log))}
             </div>
-          ))}
-        </div>
+            <div className="flex items-center gap-2">
+              <span
+                className="px-3 py-1 rounded-lg text-xs"
+                style={{ background: tagColors.tagBg, color: tagColors.tagText }}
+              >
+                {log.tag}
+              </span>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Full Screen Modal */}
@@ -117,7 +139,10 @@ export function TimeFocusLogs({ refreshTrigger }) {
                     {localizeMin(formatDuration(log))}
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="bg-[#F5F5F5] px-3 py-1 rounded-lg text-xs" style={{ color: "var(--text-color)" }}>
+                    <span
+                      className="px-3 py-1 rounded-lg text-xs"
+                      style={{ background: tagColors.tagBg, color: tagColors.tagText }}
+                    >
                       {log.tag}
                     </span>
                   </div>
@@ -138,7 +163,7 @@ export function TimeFocusLogs({ refreshTrigger }) {
           </div>
         </div>
       )}
-    </>
+    </div>
   )
 }
 

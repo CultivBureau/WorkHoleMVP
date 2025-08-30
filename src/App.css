@@ -51,7 +51,7 @@ body {
   --table-text: #18181b;
 
   /* Chart Colors */
-  --chart-bar: #B2F1EA;
+  --chart-bar: #5EC6C6;
   --chart-bar-highlight: #5EC6C6;
   --chart-bg: #fff;
   --chart-border: #E0FFFD;
@@ -107,7 +107,7 @@ body {
 }
 
 [data-theme="dark"] {
-  --bg-all: #2b3546;
+  --bg-all: #1a232e;
   --bg-color: #111827;
   --container-color: #4b5563;
   --text-color: #f9fafb;
@@ -128,7 +128,7 @@ body {
   --card-color: #ffffff;
 
   /* Chart Colors for Dark Mode */
-  --chart-bar: #224e4e;
+  --chart-bar: #5EC6C6;
   --chart-bar-highlight: #5EC6C6;
   --chart-bg: #1a232e;
   --chart-border: #374151;
