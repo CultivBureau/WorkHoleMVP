@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import CustomPopup from '../ui/custom-popup';
+import DigitalNumber from '../ui/DigitalNumber';
 import {
     useGetBreakTypesQuery,
     useStartBreakMutation,
@@ -333,10 +334,12 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                         border: '1px solid rgba(255, 255, 255, 0.2)'
                     }}>
                     <div className="flex flex-col items-center">
-                        <div className="digital-numbers text-lg font-bold tracking-wider transition-all duration-200 group-hover/timer:scale-110"
-                            style={{ color: 'var(--text-color)', lineHeight: '1' }}>
-                            {timerMinutes}
-                        </div>
+                        <DigitalNumber 
+                            value={timerMinutes} 
+                            size="lg" 
+                            className="transition-all duration-200 group-hover/timer:scale-110"
+                            style={{ color: 'var(--text-color)', lineHeight: '1' }}
+                        />
                         <div className="text-[9px] font-semibold tracking-widest opacity-75 uppercase transition-all duration-200"
                             style={{ color: 'var(--sub-text-color)', lineHeight: '1' }}>
                             MIN
@@ -344,10 +347,12 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                     </div>
                     <div className="w-px h-8 bg-white bg-opacity-30"></div>
                     <div className="flex flex-col items-center">
-                        <div className="digital-numbers text-lg font-bold tracking-wider transition-all duration-200 group-hover/timer:scale-110"
-                            style={{ color: 'var(--text-color)', lineHeight: '1' }}>
-                            {timerSeconds}
-                        </div>
+                        <DigitalNumber 
+                            value={timerSeconds} 
+                            size="lg" 
+                            className="transition-all duration-200 group-hover/timer:scale-110"
+                            style={{ color: 'var(--text-color)', lineHeight: '1' }}
+                        />
                         <div className="text-[9px] font-semibold tracking-widest opacity-75 uppercase transition-all duration-200"
                             style={{ color: 'var(--sub-text-color)', lineHeight: '1' }}>
                             SEC
