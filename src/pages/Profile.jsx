@@ -18,12 +18,13 @@ import {
 import { useNavigate } from "react-router-dom"
 import EditProfile from "../components/profile/EditProfile";
 import { useState } from "react";
+import { useLang } from "../contexts/LangContext";
 
 const Profile = () => {
     const { i18n } = useTranslation()
     const { data: user, isLoading } = useMeQuery()
     const navigate = useNavigate()
-    const isRtl = i18n.language === 'ar'
+    const { lang, isRtl } = useLang()
     const [editOpen, setEditOpen] = useState(false);
 
     // Dynamic translations without using translation files

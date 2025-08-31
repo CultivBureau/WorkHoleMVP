@@ -449,5 +449,40 @@
     "cancelled": "Cancelled",
     "paused": "Paused",
     "running": "Running"
+  },
+  "timerCard": {
+    "activeTimer": "Active Timer",
+    "focusTimer": "Focus Timer",
+    "running": "Running",
+    "paused": "Paused",
+    "startTimer": "Start Timer",
+    "controlTimer": "Control Timer",
+    "starting": "Starting...",
+    "clickToControl": "Click to control timer",
+    "startToEnable": "Start the timer to enable controls",
+    "decreaseDuration": "Decrease duration",
+    "increaseDuration": "Increase duration",
+    "taskNameRequired": "Task name required",
+    "startFailed": "Failed to start timer. Please try again.",
+    "pauseFailed": "Failed to pause timer",
+    "resumeFailed": "Failed to resume timer",
+    "completeFailed": "Failed to complete timer",
+    "cancelFailed": "Failed to cancel timer",
+    "autoCompleted": "Auto-completed - duration reached"
+  },
+  "login": {
+    "welcomeBack": "Welcome Back",
+    "signInToContinue": "Sign in to continue to",
+    "emailAddress": "Email Address",
+    "enterEmail": "Enter your email",
+    "password": "Password",
+    "enterPassword": "Enter your password",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot Password?",
+    "signIn": "Sign In",
+    "signingIn": "Signing In...",
+    "loginSuccess": "Login successful",
+    "loginFailed": "Login failed",
+    "secureLogin": "🔒 Your data is secured with end-to-end encryption"
   }
 }

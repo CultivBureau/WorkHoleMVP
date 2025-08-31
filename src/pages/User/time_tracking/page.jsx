@@ -1,17 +1,12 @@
-import React, { useEffect } from "react";
+import React from "react";
 import SideMenu from "../../../components/side-menu/side-menu";
 import NavBar from "../../../components/NavBar/navbar";
 import Stats from "../../../components/Time_Tracking_Components/Stats/Stats";
 import MainSection from "../../../components/Time_Tracking_Components/MainSection/MainSection";
-import { useTranslation } from "react-i18next";
+import { useLang } from "../../../contexts/LangContext";
 
-const TimeTracking = ({ lang, setLang }) => {
-  const { i18n } = useTranslation();
-
-  useEffect(() => {
-    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-    i18n.changeLanguage(lang);
-  }, [lang, i18n]);
+const TimeTracking = () => {
+  const { isRtl } = useLang();
 
   return (
     <div
@@ -19,7 +14,7 @@ const TimeTracking = ({ lang, setLang }) => {
       style={{ background: "var(--bg-all)" }}
     >
       {/* Navigation Bar - Full Width at Top */}
-      <NavBar lang={lang} setLang={setLang} />
+      <NavBar />
 
       {/* Content Area with SideMenu and Main Content */}
       <div
@@ -27,7 +22,7 @@ const TimeTracking = ({ lang, setLang }) => {
         style={{ background: "var(--bg-all)" }}
       >
         {/* Side Menu - Left side under navbar */}
-        <SideMenu lang={lang} />
+        <SideMenu />
 
         {/* Main Content - Rest of the space */}
         <main

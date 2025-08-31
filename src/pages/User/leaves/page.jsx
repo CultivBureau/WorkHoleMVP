@@ -1,21 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import SideMenu from "../../../components/side-menu/side-menu";
 import NavBar from "../../../components/NavBar/navbar";
 import StatusCards from "../../../components/leave-requests/status-cards";
 import LeaveRequest from "../../../components/leave-requests/leave-request";
 import LeaveSummaryCards from "../../../components/leave-requests/leave-summary-cards";
 import LeaveTable from "../../../components/leave-requests/table";
-import { useTranslation } from "react-i18next";
+import { useLang } from "../../../contexts/LangContext";
 
 const Leaves = () => {
-  const { i18n } = useTranslation();
-  const [currentLang, setCurrentLang] = useState(i18n.language);
-
-  useEffect(() => {
-    setCurrentLang(i18n.language);
-    document.documentElement.dir = i18n.language === "ar" ? "rtl" : "ltr";
-    localStorage.setItem("lang", i18n.language);
-  }, [i18n.language]);
+  const { isRtl } = useLang();
 
   return (
     <div
@@ -23,12 +16,12 @@ const Leaves = () => {
       style={{ background: "var(--bg-all)" }}
     >
       {/* Navigation Bar - Full Width at Top */}
-      <NavBar lang={currentLang} setLang={setCurrentLang} />
+      <NavBar />
 
       {/* Content Area with SideMenu and Main Content */}
       <div className="flex flex-1 min-h-0" style={{ background: "var(--bg-all)" }}>
         {/* Side Menu - Left side under navbar */}
-        <SideMenu lang={currentLang} />
+        <SideMenu />
 
         {/* Main Content - Rest of the space */}
         <main className="flex-1 overflow-auto p-4" style={{ background: "var(--bg-all)" }}>
