@@ -43,14 +43,12 @@ export default function ActivityHeatmap({ dashboardData, isLoading, error }) {
 
   return (
     <div
-      className="w-full rounded-lg shadow-sm border border-gray-100 overflow-x-auto"
+      className="w-full rounded-lg shadow-sm border border-gray-100 overflow-x-auto p-3 sm:p-4 lg:p-6"
       style={{
         background: "var(--container-bg)",
         padding: "16px 12px 12px 12px",
         boxSizing: "border-box",
       }}
-      // Add responsive padding
-      className="w-full rounded-lg shadow-sm border border-gray-100 overflow-x-auto p-3 sm:p-4 lg:p-6"
     >
       {/* Container for entire heatmap */}
       <div className="flex flex-col min-w-[320px]">
@@ -60,7 +58,7 @@ export default function ActivityHeatmap({ dashboardData, isLoading, error }) {
           <div className="w-4 sm:w-5 flex-shrink-0"></div>
           {/* Month Labels - aligned with grid */}
           <div
-            className="text-gray-400"
+            className="text-gray-400 text-[9px] sm:text-[10px] lg:text-xs"
             style={{
               fontSize: "10px",
               fontWeight: "500",
@@ -70,8 +68,6 @@ export default function ActivityHeatmap({ dashboardData, isLoading, error }) {
               height: "14px",
               flex: 1,
             }}
-            // Responsive font sizes
-            className="text-gray-400 text-[9px] sm:text-[10px] lg:text-xs"
           >
             {/* Show month at start of each month */}
             {heatChart.map((monthObj, idx) => (
@@ -91,7 +87,7 @@ export default function ActivityHeatmap({ dashboardData, isLoading, error }) {
         <div className="flex items-start" style={{ gap: "6px" }}>
           {/* Days of week labels - aligned with heatmap rows */}
           <div
-            className="text-gray-400 ml-1 sm:ml-2"
+            className="text-gray-400 ml-1 sm:ml-2 text-[7px] sm:text-[8px] lg:text-[9px] h-16 sm:h-20 lg:h-24 w-3 sm:w-4 lg:w-5"
             style={{
               fontSize: "8px",
               fontWeight: "500",
@@ -102,8 +98,6 @@ export default function ActivityHeatmap({ dashboardData, isLoading, error }) {
               width: "16px",
               flexShrink: 0,
             }}
-            // Responsive sizing
-            className="text-gray-400 ml-1 sm:ml-2 text-[7px] sm:text-[8px] lg:text-[9px] h-16 sm:h-20 lg:h-24 w-3 sm:w-4 lg:w-5"
           >
             {weekDays.map((day, idx) => (
               <div
