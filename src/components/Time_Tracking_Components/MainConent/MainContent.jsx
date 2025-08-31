@@ -80,9 +80,9 @@ const MainContent = () => {
   const workedMinutes = stats.currentStatus === "Clocked In"
     ? Math.floor(activeWorkSeconds / 60)
     : (() => {
-        const [worked] = stats.todayProgress?.split("/") || ["0h 0m"]
-        return parseInt(worked) * 60 + parseInt(worked.split(" ")[1]?.replace("m", "") || "0")
-      })()
+      const [worked] = stats.todayProgress?.split("/") || ["0h 0m"]
+      return parseInt(worked) * 60 + parseInt(worked.split(" ")[1]?.replace("m", "") || "0")
+    })()
 
   const efficiency = stats.currentStatus === "Clocked In"
     ? Math.min(100, Math.round((workedMinutes / shiftMinutes) * 100))
@@ -95,11 +95,11 @@ const MainContent = () => {
   const remainingMinutes = stats.currentStatus === "Clocked In"
     ? Math.max(0, shiftMinutes - workedMinutes)
     : (() => {
-        const [_, total] = stats.todayProgress?.split("/") || ["0h 0m", "8h"]
-        const totalMinutes = parseInt(total) * 60 + parseInt(total.split(" ")[1]?.replace("m", "") || "0"
-        )
-        return Math.max(0, totalMinutes - workedMinutes)
-      })()
+      const [_, total] = stats.todayProgress?.split("/") || ["0h 0m", "8h"]
+      const totalMinutes = parseInt(total) * 60 + parseInt(total.split(" ")[1]?.replace("m", "") || "0"
+      )
+      return Math.max(0, totalMinutes - workedMinutes)
+    })()
 
   const remainingTime = stats.currentStatus === "Clocked In"
     ? formatTime(remainingMinutes * 60)
@@ -138,10 +138,10 @@ const MainContent = () => {
             }}
           >
             <div className="flex items-center gap-2">
-              <span className="text-[var(--sub-text-color)] text-sm">{t("mainContent.currentStatus")}</span>
+              <span className="text-[var(--sub-text-color)] text-xs">{t("mainContent.currentStatus")}</span> {/* text-sm → text-xs */}
               <div className={`w-2 h-2 rounded-full ${stats.currentStatus === "Clocked In" ? "bg-green-500" : "bg-red-500"}`}></div>
             </div>
-            <h3 className="text-xl font-semibold" style={{ color: "var(--text-color)" }}>
+            <h3 className="text-lg font-semibold" style={{ color: "var(--text-color)" }}> {/* text-xl → text-lg */}
               {stats.currentStatus === "Clocked In"
                 ? t("clockIn")
                 : t("clockOut")}
@@ -154,12 +154,11 @@ const MainContent = () => {
               borderColor: "var(--border-color)",
             }}
           >
-            <span className="text-[var(--sub-text-color)] text-sm">{t("mainContent.activeWorkTime")}</span>
-            <h3 className="text-3xl font-bold" style={{ color: "var(--text-color)" }}>{activeWorkTime}</h3>
+            <span className="text-[var(--sub-text-color)] text-xs">{t("mainContent.activeWorkTime")}</span> {/* text-sm → text-xs */}
+            <h3 className="text-2xl font-bold" style={{ color: "var(--text-color)" }}>{activeWorkTime}</h3> {/* text-3xl → text-2xl */}
           </div>
         </div>
-
-        {/* Second Row - Today's Progress & Break/Efficiency */}
+        {/* Second Row */}
         <div className="w-full h-[105px] flex gap-2 justify-center items-center">
           <div
             className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-between border"
@@ -168,16 +167,16 @@ const MainContent = () => {
               borderColor: "var(--border-color)",
             }}
           >
-            <span className="text-[var(--sub-text-color)] text-sm">{t("mainContent.todaysProgress")}</span>
+            <span className="text-[var(--sub-text-color)] text-xs">{t("mainContent.todaysProgress")}</span> {/* text-sm → text-xs */}
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-medium" style={{ color: "var(--text-color)" }}>
+                <span className="text-xs font-medium" style={{ color: "var(--text-color)" }}> {/* text-sm → text-xs */}
                   {t("mainContent.workHours")}
                 </span>
-                <span className="text-sm" style={{ color: "var(--sub-text-color)" }}>{todayProgress}</span>
+                <span className="text-xs" style={{ color: "var(--sub-text-color)" }}>{todayProgress}</span> {/* text-sm → text-xs */}
               </div>
-              <div className="w-full bg-[var(--divider-color)] rounded-full h-2">
-                <div className="bg-[var(--accent-color)] h-2 rounded-full transition-all duration-500" style={{ width: `${todayProgressPercent}%` }}></div>
+              <div className="w-full bg-[var(--divider-color)] rounded-full h-1.5"> {/* h-2 → h-1.5 */}
+                <div className="bg-[var(--accent-color)] h-1.5 rounded-full transition-all duration-500" style={{ width: `${todayProgressPercent}%` }}></div> {/* h-2 → h-1.5 */}
               </div>
             </div>
           </div>
@@ -189,8 +188,8 @@ const MainContent = () => {
                 borderColor: "var(--border-color)",
               }}
             >
-              <h3 className="text-3xl font-bold" style={{ color: "var(--text-color)" }}>{stats.breaksCount}</h3>
-              <span className="text-[var(--sub-text-color)] text-sm">{t("mainContent.break")}</span>
+              <h3 className="text-2xl font-bold" style={{ color: "var(--text-color)" }}>{stats.breaksCount}</h3> {/* text-3xl → text-2xl */}
+              <span className="text-[var(--sub-text-color)] text-xs">{t("mainContent.break")}</span> {/* text-sm → text-xs */}
             </div>
             <div
               className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-center items-center border"
@@ -199,13 +198,12 @@ const MainContent = () => {
                 borderColor: "var(--border-color)",
               }}
             >
-              <h3 className="text-3xl font-bold" style={{ color: "var(--text-color)" }}>{efficiency ? `${efficiency}%` : "0%"}</h3>
-              <span className="text-[var(--sub-text-color)] text-sm">{t("mainContent.efficiency")}</span>
+              <h3 className="text-2xl font-bold" style={{ color: "var(--text-color)" }}>{efficiency ? `${efficiency}%` : "0%"}</h3> {/* text-3xl → text-2xl */}
+              <span className="text-[var(--sub-text-color)] text-xs">{t("mainContent.efficiency")}</span> {/* text-sm → text-xs */}
             </div>
           </div>
         </div>
-
-        {/* Third Row - Complete/Remaining & Most Productive/Focus Time */}
+        {/* Third Row */}
         <div className="w-full h-[105px] flex gap-2 justify-center items-center">
           <div className="w-1/2 h-full flex gap-2 justify-center items-center">
             <div
@@ -215,8 +213,8 @@ const MainContent = () => {
                 borderColor: "var(--border-color)",
               }}
             >
-              <h3 className="text-3xl font-bold" style={{ color: "var(--text-color)" }}>{completedShift ? `${completedShift}%` : "0%"}</h3>
-              <span className="text-[var(--sub-text-color)] text-sm text-center leading-tight">
+              <h3 className="text-2xl font-bold" style={{ color: "var(--text-color)" }}>{completedShift ? `${completedShift}%` : "0%"}</h3> {/* text-3xl → text-2xl */}
+              <span className="text-[var(--sub-text-color)] text-xs text-center leading-tight">
                 {t("mainContent.complete")}
               </span>
             </div>
@@ -227,8 +225,8 @@ const MainContent = () => {
                 borderColor: "var(--border-color)",
               }}
             >
-              <h3 className="text-3xl font-bold" style={{ color: "var(--text-color)" }}>{remainingTime}</h3>
-              <span className="text-[var(--sub-text-color)] text-sm text-center leading-tight">
+              <h3 className="text-2xl font-bold" style={{ color: "var(--text-color)" }}>{remainingTime}</h3> {/* text-3xl → text-2xl */}
+              <span className="text-[var(--sub-text-color)] text-xs text-center leading-tight">
                 {t("mainContent.remaining")}
               </span>
             </div>
@@ -241,11 +239,11 @@ const MainContent = () => {
                 borderColor: "var(--border-color)",
               }}
             >
-              <span className="text-[var(--sub-text-color)] text-xs mb-1 text-center leading-tight">
+              <span className="text-[var(--sub-text-color)] text-[10px] mb-1 text-center leading-tight"> {/* text-xs → text-[10px] */}
                 {stats.mostProductiveDay?.day || t("mainContent.tuesday")}
               </span>
-              <h3 className="text-2xl font-bold" style={{ color: "var(--text-color)" }}>{stats.mostProductiveDay?.time || "0h 0m"}</h3>
-              <span className="text-[var(--sub-text-color)] text-xs text-center leading-tight">
+              <h3 className="text-xl font-bold" style={{ color: "var(--text-color)" }}>{stats.mostProductiveDay?.time || "0h 0m"}</h3> {/* text-2xl → text-xl */}
+              <span className="text-[var(--sub-text-color)] text-[10px] text-center leading-tight"> {/* text-xs → text-[10px] */}
                 {t("mainContent.mostProductiveDay")}
               </span>
             </div>
@@ -256,92 +254,90 @@ const MainContent = () => {
                 borderColor: "var(--border-color)",
               }}
             >
-              <span className="text-[var(--sub-text-color)] text-xs mb-1 text-center leading-tight">
+              <span className="text-[var(--sub-text-color)] text-[10px] mb-1 text-center leading-tight"> {/* text-xs → text-[10px] */}
                 {t("mainContent.thisWeek")}
               </span>
-              <h3 className="text-2xl font-bold" style={{ color: "var(--text-color)" }}>{stats.thisWeek}</h3>
-              <span className="text-[var(--sub-text-color)] text-xs text-center leading-tight">
+              <h3 className="text-xl font-bold" style={{ color: "var(--text-color)" }}>{stats.thisWeek}</h3> {/* text-2xl → text-xl */}
+              <span className="text-[var(--sub-text-color)] text-[10px] text-center leading-tight"> {/* text-xs → text-[10px] */}
                 {t("mainContent.focusTime")}
               </span>
             </div>
           </div>
         </div>
-
         {/* Start Your Day Button */}
         <div className="w-full h-max pb-2 pt-2 flex justify-center items-center">
           <button
-            className="w-full text-white font-semibold py-4 px-6 rounded-2xl transition-colors flex items-center justify-center gap-3 disabled:opacity-60"
+            className="w-full text-white font-medium py-3 px-6 rounded-2xl transition-colors flex items-center justify-center gap-2 disabled:opacity-60" // font-semibold → font-medium, py-4 → py-3, gap-3 → gap-2
             style={{
               background: `linear-gradient(135deg, var(--accent-hover) 0%, var(--accent-color) 100%)`,
             }}
             onClick={handleClock}
             disabled={isClockingIn || isClockingOut}
           >
-            <Clock className="w-6 h-6" />
+            <Clock className="w-5 h-5" /> {/* w-6 h-6 → w-5 h-5 */}
             {stats.currentStatus === "Clocked In"
               ? "End Your Day"
               : "Start Your Day"}
           </button>
         </div>
       </div>
-
-      {/* Bottom Cards - Attendance Logs & Break Tracking */}
+      {/* Bottom Cards */}
       <div className="w-full h-max flex gap-5 justify-center items-center">
         <div
-          className="w-1/2 h-full rounded-[17px] p-6 shadow-lg flex flex-col items-center gap-4 border"
+          className="w-1/2 h-full rounded-[17px] p-4 shadow-lg flex flex-col items-center gap-3 border" // p-6 → p-4, gap-4 → gap-3
           style={{
             backgroundColor: "var(--bg-color)",
             borderColor: "var(--border-color)",
           }}
         >
-          <div className="w-16 h-16 rounded-full bg-teal-100 flex items-center justify-center">
-            <ClipboardList className="w-8 h-8 text-[var(--accent-color)]" />
+          <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center"> {/* w-16 h-16 → w-12 h-12 */}
+            <ClipboardList className="w-6 h-6 text-[var(--accent-color)]" /> {/* w-8 h-8 → w-6 h-6 */}
           </div>
           <div className="text-center">
-            <h3 className="text-xl font-semibold mb-2" style={{ color: "var(--text-color)" }}>
+            <h3 className="text-lg font-semibold mb-1" style={{ color: "var(--text-color)" }}> {/* text-xl → text-lg, mb-2 → mb-1 */}
               {t("mainContent.attendanceLogs")}
             </h3>
-            <p className="text-[var(--sub-text-color)] text-sm mb-4">
+            <p className="text-[var(--sub-text-color)] text-xs mb-2"> {/* text-sm → text-xs, mb-4 → mb-2 */}
               {t("mainContent.attendanceLogsDesc")}
             </p>
           </div>
           <button
-            className="w-full text-white text-[14px] font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2"
+            className="w-full text-white text-xs font-medium py-2 px-3 rounded-xl transition-colors flex items-center justify-center gap-1" // text-[14px] → text-xs, font-semibold → font-medium, py-3 → py-2, px-4 → px-3, gap-2 → gap-1
             style={{
               background: `linear-gradient(135deg, var(--accent-hover) 0%, var(--accent-color) 100%)`,
             }}
             onClick={() => navigate("/pages/User/attendance-logs")}
           >
-            <BarChart3 className="w-5 h-5" />
+            <BarChart3 className="w-4 h-4" /> {/* w-5 h-5 → w-4 h-4 */}
             {t("mainContent.viewAttendanceLogs")}
           </button>
         </div>
         <div
-          className="w-1/2 h-full rounded-[17px] shadow-lg p-6 flex flex-col items-center gap-4 border"
+          className="w-1/2 h-full rounded-[17px] shadow-lg p-4 flex flex-col items-center gap-3 border" // p-6 → p-4, gap-4 → gap-3
           style={{
             backgroundColor: "var(--bg-color)",
             borderColor: "var(--border-color)",
           }}
         >
-          <div className="w-16 h-16 rounded-full bg-teal-100 flex items-center justify-center">
-            <Coffee className="w-8 h-8 text-[var(--accent-color)]" />
+          <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center"> {/* w-16 h-16 → w-12 h-12 */}
+            <Coffee className="w-6 h-6 text-[var(--accent-color)]" /> {/* w-8 h-8 → w-6 h-6 */}
           </div>
           <div className="text-center">
-            <h3 className="text-xl font-semibold mb-2" style={{ color: "var(--text-color)" }}>
+            <h3 className="text-lg font-semibold mb-1" style={{ color: "var(--text-color)" }}> {/* text-xl → text-lg, mb-2 → mb-1 */}
               {t("mainContent.breakTracking")}
             </h3>
-            <p className="text-[var(--sub-text-color)] text-sm mb-4">
+            <p className="text-[var(--sub-text-color)] text-xs mb-2"> {/* text-sm → text-xs, mb-4 → mb-2 */}
               {t("mainContent.breakTrackingDesc")}
             </p>
           </div>
           <button
-            className="w-full text-white text-[14px] font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2"
+            className="w-full text-white text-xs font-medium py-2 px-3 rounded-xl transition-colors flex items-center justify-center gap-1" // text-[14px] → text-xs, font-semibold → font-medium, py-3 → py-2, px-4 → px-3, gap-2 → gap-1
             style={{
               background: `linear-gradient(135deg, var(--accent-hover) 0%, var(--accent-color) 100%)`,
             }}
             onClick={() => navigate("/pages/User/break-tracking")}
           >
-            <BarChart3 className="w-5 h-5" />
+            <BarChart3 className="w-4 h-4" /> {/* w-5 h-5 → w-4 h-4 */}
             {t("mainContent.viewBreakLogs")}
           </button>
         </div>

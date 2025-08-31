@@ -42,7 +42,7 @@ const Toast = ({ message, isVisible, onClose, type = 'info', isArabic = false })
 
   return (
     <div
-      className={`fixed top-4 z-[9999] ${isArabic
+      className={`fixed bottom-4 z-[9999] ${isArabic
         ? 'left-4 animate-toast-slide-in-rtl'
         : 'right-4 animate-toast-slide-in'
         }`}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useGetBreakStatsQuery } from "../../services/apis/BreakApi";
@@ -21,13 +21,8 @@ const BreakHistoryTable = () => {
   });
 
   const breaks = statsData?.breaks || [];
-  const pagination = statsData?.pagination || {};
+  const pagination = statsData?.pagination || { page: 1, limit: 4, total: 0, totalPages: 1 };
   const availableFilters = statsData?.availableFilters || { dates: [], types: [] };
-
-  const sortOptions = [
-    { value: "newest", label: t("breakHistoryTable.sort.newest") },
-    { value: "oldest", label: t("breakHistoryTable.sort.oldest") }
-  ];
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -41,44 +36,24 @@ const BreakHistoryTable = () => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  // Loading skeleton
-  if (isLoading) {
-    return (
-      <div className="rounded-2xl border shadow-lg backdrop-blur-sm p-6 animate-pulse"
-        style={{
-          background: "linear-gradient(135deg, var(--bg-color), rgba(255,255,255,0.02))",
-          borderColor: "var(--border-color)"
-        }}>
-        <div className="h-6 bg-gray-300 rounded mb-4"></div>
-        <div className="space-y-3">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-12 bg-gray-200 rounded"></div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
+  // Table filter fields
   const SelectField = ({ value, onChange, options, label }) => (
     <div className={`flex items-center gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
-      <span className="text-sm font-medium whitespace-nowrap" style={{ color: 'var(--sub-text-color)' }}>
+      <span className="text-xs font-medium whitespace-nowrap" style={{ color: 'var(--sub-text-color)' }}>
         {label}
       </span>
       <div className="relative">
         <select
           value={value}
           onChange={onChange}
-          className="border rounded-2xl px-4 py-2 text-xs appearance-none focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200 min-w-[130px] font-medium"
+          className="border rounded-full px-4 py-2 text-xs appearance-none focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200 min-w-[130px] font-medium"
           style={{
             borderColor: 'var(--border-color)',
             backgroundColor: 'var(--bg-color)',
             color: 'var(--text-color)',
-            focusRingColor: 'var(--accent-color)',
             paddingRight: isArabic ? '16px' : '35px',
             paddingLeft: isArabic ? '35px' : '16px',
             direction: isArabic ? 'rtl' : 'ltr',
-            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
-            height: '36px'
           }}
         >
           {options.map((option) => (
@@ -88,8 +63,7 @@ const BreakHistoryTable = () => {
           ))}
         </select>
         <ChevronDown
-          className={`absolute top-1/2 transform -translate-y-1/2 w-3 h-3 pointer-events-none ${isArabic ? 'left-3' : 'right-3'
-            }`}
+          className={`absolute top-1/2 transform -translate-y-1/2 w-3 h-3 pointer-events-none ${isArabic ? 'left-3' : 'right-3'}`}
           style={{ color: 'var(--sub-text-color)' }}
         />
       </div>
@@ -97,97 +71,54 @@ const BreakHistoryTable = () => {
   );
 
   return (
-    <div className="rounded-2xl border shadow-lg transition-all duration-300 hover:shadow-xl backdrop-blur-sm"
+    <div
+      className="rounded-xl border shadow-sm"
       style={{
-        background: "linear-gradient(135deg, var(--bg-color), rgba(255,255,255,0.02))",
-        borderColor: "var(--border-color)",
-        boxShadow: "0 8px 25px rgba(0,0,0,0.08)"
-      }}>
-      {/* Table Controls */}
-      <div className="p-6 border-b border-opacity-20" style={{ borderColor: "var(--border-color)" }}>
-        <div className="flex flex-wrap items-center gap-4">
-          {/* Sort By */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium" style={{ color: "var(--sub-text-color)" }}>Sort By</span>
-            <div className="relative">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="border rounded-full px-3 py-2 text-sm appearance-none focus:outline-none focus:ring-2 pr-8 transition-all duration-200"
-                style={{
-                  borderColor: "var(--border-color)",
-                  background: "var(--bg-color)",
-                  color: "var(--text-color)",
-                  focusRingColor: "#75C8CF"
-                }}
-              >
-                {sortOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none"
-                style={{ color: "var(--sub-text-color)" }} />
-            </div>
+        backgroundColor: 'var(--bg-color)',
+        borderColor: 'var(--border-color)'
+      }}
+      dir={isArabic ? "rtl" : "ltr"}
+    >
+      {/* Filters */}
+      <div className="p-6 border-b" style={{ borderColor: 'var(--divider-color)' }}>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-4">
+            <SelectField
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              options={[
+                { value: "newest", label: t("breakHistoryTable.sort.newest") },
+                { value: "oldest", label: t("breakHistoryTable.sort.oldest") }
+              ]}
+              label={t("breakHistoryTable.sortBy")}
+            />
+
+            <SelectField
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              options={[
+                { value: "", label: t("breakHistoryTable.date.all") },
+                ...availableFilters.dates.map(date => ({ value: date, label: date }))
+              ]}
+              label={t("breakHistoryTable.date.label")}
+            />
+
+            <SelectField
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              options={[
+                { value: "", label: t("breakHistoryTable.type.all") },
+                ...availableFilters.types.map(type => ({
+                  value: type,
+                  label: t(`breakTime.reasons.${type}`, type)
+                }))
+              ]}
+              label={t("breakHistoryTable.type.label")}
+            />
           </div>
 
-          {/* Date Filter */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium" style={{ color: "var(--sub-text-color)" }}>Date</span>
-            <div className="relative">
-              <select
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="border rounded-full px-3 py-2 text-sm appearance-none focus:outline-none focus:ring-2 pr-8 transition-all duration-200"
-                style={{
-                  borderColor: "var(--border-color)",
-                  background: "var(--bg-color)",
-                  color: "var(--text-color)",
-                  focusRingColor: "#75C8CF"
-                }}
-              >
-                <option value="">All Dates</option>
-                {availableFilters.dates.map(date => (
-                  <option key={date} value={date}>
-                    {date}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none"
-                style={{ color: "var(--sub-text-color)" }} />
-            </div>
-          </div>
-
-          {/* Type Filter */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium" style={{ color: "var(--sub-text-color)" }}>Type</span>
-            <div className="relative">
-              <select
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
-                className="border rounded-full px-3 py-2 text-sm appearance-none focus:outline-none focus:ring-2 pr-8 transition-all duration-200"
-                style={{
-                  borderColor: "var(--border-color)",
-                  background: "var(--bg-color)",
-                  color: "var(--text-color)",
-                  focusRingColor: "#75C8CF"
-                }}
-              >
-                <option value="">All Types</option>
-                {availableFilters.types.map(type => (
-                  <option key={type} value={type}>
-                    {t(`breakTime.reasons.${type}`, type)}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none"
-                style={{ color: "var(--sub-text-color)" }} />
-            </div>
-          </div>
-
-          <div className="ml-auto text-sm font-medium" style={{ color: "var(--sub-text-color)" }}>
-            {breaks.length} of {pagination.total} entries
+          <div className="text-sm font-medium" style={{ color: 'var(--sub-text-color)' }}>
+            {isLoading ? "..." : `${breaks.length} ${t("breakHistoryTable.of")} ${pagination.total || 0} ${t("breakHistoryTable.entries")}`}
           </div>
         </div>
       </div>
@@ -195,104 +126,130 @@ const BreakHistoryTable = () => {
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead>
-            <tr style={{ background: "var(--bg-color)" }}>
-              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider"
-                style={{ color: "var(--sub-text-color)" }}>
-                Date
+          <thead style={{ backgroundColor: 'var(--table-header-bg)' }}>
+            <tr>
+              <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                style={{ color: 'var(--table-header-text)' }}>
+                {t("breakHistoryTable.columns.date")}
               </th>
-              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider"
-                style={{ color: "var(--sub-text-color)" }}>
-                Break Type
+              <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                style={{ color: 'var(--table-header-text)' }}>
+                {t("breakHistoryTable.columns.type")}
               </th>
-              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider"
-                style={{ color: "var(--sub-text-color)" }}>
-                Duration
+              <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                style={{ color: 'var(--table-header-text)' }}>
+                {t("breakHistoryTable.columns.duration")}
               </th>
-              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider"
-                style={{ color: "var(--sub-text-color)" }}>
-                Start Time
+              <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                style={{ color: 'var(--table-header-text)' }}>
+                {t("breakHistoryTable.columns.startTime")}
               </th>
-              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider"
-                style={{ color: "var(--sub-text-color)" }}>
-                End Time
+              <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                style={{ color: 'var(--table-header-text)' }}>
+                {t("breakHistoryTable.columns.endTime")}
               </th>
-              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider"
-                style={{ color: "var(--sub-text-color)" }}>
-                Status
+              <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                style={{ color: 'var(--table-header-text)' }}>
+                {t("breakHistoryTable.columns.status")}
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-opacity-20" style={{ divideColor: "var(--border-color)" }}>
-            {breaks.map((record, index) => (
-              <tr key={index} className="transition-all duration-200"
-                style={{ backgroundColor: "transparent" }}>
-                <td className="px-6 py-4 text-sm font-medium"
-                  style={{ color: "var(--text-color)" }}>
-                  {record.date}
-                </td>
-                <td className="px-6 py-4 text-sm font-semibold"
-                  style={{ color: "#75C8CF" }}>
-                  {t(`breakTime.reasons.${record.breakType}`, record.breakType)}
-                </td>
-                <td className="px-6 py-4 text-sm"
-                  style={{ color: "var(--sub-text-color)" }}>
-                  {record.duration}
-                </td>
-                <td className="px-6 py-4 text-sm"
-                  style={{ color: "var(--sub-text-color)" }}>
-                  {formatLocalTime(record.startTime)}
-                </td>
-                <td className="px-6 py-4 text-sm"
-                  style={{ color: "var(--sub-text-color)" }}>
-                  {formatLocalTime(record.endTime)}
-                </td>
-                <td className="px-6 py-4 text-sm font-semibold">
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${record.exceeded
-                    ? 'bg-red-100 text-red-700'
-                    : 'bg-green-100 text-green-700'
-                    }`}>
-                    {record.exceeded ? "Exceeded" : "Normal"}
-                  </span>
-                </td>
+          <tbody>
+            {isLoading ? (
+              <tr>
+                <td colSpan={6} className="text-center py-8">{t("breakHistoryTable.loading")}</td>
               </tr>
-            ))}
+            ) : breaks.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="text-center py-8">{t("breakHistoryTable.noData")}</td>
+              </tr>
+            ) : (
+              breaks.map((record, index) => (
+                <tr
+                  key={index}
+                  className="transition-colors duration-200 cursor-pointer hover:shadow-sm"
+                  style={{
+                    borderBottom: '1px solid var(--table-border)',
+                    backgroundColor: index % 2 === 0 ? 'var(--table-row-bg)' : 'var(--table-row-alt-bg)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--table-header-bg)';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor =
+                      index % 2 === 0 ? 'var(--table-row-bg)' : 'var(--table-row-alt-bg)';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
+                  <td className={`px-6 py-4 text-sm font-medium ${isArabic ? 'text-right' : 'text-left'}`}
+                    style={{ color: 'var(--table-text)' }}>
+                    {record.date}
+                  </td>
+                  <td className={`px-6 py-4 text-sm font-medium ${isArabic ? 'text-right' : 'text-left'}`}
+                    style={{ color: '#75C8CF' }}>
+                    {t(`breakTime.reasons.${record.breakType}`, record.breakType)}
+                  </td>
+                  <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
+                    style={{ color: 'var(--sub-text-color)' }}>
+                    {record.duration}
+                  </td>
+                  <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
+                    style={{ color: 'var(--sub-text-color)' }}>
+                    {formatLocalTime(record.startTime)}
+                  </td>
+                  <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
+                    style={{ color: 'var(--sub-text-color)' }}>
+                    {formatLocalTime(record.endTime)}
+                  </td>
+                  <td className={`px-6 py-4 text-sm font-semibold ${isArabic ? 'text-right' : 'text-left'}`}>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${record.exceeded
+                      ? 'bg-red-100 text-red-700'
+                      : 'bg-green-100 text-green-700'
+                      }`}>
+                      {record.exceeded ? t("breakHistoryTable.status.exceeded") : t("breakHistoryTable.status.normal")}
+                    </span>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
       {/* Pagination */}
-      <div className="px-6 py-4 border-t border-opacity-20 flex items-center justify-between"
-        style={{ borderColor: "var(--border-color)" }}>
-        <div className="text-sm font-medium" style={{ color: "var(--sub-text-color)" }}>
-          Page {pagination.page || 1} of {pagination.totalPages || 1}
-          ({pagination.total || 0} total entries)
+      <div
+        className={`px-6 py-4 border-t flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
+        style={{ borderColor: 'var(--divider-color)' }}
+      >
+        <div className="text-sm font-medium" style={{ color: 'var(--sub-text-color)' }}>
+          {t("breakHistoryTable.page")} {pagination.page || 1} {t("breakHistoryTable.of")} {pagination.totalPages || 1}
+          ({pagination.total || 0} {t("breakHistoryTable.totalEntries")})
         </div>
         <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
           <button
             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-            disabled={currentPage === 1}
-            className="p-2 rounded-xl border transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md"
+            disabled={pagination.page === 1}
+            className="p-2 rounded-xl border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
-              borderColor: "var(--border-color)",
-              background: "var(--container-color)",
-              color: "var(--text-color)"
+              borderColor: 'var(--border-color)',
+              backgroundColor: 'var(--bg-color)',
+              color: 'var(--text-color)'
             }}
           >
-            {isArabic ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            {isArabic ? <ChevronRight className="w-4 h-4" style={{ color: 'var(--sub-text-color)' }} /> : <ChevronLeft className="w-4 h-4" style={{ color: 'var(--sub-text-color)' }} />}
           </button>
-
           <button
             onClick={() => setCurrentPage(Math.min(pagination.totalPages || 1, currentPage + 1))}
-            disabled={currentPage === (pagination.totalPages || 1)}
-            className="p-2 rounded-xl border transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md"
+            disabled={pagination.page === (pagination.totalPages || 1)}
+            className="p-2 rounded-xl border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
-              borderColor: "var(--border-color)",
-              background: "var(--container-color)",
-              color: "var(--text-color)"
+              borderColor: 'var(--border-color)',
+              backgroundColor: 'var(--bg-color)',
+              color: 'var(--text-color)'
             }}
           >
-            {isArabic ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+            {isArabic ? <ChevronLeft className="w-4 h-4" style={{ color: 'var(--sub-text-color)' }} /> : <ChevronRight className="w-4 h-4" style={{ color: 'var(--sub-text-color)' }} />}
           </button>
         </div>
       </div>

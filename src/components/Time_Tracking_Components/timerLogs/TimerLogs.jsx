@@ -58,46 +58,45 @@ export function TimeFocusLogs({ refreshTrigger }) {
 
   return (
     <div
-      className="bg-[var(--bg-color)] rounded-2xl p-6 shadow-sm border border-[var(--border-color)]"
+      className="bg-[var(--bg-color)] rounded-2xl p-4 shadow-sm border border-[var(--border-color)] h-full"
       style={{ direction: isAr ? "rtl" : "ltr" }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-normal" style={{ color: "var(--text-color)" }}>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-xl font-normal" style={{ color: "var(--text-color)" }}>
           {t("timerLogs.title")}
         </h1>
         <button
-          className="flex items-center gap-2 text-[var(--accent-color)] border border-[var(--border-color)] bg-[var(--bg-color)] px-4 py-2 rounded-xl font-medium text-sm transition-colors hover:bg-[var(--hover-color)]"
+          className="flex items-center gap-1 text-[var(--accent-color)] border border-[var(--border-color)] bg-[var(--bg-color)] px-3 py-1.5 rounded-xl font-medium text-xs transition-colors hover:bg-[var(--hover-color)]"
           onClick={() => setShowModal(true)}
         >
-          <Eye className="w-5 h-5" style={{ color: "var(--sub-text-color)" }} />
+          <Eye className="w-4 h-4" style={{ color: "var(--sub-text-color)" }} />
           {t("timerLogs.viewLogs")}
         </button>
       </div>
 
       {/* Column Headers */}
-      <div className="grid grid-cols-3 gap-4 mb-4 pb-3 border-b border-[var(--divider-color)]">
-        <div className="text-[var(--sub-text-color)] text-sm font-medium">{t("timerLogs.time")}</div>
-        <div className="text-[var(--sub-text-color)] text-sm font-medium">{t("timerLogs.duration")}</div>
-        <div className="text-[var(--sub-text-color)] text-sm font-medium">{t("timerLogs.tag")}</div>
+      <div className="grid grid-cols-3 gap-3 mb-3 pb-2 border-b border-[var(--divider-color)]">
+        <div className="text-[var(--sub-text-color)] text-xs font-medium">{t("timerLogs.time")}</div>
+        <div className="text-[var(--sub-text-color)] text-xs font-medium">{t("timerLogs.duration")}</div>
+        <div className="text-[var(--sub-text-color)] text-xs font-medium">{t("timerLogs.tag")}</div>
       </div>
 
       {/* Log Entries */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         {(isLoading ? [] : mainLogs).map((log, idx) => (
           <div
             key={log._id}
-            className={`grid grid-cols-3 gap-4 items-center py-3 ${
-              idx !== mainLogs.length - 1 ? "border-b border-[var(--divider-color)]" : ""
-            }`}
+            className={`grid grid-cols-3 gap-3 items-center py-2 ${idx !== mainLogs.length - 1 ? "border-b border-[var(--divider-color)]" : ""
+              }`}
           >
-            <div className="text-[var(--sub-text-color)] text-sm">{formatTime(log.startTime)}</div>
-            <div className="text-[var(--text-color)] text-sm font-medium">
+            <div className="text-[var(--sub-text-color)] text-xs">{formatTime(log.startTime)}</div>
+            <div className="text-[var(--text-color)] text-xs font-medium">
               {localizeMin(formatDuration(log))}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <span
-                className="px-3 py-1 rounded-lg text-xs"
+                className="px-2 py-0.5 rounded-lg text-[10px]"
                 style={{ background: tagColors.tagBg, color: tagColors.tagText }}
               >
                 {log.tag}
@@ -109,53 +108,52 @@ export function TimeFocusLogs({ refreshTrigger }) {
 
       {/* Full Screen Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-[var(--bg-color)] bg-opacity-40 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold">{t("timerLogs.title")}</h2>
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-lg bg-opacity-40 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">{t("timerLogs.title")}</h2>
               <button
-                className="text-gray-500 hover:text-gray-700 font-bold text-lg"
+                className="text-gray-500 hover:text-gray-700 font-bold text-base"
                 onClick={() => setShowModal(false)}
               >
                 ×
               </button>
             </div>
-            <div className="grid grid-cols-4 gap-4 mb-4 pb-3 border-b border-[var(--divider-color)]">
-              <div className="text-[var(--sub-text-color)] text-sm font-medium">{t("timerLogs.time")}</div>
-              <div className="text-[var(--sub-text-color)] text-sm font-medium">{t("timerLogs.duration")}</div>
-              <div className="text-[var(--sub-text-color)] text-sm font-medium">{t("timerLogs.tag")}</div>
-              <div className="text-[var(--sub-text-color)] text-sm font-medium">{t("timerLogs.status") || "Status"}</div>
+            <div className="grid grid-cols-4 gap-3 mb-3 pb-2 border-b border-[var(--divider-color)]">
+              <div className="text-[var(--sub-text-color)] text-xs font-medium">{t("timerLogs.time")}</div>
+              <div className="text-[var(--sub-text-color)] text-xs font-medium">{t("timerLogs.duration")}</div>
+              <div className="text-[var(--sub-text-color)] text-xs font-medium">{t("timerLogs.tag")}</div>
+              <div className="text-[var(--sub-text-color)] text-xs font-medium">{t("timerLogs.status") || "Status"}</div>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {(isLoading ? [] : logs).map((log, idx) => (
                 <div
                   key={log._id}
-                  className={`grid grid-cols-4 gap-4 items-center py-3 ${
-                    idx !== logs.length - 1 ? "border-b border-[var(--divider-color)]" : ""
-                  }`}
+                  className={`grid grid-cols-4 gap-3 items-center py-2 ${idx !== logs.length - 1 ? "border-b border-[var(--divider-color)]" : ""
+                    }`}
                 >
-                  <div className="text-[var(--sub-text-color)] text-sm">{formatTime(log.startTime)}</div>
-                  <div className="text-[var(--text-color)] text-sm font-medium">
+                  <div className="text-[var(--sub-text-color)] text-xs">{formatTime(log.startTime)}</div>
+                  <div className="text-[var(--text-color)] text-xs font-medium">
                     {localizeMin(formatDuration(log))}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     <span
-                      className="px-3 py-1 rounded-lg text-xs"
+                      className="px-2 py-0.5 rounded-lg text-[10px]"
                       style={{ background: tagColors.tagBg, color: tagColors.tagText }}
                     >
                       {log.tag}
                     </span>
                   </div>
-                  <div className="text-xs font-semibold">
+                  <div className="text-[10px] font-semibold">
                     {log.status === "completed"
                       ? t("timerLogs.completed") || "Completed"
                       : log.status === "cancelled"
-                      ? t("timerLogs.cancelled") || "Cancelled"
-                      : log.status === "paused"
-                      ? t("timerLogs.paused") || "Paused"
-                      : log.status === "running"
-                      ? t("timerLogs.running") || "Running"
-                      : log.status}
+                        ? t("timerLogs.cancelled") || "Cancelled"
+                        : log.status === "paused"
+                          ? t("timerLogs.paused") || "Paused"
+                          : log.status === "running"
+                            ? t("timerLogs.running") || "Running"
+                            : log.status}
                   </div>
                 </div>
               ))}

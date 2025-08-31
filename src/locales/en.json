@@ -244,7 +244,7 @@
     "timeTakenToday": "Time taken today",
     "mostCommonThisWeek": "Most common this week",
     "basedOnLast7Days": "Based on last 7 days",
-    "exceededLimit": "You exceeded 30m limit this week",
+    "exceededLimit": "You exceeded your break limit",
     "period": {
       "lastWeek": "Last Week",
       "thisWeek": "This Week",
@@ -258,26 +258,37 @@
     }
   },
   "breakHistoryTable": {
+    "sort": {
+      "newest": "Newest",
+      "oldest": "Oldest"
+    },
     "sortBy": "Sort By",
-    "date": "Date",
-    "type": "Type",
-    "allDates": "All Dates",
-    "allTypes": "All Types",
-    "entries": "entries",
+    "date": {
+      "all": "All Dates",
+      "label": "Date"
+    },
+    "type": {
+      "all": "All Types",
+      "label": "Type"
+    },
     "of": "of",
-    "page": "page",
-    "totalEntries": "total entries",
+    "entries": "entries",
+    "loading": "Loading...",
+    "noData": "No break history found.",
     "columns": {
       "date": "Date",
-      "breakType": "Break Type",
+      "type": "Type",
       "duration": "Duration",
       "startTime": "Start Time",
-      "endTime": "End Time"
+      "endTime": "End Time",
+      "status": "Status"
     },
-    "sort": {
-      "newest": "Newest First",
-      "oldest": "Oldest First"
-    }
+    "status": {
+      "exceeded": "Exceeded",
+      "normal": "Normal"
+    },
+    "page": "Page",
+    "totalEntries": "entries"
   },
   "leaves": {
     "statusCards": {

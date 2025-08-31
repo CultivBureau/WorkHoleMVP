@@ -17,16 +17,16 @@ export default function StatusCards({ dashboardData, isLoading, error }) {
 
   // SVGs as <img> tags with responsive sizing
   const CalendarIcon = (
-    <img src="/assets/dashboard_card/status.svg" alt="calendar" className="w-4 h-4 sm:w-5 sm:h-5" />
+    <img src="/assets/dashboard_card/status.svg" alt="calendar"/>
   );
   const LeaveIcon = (
-    <img src="/assets/dashboard_card/clock2.svg" alt="leave" className="w-4 h-4 sm:w-5 sm:h-5" />
+    <img src="/assets/dashboard_card/clock2.svg" alt="leave" />
   );
   const ClockIcon = (
-    <img src="/assets/dashboard_card/clock.svg" alt="clock" className="w-4 h-4 sm:w-5 sm:h-5" />
+    <img src="/assets/dashboard_card/clock.svg" alt="clock" />
   );
   const PerformanceIcon = (
-    <img src="/assets/dashboard_card/performance.svg" alt="performance" className="w-4 h-4 sm:w-5 sm:h-5" />
+    <img src="/assets/dashboard_card/performance.svg" alt="performance" />
   );
   const BarChartIcon = (
     <button
@@ -96,12 +96,11 @@ export default function StatusCards({ dashboardData, isLoading, error }) {
         <Card
           header={t("dashboard.statusCards.status")}
           title={status}
-          subTitle={t("dashboard.statusCards.goToTimeTracker")}
           statusDot={
             <span
               className={`inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ml-1 sm:ml-2 ${status === t("dashboard.statusCards.notClockedIn") || status === "Not clocked in"
-                  ? "bg-red-500"
-                  : "bg-green-500"
+                ? "bg-red-500"
+                : "bg-green-500"
                 }`}
             ></span>
           }
@@ -112,7 +111,6 @@ export default function StatusCards({ dashboardData, isLoading, error }) {
         <Card
           header={t("dashboard.statusCards.leaveRequest")}
           title={leaveStatus}
-          subTitle={t("dashboard.statusCards.noRequestText")}
           rightIcon={LeaveIcon}
           footer={BarChartIcon}
           className="h-full min-h-[120px]"
@@ -124,7 +122,6 @@ export default function StatusCards({ dashboardData, isLoading, error }) {
               {dynamicShift}
             </span>
           }
-          subTitle={t("dashboard.statusCards.hoursWorked")}
           rightIcon={ClockIcon}
           bar={dailyShiftBar}
           footer={BarChartIcon}
@@ -133,7 +130,6 @@ export default function StatusCards({ dashboardData, isLoading, error }) {
         <Card
           header={t("dashboard.statusCards.performance")}
           title={performance}
-          subTitle={t("dashboard.statusCards.tasksCompleted")}
           rightIcon={PerformanceIcon}
           bar={dashboardData?.performanceBar || 75}
           footer={BarChartIcon}

@@ -256,10 +256,10 @@ const TimerCard = () => {
           </h1>
           {hasActiveTimer && (
             <div className="flex flex-col items-end">
- 
+
               <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                isTimerRunning 
-                  ? 'bg-green-100 text-green-700' 
+                isTimerRunning
+                  ? 'bg-green-100 text-green-700'
                   : 'bg-yellow-100 text-yellow-700'
               }`}>
                 {isTimerRunning ? 'Running' : 'Paused'}
@@ -268,7 +268,7 @@ const TimerCard = () => {
           )}
         </div>
 
-        <div className='w-full h-max flex justify-center gap-8 items-center'>
+        <div className='w-full h-max flex justify-center gap-4 items-center'>
           <button
             onClick={(e) => {
               e.stopPropagation()

@@ -54,7 +54,7 @@ const TimerPopUp = ({
   // If timer not started, show task name input
   if (!timer?.id) {
     return (
-      <div className="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-black/20 bg-opacity-50 backdrop-blur-lg flex items-center justify-center z-50">
         <div className="bg-white rounded-xl p-6 shadow-2xl flex flex-col gap-4 w-[380px] max-w-[90vw]">
           <h3 className="text-xl font-bold text-[#15919B] text-center mb-2">
             {t("timer.startNewTimer") || "Start New Timer"}

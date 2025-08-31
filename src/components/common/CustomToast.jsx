@@ -15,9 +15,9 @@ const CustomToast = ({ message, isVisible, onClose, isArabic = false }) => {
 
     return (
         <div
-            className={`fixed top-4 z-[9999] ${isArabic
-                    ? 'left-4 animate-toast-slide-in-rtl'
-                    : 'right-4 animate-toast-slide-in'
+            className={`fixed bottom-4 z-[9999] ${isArabic
+                ? 'left-4 animate-toast-slide-in-rtl'
+                : 'right-4 animate-toast-slide-in'
                 }`}
         >
             <div

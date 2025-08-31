@@ -153,24 +153,24 @@ const BreakTime = ({ breakDashboard, refetch }) => {
             }}>
 
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4 lg:mb-6 gap-2 sm:gap-3">
-                <h3 className="text-base sm:text-lg gradient-text font-semibold mb-1 sm:mb-2">
-                    {t('breakTime.title')}
+            <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold gradient-text tracking-tight transition-all duration-200 group-hover:scale-105">
+                    {t('breakTime.title', 'Break Time')}
                 </h3>
 
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-                    {/* Enhanced Select - Responsive */}
-                    <div className="relative flex-1 sm:flex-none">
+                <div className="flex items-center gap-3">
+                    {/* Enhanced Select */}
+                    <div className="relative group/select">
                         <select
                             value={selectedReason}
                             onChange={(e) => setSelectedReason(e.target.value)}
                             disabled={isBreakActive}
-                            className="w-full sm:w-[120px] lg:w-[120px] border-2 rounded-xl font-semibold px-3 sm:px-4 py-3.5 pr-8 sm:pr-10 text-xs gradient-text appearance-none backdrop-blur-sm transition-all duration-200 hover:border-opacity-80 focus:ring-2 focus:ring-opacity-20"
+                            className="border-2 rounded-xl font-semibold px-4 py-2.5 pr-10 text-xs gradient-text appearance-none backdrop-blur-sm transition-all duration-300 hover:border-opacity-80 focus:ring-2 focus:ring-opacity-20 focus:scale-[1.02]"
                             style={{
                                 borderColor: 'var(--accent-color)',
                                 backgroundColor: 'var(--bg-color)',
                                 opacity: isBreakActive ? 0.6 : 1,
-                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+                                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.08)',
                                 focusRingColor: 'var(--accent-color)'
                             }}
                         >
@@ -184,8 +184,8 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                                 </option>
                             ))}
                         </select>
-                        <div className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 pointer-events-none transition-transform duration-200 group-hover:scale-110">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="gradient-text">
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none transition-transform duration-300 group-hover/select:scale-110 group-hover/select:rotate-180">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="gradient-text">
                                 <path d="M6 9l6 6 6-6" stroke="url(#gradient)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                                 <defs>
                                     <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -197,51 +197,31 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                         </div>
                     </div>
 
-                    <div className="flex gap-2">
-                        {/* Enhanced Button - Responsive */}
-                        <button
-                            onClick={handleStartBreak}
-                            className="flex-1 sm:w-[120px] lg:w-[120px] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1 sm:gap-2 transition-all duration-300 transform hover:scale-105 hover:shadow-lg active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
-                            style={{
-                                background: isBreakActive
-                                    ? 'linear-gradient(135deg, #ef4444, #dc2626)'
-                                    : 'linear-gradient(135deg, var(--gradient-start), var(--gradient-end))',
-                                boxShadow: isBreakActive
-                                    ? '0 8px 25px rgba(239, 68, 68, 0.4)'
-                                    : '0 8px 25px rgba(21, 145, 155, 0.4)'
-                            }}
-                            disabled={starting || stopping}
-                        >
-                            <img
-                                src="/assets/clock.svg"
-                                alt={isBreakActive ? t('breakTime.endBreak', 'End Break') : t('breakTime.startBreak', 'Start Break')}
-                                className="w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-200 group-hover:rotate-12"
-                            />
-                            {(starting || stopping) ? (
-                                <span className="animate-pulse">Loading...</span>
-                            ) : (
-                                <span className="hidden sm:inline">
-                                    {isBreakActive ? t('breakTime.endBreak', 'End Break') : t('breakTime.startBreak', 'Start Break')}
-                                </span>
-                            )}
-                            <span className="sm:hidden">
-                                {isBreakActive ? 'End' : 'Start'}
-                            </span>
-                        </button>
-
-                        {/* Enhanced Chart Button - Responsive */}
-                        <button
-                            className="p-2 sm:p-3 rounded-xl transition-all duration-300 hover:scale-110 active:scale-95 group/chart"
-                            style={{
-                                backgroundColor: 'var(--hover-color)',
-                                color: 'var(--accent-color)',
-                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
-                            }}
-                            onClick={() => navigate("/pages/User/break-tracking")}
-                        >
-                            <ChartColumn size={18} className="sm:w-6 sm:h-6 gradient-color transition-transform duration-200 group-hover/chart:rotate-6" strokeWidth={2.5} />
-                        </button>
-                    </div>
+                    {/* Enhanced Button */}
+                    <button
+                        onClick={handleStartBreak}
+                        className="text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all duration-300 transform hover:scale-105 hover:shadow-xl active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed group/btn"
+                        style={{
+                            background: isBreakActive
+                                ? 'linear-gradient(135deg, #ef4444, #dc2626)'
+                                : 'linear-gradient(135deg, var(--gradient-start), var(--gradient-end))',
+                            boxShadow: isBreakActive
+                                ? '0 8px 25px rgba(239, 68, 68, 0.4)'
+                                : '0 8px 25px rgba(21, 145, 155, 0.4)'
+                        }}
+                        disabled={starting || stopping}
+                    >
+                        <img
+                            src="/assets/clock.svg"
+                            alt={isBreakActive ? t('breakTime.endBreak', 'End Break') : t('breakTime.startBreak', 'Start Break')}
+                            className="w-4 h-4 transition-transform duration-300 group-hover/btn:rotate-12"
+                        />
+                        {(starting || stopping) ? (
+                            <span className="animate-pulse">Loading...</span>
+                        ) : (
+                            isBreakActive ? t('breakTime.endBreak', 'End Break') : t('breakTime.startBreak', 'Start Break')
+                        )}
+                    </button>
                 </div>
             </div>
 

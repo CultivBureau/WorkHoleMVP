@@ -145,19 +145,19 @@ const WorkHoursCharts = () => {
       }}
     >
       {/* Header + Filter */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold" style={{ color: "var(--text-color)" }}>
+      <div className="flex items-center justify-between mb-4"> {/* mb-6 → mb-4 */}
+        <h2 className="text-xl font-bold" style={{ color: "var(--text-color)" }}> {/* text-2xl → text-xl */}
           {t("mainContent.workHours")}
         </h2>
         <div className="relative flex items-center">
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="rounded-full px-5 py-2 pr-10 text-sm font-semibold appearance-none focus:outline-none transition-all duration-200 hover:scale-105"
+            className="rounded-full px-4 py-1.5 pr-8 text-xs  font-semibold appearance-none focus:outline-none transition-all duration-200 hover:scale-105" // px-5 py-2 pr-10 text-sm → px-4 py-1.5 pr-8 text-xs
             style={{
-              minWidth: 120,
+              minWidth: 100, // minWidth: 120 → 100
               background: chartColors.chartBarColor,
-              color: "#222",
+              color: "#fff",
               border: "none",
               direction: isAr ? "rtl" : "ltr"
             }}
@@ -169,17 +169,16 @@ const WorkHoursCharts = () => {
             ))}
           </select>
           <ChevronDown
-            className={`absolute ${isAr ? "left-4" : "right-4"} top-1/2 transform -translate-y-1/2 w-4 h-4`}
-            style={{ color: "#222" }}
+            className={`absolute ${isAr ? "left-3" : "right-3"} top-1/2 transform -translate-y-1/2 w-3 h-3`} // left-4/right-4 w-4 h-4 → left-3/right-3 w-3 h-3
+            style={{ color: "#fff" }}
           />
         </div>
       </div>
-
       {/* Chart */}
-      <div className="relative h-72">
+      <div className="relative h-60"> {/* h-72 → h-60 */}
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
-            <span className="text-gray-600">Loading...</span>
+            <span className="text-xs text-gray-600">Loading...</span> {/* text-gray-600 → text-xs text-gray-600 */}
           </div>
         ) : (
           <Bar data={chartJsData} options={chartOptions} />

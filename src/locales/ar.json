@@ -248,7 +248,7 @@
     "timeTakenToday": "الوقت المستغرق اليوم",
     "mostCommonThisWeek": "الأكثر هذا الأسبوع",
     "basedOnLast7Days": "حسب آخر 7 أيام",
-    "exceededLimit": "لقد تجاوزت حد 30 دقيقة هذا الأسبوع",
+    "exceededLimit": "لقد تجاوزت حد الاستراحة",
     "period": {
       "lastWeek": "الأسبوع الماضي",
       "thisWeek": "هذا الأسبوع",
@@ -262,26 +262,37 @@
     }
   },
   "breakHistoryTable": {
+    "sort": {
+      "newest": "الأحدث",
+      "oldest": "الأقدم"
+    },
     "sortBy": "ترتيب حسب",
-    "date": "التاريخ",
-    "type": "النوع",
-    "allDates": "كل التواريخ",
-    "allTypes": "كل الأنواع",
-    "entries": "مدخل",
+    "date": {
+      "all": "كل التواريخ",
+      "label": "التاريخ"
+    },
+    "type": {
+      "all": "كل الأنواع",
+      "label": "النوع"
+    },
     "of": "من",
-    "page": "صفحة",
-    "totalEntries": "إجمالي المدخلات",
+    "entries": "سجلات",
+    "loading": "جاري التحميل...",
+    "noData": "لا يوجد سجل استراحات.",
     "columns": {
       "date": "التاريخ",
-      "breakType": "نوع الاستراحة",
+      "type": "النوع",
       "duration": "المدة",
-      "startTime": "وقت البداية",
-      "endTime": "وقت النهاية"
+      "startTime": "وقت البدء",
+      "endTime": "وقت الانتهاء",
+      "status": "الحالة"
     },
-    "sort": {
-      "newest": "الأحدث أولاً",
-      "oldest": "الأقدم أولاً"
-    }
+    "status": {
+      "exceeded": "تجاوز",
+      "normal": "عادي"
+    },
+    "page": "صفحة",
+    "totalEntries": "سجلات"
   },
   "leaves": {
     "statusCards": {

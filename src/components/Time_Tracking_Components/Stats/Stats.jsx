@@ -1,18 +1,18 @@
 import React, { useEffect, useState, useRef } from "react";
 import Card from "./Card";
-import ClockIcon2 from "../../../../public/assets/dashboard_card/clock2.svg";
-import ClockIcon3 from "../../../../public/assets/dashboard_card/clock3.svg";
-import BreakIcon from "../../../../public/assets/dashboard_card/break.svg";
+import WorkedIcon from "../../../../public/assets/time_tracking/worked.svg";
+import BreakIcon from "../../../../public/assets/time_tracking/break-icon.svg";
+import OvertimeIcon from "../../../../public/assets/time_tracking/overtime.svg";
 import { useTranslation } from "react-i18next";
 import TimerCard from "./TimerCard";
 import { useGetDashboardQuery } from "../../../services/apis/AtteandanceApi";
 
 const Stats = () => {
   const { t } = useTranslation();
-  const { data} = useGetDashboardQuery({});
+  const { data } = useGetDashboardQuery({});
   const [activeWorkSeconds, setActiveWorkSeconds] = useState(0);
   const timerRef = useRef(null);
-  
+
   // fallback لو البيانات مش موجودة
   const stats = data || {
     thisWeek: "0h 0m",
@@ -80,21 +80,21 @@ const Stats = () => {
       header: t("stats.thisWeek"),
       title: dynamicThisWeek,
       subTitle: t("stats.totalHoursWorked"),
-      icon: ClockIcon2,
+      rightIcon: <img src={WorkedIcon} alt="Worked" />,
       bar: 75,
     },
     {
       header: t("stats.breaksTaken"),
       title: stats.breaksTaken,
       subTitle: t("breakTime.breakSummary"),
-      icon: BreakIcon,
+      rightIcon: <img src={BreakIcon} alt="Break" />,
       bar: 30,
     },
     {
       header: t("stats.totalOvertime"),
       title: stats.totalOvertime,
       subTitle: t("stats.extraHoursThisMonth"),
-      icon: ClockIcon3,
+      rightIcon: <img src={OvertimeIcon} alt="Overtime" />,
       bar: 60,
       percentage: 1.3,
     },
