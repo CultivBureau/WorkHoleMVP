@@ -16,10 +16,12 @@ import {
 import AvatarIcon from "../../../public/assets/navbar/Avatar.png";
 import { useMeQuery, useLogoutMutation } from "../../services/apis/AuthApi";
 import { removeAuthToken } from "../../utils/page";
+import { useLang } from "../../contexts/LangContext";
 
-const NavBar = ({ lang, setLang, onMobileSidebarToggle, isMobileSidebarOpen }) => {
+const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { lang, setLang, isRtl } = useLang();
 
   // جلب بيانات المستخدم من /me
   const { data: user, isLoading: userLoading } = useMeQuery();
@@ -49,13 +51,6 @@ const NavBar = ({ lang, setLang, onMobileSidebarToggle, isMobileSidebarOpen }) =
     return () => clearInterval(timer);
   }, []);
 
-  // Sync language from localStorage
-  useEffect(() => {
-    const storedLang = localStorage.getItem("lang") || "en";
-    if (i18n.language !== storedLang) i18n.changeLanguage(storedLang);
-    document.documentElement.dir = storedLang === "ar" ? "rtl" : "ltr";
-  }, [i18n]);
-
   useEffect(() => {
     if (isSearchOpen) setTimeout(() => inputRef.current?.focus(), 0);
   }, [isSearchOpen]);
@@ -77,14 +72,11 @@ const NavBar = ({ lang, setLang, onMobileSidebarToggle, isMobileSidebarOpen }) =
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
 
-  const popSideLang = lang === "ar" ? "left-0" : "right-0";
+  const popSideLang = isRtl ? "left-0" : "right-0";
 
   // Change language and save to localStorage
   const handleLangChange = (lng) => {
     setLang(lng);
-    i18n.changeLanguage(lng);
-    document.documentElement.dir = lng === "ar" ? "rtl" : "ltr";
-    localStorage.setItem("lang", lng);
     setLangOpen(false);
   };
 
@@ -225,7 +217,7 @@ const NavBar = ({ lang, setLang, onMobileSidebarToggle, isMobileSidebarOpen }) =
           {/* Mobile Profile Dropdown */}
           {profileOpen && (
             <div
-              className={`absolute ${lang === "ar" ? "right-0" : "left-0"
+              className={`absolute ${isRtl ? "right-0" : "left-0"
                 } mt-2 w-56 rounded-2xl shadow-2xl border z-50 overflow-hidden`}
               style={{
                 backgroundColor: "var(--bg-color)",
@@ -466,7 +458,7 @@ const NavBar = ({ lang, setLang, onMobileSidebarToggle, isMobileSidebarOpen }) =
           {/* Notification Dropdown */}
           {notifOpen && (
             <div
-              className={`absolute ${lang === "ar" ? "left-0" : "right-0"
+              className={`absolute ${isRtl ? "left-0" : "right-0"
                 } mt-2 w-80 max-w-[90vw] bg-white dark:bg-[var(--bg-color)] border border-[var(--border-color)] rounded-2xl shadow-xl z-50 animate-fade-in`}
               style={{ minWidth: 360 }}
             >
@@ -538,7 +530,7 @@ const NavBar = ({ lang, setLang, onMobileSidebarToggle, isMobileSidebarOpen }) =
         {/* Search and Notifications */}
         <div
           ref={searchRef}
-          className={`flex items-center gap-3 ${lang === "ar" ? "flex-row-reverse" : ""
+          className={`flex items-center gap-3 ${isRtl ? "flex-row-reverse" : ""
             }`}
         >
           {/* Search Toggle */}
@@ -561,7 +553,7 @@ const NavBar = ({ lang, setLang, onMobileSidebarToggle, isMobileSidebarOpen }) =
               } ${isSearchOpen ? "w-64" : "w-0"}`}
           >
             <div
-              className={`flex items-center gap-3 border rounded-2xl px-3 py-2 shadow-sm ${lang === "ar" ? "flex-row-reverse" : ""
+              className={`flex items-center gap-3 border rounded-2xl px-3 py-2 shadow-sm ${isRtl ? "flex-row-reverse" : ""
                 }`}
               style={{
                 backgroundColor: "var(--bg-color)",
@@ -611,7 +603,7 @@ const NavBar = ({ lang, setLang, onMobileSidebarToggle, isMobileSidebarOpen }) =
             {/* Notification Dropdown */}
             {notifOpen && (
               <div
-                className={`absolute ${lang === "ar" ? "left-0" : "right-0"
+                className={`absolute ${isRtl ? "left-0" : "right-0"
                   } mt-2 w-80 max-w-[90vw] bg-white dark:bg-[var(--bg-color)] border border-[var(--border-color)] rounded-2xl shadow-xl z-50 animate-fade-in`}
                 style={{ minWidth: 360 }}
               >
@@ -646,7 +638,7 @@ const NavBar = ({ lang, setLang, onMobileSidebarToggle, isMobileSidebarOpen }) =
                       >
                         <div className="flex-shrink-0 mt-1">
                           <Bell className="w-5 h-5 text-[var(--accent-color)]" />
-                        </div>
+                          </div>
                         <div className="flex-1">
                           <div
                             className="text-sm font-medium"
@@ -766,7 +758,7 @@ const NavBar = ({ lang, setLang, onMobileSidebarToggle, isMobileSidebarOpen }) =
           </div>
           {profileOpen && (
             <div
-              className={`absolute ${lang === "ar" ? "left-0" : "right-0"
+              className={`absolute ${isRtl ? "left-0" : "right-0"
                 } mt-2 w-56 rounded-2xl shadow-2xl border z-50 overflow-hidden`}
               style={{
                 backgroundColor: "var(--bg-color)",

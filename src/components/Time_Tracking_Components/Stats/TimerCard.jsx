@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import TimerPopUp from "../timerPopUp/TimerPopUp"
+import { useTranslation } from "react-i18next"
 import {
   useStartTimerMutation,
   useGetCurrentTimerQuery,
@@ -12,6 +13,7 @@ import {
 const LOCAL_KEY = "workhole_timer"
 
 const TimerCard = () => {
+  const { t, i18n } = useTranslation()
   const [showControlPopup, setShowControlPopup] = useState(false)
   const [taskName, setTaskName] = useState("")
   const [duration, setDuration] = useState(25)
@@ -47,7 +49,7 @@ const TimerCard = () => {
 
   // Start timer
   const handleSetTaskNameAndStart = async (name) => {
-    if (!name.trim()) return alert("Task name required")
+    if (!name.trim()) return alert(t('timerCard.taskNameRequired'))
     
     try {
       const response = await startTimer({ tag: name, duration }).unwrap()
@@ -69,7 +71,7 @@ const TimerCard = () => {
       await refetch()
     } catch (error) {
       console.error('Failed to start timer:', error)
-      alert('Failed to start timer. Please try again.')
+      alert(t('timerCard.startFailed'))
     }
   }
 
@@ -91,7 +93,7 @@ const TimerCard = () => {
         await refetch()
       } catch (error) {
         console.error('Failed to pause timer:', error)
-        alert('Failed to pause timer')
+        alert(t('timerCard.pauseFailed'))
       }
     }
   }
@@ -116,7 +118,7 @@ const TimerCard = () => {
         await refetch()
       } catch (error) {
         console.error('Failed to resume timer:', error)
-        alert('Failed to resume timer')
+        alert(t('timerCard.resumeFailed'))
       }
     }
   }
@@ -129,7 +131,7 @@ const TimerCard = () => {
         await refetch()
       } catch (error) {
         console.error('Failed to complete timer:', error)
-        alert('Failed to complete timer')
+        alert(t('timerCard.completeFailed'))
       }
     }
   }
@@ -142,7 +144,7 @@ const TimerCard = () => {
         await refetch()
       } catch (error) {
         console.error('Failed to cancel timer:', error)
-        alert('Failed to cancel timer')
+        alert(t('timerCard.cancelFailed'))
       }
     }
   }
@@ -156,7 +158,7 @@ const TimerCard = () => {
         
         // Auto-complete if duration is set and reached (optional)
         if (localStopwatch.duration > 0 && elapsed >= localStopwatch.duration * 60) {
-          handleComplete('Auto-completed - duration reached')
+          handleComplete(t('timerCard.autoCompleted'))
         }
       }
 
@@ -245,14 +247,13 @@ const TimerCard = () => {
           hasActiveTimer ? 'cursor-pointer border-[#09D1C7] shadow-lg' : 'cursor-default border-gray-200'
         } ${isTimerRunning ? 'bg-gradient-to-br from-[#CDFFFC]/30 to-[#E0FFFE]/30' : ''}`}
         onClick={() => hasActiveTimer ? setShowControlPopup(true) : null}
-        title={hasActiveTimer ? 'Click to control timer' : 'Start the timer to enable controls'}
+        title={hasActiveTimer ? t('timerCard.clickToControl') : t('timerCard.startToEnable')}
+        style={{ direction: i18n.language === 'ar' ? 'rtl' : 'ltr' }}
       >
         {/* Status indicators */}
-
-
         <div className="flex justify-between items-center">
           <h1 className='text-[16px] font-semibold text-[#777D86] tracking-wide'>
-            {hasActiveTimer ? 'Active Timer' : 'Focus Timer'}
+            {hasActiveTimer ? t('timerCard.activeTimer') : t('timerCard.focusTimer')}
           </h1>
           {hasActiveTimer && (
             <div className="flex flex-col items-end">
@@ -262,7 +263,7 @@ const TimerCard = () => {
                   ? 'bg-green-100 text-green-700'
                   : 'bg-yellow-100 text-yellow-700'
               }`}>
-                {isTimerRunning ? 'Running' : 'Paused'}
+                {isTimerRunning ? t('timerCard.running') : t('timerCard.paused')}
               </span>
             </div>
           )}
@@ -276,6 +277,7 @@ const TimerCard = () => {
             }}
             disabled={hasActiveTimer}
             className='w-[28px] h-[28px] text-white rounded-full bg-gradient-to-br from-[#09D1C7] to-[#15919B] font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110 transition-transform'
+            aria-label={t('timerCard.decreaseDuration')}
           >
             −
           </button>
@@ -295,6 +297,7 @@ const TimerCard = () => {
             }}
             disabled={hasActiveTimer}
             className='w-[28px] h-[28px] text-white rounded-full bg-gradient-to-br from-[#09D1C7] to-[#15919B] font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110 transition-transform'
+            aria-label={t('timerCard.increaseDuration')}
           >
             +
           </button>
@@ -313,7 +316,7 @@ const TimerCard = () => {
             }}
             disabled={isStarting}
           >
-            {isStarting ? 'Starting...' : hasActiveTimer ? 'Control Timer' : 'Start Timer'}
+            {isStarting ? t('timerCard.starting') : hasActiveTimer ? t('timerCard.controlTimer') : t('timerCard.startTimer')}
           </button>
         </div>
 

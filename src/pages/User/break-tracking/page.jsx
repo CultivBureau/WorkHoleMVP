@@ -1,22 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import SideMenu from "../../../components/side-menu/side-menu";
 import NavBar from "../../../components/NavBar/navbar";
 import StatusCards from "../../../components/break-tracking/status-cards";
 import BreakTime from "../../../components/break-tracking/break-time";
 import BreakTypeChart from "../../../components/break-tracking/chart";
 import BreakHistoryTable from "../../../components/break-tracking/table";
-import { useTranslation } from "react-i18next";
 import { useGetBreakDashboardQuery } from "../../../services/apis/BreakApi";
+import { useLang } from "../../../contexts/LangContext";
 
-const BreakTrackingPage = ({ lang, setLang, theme, setTheme }) => {
-  const { i18n } = useTranslation();
+const BreakTrackingPage = () => {
+  const { isRtl } = useLang();
   const { data: breakDashboard, refetch } = useGetBreakDashboardQuery();
-
-  useEffect(() => {
-    i18n.changeLanguage(lang);
-    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-    localStorage.setItem("lang", lang);
-  }, [lang, i18n]);
 
   return (
     <div
@@ -24,12 +18,12 @@ const BreakTrackingPage = ({ lang, setLang, theme, setTheme }) => {
       style={{ background: "var(--bg-all)" }}
     >
       {/* Navigation Bar - Full Width at Top */}
-      <NavBar lang={lang} setLang={setLang} />
+      <NavBar />
 
       {/* Content Area with SideMenu and Main Content */}
       <div className="flex flex-1 min-h-0" style={{ background: "var(--bg-all)" }}>
         {/* Side Menu - Left side under navbar */}
-        <SideMenu lang={lang} />
+        <SideMenu />
 
         {/* Main Content - Rest of the space */}
         <main className="flex-1 overflow-auto p-4" style={{ background: "var(--bg-all)" }}>

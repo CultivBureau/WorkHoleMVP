@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import SideMenu from "../../../components/side-menu/side-menu";
 import NavBar from "../../../components/NavBar/navbar";
 import ActivityHeatmap from "../../../components/dashboard/activity-heatmap";
@@ -6,18 +6,11 @@ import StatusCards from "../../../components/dashboard/status-cards";
 import QuickActions from "../../../components/dashboard/quick-actions";
 import BreakTime from "../../../components/dashboard/break-time";
 import LeaveRequest from "../../../components/leave-requests/leave-request";
-import { useTranslation } from "react-i18next";
 import { useGetDashboardQuery } from "../../../services/apis/DashboardApi";
+import { useLang } from "../../../contexts/LangContext";
 
 const Dashboard = () => {
-  const { i18n } = useTranslation();
-  const [lang, setLang] = useState(i18n.language);
-
-  useEffect(() => {
-    i18n.changeLanguage(lang);
-    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-    localStorage.setItem("lang", lang);
-  }, [lang, i18n]);
+  const { lang, isRtl } = useLang();
 
   // جلب بيانات الداشبورد من الـ API مع refetch
   const { data: dashboardData, isLoading, error, refetch } = useGetDashboardQuery();
@@ -28,13 +21,13 @@ const Dashboard = () => {
       style={{ background: "var(--bg-all)" }}
     >
       {/* Navigation Bar - Full Width at Top */}
-      <NavBar lang={lang} setLang={setLang} />
+      <NavBar />
 
       {/* Content Area with SideMenu and Main Content */}
       <div className="flex flex-1 min-h-0" style={{ background: "var(--bg-all)" }}>
         {/* Side Menu - Hidden on mobile, visible on desktop */}
         <div className="hidden lg:block">
-          <SideMenu lang={lang} />
+          <SideMenu />
         </div>
 
         {/* Main Content - Full width on mobile, adjusted on desktop */}
