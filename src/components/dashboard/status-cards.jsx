@@ -17,7 +17,7 @@ export default function StatusCards({ dashboardData, isLoading, error }) {
 
   // SVGs as <img> tags with responsive sizing
   const CalendarIcon = (
-    <img src="/assets/dashboard_card/status.svg" alt="calendar"/>
+    <img src="/assets/dashboard_card/status.svg" alt="calendar" />
   );
   const LeaveIcon = (
     <img src="/assets/dashboard_card/clock2.svg" alt="leave" />
@@ -98,9 +98,13 @@ export default function StatusCards({ dashboardData, isLoading, error }) {
           title={status}
           statusDot={
             <span
-              className={`inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ml-1 sm:ml-2 ${status === t("dashboard.statusCards.notClockedIn") || status === "Not clocked in"
-                ? "bg-red-500"
-                : "bg-green-500"
+              className={`inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ml-1 sm:ml-2 ${status === t("dashboard.statusCards.clockedIn") || status === "Clocked In"
+                  ? "bg-green-500"
+                  : status === t("dashboard.statusCards.clockedOut") || status === "Clocked Out"
+                    ? "bg-red-500"
+                    : status === t("dashboard.statusCards.notClockedIn") || status === "Not clocked in"
+                      ? "bg-red-500"
+                      : "bg-gray-400"
                 }`}
             ></span>
           }
