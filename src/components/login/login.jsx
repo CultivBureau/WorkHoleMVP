@@ -42,6 +42,12 @@ const Login = () => {
       } else {
         navigate("/pages/User/dashboard");
       }
+      
+      // Auto refresh the app after successful login
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
+      
     } catch (err) {
       toast.error(err?.data?.message || t('login.loginFailed'));
     }
