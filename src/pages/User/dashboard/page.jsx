@@ -25,10 +25,8 @@ const Dashboard = () => {
 
       {/* Content Area with SideMenu and Main Content */}
       <div className="flex flex-1 min-h-0" style={{ background: "var(--bg-all)" }}>
-        {/* Side Menu - Hidden on mobile, visible on desktop */}
-        <div className="hidden lg:block">
-          <SideMenu />
-        </div>
+        {/* Side Menu - Always rendered */}
+        <SideMenu />
 
         {/* Main Content - Full width on mobile, adjusted on desktop */}
         <main className="flex-1 overflow-auto p-2 sm:p-3 lg:p-4" style={{ background: "var(--bg-all)" }}>

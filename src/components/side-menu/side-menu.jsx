@@ -498,7 +498,7 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
     if (!actualIsMobileOpen) return null;
     return (
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+        className="fixed inset-0 bg-black/20 backdrop-blur-lg z-40 lg:hidden"
         onClick={actualOnMobileClose}
       />
     );
@@ -658,9 +658,9 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
         isArabic={isArabic}
       />
 
-      {/* Mobile Hamburger Menu Button - NEW */}
+      {/* Hamburger Menu Button - Only Visible on Mobile/Small Screens */}
       <button
-        className="lg:hidden fixed top-2 left-2 z-50 p-3 rounded-xl shadow-lg transition-all duration-300 hover:scale-105 active:scale-95"
+        className="fixed bottom-4 left-4 z-50 p-3 rounded-xl shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 lg:hidden"
         style={{
           background: 'var(--bg-color)',
           borderColor: 'var(--border-color)',

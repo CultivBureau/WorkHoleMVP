@@ -33,14 +33,16 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
   const [langOpen, setLangOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [notifOpen, setNotifOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false); // desktop
+  const [mobileProfileOpen, setMobileProfileOpen] = useState(false); // mobile
 
   const searchRef = useRef(null);
   const langRef = useRef(null);
   const mobileMenuRef = useRef(null);
   const inputRef = useRef(null);
   const notifRef = useRef(null);
-  const profileRef = useRef(null);
+  const profileRef = useRef(null); // desktop
+  const mobileProfileRef = useRef(null); // mobile
 
   // Update time every second
   useEffect(() => {
@@ -67,6 +69,8 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
         setNotifOpen(false);
       if (profileRef.current && !profileRef.current.contains(e.target))
         setProfileOpen(false);
+      if (mobileProfileRef.current && !mobileProfileRef.current.contains(e.target))
+        setMobileProfileOpen(false);
     };
     document.addEventListener("mousedown", onClickOutside);
     return () => document.removeEventListener("mousedown", onClickOutside);
@@ -194,9 +198,9 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
       {/* Mobile Left Section - Hamburger + Profile */}
       <div className="lg:hidden flex items-center gap-3">
         {/* Mobile Profile */}
-        <div className="relative" ref={profileRef}>
+        <div className="relative" ref={mobileProfileRef}>
           <button
-            onClick={() => setProfileOpen((v) => !v)}
+            onClick={() => setMobileProfileOpen((v) => !v)}
             className="w-10 h-10 rounded-full overflow-hidden ring-2 transition-all duration-200 cursor-pointer hover:ring-4"
             style={{ borderColor: "var(--border-color)" }}
           >
@@ -215,7 +219,7 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
           </button>
 
           {/* Mobile Profile Dropdown */}
-          {profileOpen && (
+          {mobileProfileOpen && (
             <div
               className={`absolute ${isRtl ? "right-0" : "left-0"
                 } mt-2 w-56 rounded-2xl shadow-2xl border z-50 overflow-hidden`}
@@ -288,7 +292,7 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
                     (e.target.style.backgroundColor = "transparent")
                   }
                   onClick={() => {
-                    setProfileOpen(false);
+                    setMobileProfileOpen(false);
                     navigate("/pages/User/profile");
                   }}
                 >
@@ -317,7 +321,10 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
                   onMouseLeave={(e) =>
                     (e.target.style.backgroundColor = "transparent")
                   }
-                  onClick={handleLogout}
+                  onClick={async () => {
+                    setMobileProfileOpen(false);
+                    await handleLogout();
+                  }}
                 >
                   <LogOut
                     className="w-5 h-5"
