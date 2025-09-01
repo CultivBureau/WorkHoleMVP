@@ -16,6 +16,7 @@ export const store = configureStore({
     [timerApi.reducerPath]: timerApi.reducer,
     [leavesApi.reducerPath]: leavesApi.reducer,
     [usersApi.reducerPath]: usersApi.reducer,
+  
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -27,7 +28,8 @@ export const store = configureStore({
       attendanceApi.middleware,
       timerApi.middleware,
       leavesApi.middleware,
-      usersApi.middleware
+      usersApi.middleware,
+      
     ),
 });
 
