@@ -5,8 +5,6 @@ import { useTranslation } from "react-i18next"
 
 const HeaderSection = ({ userData }) => {
   const { t } = useTranslation()
-   
-
   
   return (
     <div>
