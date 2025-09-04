@@ -280,12 +280,10 @@ const MainContent = () => {
       const location = await getCurrentLocation()
       console.log('Got location:', location)
       
-      const localTime = getLocalTimeString()
       if (stats.currentStatus === "Clocked In") {
         await clockOut({ 
           latitude: location.latitude, 
-          longitude: location.longitude,
-          localTime, // <-- send local time
+          longitude: location.longitude 
         }).unwrap()
         
         toast.success(
@@ -305,8 +303,7 @@ const MainContent = () => {
         await clockIn({ 
           location: "office", 
           latitude: location.latitude, 
-          longitude: location.longitude,
-          localTime, // <-- send local time
+          longitude: location.longitude 
         }).unwrap()
         
         toast.success(
@@ -345,12 +342,10 @@ const MainContent = () => {
     )
 
     try {
-      const localTime = getLocalTimeString()
       if (stats.currentStatus === "Clocked In") {
         await clockOut({ 
           latitude: locationData.latitude, 
-          longitude: locationData.longitude,
-          localTime,
+          longitude: locationData.longitude 
         }).unwrap()
         
         toast.success(
@@ -371,8 +366,7 @@ const MainContent = () => {
         await clockIn({ 
           location: "office", 
           latitude: locationData.latitude, 
-          longitude: locationData.longitude,
-          localTime,
+          longitude: locationData.longitude 
         }).unwrap()
         
         toast.success(
@@ -410,11 +404,6 @@ const MainContent = () => {
         }
       )
     }
-  }
-
-  const getLocalTimeString = () => {
-    const now = new Date()
-    return now.toTimeString().slice(0, 5) // "HH:mm"
   }
 
   return (
