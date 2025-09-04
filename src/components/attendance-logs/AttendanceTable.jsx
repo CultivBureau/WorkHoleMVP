@@ -22,9 +22,8 @@ const AttendanceTable = () => {
 
 	// Fetch attendance logs from API (pagination is backend)
 	const { data, isLoading, refetch } = useGetStatsQuery(
-    { page: currentPage, limit: pageSize },
-    { pollingInterval: 15000 } // كل 15 ثواني هيعمل refetch تلقائي
-	)
+  { page: currentPage, limit: pageSize }
+)
 	const attendanceLogs = data?.attendanceLogs || []
 	const pagination = data?.pagination || { page: 1, limit: pageSize, total: 0, totalPages: 1 }
 
