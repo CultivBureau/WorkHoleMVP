@@ -106,6 +106,8 @@ const UsersAdmin = ({ lang, setLang }) => {
       icon: Users,
       color: "#3B82F6",
       bgColor: "#EFF6FF",
+      filterValue: "all",
+      isActive: filterRole === "all" && filterStatus === "all"
     },
     {
       title: isRtl ? "المديرون" : "Admins",
@@ -113,6 +115,8 @@ const UsersAdmin = ({ lang, setLang }) => {
       icon: Shield,
       color: "#8B5CF6",
       bgColor: "#F3E8FF",
+      filterValue: "admin",
+      isActive: filterRole === "admin"
     },
     {
       title: isRtl ? "الموظفون" : "Employees",
@@ -120,6 +124,8 @@ const UsersAdmin = ({ lang, setLang }) => {
       icon: User,
       color: "#10B981",
       bgColor: "#ECFDF5",
+      filterValue: "employee",
+      isActive: filterRole === "employee"
     },
     {
       title: isRtl ? "المستخدمون النشطون" : "Active Users",
@@ -127,8 +133,25 @@ const UsersAdmin = ({ lang, setLang }) => {
       icon: CheckCircle,
       color: "#F59E0B",
       bgColor: "#FFFBEB",
+      filterValue: "active",
+      isActive: filterStatus === "active"
     },
   ];
+
+  // Handle card click to filter by role or status
+  const handleCardClick = (card) => {
+    if (card.filterValue === "admin" || card.filterValue === "employee") {
+      // Toggle role filter
+      setFilterRole(filterRole === card.filterValue ? "all" : card.filterValue);
+    } else if (card.filterValue === "active") {
+      // Toggle status filter
+      setFilterStatus(filterStatus === card.filterValue ? "all" : card.filterValue);
+    } else if (card.filterValue === "all") {
+      // Reset all filters
+      setFilterRole("all");
+      setFilterStatus("all");
+    }
+  };
 
   const validateForm = () => {
     const newErrors = {};
@@ -258,6 +281,19 @@ const UsersAdmin = ({ lang, setLang }) => {
     }
   };
 
+  const handleStatusToggle = async (userId, currentStatus) => {
+    try {
+      const newStatus = currentStatus === "active" ? "suspended" : "active";
+      await updateUser({ 
+        id: userId, 
+        status: newStatus 
+      }).unwrap();
+      refetch();
+    } catch (error) {
+      console.error("Error updating user status:", error);
+    }
+  };
+
   const getRoleColor = (role) => {
     return role === "admin" ? "#8B5CF6" : "#10B981";
   };
@@ -325,11 +361,16 @@ const UsersAdmin = ({ lang, setLang }) => {
               {statsCards.map((card, index) => (
                 <div
                   key={index}
-                  className="p-6 rounded-2xl border transition-all duration-300 hover:shadow-lg"
+                  className={`p-6 rounded-2xl border transition-all duration-300 hover:shadow-lg cursor-pointer ${
+                    card.isActive ? 'ring-2 ring-opacity-50' : ''
+                  }`}
                   style={{
                     backgroundColor: "var(--bg-color)",
-                    borderColor: "var(--border-color)",
+                    borderColor: card.isActive ? "var(--accent-color)" : "var(--border-color)",
+                    ringColor: card.isActive ? card.color : 'transparent',
+                    transform: card.isActive ? 'scale(1.02)' : 'scale(1)',
                   }}
+                  onClick={() => handleCardClick(card)}
                 >
                   <div className="flex items-center justify-between">
                     <div>
@@ -524,9 +565,21 @@ const UsersAdmin = ({ lang, setLang }) => {
                               </div>
                             </td>
                             <td className="p-4">
-                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusStyle.bg} ${statusStyle.text}`}>
-                                {user.status === "active" ? (isRtl ? "نشط" : "Active") : (isRtl ? "معلق" : "Suspended")}
-                              </span>
+                              <div className="flex items-center gap-3">
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={user.status === "active"}
+                                    onChange={() => handleStatusToggle(user._id, user.status)}
+                                    className="sr-only peer"
+                                    disabled={updating}
+                                  />
+                                  <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                                </label>
+                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status).bg} ${getStatusColor(user.status).text}`}>
+                                  {user.status === "active" ? (isRtl ? "نشط" : "Active") : (isRtl ? "معلق" : "Suspended")}
+                                </span>
+                              </div>
                             </td>
                             <td className="p-4 text-center">
                               <div className="flex items-center justify-center gap-2">
@@ -902,28 +955,7 @@ const UsersAdmin = ({ lang, setLang }) => {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-3">
-                          <label className="relative flex items-center cursor-pointer">
-                            <input
-                              type="checkbox"
-                              name="isActive"
-                              checked={formData.isActive}
-                              onChange={handleInputChange}
-                              className="sr-only"
-                              disabled={creating}
-                            />
-                            <div className={`w-10 h-5 rounded-full transition-all duration-200 ${
-                              formData.isActive ? 'bg-blue-500' : 'bg-gray-300'
-                            }`}>
-                              <div className={`w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-200 ${
-                                formData.isActive ? 'translate-x-5' : 'translate-x-0.5'
-                              } mt-0.5`}></div>
-                            </div>
-                            <span className={`ml-2 text-sm font-medium ${formData.isActive ? 'text-blue-700' : 'text-gray-500'}`}>
-                              {formData.isActive ? (isRtl ? "نشط" : "Active") : (isRtl ? "غير نشط" : "Inactive")}
-                            </span>
-                          </label>
-                        </div>
+
                       </div>
                     </div>
                   </div>
@@ -1297,28 +1329,7 @@ const UsersAdmin = ({ lang, setLang }) => {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-3">
-                          <label className="relative flex items-center cursor-pointer">
-                            <input
-                              type="checkbox"
-                              name="isActive"
-                              checked={formData.isActive}
-                              onChange={handleInputChange}
-                              className="sr-only"
-                              disabled={updating}
-                            />
-                            <div className={`w-10 h-5 rounded-full transition-all duration-200 ${
-                              formData.isActive ? 'bg-blue-500' : 'bg-gray-300'
-                            }`}>
-                              <div className={`w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-200 ${
-                                formData.isActive ? 'translate-x-5' : 'translate-x-0.5'
-                              } mt-0.5`}></div>
-                            </div>
-                            <span className={`ml-2 text-sm font-medium ${formData.isActive ? 'text-blue-700' : 'text-gray-500'}`}>
-                              {formData.isActive ? (isRtl ? "نشط" : "Active") : (isRtl ? "غير نشط" : "Inactive")}
-                            </span>
-                          </label>
-                        </div>
+
                       </div>
                     </div>
                   </div>

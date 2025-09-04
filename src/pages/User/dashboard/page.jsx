@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import SideMenu from "../../../components/side-menu/side-menu";
 import NavBar from "../../../components/NavBar/navbar";
 import ActivityHeatmap from "../../../components/dashboard/activity-heatmap";
@@ -11,9 +11,17 @@ import { useLang } from "../../../contexts/LangContext";
 
 const Dashboard = () => {
   const { lang, isRtl } = useLang();
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
 
-  // جلب بيانات الداشبورد من الـ API مع refetch
-  const { data: dashboardData, isLoading, error, refetch } = useGetDashboardQuery();
+  // Fetch dashboard data with month parameter - refetch when month changes
+  const { data: dashboardData, isLoading, error, refetch } = useGetDashboardQuery({ 
+    month: selectedMonth 
+  });
+
+  // Refetch data when month changes
+  useEffect(() => {
+    refetch();
+  }, [selectedMonth, refetch]);
 
   return (
     <div
@@ -55,7 +63,14 @@ const Dashboard = () => {
 
               {/* Activity Heatmap - Full width and responsive */}
               <div className="mt-4 sm:mt-5 lg:mt-6">
-                <ActivityHeatmap dashboardData={dashboardData} isLoading={isLoading} error={error} refetch={refetch} />
+                <ActivityHeatmap 
+                  dashboardData={dashboardData} 
+                  isLoading={isLoading} 
+                  error={error} 
+                  refetch={refetch}
+                  selectedMonth={selectedMonth}
+                  onMonthChange={setSelectedMonth}
+                />
               </div>
             </div>
           </div>

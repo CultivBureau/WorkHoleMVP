@@ -527,64 +527,7 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
 
       {/* Desktop Right Section */}
       <div className="flex items-center gap-4 max-lg:hidden">
-        {/* Search and Notifications */}
-        <div
-          ref={searchRef}
-          className={`flex items-center gap-3 ${isRtl ? "flex-row-reverse" : ""
-            }`}
-        >
-          {/* Search Toggle */}
-          <button
-            onClick={() => setIsSearchOpen((v) => !v)}
-            className="p-2.5 rounded-2xl border transition-all duration-200"
-            style={{
-              borderColor: "var(--border-color)",
-              backgroundColor: "var(--bg-color)",
-            }}
-          >
-            <Search
-              className="w-4 h-4"
-              style={{ color: "var(--sub-text-color)" }}
-            />
-          </button>
-          {/* Expanding Search Field */}
-          <div
-            className={`overflow-hidden transition-all duration-300 ${isSearchOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-              } ${isSearchOpen ? "w-64" : "w-0"}`}
-          >
-            <div
-              className={`flex items-center gap-3 border rounded-2xl px-3 py-2 shadow-sm ${isRtl ? "flex-row-reverse" : ""
-                }`}
-              style={{
-                backgroundColor: "var(--bg-color)",
-                borderColor: "var(--border-color)",
-              }}
-            >
-              <Search
-                className="w-3.5 h-3.5"
-                style={{ color: "var(--sub-text-color)" }}
-              />
-              <input
-                ref={inputRef}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={t("navbar.searchPlaceholder")}
-                dir={lang === "ar" ? "rtl" : "ltr"}
-                onKeyDown={(e) => e.key === "Escape" && setIsSearchOpen(false)}
-                className="flex-1 bg-transparent outline-none text-sm font-medium"
-                style={{ color: "var(--text-color)" }}
-              />
-              <button
-                onClick={() => setIsSearchOpen(false)}
-                className="p-1 rounded-lg transition-colors"
-                style={{ color: "var(--sub-text-color)" }}
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
 
-        </div>
         {/* Date and Time - Dynamic - Compact */}
         <div
           className="flex flex-col items-center gap-1"

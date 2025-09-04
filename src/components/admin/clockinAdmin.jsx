@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from "react"
 import { Clock, ClipboardList, Coffee, BarChart3, MapPin, Loader2, AlertCircle, CheckCircle2 } from "lucide-react"
 import { useTranslation } from "react-i18next"
-import { useGetDashboardQuery, useClockInMutation, useClockOutMutation } from "../../../services/apis/AtteandanceApi"
+import { useGetDashboardQuery, useClockInMutation, useClockOutMutation } from "../../services/apis/AtteandanceApi"
 import { useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
 
-const MainContent = () => {
+const ClockinAdmin = () => {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   const { data, isLoading, error, refetch } = useGetDashboardQuery({})
@@ -408,7 +408,7 @@ const MainContent = () => {
 
   return (
     <div
-      className="w-full h-max flex flex-col justify-center items-center"
+      className="w-[80%] h-max flex flex-col justify-center items-center"
       style={{
         backgroundColor: "var(--bg-color)",
         direction: isAr ? "rtl" : "ltr",
@@ -583,67 +583,7 @@ const MainContent = () => {
           </button>
         </div>
       </div>
-      {/* Bottom Cards */}
-      <div className="w-full h-max flex gap-5 justify-center items-center">
-        <div
-          className="w-1/2 h-full rounded-[17px] p-4 shadow-lg flex flex-col items-center gap-3 border"
-          style={{
-            backgroundColor: "var(--bg-color)",
-            borderColor: "var(--border-color)",
-          }}
-        >
-          <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center">
-            <ClipboardList className="w-6 h-6 text-[var(--accent-color)]" />
-          </div>
-          <div className="text-center">
-            <h3 className="text-lg font-semibold mb-1" style={{ color: "var(--text-color)" }}>
-              {t("mainContent.attendanceLogs")}
-            </h3>
-            <p className="text-[var(--sub-text-color)] text-xs mb-2">
-              {t("mainContent.attendanceLogsDesc")}
-            </p>
-          </div>
-          <button
-            className="w-full text-white text-xs font-medium py-2 px-3 rounded-xl transition-colors flex items-center justify-center gap-1"
-            style={{
-              background: `linear-gradient(135deg, var(--accent-hover) 0%, var(--accent-color) 100%)`,
-            }}
-            onClick={() => navigate("/pages/User/attendance-logs")}
-          >
-            <BarChart3 className="w-4 h-4" />
-            {t("mainContent.viewAttendanceLogs")}
-          </button>
-        </div>
-        <div
-          className="w-1/2 h-full rounded-[17px] shadow-lg p-4 flex flex-col items-center gap-3 border"
-          style={{
-            backgroundColor: "var(--bg-color)",
-            borderColor: "var(--border-color)",
-          }}
-        >
-          <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center">
-            <Coffee className="w-6 h-6 text-[var(--accent-color)]" />
-          </div>
-          <div className="text-center">
-            <h3 className="text-lg font-semibold mb-1" style={{ color: "var(--text-color)" }}>
-              {t("mainContent.breakTracking")}
-            </h3>
-            <p className="text-[var(--sub-text-color)] text-xs mb-2">
-              {t("mainContent.breakTrackingDesc")}
-            </p>
-          </div>
-          <button
-            className="w-full text-white text-xs font-medium py-2 px-3 rounded-xl transition-colors flex items-center justify-center gap-1"
-            style={{
-              background: `linear-gradient(135deg, var(--accent-hover) 0%, var(--accent-color) 100%)`,
-            }}
-            onClick={() => navigate("/pages/User/break-tracking")}
-          >
-            <BarChart3 className="w-4 h-4" />
-            {t("mainContent.viewBreakLogs")}
-          </button>
-        </div>
-      </div>
+
 
       {/* Enhanced Location Selection Modal */}
       {showLocationModal && (
@@ -751,4 +691,4 @@ const MainContent = () => {
   )
 }
 
-export default MainContent
+export default ClockinAdmin

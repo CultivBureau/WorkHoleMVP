@@ -17,9 +17,10 @@ export const dashboardApi = createApi({
   }),
   endpoints: (builder) => ({
     getDashboard: builder.query({
-      query: () => ({
+      query: (params = {}) => ({
         url: "me",
         method: "GET",
+        params: params,
       }),
       // دايماً يحدث البيانات عند فتح الصفحة أو تغيير الـ window
       refetchOnMountOrArgChange: true,

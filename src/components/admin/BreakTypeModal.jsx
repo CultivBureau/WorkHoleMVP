@@ -90,7 +90,7 @@ const BreakTypeModal = ({ show, onClose, initialData, isRtl, onSuccess }) => {
             </button>
             
             <div className="flex items-center gap-4">
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-500 shadow-lg">
+              <div className="p-4 rounded-2xl gradient-bg shadow-lg">
                 <Coffee size={28} className="text-white" />
               </div>
               <div>
@@ -137,7 +137,7 @@ const BreakTypeModal = ({ show, onClose, initialData, isRtl, onSuccess }) => {
                     className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none ${
                       errors.name 
                         ? "border-red-300 focus:border-red-500 bg-red-50" 
-                        : "border-gray-200 focus:border-purple-500 focus:bg-purple-50"
+                        : "border-gray-200 focus:border-[#15919b] "
                     }`}
                     placeholder={isRtl ? "مثال: استراحة الغداء" : "e.g., Lunch Break"}
                     disabled={isLoading}
@@ -178,7 +178,7 @@ const BreakTypeModal = ({ show, onClose, initialData, isRtl, onSuccess }) => {
                     className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none ${
                       errors.duration 
                         ? "border-red-300 focus:border-red-500 bg-red-50" 
-                        : "border-gray-200 focus:border-purple-500 focus:bg-purple-50"
+                        : "border-gray-200 focus:border-[#15919b] "
                     }`}
                     placeholder={isRtl ? "15" : "15"}
                     disabled={isLoading}
@@ -210,13 +210,13 @@ const BreakTypeModal = ({ show, onClose, initialData, isRtl, onSuccess }) => {
                       disabled={isLoading}
                     />
                     <div className={`w-12 h-6 rounded-full transition-all duration-200 ${
-                      isActive ? 'bg-purple-500' : 'bg-gray-300'
+                      isActive ? 'bg-gradient-to-r from-[#15919b] to-[#09d1c7]' : 'bg-gray-300'
                     }`}>
                       <div className={`w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-200 ${
                         isActive ? 'translate-x-6' : 'translate-x-0.5'
                       } mt-0.5`}></div>
                     </div>
-                    <span className={`ml-3 text-sm font-medium ${isActive ? 'text-purple-700' : 'text-gray-500'}`}>
+                    <span className={`ml-3 text-sm font-medium ${isActive ? 'text-gradient-start' : 'text-gray-500'}`}>
                       {isActive ? (isRtl ? "نشط" : "Active") : (isRtl ? "غير نشط" : "Inactive")}
                     </span>
                   </label>
@@ -244,7 +244,7 @@ const BreakTypeModal = ({ show, onClose, initialData, isRtl, onSuccess }) => {
                 className={`flex-1 py-3 px-4 rounded-xl font-semibold text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-300 ${
                   isLoading
                     ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 hover:shadow-lg hover:-translate-y-0.5 transform active:scale-95"
+                    : "gradient-bg hover:shadow-lg hover:-translate-y-0.5 transform active:scale-95"
                 }`}
                 disabled={isLoading}
               >

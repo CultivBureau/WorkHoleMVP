@@ -72,6 +72,13 @@ export const breakApi = createApi({
       }),
       invalidatesTags: ["BreakTypes"],
     }),
+    deleteBreakType: builder.mutation({
+      query: (id) => ({
+        url: `type/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["BreakTypes"],
+    }),
   }),
 });
 
@@ -84,4 +91,5 @@ export const {
   useGetActiveBreaksCountQuery,
   useCreateBreakTypeMutation,
   useUpdateBreakTypeMutation,
+  useDeleteBreakTypeMutation,
 } = breakApi;

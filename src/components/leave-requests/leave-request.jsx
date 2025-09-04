@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import { Upload, File, Loader2 } from "lucide-react"
+import { Upload, File, Loader2, AlertCircle, CheckCircle } from "lucide-react"
 import { useCreateLeaveMutation } from "../../services/apis/LeavesApi"
 import { toast } from "react-hot-toast"
 
-const LeaveRequest = ({ refetch }) => { // استقبل refetch كـ prop
+const LeaveRequest = ({ refetch }) => {
   const { t, i18n } = useTranslation()
   const isArabic = i18n.language === "ar"
 
@@ -20,6 +20,9 @@ const LeaveRequest = ({ refetch }) => { // استقبل refetch كـ prop
     attachment: null,
   })
   const [showSuccess, setShowSuccess] = useState(false)
+  const [errors, setErrors] = useState({})
+  const [isLoading, setIsLoading] = useState(false)
+  const [submitError, setSubmitError] = useState(null)
 
   // RTK Query mutation
   const [createLeave, { isLoading: isSubmitting }] = useCreateLeaveMutation()
@@ -32,6 +35,75 @@ const LeaveRequest = ({ refetch }) => { // استقبل refetch كـ prop
   ]
 
   const today = new Date().toISOString().split("T")[0]
+
+  // Validation functions
+  const validateStep1 = () => {
+    const newErrors = {}
+    
+    if (!formData.leaveType) {
+      newErrors.leaveType = t("leaves.validation.leaveTypeRequired", "Please select a leave type")
+    }
+    
+    if (!formData.fromDate) {
+      newErrors.fromDate = t("leaves.validation.fromDateRequired", "Please select a start date")
+    } else {
+      const fromDate = new Date(formData.fromDate)
+      const todayDate = new Date(today)
+      if (fromDate < todayDate) {
+        newErrors.fromDate = t("leaves.validation.fromDatePast", "Start date cannot be in the past")
+      }
+    }
+    
+    if (!formData.toDate) {
+      newErrors.toDate = t("leaves.validation.toDateRequired", "Please select an end date")
+    } else if (formData.fromDate) {
+      const fromDate = new Date(formData.fromDate)
+      const toDate = new Date(formData.toDate)
+      if (toDate < fromDate) {
+        newErrors.toDate = t("leaves.validation.toDateBeforeFrom", "End date cannot be before start date")
+      }
+    }
+    
+    if (formData.numberOfDays <= 0) {
+      newErrors.numberOfDays = t("leaves.validation.invalidDays", "Please select valid dates")
+    }
+    
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const validateStep2 = () => {
+    const newErrors = {}
+    
+    if (!formData.reason.trim()) {
+      newErrors.reason = t("leaves.validation.reasonRequired", "Please provide a reason for your leave")
+    } else if (formData.reason.trim().length < 10) {
+      newErrors.reason = t("leaves.validation.reasonTooShort", "Reason must be at least 10 characters long")
+    } else if (formData.reason.trim().length > 500) {
+      newErrors.reason = t("leaves.validation.reasonTooLong", "Reason cannot exceed 500 characters")
+    }
+    
+    // Validate file if it's sick leave
+    if (formData.leaveType === "sick" && formData.attachment) {
+      const maxSize = 10 * 1024 * 1024 // 10MB
+      if (formData.attachment.size > maxSize) {
+        newErrors.attachment = t("leaves.validation.fileTooLarge", "File size cannot exceed 10MB")
+      }
+      
+      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/jpg', 'image/png']
+      if (!allowedTypes.includes(formData.attachment.type)) {
+        newErrors.attachment = t("leaves.validation.invalidFileType", "Only PDF, DOC, DOCX, JPG, and PNG files are allowed")
+      }
+    }
+    
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const validateStep3 = () => {
+    // Final validation before submission
+    return validateStep1() && validateStep2()
+  }
 
   // Helper to count only weekdays (Sun-Thu), skipping Fri (5) and Sat (6)
   const calculateDays = (from, to) => {
@@ -54,6 +126,10 @@ const LeaveRequest = ({ refetch }) => { // استقبل refetch كـ prop
   const handleDateChange = (field, value) => {
     const selectedDate = new Date(value)
     const day = selectedDate.getDay()
+    
+    // Clear previous errors for this field
+    setErrors(prev => ({ ...prev, [field]: null }))
+    
     // 5 = Friday, 6 = Saturday
     if (day === 5 || day === 6) {
       toast.error(
@@ -61,6 +137,7 @@ const LeaveRequest = ({ refetch }) => { // استقبل refetch كـ prop
       )
       return
     }
+    
     setFormData((prev) => {
       const newData = { ...prev, [field]: value }
       if (field === "fromDate" || field === "toDate") {
@@ -90,21 +167,35 @@ const LeaveRequest = ({ refetch }) => { // استقبل refetch كـ prop
   }
 
   const handleSubmit = async () => {
+    setIsLoading(true)
+    setSubmitError(null)
+    
+    // Final validation
+    if (!validateStep3()) {
+      setIsLoading(false)
+      toast.error(t("leaves.validation.pleaseFixErrors", "Please fix the errors before submitting"))
+      return
+    }
+
     // Prepare data for API
     const data = {
       leaveType: getApiLeaveType(formData.leaveType),
       startDate: formData.fromDate,
       endDate: formData.toDate,
-      reason: formData.reason,
+      reason: formData.reason.trim(),
     }
+    
     try {
       await createLeave({
         data,
         file: formData.attachment || undefined,
       }).unwrap()
-      toast.success(t("leaves.form.successToast", "Leave request submitted!"))
+      
+      toast.success(t("leaves.form.successToast", "Leave request submitted successfully!"))
       setShowSuccess(true)
-      if (refetch) refetch(); // هنا التحديث بعد نجاح الإضافة
+      if (refetch) refetch()
+      
+      // Clear form after success
       setTimeout(() => {
         setCurrentStep(1)
         setFormData({
@@ -115,33 +206,98 @@ const LeaveRequest = ({ refetch }) => { // استقبل refetch كـ prop
           reason: "",
           attachment: null,
         })
+        setErrors({})
         setShowSuccess(false)
+        setSubmitError(null)
+        localStorage.removeItem("leaveFormData")
       }, 3000)
     } catch (err) {
       console.error("Error submitting leave request:", err)
-      toast.error(
-        t("leaves.form.errorToast", "Failed to submit leave request. Please try again.")
-      )
+      setSubmitError(err)
+      
+      // Handle different types of errors
+      let errorMessage = t("leaves.form.errorToast", "Failed to submit leave request. Please try again.")
+      
+      if (err?.data?.message) {
+        errorMessage = err.data.message
+      } else if (err?.message) {
+        errorMessage = err.message
+      } else if (err?.status === 400) {
+        errorMessage = t("leaves.form.validationError", "Please check your input and try again")
+      } else if (err?.status === 401) {
+        errorMessage = t("leaves.form.unauthorized", "You are not authorized to perform this action")
+      } else if (err?.status === 500) {
+        errorMessage = t("leaves.form.serverError", "Server error. Please try again later")
+      }
+      
+      toast.error(errorMessage)
+    } finally {
+      setIsLoading(false)
     }
   }
 
   const handleNext = () => {
-    if (currentStep < 3) {
+    let isValid = false
+    
+    switch (currentStep) {
+      case 1:
+        isValid = validateStep1()
+        break
+      case 2:
+        isValid = validateStep2()
+        break
+      case 3:
+        handleSubmit()
+        return
+      default:
+        isValid = false
+    }
+    
+    if (isValid) {
       setCurrentStep(currentStep + 1)
-    } else if (currentStep === 3) {
-      handleSubmit()
+      // Clear errors when moving to next step
+      setErrors({})
+    } else {
+      toast.error(t("leaves.validation.pleaseFixErrors", "Please fix the errors before proceeding"))
     }
   }
 
   const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1)
+      setErrors({})
+      setSubmitError(null)
     }
   }
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0]
-    setFormData((prev) => ({ ...prev, attachment: file }))
+    if (file) {
+      // Clear previous attachment errors
+      setErrors(prev => ({ ...prev, attachment: null }))
+      
+      // Validate file size
+      const maxSize = 10 * 1024 * 1024 // 10MB
+      if (file.size > maxSize) {
+        setErrors(prev => ({ 
+          ...prev, 
+          attachment: t("leaves.validation.fileTooLarge", "File size cannot exceed 10MB") 
+        }))
+        return
+      }
+      
+      // Validate file type
+      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/jpg', 'image/png']
+      if (!allowedTypes.includes(file.type)) {
+        setErrors(prev => ({ 
+          ...prev, 
+          attachment: t("leaves.validation.invalidFileType", "Only PDF, DOC, DOCX, JPG, and PNG files are allowed") 
+        }))
+        return
+      }
+      
+      setFormData((prev) => ({ ...prev, attachment: file }))
+    }
   }
 
   const getStepTitle = () => {
@@ -171,6 +327,18 @@ const LeaveRequest = ({ refetch }) => { // استقبل refetch كـ prop
     </div>
   )
 
+  const renderError = (errorKey) => {
+    if (!errors[errorKey]) return null
+    return (
+      <div className="flex items-center gap-1 mt-1">
+        <AlertCircle className="w-3 h-3" style={{ color: "var(--error-color)" }} />
+        <span className="text-xs" style={{ color: "var(--error-color)" }}>
+          {errors[errorKey]}
+        </span>
+      </div>
+    )
+  }
+
   const renderStep1 = () => (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-3">
@@ -181,7 +349,10 @@ const LeaveRequest = ({ refetch }) => { // استقبل refetch كـ prop
               name="leaveType"
               value={type.value}
               checked={formData.leaveType === type.value}
-              onChange={(e) => setFormData((prev) => ({ ...prev, leaveType: e.target.value }))}
+              onChange={(e) => {
+                setFormData((prev) => ({ ...prev, leaveType: e.target.value }))
+                setErrors(prev => ({ ...prev, leaveType: null }))
+              }}
               className="sr-only"
             />
             <div
@@ -199,6 +370,8 @@ const LeaveRequest = ({ refetch }) => { // استقبل refetch كـ prop
           </label>
         ))}
       </div>
+      {renderError("leaveType")}
+      
       <div className="space-y-2">
         <div className="text-center">
           <label className="block font-medium text-xs mb-2" style={{ color: "var(--sub-text-color)" }}>
@@ -215,13 +388,16 @@ const LeaveRequest = ({ refetch }) => { // استقبل refetch كـ prop
               min={today}
               value={formData.fromDate}
               onChange={(e) => handleDateChange("fromDate", e.target.value)}
-              className="w-full p-1.5 text-xs border rounded-md focus:outline-none focus:ring-1 transition-colors"
+              className={`w-full p-1.5 text-xs border rounded-md focus:outline-none focus:ring-1 transition-colors ${
+                errors.fromDate ? 'border-red-500' : ''
+              }`}
               style={{
-                borderColor: "var(--border-color)",
+                borderColor: errors.fromDate ? "var(--error-color)" : "var(--border-color)",
                 backgroundColor: "var(--bg-color)",
                 color: "var(--text-color)",
               }}
             />
+            {renderError("fromDate")}
           </div>
           <div>
             <label className="block text-xs mb-1" style={{ color: "var(--sub-text-color)" }}>
@@ -232,24 +408,33 @@ const LeaveRequest = ({ refetch }) => { // استقبل refetch كـ prop
               min={formData.fromDate || today}
               value={formData.toDate}
               onChange={(e) => handleDateChange("toDate", e.target.value)}
-              className="w-full p-1.5 text-xs border rounded-md focus:outline-none focus:ring-1 transition-colors"
+              className={`w-full p-1.5 text-xs border rounded-md focus:outline-none focus:ring-1 transition-colors ${
+                errors.toDate ? 'border-red-500' : ''
+              }`}
               style={{
-                borderColor: "var(--border-color)",
+                borderColor: errors.toDate ? "var(--error-color)" : "var(--border-color)",
                 backgroundColor: "var(--bg-color)",
                 color: "var(--text-color)",
               }}
             />
+            {renderError("toDate")}
           </div>
           <div>
             <label className="block text-xs mb-1" style={{ color: "var(--sub-text-color)" }}>
               {t("leaves.form.numberOfDays")}
             </label>
             <div
-              className="w-full p-1.5 rounded-md text-center font-semibold text-xs"
-              style={{ backgroundColor: "var(--container-color)", color: "var(--text-color)" }}
+              className={`w-full p-1.5 rounded-md text-center font-semibold text-xs ${
+                errors.numberOfDays ? 'border border-red-500' : ''
+              }`}
+              style={{ 
+                backgroundColor: errors.numberOfDays ? "var(--error-color)" : "var(--container-color)", 
+                color: errors.numberOfDays ? "white" : "var(--text-color)" 
+              }}
             >
               {formData.numberOfDays} {t("leaves.form.days", "day")}
             </div>
+            {renderError("numberOfDays")}
           </div>
         </div>
       </div>
@@ -261,27 +446,45 @@ const LeaveRequest = ({ refetch }) => { // استقبل refetch كـ prop
       <div className="flex-1">
         <textarea
           value={formData.reason}
-          onChange={(e) => setFormData((prev) => ({ ...prev, reason: e.target.value }))}
+          onChange={(e) => {
+            setFormData((prev) => ({ ...prev, reason: e.target.value }))
+            setErrors(prev => ({ ...prev, reason: null }))
+          }}
           placeholder={t("leaves.form.reasonPlaceholder")}
           rows={2}
-          className="w-full h-full p-2 text-xs border rounded-lg focus:outline-none focus:ring-1 resize-none transition-colors"
+          className={`w-full h-full p-2 text-xs border rounded-lg focus:outline-none focus:ring-1 resize-none transition-colors ${
+            errors.reason ? 'border-red-500' : ''
+          }`}
           style={{
-            borderColor: "var(--border-color)",
+            borderColor: errors.reason ? "var(--error-color)" : "var(--border-color)",
             backgroundColor: "var(--bg-color)",
             color: "var(--text-color)",
           }}
         />
+        {renderError("reason")}
+        <div className="flex justify-between items-center mt-1">
+          <span className="text-xs" style={{ color: "var(--sub-text-color)" }}>
+            {formData.reason.length}/500 {t("leaves.form.characters", "characters")}
+          </span>
+          {formData.reason.length >= 10 && formData.reason.length <= 500 && (
+            <CheckCircle className="w-3 h-3" style={{ color: "var(--success-color)" }} />
+          )}
+        </div>
       </div>
+      
       {/* Show upload section only for sick leave */}
       {formData.leaveType === "sick" && (
         <div className="flex-shrink-0">
           <div className="flex items-center justify-between mb-1">
             <p className="text-xs" style={{ color: "var(--sub-text-color)" }}>
-              {t("leaves.form.attachment")}
+              {t("leaves.form.attachment")} <span className="text-red-500">*</span>
             </p>
             {formData.attachment && (
               <button
-                onClick={() => setFormData((prev) => ({ ...prev, attachment: null }))}
+                onClick={() => {
+                  setFormData((prev) => ({ ...prev, attachment: null }))
+                  setErrors(prev => ({ ...prev, attachment: null }))
+                }}
                 className="text-xs hover:opacity-70 transition-opacity"
                 style={{ color: "var(--error-color)" }}
               >
@@ -290,7 +493,9 @@ const LeaveRequest = ({ refetch }) => { // استقبل refetch كـ prop
             )}
           </div>
           {formData.attachment ? (
-            <div className="flex items-center gap-2 p-2 rounded-lg" style={{ backgroundColor: "var(--container-color)" }}>
+            <div className={`flex items-center gap-2 p-2 rounded-lg border ${
+              errors.attachment ? 'border-red-500' : ''
+            }`} style={{ backgroundColor: "var(--container-color)" }}>
               <div
                 className="w-8 h-8 rounded flex items-center justify-center flex-shrink-0"
                 style={{ backgroundColor: "var(--accent-color)" }}
@@ -308,12 +513,15 @@ const LeaveRequest = ({ refetch }) => { // استقبل refetch كـ prop
                   {(formData.attachment.size / (1024 * 1024)).toFixed(1)}MB
                 </p>
               </div>
+              <CheckCircle className="w-4 h-4" style={{ color: "var(--success-color)" }} />
             </div>
           ) : (
             <div className="flex items-center gap-4">
               <div
-                className="w-30 h-20 p-1 flex-shrink-0 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
-                style={{ borderColor: "var(--accent-color)" }}
+                className={`w-30 h-20 p-1 flex-shrink-0 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-80 transition-opacity ${
+                  errors.attachment ? 'border-red-500' : ''
+                }`}
+                style={{ borderColor: errors.attachment ? "var(--error-color)" : "var(--accent-color)" }}
                 onClick={() => document.getElementById("file-upload").click()}
               >
                 <input
@@ -344,6 +552,7 @@ const LeaveRequest = ({ refetch }) => { // استقبل refetch كـ prop
               </div>
             </div>
           )}
+          {renderError("attachment")}
         </div>
       )}
     </div>
@@ -351,6 +560,17 @@ const LeaveRequest = ({ refetch }) => { // استقبل refetch كـ prop
 
   const renderStep3 = () => (
     <div className="space-y-3">
+      {submitError && (
+        <div className="p-2 rounded-lg border border-red-500 bg-red-50">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-red-500" />
+            <span className="text-xs text-red-700">
+              {submitError?.data?.message || submitError?.message || t("leaves.form.submitError", "An error occurred while submitting")}
+            </span>
+          </div>
+        </div>
+      )}
+      
       <div className="space-y-1.5">
         <div className="flex items-center gap-2 text-xs">
           <span className="font-medium" style={{ color: "var(--text-color)" }}>
@@ -384,7 +604,7 @@ const LeaveRequest = ({ refetch }) => { // استقبل refetch كـ prop
             style={{
               color: "var(--sub-text-color)",
               display: "inline-block",
-              maxWidth: 180, // adjust as needed
+              maxWidth: 180,
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -433,13 +653,23 @@ const LeaveRequest = ({ refetch }) => { // استقبل refetch كـ prop
   useEffect(() => {
     const saved = localStorage.getItem("leaveFormData")
     if (saved) {
-      setFormData(JSON.parse(saved))
+      try {
+        const parsedData = JSON.parse(saved)
+        setFormData(parsedData)
+      } catch (error) {
+        console.error("Error parsing saved form data:", error)
+        localStorage.removeItem("leaveFormData")
+      }
     }
   }, [])
 
   // Save form data to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem("leaveFormData", JSON.stringify(formData))
+    try {
+      localStorage.setItem("leaveFormData", JSON.stringify(formData))
+    } catch (error) {
+      console.error("Error saving form data:", error)
+    }
   }, [formData])
 
   return (
@@ -481,7 +711,7 @@ const LeaveRequest = ({ refetch }) => { // استقبل refetch كـ prop
             {currentStep !== 1 && (
               <button
                 onClick={handleBack}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isLoading}
                 className="px-3 py-1 border rounded-md font-medium hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed text-xs"
                 style={{
                   borderColor: "var(--border-color)",
@@ -494,14 +724,14 @@ const LeaveRequest = ({ refetch }) => { // استقبل refetch كـ prop
             )}
             <button
               onClick={handleNext}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isLoading}
               className="px-3 py-1 gradient-bg text-white rounded-md font-medium hover:opacity-90 transition-opacity disabled:opacity-70 disabled:cursor-not-allowed text-xs flex items-center gap-2"
             >
-              {isSubmitting && currentStep === 3 && (
+              {(isSubmitting || isLoading) && currentStep === 3 && (
                 <Loader2 className="w-3 h-3 animate-spin" />
               )}
               {currentStep === 3
-                ? isSubmitting
+                ? (isSubmitting || isLoading)
                   ? t("leaves.form.submitting", "Submitting...")
                   : t("leaves.form.submit", "Submit")
                 : t("leaves.form.next", "Next")
