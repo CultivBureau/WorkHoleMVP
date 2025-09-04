@@ -320,22 +320,7 @@ const MainContent = () => {
           }
         )
       }
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const latitude = position.coords.latitude;
-          const longitude = position.coords.longitude;
-
-          if (stats.currentStatus === "Clocked In") {
-            await clockOut({ latitude, longitude }).unwrap();
-          } else {
-            await clockIn({ location: "office", latitude, longitude }).unwrap();
-          }
-          refetch();
-        },
-        (error) => {
-          alert("Location access denied. Please allow location permission.");
-        }
-      );
+      refetch()
     } catch (e) {
       console.error('Clock process error:', e)
       
@@ -433,7 +418,7 @@ const MainContent = () => {
         {/* First Row - Current Status & Active Work Time */}
         <div className="w-full h-[105px] flex gap-2 justify-center items-center">
           <div
-            className="w-1/2 h-full rounded-xl p-4 flex flex-col justify-between border"
+            className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-between border"
             style={{
               backgroundColor: "var(--card-bg)",
               borderColor: "var(--border-color)",
@@ -445,12 +430,12 @@ const MainContent = () => {
             </div>
             <h3 className="text-lg font-semibold" style={{ color: "var(--text-color)" }}>
               {stats.currentStatus === "Clocked In"
-                ? t("Clock In")
-                : t("Clock Out")}
+                ? t("clockIn")
+                : t("clockOut")}
             </h3>
           </div>
           <div
-            className="w-1/2 h-full rounded-xl p-4 flex flex-col justify-between border"
+            className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-between border"
             style={{
               backgroundColor: "var(--card-bg)",
               borderColor: "var(--border-color)",
@@ -463,7 +448,7 @@ const MainContent = () => {
         {/* Second Row */}
         <div className="w-full h-[105px] flex gap-2 justify-center items-center">
           <div
-            className="w-1/2 h-full rounded-xl p-4 flex flex-col justify-between border"
+            className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-between border"
             style={{
               backgroundColor: "var(--card-bg)",
               borderColor: "var(--border-color)",
@@ -484,7 +469,7 @@ const MainContent = () => {
           </div>
           <div className="w-1/2 h-full flex gap-2 justify-center items-center">
             <div
-              className="w-1/2 h-full rounded-xl p-4 flex flex-col justify-center items-center border"
+              className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-center items-center border"
               style={{
                 backgroundColor: "var(--card-bg)",
                 borderColor: "var(--border-color)",
@@ -494,7 +479,7 @@ const MainContent = () => {
               <span className="text-[var(--sub-text-color)] text-xs">{t("mainContent.break")}</span>
             </div>
             <div
-              className="w-1/2 h-full rounded-xl p-4 flex flex-col justify-center items-center border"
+              className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-center items-center border"
               style={{
                 backgroundColor: "var(--card-bg)",
                 borderColor: "var(--border-color)",
@@ -509,7 +494,7 @@ const MainContent = () => {
         <div className="w-full h-[105px] flex gap-2 justify-center items-center">
           <div className="w-1/2 h-full flex gap-2 justify-center items-center">
             <div
-              className="w-1/2 h-full rounded-xl p-4 flex flex-col justify-center items-center border"
+              className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-center items-center border"
               style={{
                 backgroundColor: "var(--card-bg)",
                 borderColor: "var(--border-color)",
@@ -521,7 +506,7 @@ const MainContent = () => {
               </span>
             </div>
             <div
-              className="w-1/2 h-full rounded-xl p-4 flex flex-col justify-center items-center border"
+              className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-center items-center border"
               style={{
                 backgroundColor: "var(--card-bg)",
                 borderColor: "var(--border-color)",
@@ -535,7 +520,7 @@ const MainContent = () => {
           </div>
           <div className="w-1/2 h-full flex gap-2 justify-center items-center">
             <div
-              className="w-1/2 h-full rounded-xl p-4 flex flex-col justify-center items-center border"
+              className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-center items-center border"
               style={{
                 backgroundColor: "var(--card-bg)",
                 borderColor: "var(--border-color)",
@@ -550,7 +535,7 @@ const MainContent = () => {
               </span>
             </div>
             <div
-              className="w-1/2 h-full rounded-xl p-4 flex flex-col justify-center items-center border"
+              className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-center items-center border"
               style={{
                 backgroundColor: "var(--card-bg)",
                 borderColor: "var(--border-color)",
@@ -598,6 +583,7 @@ const MainContent = () => {
           </button>
         </div>
       </div>
+
       {/* Bottom Cards */}
       <div className="w-full h-max flex gap-5 justify-center items-center">
         <div
