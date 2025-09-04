@@ -27,6 +27,8 @@ import {
 import logo from "../../assets/side-menu-icons/logo.svg?url";
 import { useTheme } from "../../contexts/ThemeContext";
 
+
+
 // Custom Toast Component
 const Toast = ({ message, isVisible, onClose, type = 'info', isArabic = false }) => {
   useEffect(() => {
