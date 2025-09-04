@@ -276,7 +276,7 @@ const TimerCard = () => {
               !hasActiveTimer && setDuration(Math.max(0, duration - 5))
             }}
             disabled={hasActiveTimer}
-            className='w-[28px] h-[28px] text-white rounded-full bg-gradient-to-br from-[#09D1C7] to-[#15919B] font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110 transition-transform'
+            className='w-[28px] h-[28px] text-white  rounded-full bg-gradient-to-br from-[#09D1C7] to-[#15919B] font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110 transition-transform'
             aria-label={t('timerCard.decreaseDuration')}
           >
             −
@@ -305,7 +305,7 @@ const TimerCard = () => {
 
         <div className='w-full h-[50px] flex justify-center items-center'>
           <button
-            className={`w-[85%] h-[40px] rounded-full flex justify-center items-center text-[17px] font-semibold transition-all duration-300 hover:scale-105 ${
+            className={`w-[85%] h-[40px] cursor-pointer rounded-full flex justify-center items-center text-[17px] font-semibold transition-all duration-300 hover:scale-105 ${
               hasActiveTimer
                 ? 'bg-gradient-to-r from-[#09D1C7] to-[#15919B] text-white hover:shadow-lg'
                 : 'bg-gradient-to-r from-[#CDFFFC] to-[#E0FFFE] text-[#15919B] hover:from-[#09D1C7] hover:to-[#15919B] hover:text-white'

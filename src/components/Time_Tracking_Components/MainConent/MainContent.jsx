@@ -558,7 +558,7 @@ const MainContent = () => {
         {/* Enhanced Start Your Day Button */}
         <div className="w-full h-max pb-2 pt-2 flex justify-center items-center">
           <button
-            className="w-full text-white font-medium py-3 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
+            className="w-full text-white cursor-pointer font-medium py-3 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
             style={{
               background: hasCompletedToday 
                 ? 'linear-gradient(135deg, #6B7280 0%, #9CA3AF 100%)' // Gray when completed
