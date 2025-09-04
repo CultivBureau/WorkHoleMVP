@@ -1,13 +1,16 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
 import { useTranslation } from "react-i18next"
-import { useGetStatsQuery } from "../../services/apis/AtteandanceApi"
+import { useGetStatsQuery, useClockInMutation, useClockOutMutation } from "../../services/apis/AtteandanceApi"
+import { useAttendanceUpdate } from "../../contexts/AttendanceUpdateContext"
 
 const AttendanceTable = () => {
 	const { t, i18n } = useTranslation()
 	const isArabic = i18n.language === "ar"
+
+	const { lastUpdate } = useAttendanceUpdate()
 
 	const [sortBy, setSortBy] = useState("newest")
 	const [location, setLocation] = useState("all")
@@ -18,7 +21,10 @@ const AttendanceTable = () => {
 	const pageSize = 8
 
 	// Fetch attendance logs from API (pagination is backend)
-	const { data, isLoading } = useGetStatsQuery({ page: currentPage, limit: pageSize })
+	const { data, isLoading, refetch } = useGetStatsQuery(
+    { page: currentPage, limit: pageSize },
+    { pollingInterval: 15000 } // كل 15 ثواني هيعمل refetch تلقائي
+	)
 	const attendanceLogs = data?.attendanceLogs || []
 	const pagination = data?.pagination || { page: 1, limit: pageSize, total: 0, totalPages: 1 }
 
@@ -148,6 +154,37 @@ const AttendanceTable = () => {
 			/>
 		</div>
 	)
+
+	// دالة لتحويل الوقت من "HH:mm" لـ "h:mm AM/PM"
+	const formatTo12Hour = (timeStr) => {
+		if (!timeStr || typeof timeStr !== "string") return "—";
+		const [hour, minute] = timeStr.split(":");
+		const date = new Date();
+		date.setHours(Number(hour));
+		date.setMinutes(Number(minute));
+		return date.toLocaleTimeString(i18n.language === "ar" ? "ar-EG" : "en-US", {
+			hour: "numeric",
+			minute: "2-digit",
+			hour12: true,
+		});
+	}
+
+	const [clockIn] = useClockInMutation()
+	const [clockOut] = useClockOutMutation()
+
+	const handleClockIn = async (body) => {
+		await clockIn(body)
+		refetch() // يعيد جلب البيانات تلقائي بعد clock in
+	}
+
+	const handleClockOut = async (body) => {
+		await clockOut(body)
+		refetch() // يعيد جلب البيانات تلقائي بعد clock out
+	}
+
+	useEffect(() => {
+		refetch()
+	}, [lastUpdate])
 
 	return (
 		<div
@@ -290,11 +327,11 @@ const AttendanceTable = () => {
 									</td>
 									<td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
 										style={{ color: 'var(--table-text)' }}>
-										{record.checkInTime || "—"}
+										{formatTo12Hour(record.checkInTime)}
 									</td>
 									<td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
 										style={{ color: 'var(--table-text)' }}>
-										{record.checkOutTime || "—"}
+										{formatTo12Hour(record.checkOutTime)}
 									</td>
 									<td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
 										style={{ color: 'var(--table-text)' }}>

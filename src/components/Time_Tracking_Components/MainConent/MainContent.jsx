@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next"
 import { useGetDashboardQuery, useClockInMutation, useClockOutMutation } from "../../../services/apis/AtteandanceApi"
 import { useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
+import { useAttendanceUpdate } from "../../../contexts/AttendanceUpdateContext"
 
 const MainContent = () => {
   const { t, i18n } = useTranslation()
@@ -11,6 +12,7 @@ const MainContent = () => {
   const { data, isLoading, error, refetch } = useGetDashboardQuery({})
   const [clockIn, { isLoading: isClockingIn }] = useClockInMutation()
   const [clockOut, { isLoading: isClockingOut }] = useClockOutMutation()
+  const { triggerUpdate } = useAttendanceUpdate()
   const navigate = useNavigate();
 
   // fallback لو البيانات مش موجودة
@@ -320,6 +322,7 @@ const MainContent = () => {
           }
         )
       }
+      triggerUpdate()
       refetch()
     } catch (e) {
       console.error('Clock process error:', e)
@@ -384,6 +387,7 @@ const MainContent = () => {
           }
         )
       }
+      triggerUpdate()
       refetch()
       setShowLocationModal(false)
     } catch (error) {

@@ -17,113 +17,119 @@ import ResetPassword from "./components/reset-password/resetPassword";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { LangProvider } from "./contexts/LangContext";
+import { AttendanceUpdateProvider } from "./contexts/AttendanceUpdateContext";
+import { BreakUpdateProvider } from "./contexts/BreakUpdateContext";
 
 function App() {
   return (
     <ThemeProvider>
       <LangProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Login />} />
-            <Route
-              path="/forget-password"
-              element={<ForgetPassword />}
-            />
-            <Route
-              path="/reset-password"
-              element={<ResetPassword />}
-            />
-            <Route
-              path="/pages/User/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/pages/User/leaves"
-              element={
-                <ProtectedRoute>
-                  <Leaves />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/pages/User/time_tracking"
-              element={
-                <ProtectedRoute>
-                  <TimeTracking />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/pages/User/attendance-logs"
-              element={
-                <ProtectedRoute>
-                  <AttendanceLogs />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/pages/User/break-tracking"
-              element={
-                <ProtectedRoute>
-                  <BreakTracking />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/pages/User/profile"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
-            {/* Admin Routes */}
-            <Route
-              path="/pages/admin/dashboard"
-              element={
-                <ProtectedRoute>
-                  <DashboardAdmin />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/pages/admin/attendance"
-              element={
-                <ProtectedRoute>
-                  <AttendanceAdmin />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/pages/admin/break"
-              element={
-                <ProtectedRoute>
-                  <BreakAdmin />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/pages/admin/leaves"
-              element={
-                <ProtectedRoute>
-                  <LeavesAdmin />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/pages/admin/users"
-              element={
-                <ProtectedRoute>
-                  <UsersAdmin />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </BrowserRouter>
+        <AttendanceUpdateProvider>
+          <BreakUpdateProvider>
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Login />} />
+                <Route
+                  path="/forget-password"
+                  element={<ForgetPassword />}
+                />
+                <Route
+                  path="/reset-password"
+                  element={<ResetPassword />}
+                />
+                <Route
+                  path="/pages/User/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/pages/User/leaves"
+                  element={
+                    <ProtectedRoute>
+                      <Leaves />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/pages/User/time_tracking"
+                  element={
+                    <ProtectedRoute>
+                      <TimeTracking />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/pages/User/attendance-logs"
+                  element={
+                    <ProtectedRoute>
+                      <AttendanceLogs />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/pages/User/break-tracking"
+                  element={
+                    <ProtectedRoute>
+                      <BreakTracking />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/pages/User/profile"
+                  element={
+                    <ProtectedRoute>
+                      <Profile />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Admin Routes */}
+                <Route
+                  path="/pages/admin/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <DashboardAdmin />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/pages/admin/attendance"
+                  element={
+                    <ProtectedRoute>
+                      <AttendanceAdmin />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/pages/admin/break"
+                  element={
+                    <ProtectedRoute>
+                      <BreakAdmin />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/pages/admin/leaves"
+                  element={
+                    <ProtectedRoute>
+                      <LeavesAdmin />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/pages/admin/users"
+                  element={
+                    <ProtectedRoute>
+                      <UsersAdmin />
+                    </ProtectedRoute>
+                  }
+                />
+              </Routes>
+            </BrowserRouter>
+          </BreakUpdateProvider>
+        </AttendanceUpdateProvider>
       </LangProvider>
     </ThemeProvider>
   );

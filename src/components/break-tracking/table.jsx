@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useGetBreakStatsQuery } from "../../services/apis/BreakApi";
+import { useBreakUpdate } from "../../contexts/BreakUpdateContext"
 
 const BreakHistoryTable = () => {
   const { t, i18n } = useTranslation();
@@ -11,14 +12,15 @@ const BreakHistoryTable = () => {
   const [selectedType, setSelectedType] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
+  const { lastBreakUpdate } = useBreakUpdate()
   // Fetch data from API with filters
-  const { data: statsData, isLoading } = useGetBreakStatsQuery({
-    page: currentPage,
-    limit: 4,
-    sortBy,
-    date: selectedDate,
-    type: selectedType
-  });
+  const { data: statsData, isLoading, refetch } = useGetBreakStatsQuery(
+    { page: currentPage, limit: 4, sortBy, date: selectedDate, type: selectedType }
+  )
+
+  useEffect(() => {
+    refetch()
+  }, [lastBreakUpdate])
 
   const breaks = statsData?.breaks || [];
   const pagination = statsData?.pagination || { page: 1, limit: 4, total: 0, totalPages: 1 };

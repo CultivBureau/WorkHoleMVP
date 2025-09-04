@@ -8,9 +8,11 @@ import {
     useStopBreakMutation,
     useGetBreakDashboardQuery,
 } from "../../services/apis/BreakApi";
+import { useBreakUpdate } from "../../contexts/BreakUpdateContext"
 
 const BreakTime = ({ breakDashboard, refetch }) => {
     const { t, i18n } = useTranslation();
+    const { triggerBreakUpdate } = useBreakUpdate()
 
     // مزامنة اللغة من localStorage
     useEffect(() => {
@@ -92,6 +94,7 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                 setIsBreakActive(true);
                 setBreakStartTime(new Date());
                 setBreakDuration(0);
+                triggerBreakUpdate() // بعد بدء البريك
                 if (refetch) refetch(); // هنا التحديث بعد بدء البريك
             } catch (err) {
                 setShowPopup(true);
@@ -103,6 +106,7 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                 setBreakStartTime(null);
                 setBreakDuration(0);
                 setSelectedReason("");
+                triggerBreakUpdate() // بعد إنهاء البريك
                 if (refetch) refetch(); // هنا التحديث بعد إنهاء البريك
             } catch (err) {
                 setShowPopup(true);

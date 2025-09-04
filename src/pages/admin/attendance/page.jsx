@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useGetAllUsersAttendanceQuery } from "../../../services/apis/AtteandanceApi";
 import SetOfficeLocation from "../../../components/admin/SetOfficeLocation";
+import { useAttendanceUpdate } from "../../../contexts/AttendanceUpdateContext";
 
 const AttendanceAdmin = ({ lang, setLang }) => {
   const { i18n } = useTranslation();
@@ -29,7 +30,10 @@ const AttendanceAdmin = ({ lang, setLang }) => {
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterLocation, setFilterLocation] = useState("all");
   const [dateFilter, setDateFilter] = useState("today");
-  const { data: attendanceData, isLoading, refetch } = useGetAllUsersAttendanceQuery(dateFilter);
+  const { lastUpdate } = useAttendanceUpdate();
+  const { data: attendanceData, isLoading, refetch } = useGetAllUsersAttendanceQuery(
+    dateFilter
+  );
   const [showOfficeLocationModal, setShowOfficeLocationModal] = useState(false);
   // Add this state for active card
   const [activeCard, setActiveCard] = useState(null);
@@ -39,6 +43,10 @@ const AttendanceAdmin = ({ lang, setLang }) => {
     document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
     localStorage.setItem("lang", lang);
   }, [lang, i18n]);
+
+  useEffect(() => {
+    refetch();
+  }, [lastUpdate]);
 
   const isRtl = lang === "ar";
 
