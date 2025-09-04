@@ -9,8 +9,13 @@ import {
   Edit,
   Trash2,
   Search,
+  X,
+  AlertTriangle,
 } from "lucide-react";
-import { useGetBreakTypesQuery } from "../../../services/apis/BreakApi";
+import { 
+  useGetBreakTypesQuery,
+  useDeleteBreakTypeMutation 
+} from "../../../services/apis/BreakApi";
 import BreakTypeModal from "../../../components/admin/BreakTypeModal";
 
 const BreakAdmin = ({ lang, setLang }) => {
@@ -20,6 +25,8 @@ const BreakAdmin = ({ lang, setLang }) => {
   const [selectedTab, setSelectedTab] = useState("types");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editBreakType, setEditBreakType] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [breakToDelete, setBreakToDelete] = useState(null);
 
   useEffect(() => {
     i18n.changeLanguage(lang);
@@ -28,6 +35,7 @@ const BreakAdmin = ({ lang, setLang }) => {
   }, [lang, i18n]);
 
   const { data: breakTypes, isLoading, refetch } = useGetBreakTypesQuery();
+  const [deleteBreakType, { isLoading: deleting }] = useDeleteBreakTypeMutation();
   const isRtl = lang === "ar";
 
   const tabs = [
@@ -56,6 +64,22 @@ const BreakAdmin = ({ lang, setLang }) => {
       bgColor: "#ECFDF5"
     }
   ];
+
+  const handleDeleteClick = (breakType) => {
+    setBreakToDelete(breakType);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      await deleteBreakType(breakToDelete._id).unwrap();
+      setShowDeleteModal(false);
+      setBreakToDelete(null);
+      refetch();
+    } catch (error) {
+      console.error("Error deleting break type:", error);
+    }
+  };
 
   return (
     <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
@@ -115,10 +139,10 @@ const BreakAdmin = ({ lang, setLang }) => {
                       </p>
                     </div>
                     <div 
-                      className="p-3 rounded-xl"
+                      className="p-3 rounded-xl gradient-bg"
                       style={{ backgroundColor: card.bgColor }}
                     >
-                      <card.icon size={24} style={{ color: card.color }} />
+                      <card.icon size={24} className="text-white" />
                     </div>
                   </div>
                 </div>
@@ -229,6 +253,7 @@ const BreakAdmin = ({ lang, setLang }) => {
                                     backgroundColor: "var(--bg-color)",
                                     color: "var(--text-color)"
                                   }}
+                                  onClick={() => handleDeleteClick(breakType)}
                                 >
                                   <Trash2 size={16} />
                                 </button>
@@ -293,6 +318,106 @@ const BreakAdmin = ({ lang, setLang }) => {
                 setShowCreateModal(false);
               }}
             />
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && breakToDelete && (
+              <div className="fixed inset-0 bg-black/20 backdrop-blur-lg bg-opacity-60 flex items-center justify-center z-50 p-4">
+                <div 
+                  className="w-full max-w-md transform transition-all duration-300 scale-100"
+                  style={{ direction: isRtl ? "rtl" : "ltr" }}
+                >
+                  <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+                    {/* Header */}
+                    <div className="px-8 pt-8 pb-6 text-center">
+                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+                        <Trash2 size={32} className="text-red-600" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                        {isRtl ? "تأكيد الحذف" : "Confirm Deletion"}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        {isRtl ? "هذا الإجراء لا يمكن التراجع عنه" : "This action cannot be undone"}
+                      </p>
+                    </div>
+
+                    {/* Content */}
+                    <div className="px-8 pb-6">
+                      <div className="p-4 rounded-lg bg-red-50 border border-red-200 mb-6">
+                        <div className="text-center">
+                          <p className="text-gray-800 mb-2">
+                            {isRtl ? "هل أنت متأكد من أنك تريد حذف نوع الراحة هذا؟" : "Are you sure you want to delete this break type?"}
+                          </p>
+                          <div className="flex items-center justify-center gap-3 mt-3">
+                            <div className="p-2 rounded-lg bg-purple-100">
+                              <Coffee size={20} className="text-purple-600" />
+                            </div>
+                            <div>
+                              <p className="font-semibold text-gray-900">
+                                {breakToDelete.name}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                {breakToDelete.duration} {isRtl ? "دقيقة" : "minutes"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3 text-sm text-gray-600">
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle size={16} className="text-amber-500 flex-shrink-0" />
+                          <span>
+                            {isRtl ? "ستفقد جميع بيانات نوع الراحة نهائياً" : "All break type data will be permanently lost"}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle size={16} className="text-amber-500 flex-shrink-0" />
+                          <span>
+                            {isRtl ? "لن يتمكن الموظفون من استخدام هذا النوع" : "Employees will no longer be able to use this break type"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="px-8 py-6 bg-gray-50 border-t border-gray-100">
+                      <div className="flex gap-4">
+                        <button
+                          onClick={() => {
+                            setShowDeleteModal(false);
+                            setBreakToDelete(null);
+                          }}
+                          className="flex-1 py-3 px-4 rounded-xl border-2 border-gray-200 text-gray-700 font-semibold hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                          disabled={deleting}
+                        >
+                          {isRtl ? "إلغاء" : "Cancel"}
+                        </button>
+                        <button
+                          onClick={handleDeleteConfirm}
+                          className={`flex-1 py-3 px-4 rounded-xl font-semibold text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-300 ${
+                            deleting
+                              ? "bg-gray-400 cursor-not-allowed"
+                              : "bg-red-500 hover:bg-red-600 hover:shadow-lg hover:-translate-y-0.5 transform active:scale-95"
+                          }`}
+                          disabled={deleting}
+                        >
+                          {deleting ? (
+                            <div className="flex items-center justify-center gap-2">
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                              {isRtl ? "جاري الحذف..." : "Deleting..."}
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-center gap-2">
+                              <Trash2 size={18} />
+                              {isRtl ? "حذف نوع الراحة" : "Delete Break Type"}
+                            </div>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </main>
       </div>

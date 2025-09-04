@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from "react"
 import { Clock, ClipboardList, Coffee, BarChart3, MapPin, Loader2, AlertCircle, CheckCircle2 } from "lucide-react"
 import { useTranslation } from "react-i18next"
-import { useGetDashboardQuery, useClockInMutation, useClockOutMutation } from "../../../services/apis/AtteandanceApi"
+import { useGetDashboardQuery, useClockInMutation, useClockOutMutation } from "../../services/apis/AtteandanceApi"
 import { useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
 
-const MainContent = () => {
+const ClockinAdmin = () => {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   const { data, isLoading, error, refetch } = useGetDashboardQuery({})
@@ -320,22 +320,7 @@ const MainContent = () => {
           }
         )
       }
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const latitude = position.coords.latitude;
-          const longitude = position.coords.longitude;
-
-          if (stats.currentStatus === "Clocked In") {
-            await clockOut({ latitude, longitude }).unwrap();
-          } else {
-            await clockIn({ location: "office", latitude, longitude }).unwrap();
-          }
-          refetch();
-        },
-        (error) => {
-          alert("Location access denied. Please allow location permission.");
-        }
-      );
+      refetch()
     } catch (e) {
       console.error('Clock process error:', e)
       
@@ -423,7 +408,7 @@ const MainContent = () => {
 
   return (
     <div
-      className="w-full h-max flex flex-col justify-center items-center"
+      className="w-[80%] h-max flex flex-col justify-center items-center"
       style={{
         backgroundColor: "var(--bg-color)",
         direction: isAr ? "rtl" : "ltr",
@@ -433,7 +418,7 @@ const MainContent = () => {
         {/* First Row - Current Status & Active Work Time */}
         <div className="w-full h-[105px] flex gap-2 justify-center items-center">
           <div
-            className="w-1/2 h-full rounded-xl p-4 flex flex-col justify-between border"
+            className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-between border"
             style={{
               backgroundColor: "var(--card-bg)",
               borderColor: "var(--border-color)",
@@ -445,12 +430,12 @@ const MainContent = () => {
             </div>
             <h3 className="text-lg font-semibold" style={{ color: "var(--text-color)" }}>
               {stats.currentStatus === "Clocked In"
-                ? t("Clock In")
-                : t("Clock Out")}
+                ? t("clockIn")
+                : t("clockOut")}
             </h3>
           </div>
           <div
-            className="w-1/2 h-full rounded-xl p-4 flex flex-col justify-between border"
+            className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-between border"
             style={{
               backgroundColor: "var(--card-bg)",
               borderColor: "var(--border-color)",
@@ -463,7 +448,7 @@ const MainContent = () => {
         {/* Second Row */}
         <div className="w-full h-[105px] flex gap-2 justify-center items-center">
           <div
-            className="w-1/2 h-full rounded-xl p-4 flex flex-col justify-between border"
+            className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-between border"
             style={{
               backgroundColor: "var(--card-bg)",
               borderColor: "var(--border-color)",
@@ -484,7 +469,7 @@ const MainContent = () => {
           </div>
           <div className="w-1/2 h-full flex gap-2 justify-center items-center">
             <div
-              className="w-1/2 h-full rounded-xl p-4 flex flex-col justify-center items-center border"
+              className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-center items-center border"
               style={{
                 backgroundColor: "var(--card-bg)",
                 borderColor: "var(--border-color)",
@@ -494,7 +479,7 @@ const MainContent = () => {
               <span className="text-[var(--sub-text-color)] text-xs">{t("mainContent.break")}</span>
             </div>
             <div
-              className="w-1/2 h-full rounded-xl p-4 flex flex-col justify-center items-center border"
+              className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-center items-center border"
               style={{
                 backgroundColor: "var(--card-bg)",
                 borderColor: "var(--border-color)",
@@ -509,7 +494,7 @@ const MainContent = () => {
         <div className="w-full h-[105px] flex gap-2 justify-center items-center">
           <div className="w-1/2 h-full flex gap-2 justify-center items-center">
             <div
-              className="w-1/2 h-full rounded-xl p-4 flex flex-col justify-center items-center border"
+              className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-center items-center border"
               style={{
                 backgroundColor: "var(--card-bg)",
                 borderColor: "var(--border-color)",
@@ -521,7 +506,7 @@ const MainContent = () => {
               </span>
             </div>
             <div
-              className="w-1/2 h-full rounded-xl p-4 flex flex-col justify-center items-center border"
+              className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-center items-center border"
               style={{
                 backgroundColor: "var(--card-bg)",
                 borderColor: "var(--border-color)",
@@ -535,7 +520,7 @@ const MainContent = () => {
           </div>
           <div className="w-1/2 h-full flex gap-2 justify-center items-center">
             <div
-              className="w-1/2 h-full rounded-xl p-4 flex flex-col justify-center items-center border"
+              className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-center items-center border"
               style={{
                 backgroundColor: "var(--card-bg)",
                 borderColor: "var(--border-color)",
@@ -550,7 +535,7 @@ const MainContent = () => {
               </span>
             </div>
             <div
-              className="w-1/2 h-full rounded-xl p-4 flex flex-col justify-center items-center border"
+              className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-center items-center border"
               style={{
                 backgroundColor: "var(--card-bg)",
                 borderColor: "var(--border-color)",
@@ -598,67 +583,7 @@ const MainContent = () => {
           </button>
         </div>
       </div>
-      {/* Bottom Cards */}
-      <div className="w-full h-max flex gap-5 justify-center items-center">
-        <div
-          className="w-1/2 h-full rounded-[17px] p-4 shadow-lg flex flex-col items-center gap-3 border"
-          style={{
-            backgroundColor: "var(--bg-color)",
-            borderColor: "var(--border-color)",
-          }}
-        >
-          <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center">
-            <ClipboardList className="w-6 h-6 text-[var(--accent-color)]" />
-          </div>
-          <div className="text-center">
-            <h3 className="text-lg font-semibold mb-1" style={{ color: "var(--text-color)" }}>
-              {t("mainContent.attendanceLogs")}
-            </h3>
-            <p className="text-[var(--sub-text-color)] text-xs mb-2">
-              {t("mainContent.attendanceLogsDesc")}
-            </p>
-          </div>
-          <button
-            className="w-full text-white text-xs font-medium py-2 px-3 rounded-xl transition-colors flex items-center justify-center gap-1"
-            style={{
-              background: `linear-gradient(135deg, var(--accent-hover) 0%, var(--accent-color) 100%)`,
-            }}
-            onClick={() => navigate("/pages/User/attendance-logs")}
-          >
-            <BarChart3 className="w-4 h-4" />
-            {t("mainContent.viewAttendanceLogs")}
-          </button>
-        </div>
-        <div
-          className="w-1/2 h-full rounded-[17px] shadow-lg p-4 flex flex-col items-center gap-3 border"
-          style={{
-            backgroundColor: "var(--bg-color)",
-            borderColor: "var(--border-color)",
-          }}
-        >
-          <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center">
-            <Coffee className="w-6 h-6 text-[var(--accent-color)]" />
-          </div>
-          <div className="text-center">
-            <h3 className="text-lg font-semibold mb-1" style={{ color: "var(--text-color)" }}>
-              {t("mainContent.breakTracking")}
-            </h3>
-            <p className="text-[var(--sub-text-color)] text-xs mb-2">
-              {t("mainContent.breakTrackingDesc")}
-            </p>
-          </div>
-          <button
-            className="w-full text-white text-xs font-medium py-2 px-3 rounded-xl transition-colors flex items-center justify-center gap-1"
-            style={{
-              background: `linear-gradient(135deg, var(--accent-hover) 0%, var(--accent-color) 100%)`,
-            }}
-            onClick={() => navigate("/pages/User/break-tracking")}
-          >
-            <BarChart3 className="w-4 h-4" />
-            {t("mainContent.viewBreakLogs")}
-          </button>
-        </div>
-      </div>
+
 
       {/* Enhanced Location Selection Modal */}
       {showLocationModal && (
@@ -766,4 +691,4 @@ const MainContent = () => {
   )
 }
 
-export default MainContent
+export default ClockinAdmin

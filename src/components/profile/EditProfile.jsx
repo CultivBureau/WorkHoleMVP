@@ -176,29 +176,7 @@ const EditProfile = ({ onClose }) => {
             />
           </div>
 
-          {/* Phone */}
-          <div>
-            <label 
-              className="flex items-center gap-2 mb-2 text-sm font-medium" 
-              style={{ color: "var(--text-color)" }}
-            >
-              <Phone className="w-4 h-4" style={{ color: "var(--accent-color)" }} />
-              {isRtl ? 'رقم الهاتف' : 'Phone Number'}
-            </label>
-            <input 
-              name="phone" 
-              value={form.phone} 
-              onChange={handleChange}
-              type="tel"
-              className="w-full p-3 rounded-xl border transition-all duration-200 focus:border-[var(--accent-color)] focus:ring-2 focus:ring-[var(--accent-color)]/20 outline-none"
-              style={{
-                backgroundColor: "var(--bg-color)",
-                borderColor: "var(--border-color)",
-                color: "var(--text-color)"
-              }}
-              placeholder={isRtl ? 'أدخل رقم الهاتف' : 'Enter phone number'}
-            />
-          </div>
+
         </div>
 
         {/* Action Buttons */}

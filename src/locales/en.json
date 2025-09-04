@@ -201,6 +201,8 @@
     "dateFrom": "Date from",
     "dateTo": "Date to",
     "showing": "Showing {{count}} of {{total}} records",
+    "loading": "Loading...",
+    "noData": "No attendance data available",
     "columns": {
       "date": "Date",
       "day": "Day",

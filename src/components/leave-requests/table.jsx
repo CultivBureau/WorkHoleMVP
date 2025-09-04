@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { ChevronDown, ChevronLeft, ChevronRight, Eye, Edit } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Eye, Edit, RefreshCw, FileX, Calendar } from "lucide-react";
 import { useGetMyLeavesQuery } from "../../services/apis/LeavesApi";
 
 const LeaveTable = () => {
@@ -13,12 +13,63 @@ const LeaveTable = () => {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const itemsPerPage = 6;
 
-  // Fetch leaves from API
-  const { data, isLoading } = useGetMyLeavesQuery({ page: currentPage, limit: itemsPerPage });
+  // Fetch leaves from API with polling for auto-refresh
+  const { 
+    data, 
+    isLoading, 
+    error, 
+    refetch,
+    isFetching 
+  } = useGetMyLeavesQuery(
+    { page: currentPage, limit: itemsPerPage },
+    {
+      // Auto-refresh every 30 seconds
+      pollingInterval: 30000,
+      // Refetch on window focus
+      refetchOnFocus: true,
+      // Refetch on reconnect
+      refetchOnReconnect: true,
+    }
+  );
+
   const leaves = data?.leaves || [];
   const pagination = data?.pagination || { page: 1, limit: itemsPerPage, total: 0, totalPages: 1 };
+
+  // Auto-refresh when data changes (from external sources like new leave requests)
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'leaveFormSubmitted' || e.key === 'leaveDataUpdated') {
+        refetch();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also listen for custom events
+    const handleCustomRefresh = () => {
+      refetch();
+    };
+
+    window.addEventListener('leaveDataChanged', handleCustomRefresh);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('leaveDataChanged', handleCustomRefresh);
+    };
+  }, [refetch]);
+
+  // Manual refresh function
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   // Filter and sort data (client-side)
   const filteredData = useMemo(() => {
@@ -123,6 +174,89 @@ const LeaveTable = () => {
     </div>
   );
 
+  // Enhanced empty state component
+  const renderEmptyState = () => {
+    const hasFilters = leaveType !== "all" || status !== "all" || dateFrom || dateTo;
+    
+    return (
+      <div className="flex flex-col items-center justify-center py-16 px-6">
+        <div className="mb-4">
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" 
+               style={{ backgroundColor: 'var(--container-color)' }}>
+            {hasFilters ? (
+              <FileX className="w-8 h-8" style={{ color: 'var(--sub-text-color)' }} />
+            ) : (
+              <Calendar className="w-8 h-8" style={{ color: 'var(--sub-text-color)' }} />
+            )}
+          </div>
+        </div>
+        
+        <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-color)' }}>
+          {hasFilters 
+            ? t("leaves.table.noResultsFound", "No Results Found") 
+            : t("leaves.table.noDataAvailable", "No Data Available")
+          }
+        </h3>
+        
+        <p className="text-sm text-center mb-6 max-w-md" style={{ color: 'var(--sub-text-color)' }}>
+          {hasFilters 
+            ? t("leaves.table.noResultsDescription", "No leave requests match your current filters. Try adjusting your search criteria.")
+            : t("leaves.table.noDataDescription", "You haven't submitted any leave requests yet. Click the 'New Request' button to create your first leave request.")
+          }
+        </p>
+        
+        {hasFilters && (
+          <button
+            onClick={() => {
+              setLeaveType("all");
+              setStatus("all");
+              setDateFrom("");
+              setDateTo("");
+              setSortBy("newest");
+            }}
+            className="px-4 py-2 gradient-bg text-white rounded-lg font-medium hover:opacity-90 transition-opacity text-sm"
+          >
+            {t("leaves.table.clearFilters", "Clear Filters")}
+          </button>
+        )}
+      </div>
+    );
+  };
+
+  // Loading state component
+  const renderLoadingState = () => (
+    <div className="flex flex-col items-center justify-center py-16 px-6">
+      <div className="w-8 h-8 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+      <p className="text-sm" style={{ color: 'var(--sub-text-color)' }}>
+        {t("leaves.table.loading", "Loading leave requests...")}
+      </p>
+    </div>
+  );
+
+  // Error state component
+  const renderErrorState = () => (
+    <div className="flex flex-col items-center justify-center py-16 px-6">
+      <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" 
+           style={{ backgroundColor: 'var(--error-color)', opacity: 0.1 }}>
+        <FileX className="w-8 h-8" style={{ color: 'var(--error-color)' }} />
+      </div>
+      <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-color)' }}>
+        {t("leaves.table.errorTitle", "Error Loading Data")}
+      </h3>
+      <p className="text-sm text-center mb-6 max-w-md" style={{ color: 'var(--sub-text-color)' }}>
+        {error?.data?.message || error?.message || t("leaves.table.errorDescription", "Something went wrong while loading your leave requests. Please try again.")}
+      </p>
+      <button
+        onClick={handleManualRefresh}
+        disabled={isRefreshing}
+        className="px-4 py-2 gradient-bg text-white rounded-lg font-medium hover:opacity-90 transition-opacity text-sm flex items-center gap-2 disabled:opacity-50"
+      >
+        <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+        {t("leaves.table.retry", "Try Again")}
+      </button>
+    </div>
+  );
+
   return (
     <div
       className="rounded-xl border shadow-sm"
@@ -184,58 +318,73 @@ const LeaveTable = () => {
             />
           </div>
 
-          <div className="text-sm font-medium" style={{ color: 'var(--sub-text-color)' }}>
-            {isLoading ? "..." : `${currentPageData.length} ${t("leaves.table.of")} ${filteredData.length} ${t("leaves.table.entries")}`}
+          <div className="flex items-center gap-3">
+            <div className="text-sm font-medium" style={{ color: 'var(--sub-text-color)' }}>
+              {isLoading ? "..." : `${currentPageData.length} ${t("leaves.table.of")} ${filteredData.length} ${t("leaves.table.entries")}`}
+            </div>
+            
+            {/* Refresh button */}
+            <button
+              onClick={handleManualRefresh}
+              disabled={isRefreshing || isLoading}
+              className="p-2 rounded-lg border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                borderColor: 'var(--border-color)',
+                backgroundColor: 'var(--bg-color)',
+                color: 'var(--text-color)'
+              }}
+              title={t("leaves.table.refresh", "Refresh data")}
+            >
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} style={{ color: 'var(--sub-text-color)' }} />
+            </button>
           </div>
         </div>
       </div>
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead style={{ backgroundColor: 'var(--table-header-bg)' }}>
-            <tr>
-              <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
-                style={{ color: 'var(--table-header-text)' }}>
-                {t("leaves.table.columns.leaveType")}
-              </th>
-              <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
-                style={{ color: 'var(--table-header-text)' }}>
-                {t("leaves.table.columns.from")}
-              </th>
-              <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
-                style={{ color: 'var(--table-header-text)' }}>
-                {t("leaves.table.columns.to")}
-              </th>
-              <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
-                style={{ color: 'var(--table-header-text)' }}>
-                {t("leaves.table.columns.days")}
-              </th>
-              <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
-                style={{ color: 'var(--table-header-text)' }}>
-                {t("leaves.table.columns.status")}
-              </th>
-              <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
-                style={{ color: 'var(--table-header-text)' }}>
-                {t("leaves.table.columns.reason")}
-              </th>
-              <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
-                style={{ color: 'var(--table-header-text)' }}>
-                {t("leaves.table.columns.approver")}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
+        {error ? (
+          renderErrorState()
+        ) : isLoading ? (
+          renderLoadingState()
+        ) : currentPageData.length === 0 ? (
+          renderEmptyState()
+        ) : (
+          <table className="w-full">
+            <thead style={{ backgroundColor: 'var(--table-header-bg)' }}>
               <tr>
-                <td colSpan={7} className="text-center py-8">{t("leaves.table.loading")}</td>
+                <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                  style={{ color: 'var(--table-header-text)' }}>
+                  {t("leaves.table.columns.leaveType")}
+                </th>
+                <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                  style={{ color: 'var(--table-header-text)' }}>
+                  {t("leaves.table.columns.from")}
+                </th>
+                <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                  style={{ color: 'var(--table-header-text)' }}>
+                  {t("leaves.table.columns.to")}
+                </th>
+                <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                  style={{ color: 'var(--table-header-text)' }}>
+                  {t("leaves.table.columns.days")}
+                </th>
+                <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                  style={{ color: 'var(--table-header-text)' }}>
+                  {t("leaves.table.columns.status")}
+                </th>
+                <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                  style={{ color: 'var(--table-header-text)' }}>
+                  {t("leaves.table.columns.reason")}
+                </th>
+                <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                  style={{ color: 'var(--table-header-text)' }}>
+                  {t("leaves.table.columns.approver")}
+                </th>
               </tr>
-            ) : currentPageData.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="text-center py-8">{t("leaves.table.noData")}</td>
-              </tr>
-            ) : (
-              currentPageData.map((record, index) => (
+            </thead>
+            <tbody>
+              {currentPageData.map((record, index) => (
                 <tr
                   key={record.id || record._id}
                   className="transition-colors duration-200 cursor-pointer hover:shadow-sm"
@@ -283,48 +432,50 @@ const LeaveTable = () => {
                       : "-"}
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
 
-      {/* Pagination */}
-      <div
-        className={`px-6 py-4 border-t flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
-        style={{ borderColor: 'var(--divider-color)' }}
-      >
-        <div className="text-sm font-medium" style={{ color: 'var(--sub-text-color)' }}>
-          {t("leaves.table.page")} {pagination.page} {t("leaves.table.of")} {totalPages}
-          ({filteredData.length} {t("leaves.table.totalEntries")})
+      {/* Pagination - Only show if there's data */}
+      {!error && !isLoading && currentPageData.length > 0 && (
+        <div
+          className={`px-6 py-4 border-t flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}
+          style={{ borderColor: 'var(--divider-color)' }}
+        >
+          <div className="text-sm font-medium" style={{ color: 'var(--sub-text-color)' }}>
+            {t("leaves.table.page")} {pagination.page} {t("leaves.table.of")} {totalPages}
+            ({filteredData.length} {t("leaves.table.totalEntries")})
+          </div>
+          <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
+            <button
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={pagination.page === 1}
+              className="p-2 rounded-xl border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                borderColor: 'var(--border-color)',
+                backgroundColor: 'var(--bg-color)',
+                color: 'var(--text-color)'
+              }}
+            >
+              <ChevronLeft className="w-4 h-4" style={{ color: 'var(--sub-text-color)' }} />
+            </button>
+            <button
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              disabled={pagination.page === totalPages}
+              className="p-2 rounded-xl border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                borderColor: 'var(--border-color)',
+                backgroundColor: 'var(--bg-color)',
+                color: 'var(--text-color)'
+              }}
+            >
+              <ChevronRight className="w-4 h-4" style={{ color: 'var(--sub-text-color)' }} />
+            </button>
+          </div>
         </div>
-        <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
-          <button
-            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-            disabled={pagination.page === 1}
-            className="p-2 rounded-xl border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{
-              borderColor: 'var(--border-color)',
-              backgroundColor: 'var(--bg-color)',
-              color: 'var(--text-color)'
-            }}
-          >
-            <ChevronLeft className="w-4 h-4" style={{ color: 'var(--sub-text-color)' }} />
-          </button>
-          <button
-            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-            disabled={pagination.page === totalPages}
-            className="p-2 rounded-xl border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{
-              borderColor: 'var(--border-color)',
-              backgroundColor: 'var(--bg-color)',
-              color: 'var(--text-color)'
-            }}
-          >
-            <ChevronRight className="w-4 h-4" style={{ color: 'var(--sub-text-color)' }} />
-          </button>
-        </div>
-      </div>
+      )}
     </div>
   );
 };
