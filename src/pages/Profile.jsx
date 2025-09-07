@@ -68,6 +68,28 @@ const Profile = () => {
         return locale === 'ar' ? (isRtl ? 'العربية' : 'Arabic') : (isRtl ? 'الإنجليزية' : 'English')
     }
 
+    // Days of week for translation
+    const daysOfWeek = [
+        { value: "sunday", label: isRtl ? "الأحد" : "Sunday" },
+        { value: "monday", label: isRtl ? "الاثنين" : "Monday" },
+        { value: "tuesday", label: isRtl ? "الثلاثاء" : "Tuesday" },
+        { value: "wednesday", label: isRtl ? "الأربعاء" : "Wednesday" },
+        { value: "thursday", label: isRtl ? "الخميس" : "Thursday" },
+        { value: "friday", label: isRtl ? "الجمعة" : "Friday" },
+        { value: "saturday", label: isRtl ? "السبت" : "Saturday" },
+    ];
+
+    // Helper to render holidays as string
+    const renderHolidays = (holidaysArr) => {
+        if (!holidaysArr || holidaysArr.length === 0) return isRtl ? "لا يوجد" : "None";
+        return holidaysArr
+            .map((day) => {
+                const found = daysOfWeek.find((d) => d.value === day);
+                return found ? found.label : day;
+            })
+            .join(", ");
+    };
+
     if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--bg-color)" }}>
@@ -337,6 +359,12 @@ const Profile = () => {
                                 icon={Shield} 
                                 label={getFieldLabel('status')} 
                                 value={getStatusLabel(user.status)} 
+                            />
+                            {/* === Holidays Field === */}
+                            <InfoField
+                                icon={Calendar}
+                                label={isRtl ? "الإجازة الأسبوعية" : "Holidays"}
+                                value={renderHolidays(user.holidays)}
                             />
                         </div>
                     </div>

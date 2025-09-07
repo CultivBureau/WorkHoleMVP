@@ -53,8 +53,9 @@ export function TimeFocusLogs({ refreshTrigger }) {
     return () => observer.disconnect()
   }, [])
 
-  // Use logs for mainLogs (remove mockLogs)
-  const mainLogs = logs
+  // Sort logs by startTime (newest first) and take first 4
+  const sortedLogs = [...logs].sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
+  const newestLogs = sortedLogs.slice(0, 4)
 
   return (
     <div
@@ -82,12 +83,12 @@ export function TimeFocusLogs({ refreshTrigger }) {
         <div className="text-[var(--sub-text-color)] text-xs font-medium">{t("timerLogs.tag")}</div>
       </div>
 
-      {/* Log Entries */}
+      {/* Log Entries - Show newest 4 */}
       <div className="space-y-3">
-        {(isLoading ? [] : mainLogs).map((log, idx) => (
+        {(isLoading ? [] : newestLogs).map((log, idx) => (
           <div
             key={log._id}
-            className={`grid grid-cols-3 gap-3 items-center py-2 ${idx !== mainLogs.length - 1 ? "border-b border-[var(--divider-color)]" : ""
+            className={`grid grid-cols-3 gap-3 items-center py-2 ${idx !== newestLogs.length - 1 ? "border-b border-[var(--divider-color)]" : ""
               }`}
           >
             <div className="text-[var(--sub-text-color)] text-xs">{formatTime(log.startTime)}</div>
@@ -104,59 +105,111 @@ export function TimeFocusLogs({ refreshTrigger }) {
             </div>
           </div>
         ))}
+        
+        {/* Show message if no logs */}
+        {!isLoading && newestLogs.length === 0 && (
+          <div className="text-center py-8">
+            <p className="text-[var(--sub-text-color)] text-sm">
+              {isAr ? "لا توجد سجلات مؤقت متاحة" : "No timer logs available"}
+            </p>
+          </div>
+        )}
       </div>
 
-      {/* Full Screen Modal */}
+      {/* Full Screen Modal - Show all logs */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-lg bg-opacity-40 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">{t("timerLogs.title")}</h2>
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-lg bg-opacity-40 z-50 flex items-center justify-center p-4">
+          <div 
+            className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+            style={{ 
+              backgroundColor: "var(--card-bg)",
+              borderColor: "var(--border-color)",
+              border: "1px solid var(--border-color)"
+            }}
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold" style={{ color: "var(--text-color)" }}>
+                {t("timerLogs.title")}
+              </h2>
               <button
-                className="text-gray-500 hover:text-gray-700 font-bold text-base"
+                className="text-gray-500 hover:text-gray-700 font-bold text-xl transition-colors"
                 onClick={() => setShowModal(false)}
               >
                 ×
               </button>
             </div>
-            <div className="grid grid-cols-4 gap-3 mb-3 pb-2 border-b border-[var(--divider-color)]">
-              <div className="text-[var(--sub-text-color)] text-xs font-medium">{t("timerLogs.time")}</div>
-              <div className="text-[var(--sub-text-color)] text-xs font-medium">{t("timerLogs.duration")}</div>
-              <div className="text-[var(--sub-text-color)] text-xs font-medium">{t("timerLogs.tag")}</div>
-              <div className="text-[var(--sub-text-color)] text-xs font-medium">{t("timerLogs.status") || "Status"}</div>
+            
+            {/* Column Headers */}
+            <div className="grid grid-cols-4 gap-4 mb-4 pb-3 border-b border-[var(--divider-color)]">
+              <div className="text-[var(--sub-text-color)] text-sm font-semibold">{t("timerLogs.time")}</div>
+              <div className="text-[var(--sub-text-color)] text-sm font-semibold">{t("timerLogs.duration")}</div>
+              <div className="text-[var(--sub-text-color)] text-sm font-semibold">{t("timerLogs.tag")}</div>
+              <div className="text-[var(--sub-text-color)] text-sm font-semibold">{t("timerLogs.status") || "Status"}</div>
             </div>
+            
+            {/* All Log Entries - Sorted by newest first */}
             <div className="space-y-3">
-              {(isLoading ? [] : logs).map((log, idx) => (
+              {(isLoading ? [] : sortedLogs).map((log, idx) => (
                 <div
                   key={log._id}
-                  className={`grid grid-cols-4 gap-3 items-center py-2 ${idx !== logs.length - 1 ? "border-b border-[var(--divider-color)]" : ""
-                    }`}
+                  className={`grid grid-cols-4 gap-4 items-center py-3 px-2 rounded-lg hover:bg-[var(--hover-color)] transition-colors ${
+                    idx !== sortedLogs.length - 1 ? "border-b border-[var(--divider-color)]" : ""
+                  }`}
                 >
-                  <div className="text-[var(--sub-text-color)] text-xs">{formatTime(log.startTime)}</div>
-                  <div className="text-[var(--text-color)] text-xs font-medium">
+                  <div className="text-[var(--sub-text-color)] text-sm">{formatTime(log.startTime)}</div>
+                  <div className="text-[var(--text-color)] text-sm font-medium">
                     {localizeMin(formatDuration(log))}
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-2">
                     <span
-                      className="px-2 py-0.5 rounded-lg text-[10px]"
+                      className="px-3 py-1 rounded-lg text-xs font-medium"
                       style={{ background: tagColors.tagBg, color: tagColors.tagText }}
                     >
                       {log.tag}
                     </span>
                   </div>
-                  <div className="text-[10px] font-semibold">
-                    {log.status === "completed"
-                      ? t("timerLogs.completed") || "Completed"
-                      : log.status === "cancelled"
-                        ? t("timerLogs.cancelled") || "Cancelled"
-                        : log.status === "paused"
-                          ? t("timerLogs.paused") || "Paused"
-                          : log.status === "running"
-                            ? t("timerLogs.running") || "Running"
-                            : log.status}
+                  <div className="text-xs font-semibold">
+                    <span
+                      className={`px-2 py-1 rounded-full ${
+                        log.status === "completed"
+                          ? "bg-green-100 text-green-700"
+                          : log.status === "cancelled"
+                            ? "bg-red-100 text-red-700"
+                            : log.status === "paused"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : log.status === "running"
+                                ? "bg-blue-100 text-blue-700"
+                                : "bg-gray-100 text-gray-700"
+                      }`}
+                    >
+                      {log.status === "completed"
+                        ? t("timerLogs.completed") || "Completed"
+                        : log.status === "cancelled"
+                          ? t("timerLogs.cancelled") || "Cancelled"
+                          : log.status === "paused"
+                            ? t("timerLogs.paused") || "Paused"
+                            : log.status === "running"
+                              ? t("timerLogs.running") || "Running"
+                              : log.status}
+                    </span>
                   </div>
                 </div>
               ))}
+              
+              {/* Show message if no logs */}
+              {!isLoading && sortedLogs.length === 0 && (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--divider-color)] flex items-center justify-center">
+                    <Eye className="w-8 h-8 text-[var(--sub-text-color)]" />
+                  </div>
+                  <p className="text-[var(--sub-text-color)] text-lg font-medium">
+                    {isAr ? "لا توجد سجلات مؤقت متاحة" : "No timer logs available"}
+                  </p>
+                  <p className="text-[var(--sub-text-color)] text-sm mt-2">
+                    {isAr ? "ابدأ مؤقتك الأول لرؤية السجلات هنا" : "Start your first timer to see logs here"}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

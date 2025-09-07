@@ -1,251 +1,116 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState } from 'react'
 import TimerPopUp from "../timerPopUp/TimerPopUp"
 import { useTranslation } from "react-i18next"
-import {
-  useStartTimerMutation,
-  useGetCurrentTimerQuery,
-  usePauseTimerMutation,
-  useResumeTimerMutation,
-  useCompleteTimerMutation,
-  useCancelTimerMutation,
-} from "../../../services/apis/TimerApi"
-
-const LOCAL_KEY = "workhole_timer"
+import { useTimer } from "../../../contexts/TimerContext"
 
 const TimerCard = () => {
   const { t, i18n } = useTranslation()
   const [showControlPopup, setShowControlPopup] = useState(false)
-  const [taskName, setTaskName] = useState("")
-  const [duration, setDuration] = useState(25)
-  const [localStopwatch, setLocalStopwatch] = useState(null)
-  const [currentTime, setCurrentTime] = useState(0) // Current elapsed seconds
-  const intervalRef = useRef(null)
-
-  // RTK Query hooks with auto-refresh
-  const { data: timerData, refetch } = useGetCurrentTimerQuery(undefined, {
-    pollingInterval: 60000, // Sync with backend every 60 seconds
-    refetchOnFocus: true,
-    refetchOnReconnect: true,
-  })
   
-  const [startTimer, { isLoading: isStarting }] = useStartTimerMutation()
-  const [pauseTimer, { isLoading: isPausing }] = usePauseTimerMutation()
-  const [resumeTimer, { isLoading: isResuming }] = useResumeTimerMutation()
-  const [completeTimer, { isLoading: isCompleting }] = useCompleteTimerMutation()
-  const [cancelTimer, { isLoading: isCancelling }] = useCancelTimerMutation()
+  // Use TimerContext instead of local state and RTK Query
+  const {
+    timer,
+    backendTimer,
+    startTimer,
+    pauseTimer,
+    resumeTimer,
+    completeTimer,
+    cancelTimer,
+    updateTaskName,
+    updateDuration,
+    formatTime,
+    isLoading,
+    isRunning,
+    isPaused,
+    isIdle,
+    hasActiveTimer,
+    displayTime,
+  } = useTimer()
 
-  // Load saved timer data on mount
-  useEffect(() => {
-    const saved = localStorage.getItem(LOCAL_KEY)
-    if (saved) {
-      try {
-        const obj = JSON.parse(saved)
-        setDuration(obj.duration || 25)
-      } catch {
-        localStorage.removeItem(LOCAL_KEY)
-      }
-    }
-  }, [])
+  const [taskName, setTaskName] = useState(timer.taskName || "")
+  const [duration, setDuration] = useState(timer.duration || 25)
 
-  // Start timer
+  // Handle starting timer
   const handleSetTaskNameAndStart = async (name) => {
     if (!name.trim()) return alert(t('timerCard.taskNameRequired'))
     
     try {
-      const response = await startTimer({ tag: name, duration }).unwrap()
-      
-      // Create local stopwatch object
-      const stopwatchObj = {
-        id: response.timer.id,
-        startTime: Date.now(),
-        tag: response.timer.tag,
-        duration: response.timer.duration,
-        backendStartTime: new Date(response.timer.startTime).getTime(),
-        totalPaused: 0,
-      }
-      
-      localStorage.setItem(LOCAL_KEY, JSON.stringify(stopwatchObj))
-      setLocalStopwatch(stopwatchObj)
-      setCurrentTime(0)
+      await startTimer(name, duration)
+      setTaskName(name)
       setShowControlPopup(false)
-      await refetch()
     } catch (error) {
       console.error('Failed to start timer:', error)
       alert(t('timerCard.startFailed'))
     }
   }
 
-  // Timer controls
-  const clearLocalTimer = () => {
-    localStorage.removeItem(LOCAL_KEY)
-    setLocalStopwatch(null)
-    setCurrentTime(0)
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current)
-    }
-  }
-
+  // Handle pause
   const handlePause = async () => {
-    if (timerData?.timer?.id) {
-      try {
-        await pauseTimer(timerData.timer.id).unwrap()
-        clearLocalTimer()
-        await refetch()
-      } catch (error) {
-        console.error('Failed to pause timer:', error)
-        alert(t('timerCard.pauseFailed'))
-      }
+    try {
+      await pauseTimer()
+      setShowControlPopup(false)
+    } catch (error) {
+      console.error('Failed to pause timer:', error)
+      alert(t('timerCard.pauseFailed'))
     }
   }
 
+  // Handle resume
   const handleResume = async () => {
-    if (timerData?.timer?.id) {
-      try {
-        await resumeTimer(timerData.timer.id).unwrap()
-        
-        // Restart local stopwatch from current backend time
-        const stopwatchObj = {
-          id: timerData.timer.id,
-          startTime: Date.now() - (timerData.timer.elapsedSeconds * 1000),
-          tag: timerData.timer.tag,
-          duration: timerData.timer.duration,
-          backendStartTime: new Date(timerData.timer.startTime).getTime(),
-          totalPaused: timerData.timer.totalPaused || 0,
-        }
-        
-        localStorage.setItem(LOCAL_KEY, JSON.stringify(stopwatchObj))
-        setLocalStopwatch(stopwatchObj)
-        await refetch()
-      } catch (error) {
-        console.error('Failed to resume timer:', error)
-        alert(t('timerCard.resumeFailed'))
-      }
+    try {
+      await resumeTimer()
+      setShowControlPopup(false)
+    } catch (error) {
+      console.error('Failed to resume timer:', error)
+      alert(t('timerCard.resumeFailed'))
     }
   }
 
+  // Handle complete
   const handleComplete = async (note) => {
-    if (timerData?.timer?.id) {
-      try {
-        await completeTimer({ id: timerData.timer.id, note: note || '' }).unwrap()
-        clearLocalTimer()
-        await refetch()
-      } catch (error) {
-        console.error('Failed to complete timer:', error)
-        alert(t('timerCard.completeFailed'))
-      }
+    try {
+      await completeTimer(note || '')
+      setShowControlPopup(false)
+    } catch (error) {
+      console.error('Failed to complete timer:', error)
+      alert(t('timerCard.completeFailed'))
     }
   }
 
+  // Handle cancel
   const handleCancel = async (note) => {
-    if (timerData?.timer?.id) {
-      try {
-        await cancelTimer({ id: timerData.timer.id, note: note || '' }).unwrap()
-        clearLocalTimer()
-        await refetch()
-      } catch (error) {
-        console.error('Failed to cancel timer:', error)
-        alert(t('timerCard.cancelFailed'))
-      }
+    try {
+      await cancelTimer(note || '')
+      setShowControlPopup(false)
+    } catch (error) {
+      console.error('Failed to cancel timer:', error)
+      alert(t('timerCard.cancelFailed'))
     }
   }
 
-  // Real-time stopwatch logic - counts UP every second
-  useEffect(() => {
-    if (localStopwatch && timerData?.isRunning && timerData?.timer?.status === 'running') {
-      const updateStopwatch = () => {
-        const elapsed = Math.floor((Date.now() - localStopwatch.startTime) / 1000)
-        setCurrentTime(elapsed)
-        
-        // Auto-complete if duration is set and reached (optional)
-        if (localStopwatch.duration > 0 && elapsed >= localStopwatch.duration * 60) {
-          handleComplete(t('timerCard.autoCompleted'))
-        }
-      }
-
-      // Initial update
-      updateStopwatch()
-      
-      // Update every second for real-time counting
-      intervalRef.current = setInterval(updateStopwatch, 1000)
-      
-      return () => {
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current)
-        }
-      }
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
-    }
-  }, [localStopwatch, timerData])
-
-  // Sync local stopwatch with backend timer when needed
-  useEffect(() => {
-    if (timerData?.isRunning && timerData?.timer?.status === 'running') {
-      // If backend has running timer but no local stopwatch, create one
-      if (!localStopwatch) {
-        const stopwatchObj = {
-          id: timerData.timer.id,
-          startTime: Date.now() - (timerData.timer.elapsedSeconds * 1000),
-          tag: timerData.timer.tag,
-          duration: timerData.timer.duration,
-          backendStartTime: new Date(timerData.timer.startTime).getTime(),
-          totalPaused: timerData.timer.totalPaused || 0,
-        }
-        localStorage.setItem(LOCAL_KEY, JSON.stringify(stopwatchObj))
-        setLocalStopwatch(stopwatchObj)
-        setCurrentTime(timerData.timer.elapsedSeconds)
-      }
-    } else if (!timerData?.isRunning || timerData?.timer?.status !== 'running') {
-      // If backend timer is not running, clear local stopwatch
-      if (localStopwatch) {
-        clearLocalTimer()
-      }
-    }
-  }, [timerData])
-
-  // Format time display
-  const formatTime = (seconds) => {
-    const hours = Math.floor(seconds / 3600)
-    const minutes = Math.floor((seconds % 3600) / 60)
-    const secs = seconds % 60
-    
-    if (hours > 0) {
-      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-    }
-    return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-  }
-
-  // Calculate display time
+  // Get display time
   const getDisplayTime = () => {
-    if (timerData?.isRunning && timerData?.timer) {
-      if (timerData.timer.status === 'running' && localStopwatch) {
-        // Show real-time counting stopwatch
-        return formatTime(currentTime)
-      } else {
-        // Paused - show backend elapsed time
-        return formatTime(timerData.timer.elapsedSeconds || 0)
-      }
+    if (hasActiveTimer) {
+      return displayTime
     } else {
-      // No timer running - show duration or 00:00
-      if (duration > 0) {
-        return `${duration.toString().padStart(2, '0')}:00`
-      }
-      return '00:00'
+      return duration > 0 ? `${duration.toString().padStart(2, '0')}:00` : '00:00'
     }
   }
 
-  const isTimerRunning = timerData?.isRunning && timerData?.timer?.status === 'running'
-  const isTimerPaused = timerData?.isRunning && timerData?.timer?.status === 'paused'
-  const hasActiveTimer = timerData?.isRunning && timerData?.timer
+  // Calculate progress percentage
+  const getProgressPercentage = () => {
+    if (hasActiveTimer && duration > 0) {
+      return Math.min(100, Math.max(0, (timer.seconds / (duration * 60)) * 100))
+    }
+    return 0
+  }
 
   return (
     <>
       <div
         className={`w-full min-h-[140px] flex flex-col justify-between p-2 rounded-2xl border hover:shadow-xl transition-all duration-300 relative overflow-hidden ${
           hasActiveTimer ? 'cursor-pointer border-[#09D1C7] shadow-lg' : 'cursor-default border-gray-200'
-        } ${isTimerRunning ? 'bg-gradient-to-br from-[#CDFFFC]/30 to-[#E0FFFE]/30' : ''}`}
+        } ${isRunning ? 'bg-gradient-to-br from-[#CDFFFC]/30 to-[#E0FFFE]/30' : ''}`}
         onClick={() => hasActiveTimer ? setShowControlPopup(true) : null}
         title={hasActiveTimer ? t('timerCard.clickToControl') : t('timerCard.startToEnable')}
         style={{ direction: i18n.language === 'ar' ? 'rtl' : 'ltr' }}
@@ -257,13 +122,12 @@ const TimerCard = () => {
           </h1>
           {hasActiveTimer && (
             <div className="flex flex-col items-end">
-
               <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                isTimerRunning
+                isRunning
                   ? 'bg-green-100 text-green-700'
                   : 'bg-yellow-100 text-yellow-700'
               }`}>
-                {isTimerRunning ? t('timerCard.running') : t('timerCard.paused')}
+                {isRunning ? t('timerCard.running') : t('timerCard.paused')}
               </span>
             </div>
           )}
@@ -273,10 +137,14 @@ const TimerCard = () => {
           <button
             onClick={(e) => {
               e.stopPropagation()
-              !hasActiveTimer && setDuration(Math.max(0, duration - 5))
+              if (!hasActiveTimer) {
+                const newDuration = Math.max(5, duration - 5)
+                setDuration(newDuration)
+                updateDuration(newDuration)
+              }
             }}
             disabled={hasActiveTimer}
-            className='w-[28px] h-[28px] text-white  rounded-full bg-gradient-to-br from-[#09D1C7] to-[#15919B] font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110 transition-transform'
+            className='w-[28px] h-[28px] text-white rounded-full bg-gradient-to-br from-[#09D1C7] to-[#15919B] font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110 transition-transform'
             aria-label={t('timerCard.decreaseDuration')}
           >
             −
@@ -284,7 +152,7 @@ const TimerCard = () => {
           
           <div className="flex flex-col items-center">
             <span className={`text-center text-[28px] font-bold bg-gradient-to-r from-[#09D1C7] to-[#15919B] bg-clip-text text-transparent tracking-wider font-mono ${
-              isTimerRunning ? 'animate-pulse' : ''
+              isRunning ? 'animate-pulse' : ''
             }`}>
               {getDisplayTime()}
             </span>
@@ -293,7 +161,11 @@ const TimerCard = () => {
           <button
             onClick={(e) => {
               e.stopPropagation()
-              !hasActiveTimer && setDuration(Math.min(240, duration + 5))
+              if (!hasActiveTimer) {
+                const newDuration = Math.min(240, duration + 5)
+                setDuration(newDuration)
+                updateDuration(newDuration)
+              }
             }}
             disabled={hasActiveTimer}
             className='w-[28px] h-[28px] text-white rounded-full bg-gradient-to-br from-[#09D1C7] to-[#15919B] font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110 transition-transform'
@@ -314,9 +186,9 @@ const TimerCard = () => {
               e.stopPropagation()
               setShowControlPopup(true)
             }}
-            disabled={isStarting}
+            disabled={isLoading.start}
           >
-            {isStarting ? t('timerCard.starting') : hasActiveTimer ? t('timerCard.controlTimer') : t('timerCard.startTimer')}
+            {isLoading.start ? t('timerCard.starting') : hasActiveTimer ? t('timerCard.controlTimer') : t('timerCard.startTimer')}
           </button>
         </div>
 
@@ -326,7 +198,7 @@ const TimerCard = () => {
             <div 
               className="h-full bg-gradient-to-r from-[#09D1C7] to-[#15919B] transition-all duration-1000"
               style={{ 
-                width: `${Math.min(100, Math.max(0, (currentTime / (duration * 60)) * 100))}%` 
+                width: `${getProgressPercentage()}%` 
               }}
             ></div>
           </div>
@@ -336,7 +208,7 @@ const TimerCard = () => {
       {/* Timer Popup */}
       {showControlPopup && (
         <TimerPopUp
-          timer={timerData?.timer || { tag: taskName, status: null }}
+          timer={backendTimer?.timer || { tag: taskName, status: null }}
           taskName={taskName}
           setTaskName={setTaskName}
           duration={duration}
@@ -347,13 +219,7 @@ const TimerCard = () => {
           onComplete={handleComplete}
           onCancel={handleCancel}
           onClose={() => setShowControlPopup(false)}
-          isLoading={{
-            pause: isPausing,
-            resume: isResuming,
-            complete: isCompleting,
-            cancel: isCancelling,
-            start: isStarting,
-          }}
+          isLoading={isLoading}
         />
       )}
     </>

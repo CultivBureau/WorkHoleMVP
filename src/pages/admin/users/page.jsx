@@ -39,6 +39,16 @@ import {
   useUpdateUserMutation,
 } from "../../../services/apis/UsersApi";
 
+const daysOfWeek = [
+  { value: "sunday", label: "Sunday", labelAr: "الأحد" },
+  { value: "monday", label: "Monday", labelAr: "الاثنين" },
+  { value: "tuesday", label: "Tuesday", labelAr: "الثلاثاء" },
+  { value: "wednesday", label: "Wednesday", labelAr: "الأربعاء" },
+  { value: "thursday", label: "Thursday", labelAr: "الخميس" },
+  { value: "friday", label: "Friday", labelAr: "الجمعة" },
+  { value: "saturday", label: "Saturday", labelAr: "السبت" },
+];
+
 const UsersAdmin = ({ lang, setLang }) => {
   const { i18n } = useTranslation();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -65,6 +75,7 @@ const UsersAdmin = ({ lang, setLang }) => {
     phone: "",
     status: "active",
     availableLeaves: 21,
+    holidays: [],
   });
 
   useEffect(() => {
@@ -193,6 +204,16 @@ const UsersAdmin = ({ lang, setLang }) => {
     }
   };
 
+  // Holidays handler
+  const handleHolidayChange = (dayValue, checked) => {
+    setFormData((prev) => ({
+      ...prev,
+      holidays: checked
+        ? [...prev.holidays, dayValue]
+        : prev.holidays.filter((d) => d !== dayValue),
+    }));
+  };
+
   const resetForm = () => {
     setFormData({
       firstName: "",
@@ -208,6 +229,7 @@ const UsersAdmin = ({ lang, setLang }) => {
       phone: "",
       status: "active",
       availableLeaves: 21,
+      holidays: [],
     });
     setErrors({});
   };
@@ -242,6 +264,7 @@ const UsersAdmin = ({ lang, setLang }) => {
       phone: user.phone || "",
       status: user.status || "active",
       availableLeaves: user.availableLeaves || 21,
+      holidays: user.holidays || [],
     });
     setShowEditModal(true);
   };
@@ -307,6 +330,17 @@ const UsersAdmin = ({ lang, setLang }) => {
       default:
         return { bg: "bg-gray-100", text: "text-gray-800", color: "#6B7280" };
     }
+  };
+
+  // Helper to render holidays as string
+  const renderHolidays = (holidaysArr) => {
+    if (!holidaysArr || holidaysArr.length === 0) return isRtl ? "لا يوجد" : "None";
+    return holidaysArr
+      .map((day) => {
+        const found = daysOfWeek.find((d) => d.value === day);
+        return found ? (isRtl ? found.labelAr : found.label) : day;
+      })
+      .join(", ");
   };
 
   return (
@@ -503,6 +537,9 @@ const UsersAdmin = ({ lang, setLang }) => {
                         <th className="text-left p-4 font-semibold" style={{ color: "var(--text-color)" }}>
                           {isRtl ? "الحالة" : "Status"}
                         </th>
+                        <th className="text-left p-4 font-semibold" style={{ color: "var(--text-color)" }}>
+                          {isRtl ? "الإجازة الأسبوعية" : "Holidays"}
+                        </th>
                         <th className="text-center p-4 font-semibold" style={{ color: "var(--text-color)" }}>
                           {isRtl ? "الإجراءات" : "Actions"}
                         </th>
@@ -581,6 +618,13 @@ const UsersAdmin = ({ lang, setLang }) => {
                                 </span>
                               </div>
                             </td>
+                            <td className="p-4">
+                              <div className="flex items-center gap-3">
+                                <span className="text-sm" style={{ color: "var(--text-color)" }}>
+                                  {renderHolidays(user.holidays)}
+                                </span>
+                              </div>
+                            </td>
                             <td className="p-4 text-center">
                               <div className="flex items-center justify-center gap-2">
                                 <button
@@ -604,7 +648,7 @@ const UsersAdmin = ({ lang, setLang }) => {
                       })}
                       {filteredUsers.length === 0 && (
                         <tr>
-                          <td colSpan="5" className="text-center py-12">
+                          <td colSpan="6" className="text-center py-12">
                             <h3 className="text-lg font-semibold mb-2" style={{ color: "var(--text-color)" }}>
                               {isRtl ? "لا يوجد مستخدمون" : "No Users Found"}
                             </h3>
@@ -909,9 +953,32 @@ const UsersAdmin = ({ lang, setLang }) => {
                             />
                           </div>
                         </div>
+
+                        {/* Holidays Checkbox */}
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-1">
+                            {isRtl ? "أيام الإجازة" : "Holidays"}
+                          </label>
+                          <div className="flex flex-wrap gap-2">
+                            {daysOfWeek.map((day) => (
+                              <label key={day.value} className="flex items-center gap-1 text-sm">
+                                <input
+                                  type="checkbox"
+                                  checked={formData.holidays.includes(day.value)}
+                                  onChange={e => handleHolidayChange(day.value, e.target.checked)}
+                                  disabled={creating}
+                                />
+                                {isRtl ? day.labelAr : day.label}
+                              </label>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     </div>
+                  </div>
 
+                  {/* Right Column */}
+                  <div className="space-y-4">
                     {/* Settings */}
                     <div>
                       <h4 className="text-base font-semibold mb-3 flex items-center gap-2 text-gray-900">
@@ -1281,6 +1348,26 @@ const UsersAdmin = ({ lang, setLang }) => {
                               className="w-full pl-8 pr-3 py-2.5 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:bg-blue-50 transition-all duration-200 focus:outline-none text-sm"
                               disabled={updating}
                             />
+                          </div>
+                        </div>
+
+                        {/* Holidays Checkbox */}
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-1">
+                            {isRtl ? "أيام الإجازة" : "Holidays"}
+                          </label>
+                          <div className="flex flex-wrap gap-2">
+                            {daysOfWeek.map((day) => (
+                              <label key={day.value} className="flex items-center gap-1 text-sm">
+                                <input
+                                  type="checkbox"
+                                  checked={formData.holidays.includes(day.value)}
+                                  onChange={e => handleHolidayChange(day.value, e.target.checked)}
+                                  disabled={updating}
+                                />
+                                {isRtl ? day.labelAr : day.label}
+                              </label>
+                            ))}
                           </div>
                         </div>
                       </div>

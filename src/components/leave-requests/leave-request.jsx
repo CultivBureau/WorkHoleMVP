@@ -5,11 +5,15 @@ import { useTranslation } from "react-i18next"
 import { Upload, File, Loader2, AlertCircle, CheckCircle } from "lucide-react"
 import { useCreateLeaveMutation } from "../../services/apis/LeavesApi"
 import { toast } from "react-hot-toast"
+import { useMeQuery } from "../../services/apis/AuthApi"
 
 const LeaveRequest = ({ refetch }) => {
   const { t, i18n } = useTranslation()
   const isArabic = i18n.language === "ar"
 
+  // Get user data including holidays
+  const { data: user } = useMeQuery()
+  
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState({
     leaveType: "annual",
@@ -35,6 +39,79 @@ const LeaveRequest = ({ refetch }) => {
   ]
 
   const today = new Date().toISOString().split("T")[0]
+
+  // Helper to check if date is a user holiday (dynamic based on /me)
+  const isUserHoliday = (date) => {
+    if (!user?.holidays || user.holidays.length === 0) return false
+    const day = new Date(date).getDay()
+    const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
+    const dayName = dayNames[day]
+    return user.holidays.includes(dayName)
+  }
+
+  // Helper to count only valid working days (excluding user holidays only)
+  const calculateDays = (from, to) => {
+    if (from && to) {
+      let fromDate = new Date(from)
+      let toDate = new Date(to)
+      if (toDate < fromDate) return 0
+      let count = 0
+      while (fromDate <= toDate) {
+        const day = fromDate.getDay()
+        const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
+        const dayName = dayNames[day]
+        
+        // Skip ONLY user holidays (remove static Friday/Saturday check)
+        if (!user?.holidays?.includes(dayName)) {
+          count++
+        }
+        fromDate.setDate(fromDate.getDate() + 1)
+      }
+      return count
+    }
+    return 0
+  }
+
+  const handleDateChange = (field, value) => {
+    const selectedDate = new Date(value)
+    const day = selectedDate.getDay()
+    const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
+    const dayName = dayNames[day]
+    
+    // Clear previous errors for this field
+    setErrors(prev => ({ ...prev, [field]: null }))
+    
+    // Check ONLY if it's a user holiday (remove static Friday/Saturday check)
+    if (user?.holidays?.includes(dayName)) {
+      const dayLabels = {
+        sunday: isArabic ? "الأحد" : "Sunday",
+        monday: isArabic ? "الاثنين" : "Monday", 
+        tuesday: isArabic ? "الثلاثاء" : "Tuesday",
+        wednesday: isArabic ? "الأربعاء" : "Wednesday",
+        thursday: isArabic ? "الخميس" : "Thursday",
+        friday: isArabic ? "الجمعة" : "Friday",
+        saturday: isArabic ? "السبت" : "Saturday"
+      }
+      
+      toast.error(
+        isArabic 
+          ? `${dayLabels[dayName]} يوم إجازة لك. لا يمكنك اختياره.`
+          : `${dayLabels[dayName]} is your holiday. You cannot select it.`
+      )
+      return
+    }
+    
+    setFormData((prev) => {
+      const newData = { ...prev, [field]: value }
+      if (field === "fromDate" || field === "toDate") {
+        newData.numberOfDays = calculateDays(
+          field === "fromDate" ? value : prev.fromDate,
+          field === "toDate" ? value : prev.toDate,
+        )
+      }
+      return newData
+    })
+  }
 
   // Validation functions
   const validateStep1 = () => {
@@ -103,51 +180,6 @@ const LeaveRequest = ({ refetch }) => {
   const validateStep3 = () => {
     // Final validation before submission
     return validateStep1() && validateStep2()
-  }
-
-  // Helper to count only weekdays (Sun-Thu), skipping Fri (5) and Sat (6)
-  const calculateDays = (from, to) => {
-    if (from && to) {
-      let fromDate = new Date(from)
-      let toDate = new Date(to)
-      if (toDate < fromDate) return 0
-      let count = 0
-      while (fromDate <= toDate) {
-        const day = fromDate.getDay()
-        // In JS: 0=Sun, 1=Mon, ..., 4=Thu, 5=Fri, 6=Sat
-        if (day !== 5 && day !== 6) count++
-        fromDate.setDate(fromDate.getDate() + 1)
-      }
-      return count
-    }
-    return 0
-  }
-
-  const handleDateChange = (field, value) => {
-    const selectedDate = new Date(value)
-    const day = selectedDate.getDay()
-    
-    // Clear previous errors for this field
-    setErrors(prev => ({ ...prev, [field]: null }))
-    
-    // 5 = Friday, 6 = Saturday
-    if (day === 5 || day === 6) {
-      toast.error(
-        t("leaves.form.noWeekend", "You cannot select Friday or Saturday.")
-      )
-      return
-    }
-    
-    setFormData((prev) => {
-      const newData = { ...prev, [field]: value }
-      if (field === "fromDate" || field === "toDate") {
-        newData.numberOfDays = calculateDays(
-          field === "fromDate" ? value : prev.fromDate,
-          field === "toDate" ? value : prev.toDate,
-        )
-      }
-      return newData
-    })
   }
 
   // Map frontend leaveType to API value

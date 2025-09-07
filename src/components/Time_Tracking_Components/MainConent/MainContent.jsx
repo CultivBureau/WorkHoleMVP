@@ -1,19 +1,32 @@
 import React, { useEffect, useRef, useState } from "react"
-import { Clock, ClipboardList, Coffee, BarChart3, MapPin, Loader2, AlertCircle, CheckCircle2 } from "lucide-react"
+import { Clock, ClipboardList, Coffee, BarChart3, MapPin, Loader2, AlertCircle, CheckCircle2, Timer } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useGetDashboardQuery, useClockInMutation, useClockOutMutation } from "../../../services/apis/AtteandanceApi"
+import { useGetWeeklyFocusTimeQuery } from "../../../services/apis/TimerApi"
 import { useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
 import { useAttendanceUpdate } from "../../../contexts/AttendanceUpdateContext"
+import { useTimer } from "../../../contexts/TimerContext"
 
 const MainContent = () => {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   const { data, isLoading, error, refetch } = useGetDashboardQuery({})
+  const { data: focusTimeData } = useGetWeeklyFocusTimeQuery()
   const [clockIn, { isLoading: isClockingIn }] = useClockInMutation()
   const [clockOut, { isLoading: isClockingOut }] = useClockOutMutation()
   const { triggerUpdate } = useAttendanceUpdate()
   const navigate = useNavigate();
+
+  // Enhanced timer context integration
+  const { 
+    timer, 
+    isRunning, 
+    isPaused,
+    hasActiveTimer,
+    displayTime,
+    timer: { taskName, seconds, duration }
+  } = useTimer()
 
   // fallback لو البيانات مش موجودة
   const stats = data || {
@@ -101,8 +114,7 @@ const MainContent = () => {
     ? Math.max(0, shiftMinutes - workedMinutes)
     : (() => {
       const [_, total] = stats.todayProgress?.split("/") || ["0h 0m", "8h"]
-      const totalMinutes = parseInt(total) * 60 + parseInt(total.split(" ")[1]?.replace("m", "") || "0"
-      )
+      const totalMinutes = parseInt(total) * 60 + parseInt(total.split(" ")[1]?.replace("m", "") || "0")
       return Math.max(0, totalMinutes - workedMinutes)
     })()
 
@@ -538,20 +550,35 @@ const MainContent = () => {
                 {t("mainContent.mostProductiveDay")}
               </span>
             </div>
+            {/* Enhanced Focus Time Card with Timer Context */}
             <div
-              className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-center items-center border"
+              className={`w-1/2 h-full rounded-2xl p-4 flex flex-col justify-center items-center border transition-all duration-300 ${
+                hasActiveTimer ? 'border-[#09D1C7] shadow-lg' : ''
+              }`}
               style={{
-                backgroundColor: "var(--card-bg)",
-                borderColor: "var(--border-color)",
+                backgroundColor: hasActiveTimer ? "var(--card-bg)" : "var(--card-bg)",
+                borderColor: hasActiveTimer ? "#09D1C7" : "var(--border-color)",
               }}
             >
-              <span className="text-[var(--sub-text-color)] text-[10px] mb-1 text-center leading-tight">
-                {t("mainContent.thisWeek")}
-              </span>
-              <h3 className="text-xl font-bold" style={{ color: "var(--text-color)" }}>{stats.thisWeek}</h3>
-              <span className="text-[var(--sub-text-color)] text-[10px] text-center leading-tight">
-                {t("mainContent.focusTime")}
-              </span>
+              <div className="flex items-center gap-1 mb-1">
+                <Timer className={`w-3 h-3 ${hasActiveTimer ? 'text-[#09D1C7]' : 'text-[var(--sub-text-color)]'}`} />
+                <span className="text-[var(--sub-text-color)] text-[10px] text-center leading-tight">
+                  {hasActiveTimer ? t("mainContent.activeFocus") : t("mainContent.thisWeek")}
+                </span>
+              </div>
+              <h3 className={`text-xl font-bold ${hasActiveTimer ? 'text-[#09D1C7]' : ''}`} style={{ color: hasActiveTimer ? "#09D1C7" : "var(--text-color)" }}>
+                {hasActiveTimer ? displayTime : (focusTimeData?.formattedTime || "0h 0m")}
+              </h3>
+
+              {/* Active timer status indicator */}
+              {hasActiveTimer && (
+                <div className="flex items-center gap-1 mt-1">
+                  <div className={`w-1.5 h-1.5 rounded-full ${isRunning ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'}`}></div>
+                  <span className="text-[8px] text-[var(--sub-text-color)]">
+                    {isRunning ? t("mainContent.running") : t("mainContent.paused")}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>

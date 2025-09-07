@@ -302,14 +302,14 @@
       "daysLeft": "You have 4 days left"
     },
     "summaryCards": {
-      "availableLeaves": "Available Leaves",
-      "rejectedLeaves": "Rejected Leaves",
-      "pendingLeaves": "Pending Leaves",
-      "approvedLeaves": "Approved Leaves",
-      "totalAvailable": "Total Available",
-      "totalRejected": "Total Rejected",
+      "availableLeaves": "Available Leaves days",
+      "rejectedLeaves": "Rejected Leaves days",
+      "pendingLeaves": "Pending Leaves days",
+      "approvedLeaves": "Approved Leaves days",
+      "totalAvailable": "Total Available days",
+      "totalRejected": "Total Rejected days",
       "awaitingApproval": "Awaiting Approval",
-      "totalApproved": "Total Approved"
+      "totalApproved": "Total Approved days"
     },
     "types": {
       "annual": "Annual Leave",
@@ -401,6 +401,10 @@
     "mostProductiveDay": "Most Productive Day",
     "thisWeek": "This Week",
     "focusTime": "Focus Time",
+    "activeFocus": "Active Focus",
+    "focusSession": "Focus Session",
+    "running": "Running",
+    "paused": "Paused",
     "startYourDay": "Start Your Day",
     "endYourDay": "End Your Day",
     "attendanceLogs": "Attendance Logs",

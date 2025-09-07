@@ -177,7 +177,24 @@ const LeaveTable = () => {
   // Enhanced empty state component
   const renderEmptyState = () => {
     const hasFilters = leaveType !== "all" || status !== "all" || dateFrom || dateTo;
-    
+
+    // Fallback to English if not Arabic
+    const noResultsTitle = isArabic
+      ? t("leaves.table.noResultsFound", "لا توجد نتائج")
+      : "No Results Found";
+    const noDataTitle = isArabic
+      ? t("leaves.table.noDataAvailable", "لا توجد بيانات متاحة")
+      : "No Data Available";
+    const noResultsDesc = isArabic
+      ? t("leaves.table.noResultsDescription", "لا توجد طلبات إجازة تطابق الفلاتر الحالية. جرب تعديل معايير البحث.")
+      : "No leave requests match your current filters. Try adjusting your search criteria.";
+    const noDataDesc = isArabic
+      ? t("leaves.table.noDataDescription", "لم تقم بتقديم أي طلب إجازة بعد. اضغط على زر 'طلب جديد' لإنشاء أول طلب إجازة لك.")
+      : "You haven't submitted any leave requests yet. Click the 'New Request' button to create your first leave request.";
+    const clearFiltersLabel = isArabic
+      ? t("leaves.table.clearFilters", "مسح الفلاتر")
+      : "Clear Filters";
+
     return (
       <div className="flex flex-col items-center justify-center py-16 px-6">
         <div className="mb-4">
@@ -192,17 +209,11 @@ const LeaveTable = () => {
         </div>
         
         <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-color)' }}>
-          {hasFilters 
-            ? t("leaves.table.noResultsFound", "No Results Found") 
-            : t("leaves.table.noDataAvailable", "No Data Available")
-          }
+          {hasFilters ? noResultsTitle : noDataTitle}
         </h3>
         
         <p className="text-sm text-center mb-6 max-w-md" style={{ color: 'var(--sub-text-color)' }}>
-          {hasFilters 
-            ? t("leaves.table.noResultsDescription", "No leave requests match your current filters. Try adjusting your search criteria.")
-            : t("leaves.table.noDataDescription", "You haven't submitted any leave requests yet. Click the 'New Request' button to create your first leave request.")
-          }
+          {hasFilters ? noResultsDesc : noDataDesc}
         </p>
         
         {hasFilters && (
@@ -216,7 +227,7 @@ const LeaveTable = () => {
             }}
             className="px-4 py-2 gradient-bg text-white rounded-lg font-medium hover:opacity-90 transition-opacity text-sm"
           >
-            {t("leaves.table.clearFilters", "Clear Filters")}
+            {clearFiltersLabel}
           </button>
         )}
       </div>

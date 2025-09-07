@@ -65,6 +65,12 @@ export const timerApi = createApi({
         method: "GET",
       }),
     }),
+    getWeeklyFocusTime: builder.query({
+      query: () => ({
+        url: "/api/timer/time",
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -76,4 +82,5 @@ export const {
   useCompleteTimerMutation,
   useCancelTimerMutation,
   useGetTimerLogsQuery,
+  useGetWeeklyFocusTimeQuery,
 } = timerApi;
