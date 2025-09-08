@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
 import { useAttendanceUpdate } from "../../../contexts/AttendanceUpdateContext"
 import { useTimer } from "../../../contexts/TimerContext"
+import moment from "moment-timezone"
 
 const MainContent = () => {
   const { t, i18n } = useTranslation()
@@ -52,21 +53,21 @@ const MainContent = () => {
   // احسب وقت البداية من الـ backend لو موجود
   const clockInTime = data?.clockInTime // لازم backend يرجع clockInTime بصيغة ISO
 
-  // شغل التايمر لو المستخدم Clocked In
   useEffect(() => {
     if (stats.currentStatus === "Clocked In" && clockInTime) {
-      const start = new Date(clockInTime)
+      // استخدم توقيت القاهرة في الحساب
+      const start = moment.tz(clockInTime, "Africa/Cairo").toDate();
       const updateTimer = () => {
-        const now = new Date()
-        const diff = Math.floor((now - start) / 1000)
-        setActiveWorkSeconds(diff)
-      }
-      updateTimer()
-      timerRef.current = setInterval(updateTimer, 1000)
-      return () => clearInterval(timerRef.current)
+        const now = moment().tz("Africa/Cairo").toDate();
+        const diff = Math.floor((now - start) / 1000);
+        setActiveWorkSeconds(diff);
+      };
+      updateTimer();
+      timerRef.current = setInterval(updateTimer, 1000);
+      return () => clearInterval(timerRef.current);
     } else {
-      setActiveWorkSeconds(0)
-      if (timerRef.current) clearInterval(timerRef.current)
+      setActiveWorkSeconds(0);
+      if (timerRef.current) clearInterval(timerRef.current);
     }
   }, [stats.currentStatus, clockInTime])
 
