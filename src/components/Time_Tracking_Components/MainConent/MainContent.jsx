@@ -55,14 +55,12 @@ const MainContent = () => {
 
   useEffect(() => {
     if (stats.currentStatus === "Clocked In" && clockInTime) {
-      // 1. parse clockInTime as UTC then convert to Cairo
-      const start = moment.utc(clockInTime).tz("Africa/Cairo");
+      // استخدم توقيت القاهرة في الحساب
+      const start = moment.tz(clockInTime, "Africa/Cairo").toDate();
       const updateTimer = () => {
-        // 2. get now in Cairo
-        const now = moment().tz("Africa/Cairo");
-        // 3. calculate diff in seconds
-        const diff = now.diff(start, "seconds");
-        setActiveWorkSeconds(diff > 0 ? diff : 0);
+        const now = moment().tz("Africa/Cairo").toDate();
+        const diff = Math.floor((now - start) / 1000);
+        setActiveWorkSeconds(diff);
       };
       updateTimer();
       timerRef.current = setInterval(updateTimer, 1000);
@@ -71,7 +69,7 @@ const MainContent = () => {
       setActiveWorkSeconds(0);
       if (timerRef.current) clearInterval(timerRef.current);
     }
-  }, [stats.currentStatus, clockInTime]);
+  }, [stats.currentStatus, clockInTime])
 
   // دالة لتحويل الثواني إلى "xh ym"
   const formatTime = (seconds) => {
@@ -596,12 +594,28 @@ const MainContent = () => {
           </div>
         </div>
         {/* Enhanced Start Your Day Button */}
-        <div className="w-full h-max pb-2 pt-2 flex justify-center items-center">
+        <div className="w-full h-max pb-2 pt-2 flex justify-center items-center relative">
+          {/* Tooltip - يظهر بس لو المستخدم مش عامل clock in */}
+          {!hasCompletedToday && stats.currentStatus === "Clocked Out" && (
+            <div 
+              className="absolute -top-12 right-4 bg-gradient-to-r bg-[var(--accent-color)] text-white text-xs px-3 py-2 rounded-lg shadow-lg animate-bounce z-10"
+              style={{
+                animation: 'bounce 2s infinite',
+              }}
+            >
+              <div className="relative">
+                {isAr ? 'اضغط هنا لبدء يومك!' : 'Click here to start your day!'}
+                {/* السهم الصغير */}
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-blue-500"></div>
+              </div>
+            </div>
+          )}
+          
           <button
             className="w-full text-white cursor-pointer font-medium py-3 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
             style={{
               background: hasCompletedToday 
-                ? 'linear-gradient(135deg, #6B7280 0%, #9CA3AF 100%)' // Gray when completed
+                ? 'linear-gradient(135deg, #6B7280 0%, #9CA3AF 100%)' 
                 : `linear-gradient(135deg, var(--accent-hover) 0%, var(--accent-color) 100%)`,
               opacity: hasCompletedToday ? 0.7 : 1,
             }}

@@ -105,10 +105,11 @@ const Stats = () => {
       className="w-full rounded-2xl min-h-[140px] flex flex-col sm:flex-row justify-center items-stretch gap-4 sm:gap-6 p-4 sm:p-6"
       style={{ backgroundColor: "var(--bg-color)" }}
     >
-      <TimerCard />
+     
       {Card_Data.map((card, index) => (
         <Card key={index} {...card} className="h-full" />
       ))}
+       <TimerCard />
     </section>
   );
 };
