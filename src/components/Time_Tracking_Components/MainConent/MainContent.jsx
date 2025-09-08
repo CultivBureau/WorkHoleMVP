@@ -55,12 +55,14 @@ const MainContent = () => {
 
   useEffect(() => {
     if (stats.currentStatus === "Clocked In" && clockInTime) {
-      // استخدم توقيت القاهرة في الحساب
-      const start = moment.tz(clockInTime, "Africa/Cairo").toDate();
+      // 1. parse clockInTime as UTC then convert to Cairo
+      const start = moment.utc(clockInTime).tz("Africa/Cairo");
       const updateTimer = () => {
-        const now = moment().tz("Africa/Cairo").toDate();
-        const diff = Math.floor((now - start) / 1000);
-        setActiveWorkSeconds(diff);
+        // 2. get now in Cairo
+        const now = moment().tz("Africa/Cairo");
+        // 3. calculate diff in seconds
+        const diff = now.diff(start, "seconds");
+        setActiveWorkSeconds(diff > 0 ? diff : 0);
       };
       updateTimer();
       timerRef.current = setInterval(updateTimer, 1000);
@@ -69,7 +71,7 @@ const MainContent = () => {
       setActiveWorkSeconds(0);
       if (timerRef.current) clearInterval(timerRef.current);
     }
-  }, [stats.currentStatus, clockInTime])
+  }, [stats.currentStatus, clockInTime]);
 
   // دالة لتحويل الثواني إلى "xh ym"
   const formatTime = (seconds) => {
