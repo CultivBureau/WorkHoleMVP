@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import NavBarAdmin from "../../../components/admin/NavBarAdmin";
 import SideBarAdmin from "../../../components/admin/SideBarAdmin";
 import { useTranslation } from "react-i18next";
@@ -17,16 +17,12 @@ import { useGetAllLeavesQuery } from "../../../services/apis/LeavesApi";
 import { useGetAllUsersQuery } from "../../../services/apis/UsersApi";
 import { useGetActiveBreaksCountQuery } from "../../../services/apis/BreakApi";
 import { useNavigate } from "react-router-dom";
+import { useLang } from "../../../contexts/LangContext";
 
-const DashboardAdmin = ({ lang, setLang }) => {
+const DashboardAdmin = () => {
+  const { lang, isRtl } = useLang();
   const { i18n } = useTranslation();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-
-  useEffect(() => {
-    i18n.changeLanguage(lang);
-    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-    localStorage.setItem("lang", lang);
-  }, [lang, i18n]);
 
   // Fetch admin data
   const { data: attendanceData = [], isLoading: attendanceLoading } = useGetAllUsersAttendanceQuery();
@@ -34,8 +30,6 @@ const DashboardAdmin = ({ lang, setLang }) => {
   const { data: usersData = [], isLoading: usersLoading } = useGetAllUsersQuery();
   const { data: activeBreaksCount = 0 } = useGetActiveBreaksCountQuery();
   const navigate = useNavigate();
-
-  const isRtl = lang === "ar";
 
   // Stats calculations (all dynamic)
   const totalUsers = usersData.length;
@@ -83,14 +77,9 @@ const DashboardAdmin = ({ lang, setLang }) => {
   ];
 
   return (
-    <div 
-      className="w-full h-screen flex flex-col"
-      style={{ background: "var(--bg-all)" }}
-    >
+    <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
       {/* Navigation Bar */}
-      <NavBarAdmin 
-        lang={lang} 
-        setLang={setLang}
+      <NavBarAdmin
         onMobileSidebarToggle={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
         isMobileSidebarOpen={isMobileSidebarOpen}
       />
@@ -98,8 +87,7 @@ const DashboardAdmin = ({ lang, setLang }) => {
       {/* Content Area */}
       <div className="flex flex-1 min-h-0">
         {/* Sidebar */}
-        <SideBarAdmin 
-          lang={lang}
+        <SideBarAdmin
           isMobileOpen={isMobileSidebarOpen}
           onMobileClose={() => setIsMobileSidebarOpen(false)}
         />

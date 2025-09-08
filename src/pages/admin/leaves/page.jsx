@@ -24,8 +24,10 @@ import {
   useGetAllLeavesQuery,
   useAdminActionMutation 
 } from "../../../services/apis/LeavesApi";
+import { useLang } from "../../../contexts/LangContext";
 
-const LeavesAdmin = ({ lang, setLang }) => {
+const LeavesAdmin = () => {
+  const { lang, isRtl } = useLang();
   const { i18n } = useTranslation();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -36,16 +38,8 @@ const LeavesAdmin = ({ lang, setLang }) => {
   const [actionType, setActionType] = useState("");
   const [actionNote, setActionNote] = useState("");
 
-  useEffect(() => {
-    i18n.changeLanguage(lang);
-    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-    localStorage.setItem("lang", lang);
-  }, [lang, i18n]);
-
   const { data: leavesData, isLoading, refetch } = useGetAllLeavesQuery();
   const [adminAction] = useAdminActionMutation();
-
-  const isRtl = lang === "ar";
 
   // Filter leaves data
   const filteredLeaves = leavesData?.filter(leave => {
@@ -181,27 +175,16 @@ const LeavesAdmin = ({ lang, setLang }) => {
   };
 
   return (
-    <div 
-      className="w-full h-screen flex flex-col"
-      style={{ background: "var(--bg-all)" }}
-    >
-      {/* Navigation Bar */}
-      <NavBarAdmin 
-        lang={lang} 
-        setLang={setLang}
+    <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
+      <NavBarAdmin
         onMobileSidebarToggle={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
         isMobileSidebarOpen={isMobileSidebarOpen}
       />
-
-      {/* Content Area */}
       <div className="flex flex-1 min-h-0">
-        {/* Sidebar */}
-        <SideBarAdmin 
-          lang={lang}
+        <SideBarAdmin
           isMobileOpen={isMobileSidebarOpen}
           onMobileClose={() => setIsMobileSidebarOpen(false)}
         />
-
         {/* Main Content */}
         <main className="flex-1 overflow-auto p-6" style={{ background: "var(--bg-all)" }}>
           <div className="max-w-7xl mx-auto space-y-6">
@@ -555,7 +538,7 @@ const LeavesAdmin = ({ lang, setLang }) => {
                                 <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${statusStyle.bg} ${statusStyle.text}`}>
                                   {leave.status === 'pending' ? (isRtl ? 'في الانتظار' : 'Pending') :
                                    leave.status === 'approved' ? (isRtl ? 'موافق عليه' : 'Approved') :
-                                   (isRtl ? 'مرفوض' : 'Rejected')}
+                                   (isRtl ? 'تم الرفض' : 'Rejected')}
                                 </span>
                               </div>
                             </td>

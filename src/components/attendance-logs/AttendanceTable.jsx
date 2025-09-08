@@ -286,16 +286,20 @@ const AttendanceTable = () => {
 								style={{ color: 'var(--table-header-text)' }}>
 								{t("attendanceTable.columns.location")}
 							</th>
+							<th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+								style={{ color: 'var(--table-header-text)' }}>
+								{t("attendanceTable.columns.office")}
+							</th>
 						</tr>
 					</thead>
 					<tbody>
 						{isLoading ? (
 							<tr>
-								<td colSpan={7} className="text-center py-8">{t("attendanceTable.loading")}</td>
+								<td colSpan={8} className="text-center py-8">{t("attendanceTable.loading")}</td>
 							</tr>
 						) : filtered.length === 0 ? (
 							<tr>
-								<td colSpan={7} className="text-center py-8">{t("attendanceTable.noData")}</td>
+								<td colSpan={8} className="text-center py-8">{t("attendanceTable.noData")}</td>
 							</tr>
 						) : (
 							filtered.map((record, index) => (
@@ -341,6 +345,10 @@ const AttendanceTable = () => {
 									</td>
 									<td className={`px-6 py-4 ${isArabic ? 'text-right' : 'text-left'}`}>
 										{getLocationBadge(record.location)}
+									</td>
+									<td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
+										style={{ color: 'var(--table-text)' }}>
+										{record.officeName || <span style={{ color: 'var(--sub-text-color)' }}>—</span>}
 									</td>
 								</tr>
 							))

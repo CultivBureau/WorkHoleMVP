@@ -1,19 +1,32 @@
 import React, { useEffect, useRef, useState } from "react"
-import { Clock, ClipboardList, Coffee, BarChart3, MapPin, Loader2, AlertCircle, CheckCircle2 } from "lucide-react"
+import { Clock, ClipboardList, Coffee, BarChart3, MapPin, Loader2, AlertCircle, CheckCircle2, Timer } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useGetDashboardQuery, useClockInMutation, useClockOutMutation } from "../../services/apis/AtteandanceApi"
+import { useGetWeeklyFocusTimeQuery } from "../../services/apis/TimerApi"
 import { useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
-import { useAttendanceUpdate } from "../../contexts/AttendanceUpdateContext";
+import { useAttendanceUpdate } from "../../contexts/AttendanceUpdateContext"
+import { useTimer } from "../../contexts/TimerContext"
 
-const ClockinAdmin = () => {
+const MainContent = () => {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   const { data, isLoading, error, refetch } = useGetDashboardQuery({})
+  const { data: focusTimeData } = useGetWeeklyFocusTimeQuery()
   const [clockIn, { isLoading: isClockingIn }] = useClockInMutation()
   const [clockOut, { isLoading: isClockingOut }] = useClockOutMutation()
+  const { triggerUpdate } = useAttendanceUpdate()
   const navigate = useNavigate();
-  const { triggerUpdate } = useAttendanceUpdate();
+
+  // Enhanced timer context integration
+  const { 
+    timer, 
+    isRunning, 
+    isPaused,
+    hasActiveTimer,
+    displayTime,
+    timer: { taskName, seconds, duration }
+  } = useTimer()
 
   // fallback لو البيانات مش موجودة
   const stats = data || {
@@ -34,6 +47,7 @@ const ClockinAdmin = () => {
   const timerRef = useRef(null)
   const [showLocationModal, setShowLocationModal] = useState(false)
   const [isGettingLocation, setIsGettingLocation] = useState(false)
+  const [offices, setOffices] = useState([])
 
   // احسب وقت البداية من الـ backend لو موجود
   const clockInTime = data?.clockInTime // لازم backend يرجع clockInTime بصيغة ISO
@@ -101,8 +115,7 @@ const ClockinAdmin = () => {
     ? Math.max(0, shiftMinutes - workedMinutes)
     : (() => {
       const [_, total] = stats.todayProgress?.split("/") || ["0h 0m", "8h"]
-      const totalMinutes = parseInt(total) * 60 + parseInt(total.split(" ")[1]?.replace("m", "") || "0"
-      )
+      const totalMinutes = parseInt(total) * 60 + parseInt(total.split(" ")[1]?.replace("m", "") || "0")
       return Math.max(0, totalMinutes - workedMinutes)
     })()
 
@@ -197,7 +210,7 @@ const ClockinAdmin = () => {
           reject(new Error(errorMessage))
         },
         {
-          enableHighAccuracy: false,
+          enableHighAccuracy: true,
           timeout: 15000,
           maximumAge: 60000
         }
@@ -322,8 +335,8 @@ const ClockinAdmin = () => {
           }
         )
       }
+      triggerUpdate()
       refetch()
-      triggerUpdate();
     } catch (e) {
       console.error('Clock process error:', e)
       
@@ -387,8 +400,8 @@ const ClockinAdmin = () => {
           }
         )
       }
+      triggerUpdate()
       refetch()
-      triggerUpdate();
       setShowLocationModal(false)
     } catch (error) {
       console.error('Clock with location error:', error)
@@ -410,9 +423,18 @@ const ClockinAdmin = () => {
     }
   }
 
+  // Fetch offices data when location modal is shown
+  useEffect(() => {
+    if (showLocationModal) {
+      fetch(`${baseUrl}/api/attendance/offices`, { credentials: "include" })
+        .then(res => res.json())
+        .then(setOffices)
+    }
+  }, [showLocationModal])
+
   return (
     <div
-      className="w-[80%] h-max flex flex-col justify-center items-center"
+      className="w-full h-max flex flex-col justify-center items-center"
       style={{
         backgroundColor: "var(--bg-color)",
         direction: isAr ? "rtl" : "ltr",
@@ -538,27 +560,14 @@ const ClockinAdmin = () => {
                 {t("mainContent.mostProductiveDay")}
               </span>
             </div>
-            <div
-              className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-center items-center border"
-              style={{
-                backgroundColor: "var(--card-bg)",
-                borderColor: "var(--border-color)",
-              }}
-            >
-              <span className="text-[var(--sub-text-color)] text-[10px] mb-1 text-center leading-tight">
-                {t("mainContent.thisWeek")}
-              </span>
-              <h3 className="text-xl font-bold" style={{ color: "var(--text-color)" }}>{stats.thisWeek}</h3>
-              <span className="text-[var(--sub-text-color)] text-[10px] text-center leading-tight">
-                {t("mainContent.focusTime")}
-              </span>
-            </div>
+
+
           </div>
         </div>
         {/* Enhanced Start Your Day Button */}
         <div className="w-full h-max pb-2 pt-2 flex justify-center items-center">
           <button
-            className="w-full text-white font-medium py-3 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
+            className="w-full text-white cursor-pointer font-medium py-3 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
             style={{
               background: hasCompletedToday 
                 ? 'linear-gradient(135deg, #6B7280 0%, #9CA3AF 100%)' // Gray when completed
@@ -589,6 +598,7 @@ const ClockinAdmin = () => {
       </div>
 
 
+
       {/* Enhanced Location Selection Modal */}
       {showLocationModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
@@ -613,67 +623,32 @@ const ClockinAdmin = () => {
             </p>
             
             <div className="space-y-3">
-              <button
-                onClick={() => handleClockWithLocation({ 
-                  latitude: 30.0992818, 
-                  longitude: 31.3476392, 
-                  name: 'Office' 
-                })}
-                className="w-full p-4 rounded-xl border-2 transition-all duration-200 hover:shadow-md hover:scale-[1.02] group"
-                style={{ 
-                  borderColor: "var(--border-color)",
-                  backgroundColor: "var(--bg-color)",
-                }}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <span className="text-white text-xl">🏢</span>
+              {offices.map((office) => (
+                <button
+                  key={office._id}
+                  onClick={() => handleClockWithLocation({ latitude: office.latitude, longitude: office.longitude, name: office.name })}
+                  className="w-full p-4 rounded-xl border-2 transition-all duration-200 hover:shadow-md hover:scale-[1.02] group"
+                  style={{ 
+                    borderColor: "var(--border-color)",
+                    backgroundColor: "var(--bg-color)",
+                  }}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <span className="text-white text-xl">🏢</span>
+                    </div>
+                    <div className="text-left flex-1">
+                      <div className="font-semibold text-lg" style={{ color: "var(--text-color)" }}>
+                        {office.name}
+                      </div>
+                      <div className="text-xs" style={{ color: "var(--sub-text-color)" }}>
+                        {office.latitude.toFixed(3)}°N, {office.longitude.toFixed(3)}°E
+                      </div>
+                    </div>
+                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
                   </div>
-                  <div className="text-left flex-1">
-                    <div className="font-semibold text-lg" style={{ color: "var(--text-color)" }}>
-                      {isAr ? 'المكتب' : 'Office'}
-                    </div>
-                    <div className="text-sm" style={{ color: "var(--sub-text-color)" }}>
-                      Cultiv Bureau
-                    </div>
-                    <div className="text-xs" style={{ color: "var(--sub-text-color)" }}>
-                      30.099°N, 31.348°E
-                    </div>
-                  </div>
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                </div>
-              </button>
-              
-              <button
-                onClick={() => handleClockWithLocation({ 
-                  latitude: 0, 
-                  longitude: 0, 
-                  name: 'Home' 
-                })}
-                className="w-full p-4 rounded-xl border-2 transition-all duration-200 hover:shadow-md hover:scale-[1.02] group"
-                style={{ 
-                  borderColor: "var(--border-color)",
-                  backgroundColor: "var(--bg-color)",
-                }}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <span className="text-white text-xl">🏠</span>
-                  </div>
-                  <div className="text-left flex-1">
-                    <div className="font-semibold text-lg" style={{ color: "var(--text-color)" }}>
-                      {isAr ? 'المنزل' : 'Home'}
-                    </div>
-                    <div className="text-sm" style={{ color: "var(--sub-text-color)" }}>
-                      {isAr ? 'العمل من المنزل' : 'Work from home'}
-                    </div>
-                    <div className="text-xs" style={{ color: "var(--sub-text-color)" }}>
-                      Remote location
-                    </div>
-                  </div>
-                  <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                </div>
-              </button>
+                </button>
+              ))}
             </div>
             
             <div className="flex gap-3 mt-6">
@@ -695,4 +670,4 @@ const ClockinAdmin = () => {
   )
 }
 
-export default ClockinAdmin
+export default MainContent

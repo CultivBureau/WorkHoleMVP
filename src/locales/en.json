@@ -210,7 +210,8 @@
       "checkOut": "Check-out",
       "workHours": "Work hours",
       "status": "Status",
-      "location": "Location"
+      "location": "Location",
+      "office": "Office Name"
     },
     "pageOf": "Page {{page}} of {{total}}"
   },

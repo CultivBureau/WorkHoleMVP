@@ -38,6 +38,7 @@ import {
   useDeleteUserMutation,
   useUpdateUserMutation,
 } from "../../../services/apis/UsersApi";
+import { useLang } from "../../../contexts/LangContext";
 
 const daysOfWeek = [
   { value: "sunday", label: "Sunday", labelAr: "الأحد" },
@@ -49,7 +50,8 @@ const daysOfWeek = [
   { value: "saturday", label: "Saturday", labelAr: "السبت" },
 ];
 
-const UsersAdmin = ({ lang, setLang }) => {
+const UsersAdmin = () => {
+  const { lang, isRtl } = useLang();
   const { i18n } = useTranslation();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -78,18 +80,10 @@ const UsersAdmin = ({ lang, setLang }) => {
     holidays: [],
   });
 
-  useEffect(() => {
-    i18n.changeLanguage(lang);
-    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-    localStorage.setItem("lang", lang);
-  }, [lang, i18n]);
-
   const { data: usersData = [], isLoading, refetch } = useGetAllUsersQuery();
   const [createUser, { isLoading: creating }] = useCreateUserMutation();
   const [deleteUser, { isLoading: deleting }] = useDeleteUserMutation();
   const [updateUser, { isLoading: updating }] = useUpdateUserMutation();
-
-  const isRtl = lang === "ar";
 
   // Filter users
   const filteredUsers = usersData.filter((user) => {
@@ -344,14 +338,9 @@ const UsersAdmin = ({ lang, setLang }) => {
   };
 
   return (
-    <div
-      className="w-full h-screen flex flex-col"
-      style={{ background: "var(--bg-all)" }}
-    >
+    <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
       {/* Navigation Bar */}
       <NavBarAdmin
-        lang={lang}
-        setLang={setLang}
         onMobileSidebarToggle={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
         isMobileSidebarOpen={isMobileSidebarOpen}
       />
@@ -360,7 +349,6 @@ const UsersAdmin = ({ lang, setLang }) => {
       <div className="flex flex-1 min-h-0">
         {/* Sidebar */}
         <SideBarAdmin
-          lang={lang}
           isMobileOpen={isMobileSidebarOpen}
           onMobileClose={() => setIsMobileSidebarOpen(false)}
         />

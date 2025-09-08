@@ -63,6 +63,29 @@ export const attendanceApi = createApi({
         body,
       }),
     }),
+    // Admin: Get all offices
+    getAllOffices: builder.query({
+      query: () => ({
+        url: "/api/attendance/offices",
+        method: "GET",
+      }),
+    }),
+    // Admin: Edit office
+    editOffice: builder.mutation({
+      query: (body) => ({
+        url: "/api/attendance/edit-office",
+        method: "POST",
+        body,
+      }),
+    }),
+    // Admin: Delete office
+    deleteOffice: builder.mutation({
+      query: (body) => ({
+        url: "/api/attendance/delete-office",
+        method: "POST",
+        body,
+      }),
+    }),
   }),
 });
 
@@ -73,4 +96,7 @@ export const {
   useGetStatsQuery,
   useGetAllUsersAttendanceQuery,
   useSetOfficeLocationMutation,
+  useGetAllOfficesQuery,
+  useEditOfficeMutation,
+  useDeleteOfficeMutation,
 } = attendanceApi;

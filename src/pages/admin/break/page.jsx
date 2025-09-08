@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import NavBarAdmin from "../../../components/admin/NavBarAdmin";
 import SideBarAdmin from "../../../components/admin/SideBarAdmin";
 import { useTranslation } from "react-i18next";
@@ -17,8 +17,10 @@ import {
   useDeleteBreakTypeMutation 
 } from "../../../services/apis/BreakApi";
 import BreakTypeModal from "../../../components/admin/BreakTypeModal";
+import { useLang } from "../../../contexts/LangContext";
 
-const BreakAdmin = ({ lang, setLang }) => {
+const BreakAdmin = () => {
+  const { lang, isRtl } = useLang();
   const { i18n } = useTranslation();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -28,15 +30,8 @@ const BreakAdmin = ({ lang, setLang }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [breakToDelete, setBreakToDelete] = useState(null);
 
-  useEffect(() => {
-    i18n.changeLanguage(lang);
-    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-    localStorage.setItem("lang", lang);
-  }, [lang, i18n]);
-
   const { data: breakTypes, isLoading, refetch } = useGetBreakTypesQuery();
   const [deleteBreakType, { isLoading: deleting }] = useDeleteBreakTypeMutation();
-  const isRtl = lang === "ar";
 
   const tabs = [
     { key: "types", label: isRtl ? "أنواع الراحة" : "Break Types", icon: Coffee },
@@ -83,15 +78,12 @@ const BreakAdmin = ({ lang, setLang }) => {
 
   return (
     <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
-      <NavBarAdmin 
-        lang={lang} 
-        setLang={setLang}
+      <NavBarAdmin
         onMobileSidebarToggle={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
         isMobileSidebarOpen={isMobileSidebarOpen}
       />
       <div className="flex flex-1 min-h-0">
-        <SideBarAdmin 
-          lang={lang}
+        <SideBarAdmin
           isMobileOpen={isMobileSidebarOpen}
           onMobileClose={() => setIsMobileSidebarOpen(false)}
         />

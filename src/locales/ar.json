@@ -214,7 +214,8 @@
       "checkOut": "تسجيل الخروج",
       "workHours": "ساعات العمل",
       "status": "الحالة",
-      "location": "الموقع"
+      "location": "الموقع",
+      "office": "اسم الفرع"
     },
     "pageOf": "الصفحة {{page}} من {{total}}"
   },

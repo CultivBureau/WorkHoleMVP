@@ -19,11 +19,16 @@ import {
   XCircle,
   AlertTriangle,
 } from "lucide-react";
-import { useGetAllUsersAttendanceQuery } from "../../../services/apis/AtteandanceApi";
+import { useGetAllUsersAttendanceQuery, useGetAllOfficesQuery, useEditOfficeMutation, useDeleteOfficeMutation, useSetOfficeLocationMutation } from "../../../services/apis/AtteandanceApi";
 import SetOfficeLocation from "../../../components/admin/SetOfficeLocation";
 import { useAttendanceUpdate } from "../../../contexts/AttendanceUpdateContext";
+import EditOfficeModal from "../../../components/admin/EditOfficeModal";
+import ConfirmModal from "../../../components/admin/ConfirmModal";
+import toast from 'react-hot-toast';
+import { useLang } from "../../../contexts/LangContext";
 
-const AttendanceAdmin = ({ lang, setLang }) => {
+const AttendanceAdmin = () => {
+  const { lang, isRtl } = useLang();
   const { i18n } = useTranslation();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -34,21 +39,19 @@ const AttendanceAdmin = ({ lang, setLang }) => {
   const { data: attendanceData, isLoading, refetch } = useGetAllUsersAttendanceQuery(
     dateFilter
   );
+  const { data: offices = [], refetch: refetchOffices } = useGetAllOfficesQuery();
+  const [editOffice] = useEditOfficeMutation();
+  const [deleteOffice] = useDeleteOfficeMutation();
+  const [setOfficeLocation] = useSetOfficeLocationMutation();
   const [showOfficeLocationModal, setShowOfficeLocationModal] = useState(false);
+  const [editModal, setEditModal] = useState(null); // {office, open}
+  const [deleteModal, setDeleteModal] = useState(null); // {office, open}
   // Add this state for active card
   const [activeCard, setActiveCard] = useState(null);
 
   useEffect(() => {
-    i18n.changeLanguage(lang);
-    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-    localStorage.setItem("lang", lang);
-  }, [lang, i18n]);
-
-  useEffect(() => {
     refetch();
   }, [lastUpdate]);
-
-  const isRtl = lang === "ar";
 
   // فلترة حسب الفترة المختارة
   const filterByDate = (attendance) => {
@@ -290,27 +293,16 @@ const AttendanceAdmin = ({ lang, setLang }) => {
   const { getDynamicClockIn, getDynamicClockOut, getDynamicWorkHours } = useDynamicTime(filteredData);
 
   return (
-    <div 
-      className="w-full h-screen flex flex-col"
-      style={{ background: "var(--bg-all)" }}
-    >
-      {/* Navigation Bar */}
-      <NavBarAdmin 
-        lang={lang} 
-        setLang={setLang}
+    <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
+      <NavBarAdmin
         onMobileSidebarToggle={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
         isMobileSidebarOpen={isMobileSidebarOpen}
       />
-
-      {/* Content Area */}
       <div className="flex flex-1 min-h-0">
-        {/* Sidebar */}
-        <SideBarAdmin 
-          lang={lang}
+        <SideBarAdmin
           isMobileOpen={isMobileSidebarOpen}
           onMobileClose={() => setIsMobileSidebarOpen(false)}
         />
-
         {/* Main Content */}
         <main className="flex-1 overflow-auto p-6" style={{ background: "var(--bg-all)" }}>
           <div className="max-w-7xl mx-auto space-y-6">
@@ -326,18 +318,7 @@ const AttendanceAdmin = ({ lang, setLang }) => {
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setShowOfficeLocationModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 transform active:scale-95"
-                  style={{
-                    background: "linear-gradient(135deg, var(--accent-hover) 0%, var(--accent-color) 100%)"
-                  }}
-                >
-                  <MapPin size={16} />
-                  {isRtl ? "تحديد موقع المكتب" : "Set Office Location"}
-                </button>
-              </div>
+
             </div>
 
             {/* Stats Cards */}
@@ -610,6 +591,209 @@ const AttendanceAdmin = ({ lang, setLang }) => {
               )}
             </div>
 
+            {/* Offices Management Section */}
+            <div className="rounded-2xl border overflow-hidden"
+              style={{
+                backgroundColor: "var(--bg-color)",
+                borderColor: "var(--border-color)",
+              }}
+            >
+              <div className="p-6 border-b" style={{ borderColor: "var(--border-color)" }}>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div>
+                    <h2 className="text-xl font-bold" style={{ color: "var(--text-color)" }}>
+                      {isRtl ? "إدارة الفروع" : "Offices Management"}
+                    </h2>
+                    <p className="text-sm mt-1" style={{ color: "var(--sub-text-color)" }}>
+                      {isRtl ? `${offices.length} فرع` : `${offices.length} offices`}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowOfficeLocationModal(true)}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white font-medium transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 transform active:scale-95"
+                    style={{
+                      background: "linear-gradient(135deg, var(--accent-hover) 0%, var(--accent-color) 100%)",
+                      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)"
+                    }}
+                  >
+                    <MapPin size={18} />
+                    {isRtl ? "إضافة فرع جديد" : "Add New Office"}
+                  </button>
+                </div>
+              </div>
+
+              {offices.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20">
+                  <div 
+                    className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+                    style={{ backgroundColor: "var(--hover-color)" }}
+                  >
+                    <MapPin size={32} style={{ color: "var(--sub-text-color)" }} />
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2" style={{ color: "var(--text-color)" }}>
+                    {isRtl ? "لا توجد فروع" : "No Offices Found"}
+                  </h3>
+                  <p className="text-sm mb-6" style={{ color: "var(--sub-text-color)" }}>
+                    {isRtl ? "ابدأ بإضافة أول فرع لشركتك" : "Start by adding your first office location"}
+                  </p>
+                  <button
+                    onClick={() => setShowOfficeLocationModal(true)}
+                    className="flex items-center gap-2 px-6 py-3 rounded-xl text-white font-medium transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 transform active:scale-95"
+                    style={{
+                      background: "linear-gradient(135deg, var(--accent-hover) 0%, var(--accent-color) 100%)"
+                    }}
+                  >
+                    <MapPin size={18} />
+                    {isRtl ? "إضافة فرع" : "Add Office"}
+                  </button>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead style={{ backgroundColor: "var(--hover-color)" }}>
+                      <tr>
+                        <th className={`text-${isRtl ? 'right' : 'left'} py-4 px-6 font-semibold`} style={{ color: "var(--text-color)" }}>
+                          {isRtl ? "اسم الفرع" : "Office Name"}
+                        </th>
+                        <th className={`text-${isRtl ? 'right' : 'left'} py-4 px-6 font-semibold`} style={{ color: "var(--text-color)" }}>
+                          {isRtl ? "العنوان" : "Address"}
+                        </th>
+                        <th className={`text-${isRtl ? 'right' : 'left'} py-4 px-6 font-semibold`} style={{ color: "var(--text-color)" }}>
+                          {isRtl ? "الإحداثيات" : "Location"}
+                        </th>
+                        <th className={`text-${isRtl ? 'right' : 'left'} py-4 px-6 font-semibold`} style={{ color: "var(--text-color)" }}>
+                          {isRtl ? "نطاق التغطية" : "Coverage Radius"}
+                        </th>
+                        <th className={`text-${isRtl ? 'right' : 'left'} py-4 px-6 font-semibold`} style={{ color: "var(--text-color)" }}>
+                          {isRtl ? "الإجراءات" : "Actions"}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {offices.map((office, index) => (
+                        <tr 
+                          key={office._id}
+                          className="border-b hover:bg-opacity-50 transition-colors duration-200"
+                          style={{ 
+                            borderColor: "var(--border-color)",
+                            '&:hover': { backgroundColor: "var(--hover-color)" }
+                          }}
+                        >
+                          <td className="py-4 px-6">
+                            <div className="flex items-center gap-3">
+                              <div 
+                                className="w-10 h-10 rounded-xl flex items-center justify-center"
+                                style={{ backgroundColor: "var(--accent-color)" }}
+                              >
+                                <MapPin size={20} className="text-white" />
+                              </div>
+                              <div>
+                                <p className="font-semibold" style={{ color: "var(--text-color)" }}>
+                                  {office.name}
+                                </p>
+                                <p className="text-xs" style={{ color: "var(--sub-text-color)" }}>
+                                  Office #{index + 1}
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span style={{ color: "var(--text-color)" }}>
+                              {office.address || 
+                                <span style={{ color: "var(--sub-text-color)" }} className="italic">
+                                  {isRtl ? "غير محدد" : "Not specified"}
+                                </span>
+                              }
+                            </span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <div className="font-mono text-sm p-2 rounded-lg" style={{ backgroundColor: "var(--hover-color)", color: "var(--text-color)" }}>
+                              <div>{office.latitude.toFixed(6)}°N</div>
+                              <div>{office.longitude.toFixed(6)}°E</div>
+                            </div>
+                          </td>
+                          <td className="py-4 px-6">
+                            <div className="flex items-center gap-2">
+                              <div 
+                                className="w-2 h-2 rounded-full"
+                                style={{ backgroundColor: office.radius > 150 ? "#10B981" : office.radius > 100 ? "#F59E0B" : "#EF4444" }}
+                              ></div>
+                              <span className="font-medium" style={{ color: "var(--text-color)" }}>
+                                {office.radius}m
+                              </span>
+                              <span className="text-xs" style={{ color: "var(--sub-text-color)" }}>
+                                {isRtl ? "نطاق" : "radius"}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="py-4 px-6">
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => setEditModal({ office, open: true })}
+                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
+                                style={{
+                                  backgroundColor: "#3B82F6",
+                                  color: "white"
+                                }}
+                              >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                  <path d="m18.5 2.5 2.1 2.1L13 12H11v-2l7.5-7.5z"/>
+                                </svg>
+                                {isRtl ? "تعديل" : "Edit"}
+                              </button>
+                              <button
+                                onClick={() => setDeleteModal({ office, open: true })}
+                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
+                                style={{
+                                  backgroundColor: "#EF4444",
+                                  color: "white"
+                                }}
+                              >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <polyline points="3,6 5,6 21,6"/>
+                                  <path d="m19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2v2"/>
+                                  <line x1="10" y1="11" x2="10" y2="17"/>
+                                  <line x1="14" y1="11" x2="14" y2="17"/>
+                                </svg>
+                                {isRtl ? "حذف" : "Delete"}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Edit Modal */}
+            {editModal?.open && (
+              <EditOfficeModal
+                office={editModal.office}
+                onClose={() => setEditModal(null)}
+                onSave={async (values) => {
+                  await editOffice({ id: editModal.office._id, ...values });
+                  setEditModal(null);
+                  refetchOffices();
+                }}
+              />
+            )}
+
+            {/* Delete Modal */}
+            {deleteModal?.open && (
+              <ConfirmModal
+                title={isRtl ? "تأكيد الحذف" : "Confirm Delete"}
+                message={isRtl ? "هل أنت متأكد من حذف هذا الفرع؟" : "Are you sure you want to delete this office?"}
+                onCancel={() => setDeleteModal(null)}
+                onConfirm={async () => {
+                  await deleteOffice({ id: deleteModal.office._id });
+                  setDeleteModal(null);
+                  refetchOffices();
+                }}
+              />
+            )}
           </div>
       <div className="w-[100%] bg-[var(--bg-color)] h-max flex justify-center items-center p-6">
         <ClockinAdmin />

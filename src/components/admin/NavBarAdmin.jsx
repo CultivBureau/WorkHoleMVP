@@ -23,9 +23,11 @@ import { useGetAllUsersQuery } from "../../services/apis/UsersApi";
 import { useGetAllUsersAttendanceQuery } from "../../services/apis/AtteandanceApi";
 import { useGetAllLeavesQuery } from "../../services/apis/LeavesApi";
 import { removeAuthToken } from "../../utils/page";
+import { useLang } from "../../contexts/LangContext";
 
-const NavBarAdmin = ({ lang, setLang }) => {
-  const { i18n } = useTranslation();
+const NavBarAdmin = () => {
+  const { lang, setLang, isRtl } = useLang();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
   // جلب بيانات المستخدم من /me
@@ -57,16 +59,8 @@ const NavBarAdmin = ({ lang, setLang }) => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
-
     return () => clearInterval(timer);
   }, []);
-
-  // Sync language from localStorage
-  useEffect(() => {
-    const storedLang = localStorage.getItem("lang") || "en";
-    if (i18n.language !== storedLang) i18n.changeLanguage(storedLang);
-    document.documentElement.dir = storedLang === "ar" ? "rtl" : "ltr";
-  }, [i18n]);
 
   useEffect(() => {
     if (isSearchOpen) setTimeout(() => inputRef.current?.focus(), 0);
@@ -89,14 +83,11 @@ const NavBarAdmin = ({ lang, setLang }) => {
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
 
-  const popSideLang = lang === "ar" ? "left-0" : "right-0";
+  const popSideLang = isRtl ? "left-0" : "right-0";
 
   // Change language and save to localStorage
   const handleLangChange = (lng) => {
-    setLang(lng);
-    i18n.changeLanguage(lng);
-    document.documentElement.dir = lng === "ar" ? "rtl" : "ltr";
-    localStorage.setItem("lang", lng);
+    setLang(lng); // فقط استخدم context
     setLangOpen(false);
   };
 
@@ -110,7 +101,6 @@ const NavBarAdmin = ({ lang, setLang }) => {
   // Format time and date based on language and locale
   const formatDateTime = () => {
     const now = currentTime;
-    const isRtl = lang === "ar";
 
     const timeOptions = {
       hour: "2-digit",
@@ -168,9 +158,11 @@ const NavBarAdmin = ({ lang, setLang }) => {
         notifications.push({
           id: leave._id,
           type: 'leave',
-          title: 'New Leave Request',
-          message: `${leave.userName || 'Employee'} requested ${leave.leaveDays || 1} days leave`,
-          time: new Date(leave.createdAt).toLocaleDateString(),
+          title: isRtl ? 'طلب إجازة جديد' : 'New Leave Request',
+          message: isRtl 
+            ? `${leave.userName || 'موظف'} طلب ${leave.leaveDays || 1} أيام إجازة`
+            : `${leave.userName || 'Employee'} requested ${leave.leaveDays || 1} days leave`,
+          time: new Date(leave.createdAt).toLocaleDateString(isRtl ? 'ar-SA' : 'en-US'),
           isNew: true
         });
       });
@@ -191,9 +183,11 @@ const NavBarAdmin = ({ lang, setLang }) => {
         notifications.push({
           id: attendance._id,
           type: 'late',
-          title: 'Late Arrival',
-          message: `${attendance.userName || 'Employee'} arrived late today`,
-          time: new Date(attendance.checkInTime).toLocaleTimeString(),
+          title: isRtl ? 'وصول متأخر' : 'Late Arrival',
+          message: isRtl 
+            ? `${attendance.userName || 'موظف'} وصل متأخراً اليوم`
+            : `${attendance.userName || 'Employee'} arrived late today`,
+          time: new Date(attendance.checkInTime).toLocaleTimeString(isRtl ? 'ar-SA' : 'en-US'),
           isNew: true
         });
       });
@@ -206,22 +200,24 @@ const NavBarAdmin = ({ lang, setLang }) => {
 
   return (
     <nav
-      className="w-full h-16 border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-40 backdrop-blur-sm"
+      className={`w-full h-16 border-b border-gray-200 flex items-center justify-between px-3 sm:px-6 sticky top-0 z-40 backdrop-blur-sm ${isRtl ? 'flex-row-reverse' : ''}`}
       style={{
         background: "var(--bg-color)",
         borderColor: "var(--border-color)",
       }}
     >
       {/* Left Section - Admin Badge & Search */}
-      <div className="flex items-center gap-4">
+      <div className={`flex items-center gap-2 sm:gap-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
         {/* Admin Badge */}
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border" style={{ 
+        <div className={`flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-lg border ${isRtl ? 'flex-row-reverse' : ''}`} style={{ 
           backgroundColor: "var(--hover-color)", 
           borderColor: "var(--accent-color)",
           color: "var(--accent-color)"
         }}>
           <Shield className="w-4 h-4" />
-          <span className="text-sm font-semibold">Admin Panel</span>
+          <span className="text-xs sm:text-sm font-semibold hidden sm:inline">
+            {isRtl ? 'لوحة الإدارة' : 'Admin Panel'}
+          </span>
         </div>
 
         {/* Mobile menu button */}
@@ -238,7 +234,7 @@ const NavBarAdmin = ({ lang, setLang }) => {
           {!isSearchOpen ? (
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 hover:shadow-sm"
+              className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl border transition-all duration-300 hover:shadow-sm ${isRtl ? 'flex-row-reverse' : ''}`}
               style={{
                 backgroundColor: "var(--bg-color)",
                 borderColor: "var(--border-color)",
@@ -246,23 +242,25 @@ const NavBarAdmin = ({ lang, setLang }) => {
               }}
             >
               <Search size={16} />
-              <span className="text-sm">Search admin panel...</span>
+              <span className="text-sm hidden lg:inline">
+                {isRtl ? 'البحث في لوحة الإدارة...' : 'Search admin panel...'}
+              </span>
             </button>
           ) : (
-            <div className="flex items-center gap-2 animate-popup-scale">
+            <div className={`flex items-center gap-2 animate-popup-scale ${isRtl ? 'flex-row-reverse' : ''}`}>
               <div className="relative">
                 <Search
                   size={16}
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2"
+                  className={`absolute top-1/2 transform -translate-y-1/2 ${isRtl ? 'right-3' : 'left-3'}`}
                   style={{ color: "var(--sub-text-color)" }}
                 />
                 <input
                   ref={inputRef}
                   type="text"
-                  placeholder="Search users, attendance, leaves..."
+                  placeholder={isRtl ? 'البحث في المستخدمين، الحضور، الإجازات...' : 'Search users, attendance, leaves...'}
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="w-80 pl-10 pr-4 py-2 rounded-xl border outline-none transition-all duration-300"
+                  className={`w-64 sm:w-80 py-2 rounded-xl border outline-none transition-all duration-300 ${isRtl ? 'pr-10 pl-4 text-right' : 'pl-10 pr-4'}`}
                   style={{
                     backgroundColor: "var(--bg-color)",
                     borderColor: "var(--accent-color)",
@@ -285,35 +283,35 @@ const NavBarAdmin = ({ lang, setLang }) => {
         </div>
       </div>
 
-      {/* Center Section - Date & Time */}
-      <div className="hidden lg:flex items-center gap-4 text-sm">
-        <div className="flex items-center gap-2" style={{ color: "var(--text-color)" }}>
+      {/* Center Section - Date & Time (Hidden on mobile) */}
+      <div className={`hidden lg:flex items-center gap-4 text-sm ${isRtl ? 'flex-row-reverse' : ''}`}>
+        <div className={`flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`} style={{ color: "var(--text-color)" }}>
           <Calendar size={16} style={{ color: "var(--accent-color)" }} />
           <span className="font-medium">{date}</span>
         </div>
-        <div className="flex items-center gap-2" style={{ color: "var(--text-color)" }}>
+        <div className={`flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`} style={{ color: "var(--text-color)" }}>
           <Clock size={16} style={{ color: "var(--accent-color)" }} />
           <span className="font-mono font-semibold">{time}</span>
         </div>
       </div>
 
-      {/* Right Section - Dynamic Stats, Notifications, Language, Profile */}
-      <div className="flex items-center gap-3">
-        {/* Dynamic Quick Stats */}
-        <div className="hidden xl:flex items-center gap-4 px-4 py-2 rounded-lg border" style={{
+      {/* Right Section - Stats, Notifications, Language, Profile */}
+      <div className={`flex items-center gap-2 sm:gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+        {/* Dynamic Quick Stats (Hidden on smaller screens) */}
+        <div className={`hidden xl:flex items-center gap-4 px-4 py-2 rounded-lg border ${isRtl ? 'flex-row-reverse' : ''}`} style={{
           backgroundColor: "var(--hover-color)",
           borderColor: "var(--border-color)"
         }}>
-          <div className="flex items-center gap-2">
+          <div className={`flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
             <Users size={16} style={{ color: "var(--accent-color)" }} />
             <span className="text-sm font-medium" style={{ color: "var(--text-color)" }}>
-              Users: {usersLoading ? "..." : stats.totalUsers}
+              {isRtl ? `المستخدمون: ${usersLoading ? "..." : stats.totalUsers}` : `Users: ${usersLoading ? "..." : stats.totalUsers}`}
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className={`flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
             <BarChart3 size={16} style={{ color: "var(--accent-color)" }} />
             <span className="text-sm font-medium" style={{ color: "var(--text-color)" }}>
-              Active: {attendanceLoading ? "..." : stats.activeUsers}
+              {isRtl ? `نشط: ${attendanceLoading ? "..." : stats.activeUsers}` : `Active: ${attendanceLoading ? "..." : stats.activeUsers}`}
             </span>
           </div>
         </div>
@@ -324,7 +322,7 @@ const NavBarAdmin = ({ lang, setLang }) => {
         <div className="relative" ref={langRef}>
           <button
             onClick={() => setLangOpen(!langOpen)}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-200 hover:shadow-sm"
+            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-xl transition-all duration-200 hover:shadow-sm ${isRtl ? 'flex-row-reverse' : ''}`}
             style={{
               backgroundColor: "var(--hover-color)",
               color: "var(--text-color)",
@@ -334,7 +332,7 @@ const NavBarAdmin = ({ lang, setLang }) => {
             <span className="text-sm font-medium hidden sm:block">
               {lang === "ar" ? "العربية" : "English"}
             </span>
-            <ChevronDown size={14} />
+            <ChevronDown size={14} className="hidden sm:block" />
           </button>
 
           {langOpen && (
@@ -347,30 +345,30 @@ const NavBarAdmin = ({ lang, setLang }) => {
             >
               <button
                 onClick={() => handleLangChange("en")}
-                className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center gap-3 ${
+                className={`w-full px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3 ${
                   lang === "en" ? "font-semibold" : ""
-                }`}
+                } ${isRtl ? 'flex-row-reverse text-right' : 'text-left'}`}
                 style={{ color: "var(--text-color)" }}
               >
                 <span className="text-lg">🇺🇸</span>
                 English
                 {lang === "en" && (
-                  <span className="ml-auto text-xs" style={{ color: "var(--accent-color)" }}>
+                  <span className={`text-xs ${isRtl ? 'mr-auto' : 'ml-auto'}`} style={{ color: "var(--accent-color)" }}>
                     ✓
                   </span>
                 )}
               </button>
               <button
                 onClick={() => handleLangChange("ar")}
-                className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center gap-3 ${
+                className={`w-full px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3 ${
                   lang === "ar" ? "font-semibold" : ""
-                }`}
+                } ${isRtl ? 'flex-row-reverse text-right' : 'text-left'}`}
                 style={{ color: "var(--text-color)" }}
               >
                 <span className="text-lg">🇸🇦</span>
                 العربية
                 {lang === "ar" && (
-                  <span className="ml-auto text-xs" style={{ color: "var(--accent-color)" }}>
+                  <span className={`text-xs ${isRtl ? 'mr-auto' : 'ml-auto'}`} style={{ color: "var(--accent-color)" }}>
                     ✓
                   </span>
                 )}
@@ -383,13 +381,13 @@ const NavBarAdmin = ({ lang, setLang }) => {
         <div className="relative" ref={profileRef}>
           <button
             onClick={() => setProfileOpen(!profileOpen)}
-            className="flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 hover:shadow-sm"
+            className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-xl transition-all duration-200 hover:shadow-sm ${isRtl ? 'flex-row-reverse' : ''}`}
             style={{
               backgroundColor: "var(--hover-color)",
               color: "var(--text-color)",
             }}
           >
-            <div className="flex items-center gap-3">
+            <div className={`flex items-center gap-2 sm:gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
               <img
                 src={
                   user?.profileImage
@@ -399,16 +397,16 @@ const NavBarAdmin = ({ lang, setLang }) => {
                 alt="Profile"
                 className="w-8 h-8 rounded-full object-cover"
               />
-              <div className="hidden sm:block text-left">
+              <div className={`hidden sm:block ${isRtl ? 'text-right' : 'text-left'}`}>
                 <p className="text-sm font-medium">
-                  {userLoading ? "..." : user?.firstName + " " + user?.lastName}
+                  {userLoading ? "..." : `${user?.firstName || ''} ${user?.lastName || ''}`.trim()}
                 </p>
                 <p className="text-xs" style={{ color: "var(--sub-text-color)" }}>
-                  Administrator
+                  {isRtl ? 'مدير النظام' : 'Administrator'}
                 </p>
               </div>
             </div>
-            <ChevronDown size={14} />
+            <ChevronDown size={14} className="hidden sm:block" />
           </button>
 
           {profileOpen && (
@@ -421,7 +419,7 @@ const NavBarAdmin = ({ lang, setLang }) => {
             >
               {/* Profile Header */}
               <div className="p-4 border-b" style={{ borderColor: "var(--border-color)" }}>
-                <div className="flex items-center gap-3">
+                <div className={`flex items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
                   <img
                     src={
                       user?.profileImage
@@ -431,12 +429,12 @@ const NavBarAdmin = ({ lang, setLang }) => {
                     alt="Profile"
                     className="w-12 h-12 rounded-full object-cover"
                   />
-                  <div>
+                  <div className={isRtl ? 'text-right' : 'text-left'}>
                     <p className="font-semibold" style={{ color: "var(--text-color)" }}>
-                      {userLoading ? "..." : user?.firstName + " " + user?.lastName}
+                      {userLoading ? "..." : `${user?.firstName || ''} ${user?.lastName || ''}`.trim()}
                     </p>
                     <p className="text-sm" style={{ color: "var(--sub-text-color)" }}>
-                      Administrator
+                      {isRtl ? 'مدير النظام' : 'Administrator'}
                     </p>
                   </div>
                 </div>
@@ -449,32 +447,128 @@ const NavBarAdmin = ({ lang, setLang }) => {
                     navigate("/pages/User/profile");
                     setProfileOpen(false);
                   }}
-                  className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center gap-3"
+                  className={`w-full px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3 ${isRtl ? 'flex-row-reverse text-right' : 'text-left'}`}
                   style={{ color: "var(--text-color)" }}
                 >
                   <User size={16} />
-                  Profile Settings
+                  {isRtl ? 'إعدادات الملف الشخصي' : 'Profile Settings'}
                 </button>
                 <button
-                  className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center gap-3"
+                  className={`w-full px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3 ${isRtl ? 'flex-row-reverse text-right' : 'text-left'}`}
                   style={{ color: "var(--text-color)" }}
                 >
                   <Settings size={16} />
-                  Admin Settings
+                  {isRtl ? 'إعدادات الإدارة' : 'Admin Settings'}
                 </button>
                 <hr className="my-2" style={{ borderColor: "var(--border-color)" }} />
                 <button
                   onClick={handleLogout}
-                  className="w-full px-4 py-3 text-left hover:bg-red-50 transition-colors flex items-center gap-3 text-red-600"
+                  className={`w-full px-4 py-3 hover:bg-red-50 transition-colors flex items-center gap-3 text-red-600 ${isRtl ? 'flex-row-reverse text-right' : 'text-left'}`}
                 >
                   <LogOut size={16} />
-                  Sign Out
+                  {isRtl ? 'تسجيل الخروج' : 'Sign Out'}
                 </button>
               </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden">
+          <div 
+            ref={mobileMenuRef}
+            className={`h-full w-80 shadow-xl transform transition-transform duration-300 ${isRtl ? 'mr-auto' : 'ml-auto'}`}
+            style={{ backgroundColor: "var(--bg-color)" }}
+          >
+            <div className="p-4 border-b" style={{ borderColor: "var(--border-color)" }}>
+              <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}>
+                <h2 className="text-lg font-semibold" style={{ color: "var(--text-color)" }}>
+                  {isRtl ? 'لوحة الإدارة' : 'Admin Panel'}
+                </h2>
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  style={{ color: "var(--sub-text-color)" }}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+            
+            {/* Mobile Search */}
+            <div className="p-4 border-b" style={{ borderColor: "var(--border-color)" }}>
+              <div className="relative">
+                <Search
+                  size={16}
+                  className={`absolute top-1/2 transform -translate-y-1/2 ${isRtl ? 'right-3' : 'left-3'}`}
+                  style={{ color: "var(--sub-text-color)" }}
+                />
+                <input
+                  type="text"
+                  placeholder={isRtl ? 'البحث...' : 'Search...'}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className={`w-full py-2 rounded-xl border ${isRtl ? 'pr-10 pl-4 text-right' : 'pl-10 pr-4'}`}
+                  style={{
+                    backgroundColor: "var(--bg-color)",
+                    borderColor: "var(--border-color)",
+                    color: "var(--text-color)",
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Mobile Date/Time */}
+            <div className="p-4 border-b" style={{ borderColor: "var(--border-color)" }}>
+              <div className={`flex items-center gap-3 mb-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                <Calendar size={16} style={{ color: "var(--accent-color)" }} />
+                <span className="text-sm font-medium" style={{ color: "var(--text-color)" }}>
+                  {date}
+                </span>
+              </div>
+              <div className={`flex items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                <Clock size={16} style={{ color: "var(--accent-color)" }} />
+                <span className="text-sm font-mono font-semibold" style={{ color: "var(--text-color)" }}>
+                  {time}
+                </span>
+              </div>
+            </div>
+
+            {/* Mobile Stats */}
+            <div className="p-4">
+              <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--text-color)" }}>
+                {isRtl ? 'إحصائيات سريعة' : 'Quick Stats'}
+              </h3>
+              <div className="space-y-3">
+                <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}>
+                  <div className={`flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                    <Users size={16} style={{ color: "var(--accent-color)" }} />
+                    <span className="text-sm" style={{ color: "var(--text-color)" }}>
+                      {isRtl ? 'المستخدمون' : 'Total Users'}
+                    </span>
+                  </div>
+                  <span className="text-sm font-semibold" style={{ color: "var(--text-color)" }}>
+                    {usersLoading ? "..." : stats.totalUsers}
+                  </span>
+                </div>
+                <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}>
+                  <div className={`flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                    <BarChart3 size={16} style={{ color: "var(--accent-color)" }} />
+                    <span className="text-sm" style={{ color: "var(--text-color)" }}>
+                      {isRtl ? 'المستخدمون النشطون' : 'Active Users'}
+                    </span>
+                  </div>
+                  <span className="text-sm font-semibold" style={{ color: "var(--text-color)" }}>
+                    {attendanceLoading ? "..." : stats.activeUsers}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };

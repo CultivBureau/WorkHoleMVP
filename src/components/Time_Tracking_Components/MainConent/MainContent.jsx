@@ -47,6 +47,7 @@ const MainContent = () => {
   const timerRef = useRef(null)
   const [showLocationModal, setShowLocationModal] = useState(false)
   const [isGettingLocation, setIsGettingLocation] = useState(false)
+  const [offices, setOffices] = useState([])
 
   // احسب وقت البداية من الـ backend لو موجود
   const clockInTime = data?.clockInTime // لازم backend يرجع clockInTime بصيغة ISO
@@ -209,7 +210,7 @@ const MainContent = () => {
           reject(new Error(errorMessage))
         },
         {
-          enableHighAccuracy: false,
+          enableHighAccuracy: true,
           timeout: 15000,
           maximumAge: 60000
         }
@@ -421,6 +422,15 @@ const MainContent = () => {
       )
     }
   }
+
+  // Fetch offices data when location modal is shown
+  useEffect(() => {
+    if (showLocationModal) {
+      fetch(`${baseUrl}/api/attendance/offices`, { credentials: "include" })
+        .then(res => res.json())
+        .then(setOffices)
+    }
+  }, [showLocationModal])
 
   return (
     <div
@@ -701,67 +711,32 @@ const MainContent = () => {
             </p>
             
             <div className="space-y-3">
-              <button
-                onClick={() => handleClockWithLocation({ 
-                  latitude: 30.0992818, 
-                  longitude: 31.3476392, 
-                  name: 'Office' 
-                })}
-                className="w-full p-4 rounded-xl border-2 transition-all duration-200 hover:shadow-md hover:scale-[1.02] group"
-                style={{ 
-                  borderColor: "var(--border-color)",
-                  backgroundColor: "var(--bg-color)",
-                }}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <span className="text-white text-xl">🏢</span>
+              {offices.map((office) => (
+                <button
+                  key={office._id}
+                  onClick={() => handleClockWithLocation({ latitude: office.latitude, longitude: office.longitude, name: office.name })}
+                  className="w-full p-4 rounded-xl border-2 transition-all duration-200 hover:shadow-md hover:scale-[1.02] group"
+                  style={{ 
+                    borderColor: "var(--border-color)",
+                    backgroundColor: "var(--bg-color)",
+                  }}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <span className="text-white text-xl">🏢</span>
+                    </div>
+                    <div className="text-left flex-1">
+                      <div className="font-semibold text-lg" style={{ color: "var(--text-color)" }}>
+                        {office.name}
+                      </div>
+                      <div className="text-xs" style={{ color: "var(--sub-text-color)" }}>
+                        {office.latitude.toFixed(3)}°N, {office.longitude.toFixed(3)}°E
+                      </div>
+                    </div>
+                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
                   </div>
-                  <div className="text-left flex-1">
-                    <div className="font-semibold text-lg" style={{ color: "var(--text-color)" }}>
-                      {isAr ? 'المكتب' : 'Office'}
-                    </div>
-                    <div className="text-sm" style={{ color: "var(--sub-text-color)" }}>
-                      Cultiv Bureau
-                    </div>
-                    <div className="text-xs" style={{ color: "var(--sub-text-color)" }}>
-                      30.099°N, 31.348°E
-                    </div>
-                  </div>
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                </div>
-              </button>
-              
-              <button
-                onClick={() => handleClockWithLocation({ 
-                  latitude: 0, 
-                  longitude: 0, 
-                  name: 'Home' 
-                })}
-                className="w-full p-4 rounded-xl border-2 transition-all duration-200 hover:shadow-md hover:scale-[1.02] group"
-                style={{ 
-                  borderColor: "var(--border-color)",
-                  backgroundColor: "var(--bg-color)",
-                }}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <span className="text-white text-xl">🏠</span>
-                  </div>
-                  <div className="text-left flex-1">
-                    <div className="font-semibold text-lg" style={{ color: "var(--text-color)" }}>
-                      {isAr ? 'المنزل' : 'Home'}
-                    </div>
-                    <div className="text-sm" style={{ color: "var(--sub-text-color)" }}>
-                      {isAr ? 'العمل من المنزل' : 'Work from home'}
-                    </div>
-                    <div className="text-xs" style={{ color: "var(--sub-text-color)" }}>
-                      Remote location
-                    </div>
-                  </div>
-                  <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                </div>
-              </button>
+                </button>
+              ))}
             </div>
             
             <div className="flex gap-3 mt-6">
