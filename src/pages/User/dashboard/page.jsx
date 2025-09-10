@@ -13,15 +13,15 @@ const Dashboard = () => {
   const { lang, isRtl } = useLang();
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
 
-  // Fetch dashboard data with month parameter - refetch when month changes
+  // Fetch dashboard data with month parameter - RTK Query will handle caching
   const { data: dashboardData, isLoading, error, refetch } = useGetDashboardQuery({ 
     month: selectedMonth 
   });
 
-  // Refetch data when month changes
-  useEffect(() => {
-    refetch();
-  }, [selectedMonth, refetch]);
+  // REMOVED: Manual refetch on month change - RTK Query handles this automatically
+  // useEffect(() => {
+  //   refetch();
+  // }, [selectedMonth, refetch]);
 
   return (
     <div

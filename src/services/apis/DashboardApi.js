@@ -15,6 +15,7 @@ export const dashboardApi = createApi({
       return headers;
     },
   }),
+  tagTypes: ['Dashboard'],
   endpoints: (builder) => ({
     getDashboard: builder.query({
       query: (params = {}) => ({
@@ -22,9 +23,14 @@ export const dashboardApi = createApi({
         method: "GET",
         params: params,
       }),
-      // دايماً يحدث البيانات عند فتح الصفحة أو تغيير الـ window
-      refetchOnMountOrArgChange: true,
-      refetchOnWindowFocus: true,
+      // Cache for 5 minutes, only refetch on window focus if data is stale
+      keepUnusedDataFor: 300, // 5 minutes
+      refetchOnMountOrArgChange: false, // Don't refetch on mount if data exists
+      refetchOnWindowFocus: false, // Don't refetch on window focus
+      providesTags: (result, error, arg) => [
+        { type: 'Dashboard', id: 'LIST' },
+        { type: 'Dashboard', id: `MONTH_${arg?.month || 'current'}` }
+      ],
     }),
   }),
 });

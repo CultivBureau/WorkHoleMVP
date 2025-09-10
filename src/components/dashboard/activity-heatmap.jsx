@@ -18,31 +18,22 @@ export default function ActivityHeatmap({
   const heatChart = dashboardData?.heatChart || {};
   const weeks = heatChart?.weeks || [];
 
+  // Debug logging
+  useEffect(() => {
+    console.log("Dashboard Data:", dashboardData);
+    console.log("Heat Chart:", heatChart);
+    console.log("Weeks:", weeks);
+    console.log("Selected Month:", selectedMonth);
+  }, [dashboardData, heatChart, weeks, selectedMonth]);
+
   // Month names for the header
   const monthNames = t("dashboard.activityHeatmap.months", {
     returnObjects: true,
     defaultValue: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
   });
 
-  // Week day names - detect user's locale
-  const getLocalizedWeekDays = () => {
-    const locale = navigator.language || 'en-US';
-    const baseDate = new Date(2023, 0, 2); // Monday, January 2, 2023
-    const weekDays = [];
-    
-    // Get the first day of week for user's locale
-    const firstDayOfWeek = new Intl.Locale(locale).weekInfo?.firstDay || 1; // 1 = Monday, 7 = Sunday
-    
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(baseDate);
-      date.setDate(baseDate.getDate() + i);
-      weekDays.push(date.toLocaleDateString(locale, { weekday: 'short' }));
-    }
-    
-    return weekDays;
-  };
-
-  const weekDays = getLocalizedWeekDays();
+  // Week day names - Monday to Sunday
+  const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
   // YOUR APP'S COLOR PALETTE - Using CSS Variables
   const getActivityColor = (activeHours) => {
@@ -64,100 +55,54 @@ export default function ActivityHeatmap({
     return "Excellent productivity";
   };
 
-  // Create a data map from backend data
-  const createDataMap = (backendWeeks) => {
-    const dataMap = new Map();
-    
-    if (backendWeeks && backendWeeks.length > 0) {
-      backendWeeks.forEach(week => {
-        if (week.days && week.days.length > 0) {
-          week.days.forEach(day => {
-            if (day.date) {
-              dataMap.set(day.date, {
-                workHours: day.workHours || 0,
-                isCurrentMonth: day.isCurrentMonth
-              });
-            }
+  // Use backend data directly if available, otherwise generate fallback
+  const memoizedCalendarWeeks = useMemo(() => {
+    if (weeks && weeks.length > 0) {
+      console.log("Using backend weeks data:", weeks);
+      return weeks;
+    } else {
+      console.log("Generating fallback calendar for month:", selectedMonth);
+      // Fallback: generate basic calendar
+      const currentYear = new Date().getFullYear();
+      const firstDay = new Date(currentYear, selectedMonth - 1, 1);
+      const lastDay = new Date(currentYear, selectedMonth, 0);
+      
+      // Find first Monday
+      let weekStart = new Date(firstDay);
+      while (weekStart.getDay() !== 1) {
+        weekStart.setDate(weekStart.getDate() - 1);
+      }
+
+      const fallbackWeeks = [];
+      let currentWeekStart = new Date(weekStart);
+
+      for (let weekNumber = 1; weekNumber <= 4; weekNumber++) {
+        const weekDays = [];
+        for (let dayNum = 0; dayNum < 7; dayNum++) {
+          const currentDay = new Date(currentWeekStart);
+          currentDay.setDate(currentWeekStart.getDate() + dayNum);
+          const isCurrentMonth = currentDay.getMonth() === selectedMonth - 1;
+          
+          weekDays.push({
+            date: currentDay.toISOString().split('T')[0],
+            workHours: 0, // No data
+            isCurrentMonth,
+            dayOfMonth: currentDay.getDate(),
+            dayOfWeek: dayNum,
           });
         }
-      });
-    }
-    
-    return dataMap;
-  };
-
-  // Generate dynamic calendar layout based on real calendar
-  const generateCalendarWeeks = (year, month, backendWeeks) => {
-    const firstDay = new Date(year, month - 1, 1);
-    const lastDay = new Date(year, month, 0);
-    const locale = navigator.language || 'en-US';
-    
-    // Create data map from backend
-    const dataMap = createDataMap(backendWeeks);
-    
-    // Get first day of week for user's locale (0 = Sunday, 1 = Monday)
-    const firstDayOfWeek = new Intl.Locale(locale).weekInfo?.firstDay === 7 ? 0 : 1;
-    
-    // Find the first day of the calendar grid
-    let calendarStart = new Date(firstDay);
-    while (calendarStart.getDay() !== firstDayOfWeek) {
-      calendarStart.setDate(calendarStart.getDate() - 1);
-    }
-
-    const weeks = [];
-    let currentDate = new Date(calendarStart);
-    let weekNumber = 1;
-
-    // Generate weeks until we've covered the entire month
-    while (weekNumber <= 6) { // Max 6 weeks to cover any month
-      const week = {
-        weekNumber,
-        days: []
-      };
-
-      // Generate 7 days for this week
-      for (let dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++) {
-        const isCurrentMonth = currentDate.getMonth() === month - 1;
-        const dateStr = currentDate.toISOString().split('T')[0];
         
-        // Get work hours from backend data map
-        const dayData = dataMap.get(dateStr);
-        const workHours = dayData?.workHours || 0;
-
-        week.days.push({
-          date: dateStr,
-          dayOfMonth: currentDate.getDate(),
-          isCurrentMonth,
-          workHours,
-          dayOfWeek
+        fallbackWeeks.push({
+          weekNumber,
+          days: weekDays,
         });
-
-        currentDate.setDate(currentDate.getDate() + 1);
+        
+        currentWeekStart.setDate(currentWeekStart.getDate() + 7);
       }
-
-      weeks.push(week);
-      weekNumber++;
-
-      // Stop if we've passed the month and have at least 4 weeks
-      if (currentDate > lastDay && weekNumber > 4) {
-        break;
-      }
+      
+      return fallbackWeeks;
     }
-
-    return weeks;
-  };
-
-  // MEMOIZE calendar weeks to prevent infinite loops
-  const memoizedCalendarWeeks = useMemo(() => {
-    if (heatChart?.year && heatChart?.month && weeks.length > 0) {
-      return generateCalendarWeeks(heatChart.year, heatChart.month, weeks);
-    } else if (selectedMonth) {
-      // Fallback to current year if no data
-      const currentYear = new Date().getFullYear();
-      return generateCalendarWeeks(currentYear, selectedMonth, []);
-    }
-    return [];
-  }, [heatChart?.year, heatChart?.month, selectedMonth, weeks.length]); // Only depend on stable values
+  }, [weeks, selectedMonth]);
 
   // Update calendar weeks when memoized value changes
   useEffect(() => {
@@ -280,7 +225,7 @@ export default function ActivityHeatmap({
                   <td key={`${week.weekNumber}-${dayIdx}`} className="p-1">
                     <div className="flex justify-center">
                       <div
-                        className="relative w-40 h-7 rounded-lg  cursor-pointer transition-all duration-200 flex items-center justify-center text-sm font-medium shadow-sm"
+                        className="relative w-40 h-7 rounded-lg cursor-pointer transition-all duration-200 flex items-center justify-center text-sm font-medium shadow-sm"
                         style={{
                           backgroundColor: day.isCurrentMonth 
                             ? getActivityColor(day.workHours)
@@ -314,6 +259,7 @@ export default function ActivityHeatmap({
                             <div className="text-center">
                               <div className="font-semibold">{day.workHours}h active work</div>
                               <div className="text-xs opacity-75">{getWorkLevel(day.workHours)}</div>
+                              <div className="text-xs opacity-75">{day.date}</div>
                             </div>
                             <div
                               className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0"
