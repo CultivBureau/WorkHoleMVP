@@ -26,6 +26,9 @@ body {
   --divider-color: #E0FFFD;
   --text-color-2: #202224;
 
+  /* Active menu item background */
+  --menu-active-bg: #DDF8FA;
+  --menu-active-bg-dark: #1a3a3d;
 
   /* bg for card in time tracking page */
   --card-bg: #F3F3F3;
@@ -89,6 +92,27 @@ body {
   background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
 }
 
+/* Menu Active Styles */
+.menu-active-bg {
+  background-color: var(--menu-active-bg);
+}
+
+.menu-active-text {
+  background: linear-gradient(135deg, #09D1C7, #15919B);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.menu-active-icon {
+  background: linear-gradient(135deg, #09D1C7, #15919B);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
 [data-theme="light"] {
   --bg-all: #F4F4F4;
   --bg-color: #ffffff;
@@ -105,6 +129,8 @@ body {
 
   --card-color: #0000;
 
+  /* Light mode active menu background */
+  --menu-active-bg: #DDF8FA;
 
 }
 
@@ -128,6 +154,9 @@ body {
   /* bg for card in time tracking page */
   --card-bg: #111827;
   --card-color: #ffffff;
+
+  /* Dark mode active menu background */
+  --menu-active-bg: #1a3a3d;
 
   /* Chart Colors for Dark Mode */
   --chart-bar: #5EC6C6;

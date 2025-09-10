@@ -108,12 +108,17 @@ const TimerCard = () => {
   return (
     <>
       <div
-        className={`w-full min-h-[140px] flex flex-col justify-between p-2 rounded-2xl border hover:shadow-xl transition-all duration-300 relative overflow-hidden ${
-          hasActiveTimer ? 'cursor-pointer border-[#09D1C7] shadow-lg' : 'cursor-default border-gray-200'
+        className={`w-full min-h-[140px] flex flex-col justify-between p-2 rounded-2xl transition-all duration-300 relative overflow-hidden ${
+          hasActiveTimer ? 'cursor-pointer' : 'cursor-default'
         } ${isRunning ? 'bg-gradient-to-br from-[#CDFFFC]/30 to-[#E0FFFE]/30' : ''}`}
         onClick={() => hasActiveTimer ? setShowControlPopup(true) : null}
         title={hasActiveTimer ? t('timerCard.clickToControl') : t('timerCard.startToEnable')}
-        style={{ direction: i18n.language === 'ar' ? 'rtl' : 'ltr' }}
+        style={{ 
+          direction: i18n.language === 'ar' ? 'rtl' : 'ltr',
+          boxShadow: hasActiveTimer 
+            ? '0 8px 25px rgba(9, 209, 199, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08)' 
+            : '0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04)'
+        }}
       >
         {/* Status indicators */}
         <div className="flex justify-between items-center">

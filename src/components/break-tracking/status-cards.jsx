@@ -82,10 +82,9 @@ const AttendanceStats = () => {
           )}
           subTitle={stat.subTitle}
           rightIcon={stat.rightIcon}
-          className="h-full backdrop-blur-sm border border-opacity-20"
+          className="h-full backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
           style={{
-            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.08), 0 4px 15px rgba(0, 0, 0, 0.05)',
-            borderColor: 'var(--border-color)',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04)',
             background: 'linear-gradient(135deg, var(--bg-color), rgba(255, 255, 255, 0.02))'
           }}
         />

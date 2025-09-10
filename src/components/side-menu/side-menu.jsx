@@ -50,7 +50,7 @@ const Toast = ({ message, isVisible, onClose, type = 'info', isArabic = false })
         }`}
     >
       <div
-        className="flex items-center gap-3 px-5 py-4 rounded-xl shadow-xl border backdrop-blur-sm min-w-[280px]"
+        className="flex items-center bg-[#C9EEF0] gap-3 px-5 py-4 rounded-xl shadow-xl border backdrop-blur-sm min-w-[280px]"
         style={{
           background: 'var(--bg-color)',
           borderColor: 'var(--border-color)',
@@ -159,17 +159,18 @@ function SideMenuItem({
       <button
         onClick={handleClick}
         className={[
-          "group w-full flex items-center gap-2 rounded-2xl px-2 py-1.5 transition-all duration-200",
+          "group w-full flex items-center gap-2 rounded-full pl-4 px-2 py-1.5 transition-all duration-200",
           "outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-hover)]",
           isActive
-            ? "gradient-bg text-white shadow"
+            ? ""
             : "bg-transparent hover:bg-[var(--hover-color)]",
           collapsed ? "justify-center " : "justify-start",
           !isImplemented ? "opacity-60" : "",
         ].join(" ")}
         style={{
-          color: isActive ? "white" : "var(--text-color)",
-          fontSize: collapsed ? 0 : "13px",
+          backgroundColor: isActive ? "var(--menu-active-bg)" : "transparent",
+          height: "44px",
+          fontSize: collapsed ? 0 : "14px",
           direction: isArabic ? "rtl" : "ltr",
         }}
       >
@@ -178,22 +179,33 @@ function SideMenuItem({
             "shrink-0 transition-colors",
             collapsed ? "w-6 h-6" : "w-4 h-4",
             isActive
-              ? "text-white"
+              ? ""
               : isImplemented
                 ? "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]"
                 : "text-[var(--sub-text-color)]",
           ].join(" ")}
+          style={{
+            color: isActive ? "#15919B" : undefined,
+          }}
         />
         {!collapsed && (
           <span
             className={[
               "font-medium transition-colors",
               isActive
-                ? "text-white"
+                ? ""
                 : isImplemented
                   ? "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]"
                   : "text-[var(--sub-text-color)]",
             ].join(" ")}
+            style={{
+              background: isActive 
+                ? "linear-gradient(135deg, #09D1C7, #15919B)"
+                : undefined,
+              backgroundClip: isActive ? "text" : undefined,
+              WebkitBackgroundClip: isActive ? "text" : undefined,
+              WebkitTextFillColor: isActive ? "transparent" : undefined,
+            }}
           >
             {t(`aside.${item.key}`)}
           </span>
@@ -205,12 +217,15 @@ function SideMenuItem({
               "transition-transform",
               isOpen ? "rotate-180" : "",
               isActive
-                ? "text-white"
+                ? ""
                 : isImplemented
                   ? "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]"
                   : "text-[var(--sub-text-color)]",
             ].join(" ")}
             size={16}
+            style={{
+              color: isActive ? "#15919B" : undefined,
+            }}
           />
         )}
       </button>
@@ -225,6 +240,7 @@ function SideMenuItem({
         >
           {item.children.map((child) => {
             const childImplemented = child.implemented !== false;
+            const isChildActive = active === child.key;
             return (
               <button
                 key={child.key}
@@ -236,35 +252,48 @@ function SideMenuItem({
                   onClick(child.key);
                 }}
                 className={[
-                  "group w-full flex items-center gap-2 rounded-2xl px-1.5 py-1 text-[13px] font-medium transition-all duration-200",
-                  active === child.key
-                    ? "gradient-bg text-white shadow"
+                  "group w-full flex items-center gap-2 rounded-full pl-4 px-1.5 py-1 text-[13px] font-medium transition-all duration-200",
+                  isChildActive
+                    ? ""
                     : "bg-transparent text-[var(--sub-text-color)] hover:bg-[var(--hover-color)] hover:text-[var(--accent-color)]",
                   !childImplemented ? "opacity-60" : "",
                 ].join(" ")}
                 style={{
-                  fontSize: "13px",
+                  backgroundColor: isChildActive ? "var(--menu-active-bg)" : "transparent",
+                  height: "44px",
+                  fontSize: "14px",
                   direction: isArabic ? "rtl" : "ltr",
                 }}
               >
                 <child.Icon
                   className={[
                     "shrink-0 transition-colors w-4 h-4",
-                    active === child.key
-                      ? "text-white"
+                    isChildActive
+                      ? ""
                       : childImplemented
                         ? "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]"
                         : "text-[var(--sub-text-color)]",
                   ].join(" ")}
+                  style={{
+                    color: isChildActive ? "#15919B" : undefined,
+                  }}
                 />
                 <span
                   className={[
-                    active === child.key
-                      ? "text-white"
+                    isChildActive
+                      ? ""
                       : childImplemented
                         ? "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]"
                         : "text-[var(--sub-text-color)]",
                   ].join(" ")}
+                  style={{
+                    background: isChildActive 
+                      ? "linear-gradient(135deg, #09D1C7, #15919B)"
+                      : undefined,
+                    backgroundClip: isChildActive ? "text" : undefined,
+                    WebkitBackgroundClip: isChildActive ? "text" : undefined,
+                    WebkitTextFillColor: isChildActive ? "transparent" : undefined,
+                  }}
                 >
                   {t(`aside.${child.key}`)}
                 </span>

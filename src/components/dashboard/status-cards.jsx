@@ -48,7 +48,7 @@ export default function StatusCards({ dashboardData, isLoading, error }) {
   // Enhanced button with better animations
   const GoToTimeTrackerBtn = (
     <button
-      className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-white font-medium text-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 transform active:scale-95"
+      className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-full text-white font-medium text-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 transform active:scale-95"
       style={{
         background: 'linear-gradient(135deg, var(--accent-color), var(--accent-hover))',
       }}
