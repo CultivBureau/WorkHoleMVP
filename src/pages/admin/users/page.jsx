@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import NavBarAdmin from "../../../components/admin/NavBarAdmin";
 import SideBarAdmin from "../../../components/admin/SideBarAdmin";
 import { useTranslation } from "react-i18next";
@@ -84,6 +84,15 @@ const UsersAdmin = () => {
   const [createUser, { isLoading: creating }] = useCreateUserMutation();
   const [deleteUser, { isLoading: deleting }] = useDeleteUserMutation();
   const [updateUser, { isLoading: updating }] = useUpdateUserMutation();
+
+  // Create stable toggle functions using useCallback
+  const toggleMobileSidebar = useCallback(() => {
+    setIsMobileSidebarOpen(prev => !prev);
+  }, []);
+
+  const closeMobileSidebar = useCallback(() => {
+    setIsMobileSidebarOpen(false);
+  }, []);
 
   // Filter users
   const filteredUsers = usersData.filter((user) => {
@@ -341,7 +350,7 @@ const UsersAdmin = () => {
     <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
       {/* Navigation Bar */}
       <NavBarAdmin
-        onMobileSidebarToggle={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+        onMobileSidebarToggle={toggleMobileSidebar}
         isMobileSidebarOpen={isMobileSidebarOpen}
       />
 
@@ -349,8 +358,9 @@ const UsersAdmin = () => {
       <div className="flex flex-1 min-h-0">
         {/* Sidebar */}
         <SideBarAdmin
+          lang={lang}
           isMobileOpen={isMobileSidebarOpen}
-          onMobileClose={() => setIsMobileSidebarOpen(false)}
+          onMobileClose={closeMobileSidebar}
         />
 
         {/* Main Content */}

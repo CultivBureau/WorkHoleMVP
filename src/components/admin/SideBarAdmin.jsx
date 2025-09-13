@@ -69,6 +69,18 @@ const SideBarAdmin = ({ lang, isMobileOpen, onMobileClose }) => {
     if (onMobileClose) onMobileClose();
   }, [location.pathname, onMobileClose]);
 
+  // Handle window resize to manage collapsed state
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        setIsCollapsed(false);
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Get active menu item
   const getActiveItem = () => {
     const path = location.pathname;
@@ -131,14 +143,13 @@ const SideBarAdmin = ({ lang, isMobileOpen, onMobileClose }) => {
 
   const stats = getQuickStats();
   const sidebarWidth = isCollapsed ? "w-16" : "w-64";
-  const mobileOverlay = isMobileOpen ? "fixed inset-0 bg-black bg-opacity-50 z-50" : "";
 
   return (
     <>
-      {/* Mobile overlay */}
+      {/* Mobile overlay with backdrop blur */}
       {isMobileOpen && (
         <div 
-          className={mobileOverlay}
+          className="fixed inset-0 bg-black/20 backdrop-blur-lg z-40"
           onClick={onMobileClose}
         />
       )}
@@ -151,7 +162,7 @@ const SideBarAdmin = ({ lang, isMobileOpen, onMobileClose }) => {
           flex flex-col 
           border-r 
           transition-all duration-300 ease-in-out
-          ${isMobileOpen ? 'fixed left-0 top-16 z-50 lg:relative lg:top-0' : 'hidden lg:flex'}
+          ${isMobileOpen ? 'fixed left-0 top-0 z-50 lg:relative lg:top-0' : 'hidden lg:flex'}
         `}
         style={{
           backgroundColor: "var(--bg-color)",
@@ -180,7 +191,7 @@ const SideBarAdmin = ({ lang, isMobileOpen, onMobileClose }) => {
             {/* Mobile close button */}
             <button
               onClick={onMobileClose}
-              className="lg:hidden p-1 rounded hover:bg-gray-100"
+              className="lg:hidden p-1 rounded hover:bg-gray-100 transition-colors"
               style={{ color: "var(--sub-text-color)" }}
             >
               <X size={20} />

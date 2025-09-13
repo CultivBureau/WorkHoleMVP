@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import NavBarAdmin from "../../../components/admin/NavBarAdmin";
 import SideBarAdmin from "../../../components/admin/SideBarAdmin";
 import { useTranslation } from "react-i18next";
@@ -40,6 +40,15 @@ const LeavesAdmin = () => {
 
   const { data: leavesData, isLoading, refetch } = useGetAllLeavesQuery();
   const [adminAction] = useAdminActionMutation();
+
+  // Create stable toggle functions using useCallback
+  const toggleMobileSidebar = useCallback(() => {
+    setIsMobileSidebarOpen(prev => !prev);
+  }, []);
+
+  const closeMobileSidebar = useCallback(() => {
+    setIsMobileSidebarOpen(false);
+  }, []);
 
   // Filter leaves data
   const filteredLeaves = leavesData?.filter(leave => {
@@ -177,13 +186,14 @@ const LeavesAdmin = () => {
   return (
     <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
       <NavBarAdmin
-        onMobileSidebarToggle={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+        onMobileSidebarToggle={toggleMobileSidebar}
         isMobileSidebarOpen={isMobileSidebarOpen}
       />
       <div className="flex flex-1 min-h-0">
         <SideBarAdmin
+          lang={lang}
           isMobileOpen={isMobileSidebarOpen}
-          onMobileClose={() => setIsMobileSidebarOpen(false)}
+          onMobileClose={closeMobileSidebar}
         />
         {/* Main Content */}
         <main className="flex-1 overflow-auto p-6" style={{ background: "var(--bg-all)" }}>

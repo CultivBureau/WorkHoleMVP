@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import NavBarAdmin from "../../../components/admin/NavBarAdmin";
 import SideBarAdmin from "../../../components/admin/SideBarAdmin";
 import { useTranslation } from "react-i18next";
@@ -23,6 +23,16 @@ const BreakAdmin = () => {
   const { lang, isRtl } = useLang();
   const { i18n } = useTranslation();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  // Create stable toggle functions using useCallback
+  const toggleMobileSidebar = useCallback(() => {
+    setIsMobileSidebarOpen(prev => !prev);
+  }, []);
+
+  const closeMobileSidebar = useCallback(() => {
+    setIsMobileSidebarOpen(false);
+  }, []);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTab, setSelectedTab] = useState("types");
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -79,13 +89,14 @@ const BreakAdmin = () => {
   return (
     <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
       <NavBarAdmin
-        onMobileSidebarToggle={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+        onMobileSidebarToggle={toggleMobileSidebar}
         isMobileSidebarOpen={isMobileSidebarOpen}
       />
       <div className="flex flex-1 min-h-0">
         <SideBarAdmin
+          lang={lang}
           isMobileOpen={isMobileSidebarOpen}
-          onMobileClose={() => setIsMobileSidebarOpen(false)}
+          onMobileClose={closeMobileSidebar}
         />
         <main className="flex-1 overflow-auto p-6" style={{ background: "var(--bg-all)" }}>
           <div className="max-w-7xl mx-auto space-y-6">

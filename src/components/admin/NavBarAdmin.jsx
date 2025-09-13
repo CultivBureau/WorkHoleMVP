@@ -25,7 +25,7 @@ import { useGetAllLeavesQuery } from "../../services/apis/LeavesApi";
 import { removeAuthToken } from "../../utils/page";
 import { useLang } from "../../contexts/LangContext";
 
-const NavBarAdmin = () => {
+const NavBarAdmin = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
   const { lang, setLang, isRtl } = useLang();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -40,7 +40,6 @@ const NavBarAdmin = () => {
   const { data: leavesData } = useGetAllLeavesQuery();
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [langOpen, setLangOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -49,7 +48,6 @@ const NavBarAdmin = () => {
 
   const searchRef = useRef(null);
   const langRef = useRef(null);
-  const mobileMenuRef = useRef(null);
   const inputRef = useRef(null);
   const notifRef = useRef(null);
   const profileRef = useRef(null);
@@ -72,8 +70,6 @@ const NavBarAdmin = () => {
         setIsSearchOpen(false);
       if (langRef.current && !langRef.current.contains(e.target))
         setLangOpen(false);
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target))
-        setIsMobileMenuOpen(false);
       if (notifRef.current && !notifRef.current.contains(e.target))
         setNotifOpen(false);
       if (profileRef.current && !profileRef.current.contains(e.target))
@@ -206,8 +202,17 @@ const NavBarAdmin = () => {
         borderColor: "var(--border-color)",
       }}
     >
-      {/* Left Section - Admin Badge & Search */}
+      {/* Left Section - Mobile Menu Button, Admin Badge & Search */}
       <div className={`flex items-center gap-2 sm:gap-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
+        {/* Mobile sidebar toggle button */}
+        <button
+          onClick={onMobileSidebarToggle}
+          className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          style={{ color: "var(--text-color)" }}
+        >
+          <Menu size={20} />
+        </button>
+
         {/* Admin Badge */}
         <div className={`flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-lg border ${isRtl ? 'flex-row-reverse' : ''}`} style={{ 
           backgroundColor: "var(--hover-color)", 
@@ -219,15 +224,6 @@ const NavBarAdmin = () => {
             {isRtl ? 'لوحة الإدارة' : 'Admin Panel'}
           </span>
         </div>
-
-        {/* Mobile menu button */}
-        <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-          style={{ color: "var(--text-color)" }}
-        >
-          <Menu size={20} />
-        </button>
 
         {/* Search */}
         <div className="relative hidden md:block" ref={searchRef}>
@@ -315,8 +311,6 @@ const NavBarAdmin = () => {
             </span>
           </div>
         </div>
-
-
 
         {/* Language Selector */}
         <div className="relative" ref={langRef}>
@@ -473,102 +467,6 @@ const NavBarAdmin = () => {
           )}
         </div>
       </div>
-
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden">
-          <div 
-            ref={mobileMenuRef}
-            className={`h-full w-80 shadow-xl transform transition-transform duration-300 ${isRtl ? 'mr-auto' : 'ml-auto'}`}
-            style={{ backgroundColor: "var(--bg-color)" }}
-          >
-            <div className="p-4 border-b" style={{ borderColor: "var(--border-color)" }}>
-              <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}>
-                <h2 className="text-lg font-semibold" style={{ color: "var(--text-color)" }}>
-                  {isRtl ? 'لوحة الإدارة' : 'Admin Panel'}
-                </h2>
-                <button
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                  style={{ color: "var(--sub-text-color)" }}
-                >
-                  <X size={20} />
-                </button>
-              </div>
-            </div>
-            
-            {/* Mobile Search */}
-            <div className="p-4 border-b" style={{ borderColor: "var(--border-color)" }}>
-              <div className="relative">
-                <Search
-                  size={16}
-                  className={`absolute top-1/2 transform -translate-y-1/2 ${isRtl ? 'right-3' : 'left-3'}`}
-                  style={{ color: "var(--sub-text-color)" }}
-                />
-                <input
-                  type="text"
-                  placeholder={isRtl ? 'البحث...' : 'Search...'}
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  className={`w-full py-2 rounded-xl border ${isRtl ? 'pr-10 pl-4 text-right' : 'pl-10 pr-4'}`}
-                  style={{
-                    backgroundColor: "var(--bg-color)",
-                    borderColor: "var(--border-color)",
-                    color: "var(--text-color)",
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Mobile Date/Time */}
-            <div className="p-4 border-b" style={{ borderColor: "var(--border-color)" }}>
-              <div className={`flex items-center gap-3 mb-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
-                <Calendar size={16} style={{ color: "var(--accent-color)" }} />
-                <span className="text-sm font-medium" style={{ color: "var(--text-color)" }}>
-                  {date}
-                </span>
-              </div>
-              <div className={`flex items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
-                <Clock size={16} style={{ color: "var(--accent-color)" }} />
-                <span className="text-sm font-mono font-semibold" style={{ color: "var(--text-color)" }}>
-                  {time}
-                </span>
-              </div>
-            </div>
-
-            {/* Mobile Stats */}
-            <div className="p-4">
-              <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--text-color)" }}>
-                {isRtl ? 'إحصائيات سريعة' : 'Quick Stats'}
-              </h3>
-              <div className="space-y-3">
-                <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}>
-                  <div className={`flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
-                    <Users size={16} style={{ color: "var(--accent-color)" }} />
-                    <span className="text-sm" style={{ color: "var(--text-color)" }}>
-                      {isRtl ? 'المستخدمون' : 'Total Users'}
-                    </span>
-                  </div>
-                  <span className="text-sm font-semibold" style={{ color: "var(--text-color)" }}>
-                    {usersLoading ? "..." : stats.totalUsers}
-                  </span>
-                </div>
-                <div className={`flex items-center justify-between ${isRtl ? 'flex-row-reverse' : ''}`}>
-                  <div className={`flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
-                    <BarChart3 size={16} style={{ color: "var(--accent-color)" }} />
-                    <span className="text-sm" style={{ color: "var(--text-color)" }}>
-                      {isRtl ? 'المستخدمون النشطون' : 'Active Users'}
-                    </span>
-                  </div>
-                  <span className="text-sm font-semibold" style={{ color: "var(--text-color)" }}>
-                    {attendanceLoading ? "..." : stats.activeUsers}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </nav>
   );
 };

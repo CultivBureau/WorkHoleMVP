@@ -435,135 +435,137 @@ const MainContent = () => {
 
   return (
     <div
-      className="w-full h-max flex flex-col justify-center items-center"
+      className="w-full h-max flex flex-col justify-center items-center px-2 sm:px-4"
       style={{
         backgroundColor: "var(--bg-color)",
         direction: isAr ? "rtl" : "ltr",
       }}
     >
-      <div className="w-full h-max pb-5 flex flex-col gap-4 justify-center items-center">
+      <div className="w-full max-w-4xl h-max pb-5 flex flex-col gap-2 sm:gap-4 justify-center items-center">
         {/* First Row - Current Status & Active Work Time */}
-        <div className="w-full h-[105px] flex gap-2 justify-center items-center">
+        <div className="w-full h-[80px] sm:h-[105px] flex gap-1 sm:gap-2 justify-center items-center">
           <div
-            className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-between border"
+            className="w-1/2 h-full rounded-xl sm:rounded-2xl p-2 sm:p-4 flex flex-col justify-between border"
             style={{
               backgroundColor: "var(--card-bg)",
               borderColor: "var(--border-color)",
             }}
           >
-            <div className="flex items-center gap-2">
-              <span className="text-[var(--sub-text-color)] text-xs">{t("mainContent.currentStatus")}</span>
-              <div className={`w-2 h-2 rounded-full ${stats.currentStatus === "Clocked In" ? "bg-green-500" : "bg-red-500"}`}></div>
+            <div className="flex items-center gap-1 sm:gap-2">
+              <span className="text-[var(--sub-text-color)] text-[10px] sm:text-xs">{t("mainContent.currentStatus")}</span>
+              <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${stats.currentStatus === "Clocked In" ? "bg-green-500" : "bg-red-500"}`}></div>
             </div>
-            <h3 className="text-lg font-semibold" style={{ color: "var(--text-color)" }}>
+            <h3 className="text-sm sm:text-lg font-semibold" style={{ color: "var(--text-color)" }}>
               {stats.currentStatus === "Clocked In"
                 ? t("clockIn")
                 : t("clockOut")}
             </h3>
           </div>
           <div
-            className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-between border"
+            className="w-1/2 h-full rounded-xl sm:rounded-2xl p-2 sm:p-4 flex flex-col justify-between border"
             style={{
               backgroundColor: "var(--card-bg)",
               borderColor: "var(--border-color)",
             }}
           >
-            <span className="text-[var(--sub-text-color)] text-xs">{t("mainContent.activeWorkTime")}</span>
-            <h3 className="text-2xl font-bold" style={{ color: "var(--text-color)" }}>{activeWorkTime}</h3>
+            <span className="text-[var(--sub-text-color)] text-[10px] sm:text-xs">{t("mainContent.activeWorkTime")}</span>
+            <h3 className="text-lg sm:text-2xl font-bold" style={{ color: "var(--text-color)" }}>{activeWorkTime}</h3>
           </div>
         </div>
+
         {/* Second Row */}
-        <div className="w-full h-[105px] flex gap-2 justify-center items-center">
+        <div className="w-full h-[80px] sm:h-[105px] flex gap-1 sm:gap-2 justify-center items-center">
           <div
-            className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-between border"
+            className="w-1/2 h-full rounded-xl sm:rounded-2xl p-2 sm:p-4 flex flex-col justify-between border"
             style={{
               backgroundColor: "var(--card-bg)",
               borderColor: "var(--border-color)",
             }}
           >
-            <span className="text-[var(--sub-text-color)] text-xs">{t("mainContent.todaysProgress")}</span>
-            <div className="flex flex-col gap-2">
+            <span className="text-[var(--sub-text-color)] text-[10px] sm:text-xs">{t("mainContent.todaysProgress")}</span>
+            <div className="flex flex-col gap-1 sm:gap-2">
               <div className="flex justify-between items-center">
-                <span className="text-xs font-medium" style={{ color: "var(--text-color)" }}>
+                <span className="text-[10px] sm:text-xs font-medium" style={{ color: "var(--text-color)" }}>
                   {t("mainContent.workHours")}
                 </span>
-                <span className="text-xs" style={{ color: "var(--sub-text-color)" }}>{todayProgress}</span>
+                <span className="text-[10px] sm:text-xs" style={{ color: "var(--sub-text-color)" }}>{todayProgress}</span>
               </div>
-              <div className="w-full bg-[var(--divider-color)] rounded-full h-1.5">
-                <div className="bg-[var(--accent-color)] h-1.5 rounded-full transition-all duration-500" style={{ width: `${todayProgressPercent}%` }}></div>
+              <div className="w-full bg-[var(--divider-color)] rounded-full h-1 sm:h-1.5">
+                <div className="bg-[var(--accent-color)] h-1 sm:h-1.5 rounded-full transition-all duration-500" style={{ width: `${todayProgressPercent}%` }}></div>
               </div>
             </div>
           </div>
-          <div className="w-1/2 h-full flex gap-2 justify-center items-center">
+          <div className="w-1/2 h-full flex gap-1 sm:gap-2 justify-center items-center">
             <div
-              className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-center items-center border"
+              className="w-1/2 h-full rounded-xl sm:rounded-2xl p-2 sm:p-4 flex flex-col justify-center items-center border"
               style={{
                 backgroundColor: "var(--card-bg)",
                 borderColor: "var(--border-color)",
               }}
             >
-              <h3 className="text-2xl font-bold" style={{ color: "var(--text-color)" }}>{stats.breaksCount}</h3>
-              <span className="text-[var(--sub-text-color)] text-xs">{t("mainContent.break")}</span>
+              <h3 className="text-lg sm:text-2xl font-bold" style={{ color: "var(--text-color)" }}>{stats.breaksCount}</h3>
+              <span className="text-[var(--sub-text-color)] text-[10px] sm:text-xs">{t("mainContent.break")}</span>
             </div>
             <div
-              className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-center items-center border"
+              className="w-1/2 h-full rounded-xl sm:rounded-2xl p-2 sm:p-4 flex flex-col justify-center items-center border"
               style={{
                 backgroundColor: "var(--card-bg)",
                 borderColor: "var(--border-color)",
               }}
             >
-              <h3 className="text-2xl font-bold" style={{ color: "var(--text-color)" }}>{efficiency ? `${efficiency}%` : "0%"}</h3>
-              <span className="text-[var(--sub-text-color)] text-xs">{t("mainContent.efficiency")}</span>
+              <h3 className="text-lg sm:text-2xl font-bold" style={{ color: "var(--text-color)" }}>{efficiency ? `${efficiency}%` : "0%"}</h3>
+              <span className="text-[var(--sub-text-color)] text-[10px] sm:text-xs">{t("mainContent.efficiency")}</span>
             </div>
           </div>
         </div>
+
         {/* Third Row */}
-        <div className="w-full h-[105px] flex gap-2 justify-center items-center">
-          <div className="w-1/2 h-full flex gap-2 justify-center items-center">
+        <div className="w-full h-[80px] sm:h-[105px] flex gap-1 sm:gap-2 justify-center items-center">
+          <div className="w-1/2 h-full flex gap-1 sm:gap-2 justify-center items-center">
             <div
-              className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-center items-center border"
+              className="w-1/2 h-full rounded-xl sm:rounded-2xl p-2 sm:p-4 flex flex-col justify-center items-center border"
               style={{
                 backgroundColor: "var(--card-bg)",
                 borderColor: "var(--border-color)",
               }}
             >
-              <h3 className="text-2xl font-bold" style={{ color: "var(--text-color)" }}>{completedShift ? `${completedShift}%` : "0%"}</h3>
-              <span className="text-[var(--sub-text-color)] text-xs text-center leading-tight">
+              <h3 className="text-lg sm:text-2xl font-bold" style={{ color: "var(--text-color)" }}>{completedShift ? `${completedShift}%` : "0%"}</h3>
+              <span className="text-[var(--sub-text-color)] text-[8px] sm:text-xs text-center leading-tight">
                 {t("mainContent.complete")}
               </span>
             </div>
             <div
-              className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-center items-center border"
+              className="w-1/2 h-full rounded-xl sm:rounded-2xl p-2 sm:p-4 flex flex-col justify-center items-center border"
               style={{
                 backgroundColor: "var(--card-bg)",
                 borderColor: "var(--border-color)",
               }}
             >
-              <h3 className="text-2xl font-bold" style={{ color: "var(--text-color)" }}>{remainingTime}</h3>
-              <span className="text-[var(--sub-text-color)] text-xs text-center leading-tight">
+              <h3 className="text-lg sm:text-2xl font-bold" style={{ color: "var(--text-color)" }}>{remainingTime}</h3>
+              <span className="text-[var(--sub-text-color)] text-[8px] sm:text-xs text-center leading-tight">
                 {t("mainContent.remaining")}
               </span>
             </div>
           </div>
-          <div className="w-1/2 h-full flex gap-2 justify-center items-center">
+          <div className="w-1/2 h-full flex gap-1 sm:gap-2 justify-center items-center">
             <div
-              className="w-1/2 h-full rounded-2xl p-4 flex flex-col justify-center items-center border"
+              className="w-1/2 h-full rounded-xl sm:rounded-2xl p-2 sm:p-4 flex flex-col justify-center items-center border"
               style={{
                 backgroundColor: "var(--card-bg)",
                 borderColor: "var(--border-color)",
               }}
             >
-              <span className="text-[var(--sub-text-color)] text-[10px] mb-1 text-center leading-tight">
+              <span className="text-[var(--sub-text-color)] text-[8px] sm:text-[10px] mb-1 text-center leading-tight">
                 {stats.mostProductiveDay?.day || t("mainContent.tuesday")}
               </span>
-              <h3 className="text-xl font-bold" style={{ color: "var(--text-color)" }}>{stats.mostProductiveDay?.time || "0h 0m"}</h3>
-              <span className="text-[var(--sub-text-color)] text-[10px] text-center leading-tight">
+              <h3 className="text-sm sm:text-xl font-bold" style={{ color: "var(--text-color)" }}>{stats.mostProductiveDay?.time || "0h 0m"}</h3>
+              <span className="text-[var(--sub-text-color)] text-[8px] sm:text-[10px] text-center leading-tight">
                 {t("mainContent.mostProductiveDay")}
               </span>
             </div>
             {/* Enhanced Focus Time Card with Timer Context */}
             <div
-              className={`w-1/2 h-full rounded-2xl p-4 flex flex-col justify-center items-center border transition-all duration-300 ${
+              className={`w-1/2 h-full rounded-xl sm:rounded-2xl p-2 sm:p-4 flex flex-col justify-center items-center border transition-all duration-300 ${
                 hasActiveTimer ? 'border-[#09D1C7] shadow-lg' : ''
               }`}
               style={{
@@ -572,20 +574,20 @@ const MainContent = () => {
               }}
             >
               <div className="flex items-center gap-1 mb-1">
-                <Timer className={`w-3 h-3 ${hasActiveTimer ? 'text-[#09D1C7]' : 'text-[var(--sub-text-color)]'}`} />
-                <span className="text-[var(--sub-text-color)] text-[10px] text-center leading-tight">
+                <Timer className={`w-2 h-2 sm:w-3 sm:h-3 ${hasActiveTimer ? 'text-[#09D1C7]' : 'text-[var(--sub-text-color)]'}`} />
+                <span className="text-[var(--sub-text-color)] text-[8px] sm:text-[10px] text-center leading-tight">
                   {hasActiveTimer ? t("mainContent.activeFocus") : t("mainContent.thisWeek")}
                 </span>
               </div>
-              <h3 className={`text-xl font-bold ${hasActiveTimer ? 'text-[#09D1C7]' : ''}`} style={{ color: hasActiveTimer ? "#09D1C7" : "var(--text-color)" }}>
+              <h3 className={`text-sm sm:text-xl font-bold ${hasActiveTimer ? 'text-[#09D1C7]' : ''}`} style={{ color: hasActiveTimer ? "#09D1C7" : "var(--text-color)" }}>
                 {hasActiveTimer ? displayTime : (focusTimeData?.formattedTime || "0h 0m")}
               </h3>
 
               {/* Active timer status indicator */}
               {hasActiveTimer && (
                 <div className="flex items-center gap-1 mt-1">
-                  <div className={`w-1.5 h-1.5 rounded-full ${isRunning ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'}`}></div>
-                  <span className="text-[8px] text-[var(--sub-text-color)]">
+                  <div className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${isRunning ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'}`}></div>
+                  <span className="text-[6px] sm:text-[8px] text-[var(--sub-text-color)]">
                     {isRunning ? t("mainContent.running") : t("mainContent.paused")}
                   </span>
                 </div>
@@ -593,12 +595,13 @@ const MainContent = () => {
             </div>
           </div>
         </div>
+
         {/* Enhanced Start Your Day Button */}
         <div className="w-full h-max pb-2 pt-2 flex justify-center items-center relative">
           {/* Tooltip - يظهر بس لو المستخدم مش عامل clock in */}
           {!hasCompletedToday && stats.currentStatus === "Clocked Out" && (
             <div 
-              className="absolute -top-12 right-4 bg-gradient-to-r bg-[var(--accent-color)] text-white text-xs px-3 py-2 rounded-lg shadow-lg animate-bounce z-10"
+              className="absolute -top-8 sm:-top-12 right-2 sm:right-4 bg-gradient-to-r bg-[var(--accent-color)] text-white text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-2 rounded-lg shadow-lg animate-bounce z-10"
               style={{
                 animation: 'bounce 2s infinite',
               }}
@@ -606,13 +609,13 @@ const MainContent = () => {
               <div className="relative">
                 {isAr ? 'اضغط هنا لبدء يومك!' : 'Click here to start your day!'}
                 {/* السهم الصغير */}
-                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-blue-500"></div>
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 sm:border-l-4 sm:border-r-4 sm:border-t-4 border-l-transparent border-r-transparent border-t-blue-500"></div>
               </div>
             </div>
           )}
           
           <button
-            className="w-full text-white cursor-pointer font-medium py-3 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
+            className="w-full text-white cursor-pointer font-medium py-2 sm:py-3 px-4 sm:px-6 rounded-xl sm:rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base"
             style={{
               background: hasCompletedToday 
                 ? 'linear-gradient(135deg, #6B7280 0%, #9CA3AF 100%)' 
@@ -623,11 +626,11 @@ const MainContent = () => {
             disabled={isClockingIn || isClockingOut || isGettingLocation || hasCompletedToday}
           >
             {hasCompletedToday ? (
-              <CheckCircle2 className="w-5 h-5" />
+              <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
             ) : (isClockingIn || isClockingOut || isGettingLocation) ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
             ) : (
-              <Clock className="w-5 h-5" />
+              <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
             )}
             {hasCompletedToday 
               ? (isAr ? 'تم تسجيل الحضور اليوم' : 'Completed Today')
@@ -643,62 +646,62 @@ const MainContent = () => {
       </div>
 
       {/* Bottom Cards */}
-      <div className="w-full h-max flex gap-5 justify-center items-center">
+      <div className="w-full max-w-4xl h-max flex flex-col sm:flex-row gap-2 sm:gap-5 justify-center items-center px-2 sm:px-0">
         <div
-          className="w-1/2 h-full rounded-[17px] p-4 shadow-lg flex flex-col items-center gap-3 border"
+          className="w-full sm:w-1/2 h-full rounded-xl sm:rounded-[17px] p-3 sm:p-4 shadow-lg flex flex-col items-center gap-2 sm:gap-3 border"
           style={{
             backgroundColor: "var(--bg-color)",
             borderColor: "var(--border-color)",
           }}
         >
-          <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center">
-            <ClipboardList className="w-6 h-6 text-[var(--accent-color)]" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-teal-100 flex items-center justify-center">
+            <ClipboardList className="w-5 h-5 sm:w-6 sm:h-6 text-[var(--accent-color)]" />
           </div>
           <div className="text-center">
-            <h3 className="text-lg font-semibold mb-1" style={{ color: "var(--text-color)" }}>
+            <h3 className="text-base sm:text-lg font-semibold mb-1" style={{ color: "var(--text-color)" }}>
               {t("mainContent.attendanceLogs")}
             </h3>
-            <p className="text-[var(--sub-text-color)] text-xs mb-2">
+            <p className="text-[var(--sub-text-color)] text-[10px] sm:text-xs mb-2">
               {t("mainContent.attendanceLogsDesc")}
             </p>
           </div>
           <button
-            className="w-full text-white text-xs font-medium py-2 px-3 rounded-xl transition-colors flex items-center justify-center gap-1"
+            className="w-full text-white text-[10px] sm:text-xs font-medium py-2 px-3 rounded-xl transition-colors flex items-center justify-center gap-1"
             style={{
               background: `linear-gradient(135deg, var(--accent-hover) 0%, var(--accent-color) 100%)`,
             }}
             onClick={() => navigate("/pages/User/attendance-logs")}
           >
-            <BarChart3 className="w-4 h-4" />
+            <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4" />
             {t("mainContent.viewAttendanceLogs")}
           </button>
         </div>
         <div
-          className="w-1/2 h-full rounded-[17px] shadow-lg p-4 flex flex-col items-center gap-3 border"
+          className="w-full sm:w-1/2 h-full rounded-xl sm:rounded-[17px] shadow-lg p-3 sm:p-4 flex flex-col items-center gap-2 sm:gap-3 border"
           style={{
             backgroundColor: "var(--bg-color)",
             borderColor: "var(--border-color)",
           }}
         >
-          <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center">
-            <Coffee className="w-6 h-6 text-[var(--accent-color)]" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-teal-100 flex items-center justify-center">
+            <Coffee className="w-5 h-5 sm:w-6 sm:h-6 text-[var(--accent-color)]" />
           </div>
           <div className="text-center">
-            <h3 className="text-lg font-semibold mb-1" style={{ color: "var(--text-color)" }}>
+            <h3 className="text-base sm:text-lg font-semibold mb-1" style={{ color: "var(--text-color)" }}>
               {t("mainContent.breakTracking")}
             </h3>
-            <p className="text-[var(--sub-text-color)] text-xs mb-2">
+            <p className="text-[var(--sub-text-color)] text-[10px] sm:text-xs mb-2">
               {t("mainContent.breakTrackingDesc")}
             </p>
           </div>
           <button
-            className="w-full text-white text-xs font-medium py-2 px-3 rounded-xl transition-colors flex items-center justify-center gap-1"
+            className="w-full text-white text-[10px] sm:text-xs font-medium py-2 px-3 rounded-xl transition-colors flex items-center justify-center gap-1"
             style={{
               background: `linear-gradient(135deg, var(--accent-hover) 0%, var(--accent-color) 100%)`,
             }}
             onClick={() => navigate("/pages/User/break-tracking")}
           >
-            <BarChart3 className="w-4 h-4" />
+            <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4" />
             {t("mainContent.viewBreakLogs")}
           </button>
         </div>
@@ -708,45 +711,45 @@ const MainContent = () => {
       {showLocationModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
           <div 
-            className="rounded-2xl p-6 max-w-md w-full shadow-2xl border animate-in slide-in-from-bottom-4 duration-300"
+            className="rounded-2xl p-4 sm:p-6 max-w-sm sm:max-w-md w-full shadow-2xl border animate-in slide-in-from-bottom-4 duration-300"
             style={{
               backgroundColor: "var(--card-bg)",
               borderColor: "var(--border-color)",
             }}
           >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                <MapPin className="w-5 h-5 text-white" />
+            <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-              <h3 className="text-xl font-bold" style={{ color: "var(--text-color)" }}>
+              <h3 className="text-lg sm:text-xl font-bold" style={{ color: "var(--text-color)" }}>
                 {isAr ? 'اختر موقعك' : 'Select Your Location'}
               </h3>
             </div>
             
-            <p className="text-sm mb-6" style={{ color: "var(--sub-text-color)" }}>
+            <p className="text-xs sm:text-sm mb-4 sm:mb-6" style={{ color: "var(--sub-text-color)" }}>
               {isAr ? 'فشل في تحديد الموقع تلقائياً. يرجى اختيار موقعك:' : 'Failed to get location automatically. Please select your location:'}
             </p>
             
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {offices.map((office) => (
                 <button
                   key={office._id}
                   onClick={() => handleClockWithLocation({ latitude: office.latitude, longitude: office.longitude, name: office.name })}
-                  className="w-full p-4 rounded-xl border-2 transition-all duration-200 hover:shadow-md hover:scale-[1.02] group"
+                  className="w-full p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 hover:shadow-md hover:scale-[1.02] group"
                   style={{ 
                     borderColor: "var(--border-color)",
                     backgroundColor: "var(--bg-color)",
                   }}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <span className="text-white text-xl">🏢</span>
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <span className="text-white text-lg sm:text-xl">🏢</span>
                     </div>
                     <div className="text-left flex-1">
-                      <div className="font-semibold text-lg" style={{ color: "var(--text-color)" }}>
+                      <div className="font-semibold text-base sm:text-lg" style={{ color: "var(--text-color)" }}>
                         {office.name}
                       </div>
-                      <div className="text-xs" style={{ color: "var(--sub-text-color)" }}>
+                      <div className="text-[10px] sm:text-xs" style={{ color: "var(--sub-text-color)" }}>
                         {office.latitude.toFixed(3)}°N, {office.longitude.toFixed(3)}°E
                       </div>
                     </div>
@@ -756,10 +759,10 @@ const MainContent = () => {
               ))}
             </div>
             
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-2 sm:gap-3 mt-4 sm:mt-6">
               <button
                 onClick={() => setShowLocationModal(false)}
-                className="flex-1 px-4 py-3 border rounded-xl font-medium transition-all duration-200 hover:shadow-md"
+                className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border rounded-xl font-medium transition-all duration-200 hover:shadow-md text-sm sm:text-base"
                 style={{ 
                   borderColor: "var(--border-color)",
                   color: "var(--text-color)",

@@ -31,6 +31,16 @@ const AttendanceAdmin = () => {
   const { lang, isRtl } = useLang();
   const { i18n } = useTranslation();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  // Create stable toggle functions using useCallback
+  const toggleMobileSidebar = useCallback(() => {
+    setIsMobileSidebarOpen(prev => !prev);
+  }, []);
+
+  const closeMobileSidebar = useCallback(() => {
+    setIsMobileSidebarOpen(false);
+  }, []);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterLocation, setFilterLocation] = useState("all");
@@ -271,8 +281,11 @@ const AttendanceAdmin = () => {
     };
 
     const getDynamicWorkHours = (attendance) => {
-      const isCurrentlyWorking = attendance.status === 'present' && (!attendance.clockOut || attendance.clockOut === 'N/A');
-      
+      // Allow live calculation for both present and late
+      const isCurrentlyWorking = 
+        (attendance.status === 'present' || attendance.status === 'late') &&
+        (!attendance.clockOut || attendance.clockOut === 'N/A');
+
       if (isCurrentlyWorking) {
         // Calculate live work hours
         return calculateWorkHours(attendance.clockIn, attendance.clockOut, true);
@@ -295,13 +308,14 @@ const AttendanceAdmin = () => {
   return (
     <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
       <NavBarAdmin
-        onMobileSidebarToggle={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+        onMobileSidebarToggle={toggleMobileSidebar}
         isMobileSidebarOpen={isMobileSidebarOpen}
       />
       <div className="flex flex-1 min-h-0">
         <SideBarAdmin
+          lang={lang}
           isMobileOpen={isMobileSidebarOpen}
-          onMobileClose={() => setIsMobileSidebarOpen(false)}
+          onMobileClose={closeMobileSidebar}
         />
         {/* Main Content */}
         <main className="flex-1 overflow-auto p-6" style={{ background: "var(--bg-all)" }}>
