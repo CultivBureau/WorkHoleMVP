@@ -66,11 +66,9 @@ const Login = () => {
   };
 
   return (
-    <div
-      className="min-h-screen h-[100vh] flex"
-    >
-      {/* Left Panel */}
-      <div className="flex-1 bg-white flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen h-[100vh] flex">
+      {/* Left Panel - hidden on mobile */}
+      <div className="hidden md:flex flex-1 bg-white items-center justify-center relative overflow-hidden">
         <img
           src="public/assets/upscalemedia-transformed.png"
           alt="Login dashboard mockup"
@@ -79,7 +77,7 @@ const Login = () => {
       </div>
 
       {/* Right Panel */}
-      <div className={`flex-1 bg-white border-l border-gray-200 rounded-l-3xl shadow-2xl shadow-gray-500 flex items-center justify-center relative`}>
+      <div className={`flex-1 bg-white border-l border-gray-200 md:rounded-l-3xl shadow-2xl shadow-gray-500 flex items-center justify-center relative`}>
         {/* Language Toggle */}
         <div className={`absolute top-6 ${isRtl ? "left-6" : "right-6"}`}>
           <button
@@ -94,7 +92,7 @@ const Login = () => {
         </div>
 
         {/* Login Form Container */}
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-md mx-4 md:mx-0">
           {/* Logo and Title */}
           <div className="text-center">
             <div className="flex items-center justify-center gap-3 mb-6">
