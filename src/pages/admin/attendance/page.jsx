@@ -59,6 +59,29 @@ const AttendanceAdmin = () => {
   // Add this state for active card
   const [activeCard, setActiveCard] = useState(null);
 
+  // 1. State لليوم المختار في الأسبوع
+  const [selectedWeekDay, setSelectedWeekDay] = useState(null);
+
+  // 1. استخرج كل الموظفين الفريدين
+  const uniqueUsers = React.useMemo(() => {
+    if (!attendanceData) return [];
+    const map = new Map();
+    attendanceData.forEach(a => {
+      if (a.user && a.user._id) map.set(a.user._id, a.user);
+    });
+    return Array.from(map.values());
+  }, [attendanceData]);
+
+  // 2. استخرج كل الأيام الفريدة في الأسبوع
+  const weekDays = React.useMemo(() => {
+    if (dateFilter !== "lastWeek" || !attendanceData) return [];
+    return Array.from(new Set(attendanceData.map(a => a.date))).sort();
+  }, [attendanceData, dateFilter]);
+
+  const getAttendanceForUserAndDay = (userId, date) => {
+    return attendanceData?.find(a => a.user?._id === userId && a.date === date);
+  };
+
   useEffect(() => {
     refetch();
   }, [lastUpdate]);
@@ -106,6 +129,11 @@ const AttendanceAdmin = () => {
       (activeCard === 'absent' && attendance.status === 'absent') ||
       (activeCard === 'office' && attendance.location === 'office');
     
+    // لو الفلتر lastWeek وفي يوم مختار، اعرض اليوم ده فقط
+    if (dateFilter === "lastWeek" && selectedWeekDay) {
+      return matchesSearch && matchesStatus && matchesLocation && matchesCard && attendance.date === selectedWeekDay;
+    }
+    // باقي الفلاتر العادية
     return matchesSearch && matchesStatus && matchesLocation && filterByDate(attendance) && matchesCard;
   }) || [];
 
@@ -504,6 +532,150 @@ const AttendanceAdmin = () => {
               {isLoading ? (
                 <div className="flex items-center justify-center py-20">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: "var(--accent-color)" }}></div>
+                </div>
+              ) : dateFilter === "lastWeek" ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead style={{ backgroundColor: "var(--hover-color)" }}>
+                      <tr>
+                        <th className="text-left py-4 px-6 font-semibold" style={{ color: "var(--text-color)" }}>
+                          {isRtl ? "الموظف" : "Employee"}
+                        </th>
+                        <th className="text-left py-4 px-6 font-semibold" style={{ color: "var(--text-color)" }}>
+                          {isRtl ? "اليوم" : "Day"}
+                        </th>
+                        <th className="text-left py-4 px-6 font-semibold" style={{ color: "var(--text-color)" }}>
+                          {isRtl ? "التاريخ" : "Date"}
+                        </th>
+                        <th className="text-left py-4 px-6 font-semibold" style={{ color: "var(--text-color)" }}>
+                          {isRtl ? "وقت الحضور" : "Clock In"}
+                        </th>
+                        <th className="text-left py-4 px-6 font-semibold" style={{ color: "var(--text-color)" }}>
+                          {isRtl ? "وقت الانصراف" : "Clock Out"}
+                        </th>
+                        <th className="text-left py-4 px-6 font-semibold" style={{ color: "var(--text-color)" }}>
+                          {isRtl ? "ساعات العمل" : "Work Hours"}
+                        </th>
+                        <th className="text-left py-4 px-6 font-semibold" style={{ color: "var(--text-color)" }}>
+                          {isRtl ? "الموقع" : "Location"}
+                        </th>
+                        <th className="text-left py-4 px-6 font-semibold" style={{ color: "var(--text-color)" }}>
+                          {isRtl ? "الحالة" : "Status"}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {uniqueUsers.map(user => {
+                        // بيانات الموظف لكل الأيام (بدون holidays)
+                        const userLogs = attendanceData
+                          ?.filter(a => a.user?._id === user._id && a.status !== "holiday")
+                          .sort((a, b) => a.date.localeCompare(b.date));
+                        
+                        if (!userLogs || userLogs.length === 0) return null;
+
+                        return (
+                          <React.Fragment key={user._id}>
+                            {userLogs.map((att, idx) => {
+                              const statusStyle = getStatusColor(att.status);
+                              return (
+                                <tr key={att.date + user._id} className="border-b hover:bg-opacity-30 transition-colors duration-200" style={{ borderColor: "var(--border-color)" }}>
+                                  {/* عمود الموظف - يظهر فقط في أول صف */}
+                                  {idx === 0 && (
+                                    <td
+                                      className="py-4 px-6 font-medium align-top border-r-2"
+                                      rowSpan={userLogs.length}
+                                      style={{ 
+                                        color: "var(--text-color)", 
+                                        minWidth: 200,
+                                        borderColor: "var(--accent-color)",
+                                        backgroundColor: "var(--hover-color)"
+                                      }}
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
+                                          {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
+                                        </div>
+                                        <div>
+                                          <div className="font-semibold text-sm">
+                                            {user.firstName} {user.lastName}
+                                          </div>
+                                          <div className="text-xs" style={{ color: "var(--sub-text-color)" }}>
+                                            {user.email}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </td>
+                                  )}
+                                  
+                                  {/* باقي الأعمدة */}
+                                  <td className="py-3 px-6" style={{ color: "var(--text-color)" }}>
+                                    <div className="flex items-center gap-2">
+                                      <Calendar size={14} style={{ color: "var(--sub-text-color)" }} />
+                                      <span className="text-sm font-medium">{att.day}</span>
+                                    </div>
+                                  </td>
+                                  
+                                  <td className="py-3 px-6" style={{ color: "var(--sub-text-color)" }}>
+                                    <span className="text-sm">{att.date}</span>
+                                  </td>
+                                  
+                                  <td className="py-3 px-6">
+                                    <div className="flex items-center gap-2">
+                                      <Clock size={14} style={{ color: "var(--sub-text-color)" }} />
+                                      <span className="text-sm" style={{ color: "var(--text-color)" }}>
+                                        {att.clockIn}
+                                      </span>
+                                    </div>
+                                  </td>
+                                  
+                                  <td className="py-3 px-6">
+                                    <div className="flex items-center gap-2">
+                                      <Clock size={14} style={{ color: "var(--sub-text-color)" }} />
+                                      <span className="text-sm" style={{ color: "var(--text-color)" }}>
+                                        {att.clockOut}
+                                      </span>
+                                    </div>
+                                  </td>
+                                  
+                                  <td className="py-3 px-6">
+                                    <span className="text-sm font-medium" style={{ color: "var(--text-color)" }}>
+                                      {att.workHours}
+                                    </span>
+                                  </td>
+                                  
+                                  <td className="py-3 px-6">
+                                    <div className="flex items-center gap-2">
+                                      {getLocationIcon(att.location)}
+                                      <span className="text-sm" style={{ color: "var(--text-color)" }}>
+                                        {att.location === 'office' ? (isRtl ? 'المكتب' : 'Office') : (isRtl ? 'من المنزل' : 'Remote')}
+                                      </span>
+                                    </div>
+                                  </td>
+                                  
+                                  <td className="py-3 px-6">
+                                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusStyle.bg} ${statusStyle.text}`}>
+                                      {att.status === 'present'
+                                        ? (isRtl ? 'حاضر' : 'Present')
+                                        : att.status === 'late'
+                                        ? (isRtl ? 'متأخر' : 'Late')
+                                        : (isRtl ? 'غائب' : 'Absent')}
+                                    </span>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                            
+                            {/* خط فاصل نضيف بين كل موظف والتاني */}
+                            <tr>
+                              <td colSpan={8} className="py-2">
+                                <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+                              </td>
+                            </tr>
+                          </React.Fragment>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               ) : (
                 <div className="overflow-x-auto">

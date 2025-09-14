@@ -63,7 +63,6 @@ const AttendanceStats = () => {
           key={index}
           header={stat.header}
           title={stat.title}
-          subTitle={stat.subTitle}
           rightIcon={stat.rightIcon}
           className="h-full"
           bottomContent={

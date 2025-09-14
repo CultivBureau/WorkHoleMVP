@@ -227,40 +227,90 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
           )}
         </div>
 
-        {/* Right Section - Date & Time */}
-        <div
-          className="flex flex-col items-end gap-0.5 flex-shrink-0"
-          style={{
-            direction: lang === "ar" ? "rtl" : "ltr",
-          }}
-        >
-          {/* Time */}
-          <div className="flex items-center gap-1">
-            <Clock
-              className="w-3 h-3 sm:w-3.5 sm:h-3.5"
-              style={{ color: "var(--sub-text-color)" }}
-            />
-            <span
-              className="text-xs sm:text-sm font-bold"
-              style={{ color: "var(--text-color)" }}
-            >
-              {time}
-            </span>
+        {/* Right Section - Date & Time + Profile */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Date & Time */}
+          <div
+            className="flex flex-col items-end gap-0.5"
+            style={{
+              direction: lang === "ar" ? "rtl" : "ltr",
+            }}
+          >
+            {/* Time */}
+            <div className="flex items-center gap-1">
+              <Clock
+                className="w-3 h-3 sm:w-3.5 sm:h-3.5"
+                style={{ color: "var(--sub-text-color)" }}
+              />
+              <span
+                className="text-xs sm:text-sm font-bold"
+                style={{ color: "var(--text-color)" }}
+              >
+                {time}
+              </span>
+            </div>
+            {/* Date */}
+            <div className="flex items-center gap-1">
+              <Calendar
+                className="w-2.5 h-2.5 sm:w-3 sm:h-3"
+                style={{ color: "var(--sub-text-color)" }}
+              />
+              <span
+                className="text-[10px] sm:text-xs font-medium truncate max-w-[80px] sm:max-w-[100px]"
+                style={{ color: "var(--sub-text-color)" }}
+                title={date}
+              >
+                {date.length > 12 ? date.substring(0, 10) + "..." : date}
+              </span>
+            </div>
           </div>
 
-          {/* Date */}
-          <div className="flex items-center gap-1">
-            <Calendar
-              className="w-2.5 h-2.5 sm:w-3 sm:h-3"
-              style={{ color: "var(--sub-text-color)" }}
-            />
-            <span
-              className="text-[10px] sm:text-xs font-medium truncate max-w-[80px] sm:max-w-[100px]"
-              style={{ color: "var(--sub-text-color)" }}
-              title={date}
+          {/* Profile Icon + Dropdown */}
+          <div className="relative">
+            <button
+              className="ml-2 w-8 h-8 rounded-full overflow-hidden border-2 border-[var(--border-color)] flex items-center justify-center"
+              onClick={() => setProfileOpen((v) => !v)}
             >
-              {date.length > 12 ? date.substring(0, 10) + "..." : date}
-            </span>
+              <img
+                src={
+                  user?.profileImage
+                    ? `${import.meta.env.VITE_API_URL}${user.profileImage}`
+                    : AvatarIcon
+                }
+                alt="Avatar"
+                className="w-full h-full object-cover"
+              />
+            </button>
+            {profileOpen && (
+              <div
+                className={`absolute ${isRtl ? "left-0" : "right-0"} mt-2 w-44 rounded-xl shadow-xl border z-50 overflow-hidden`}
+                style={{
+                  backgroundColor: "var(--bg-color)",
+                  borderColor: "var(--border-color)",
+                }}
+              >
+                <button
+                  className="w-full flex items-center gap-2 px-4 py-2 text-left transition-all duration-200 hover:bg-[var(--hover-color)]"
+                  onClick={() => {
+                    setProfileOpen(false);
+                    navigate("/pages/User/profile");
+                  }}
+                >
+                  <User className="w-4 h-4" style={{ color: "var(--accent-color)" }} />
+                  <span className="font-semibold text-xs">{t("navbar.profile")}</span>
+                </button>
+                <div className="mx-4 my-1 border-t" style={{ borderColor: "var(--border-color)" }}></div>
+                <button
+                  className="w-full flex items-center gap-2 px-4 py-2 text-left transition-all duration-200 hover:bg-[var(--hover-color)]"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="w-4 h-4" style={{ color: "var(--error-color)" }} />
+                  <span className="font-semibold text-xs" style={{ color: "var(--error-color)" }}>
+                    {t("navbar.logout")}
+                  </span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -397,7 +447,7 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
               </span>
             </div>
           </div>
-          
+
           {/* Profile Section */}
           <div className="relative" ref={profileRef}>
             <div

@@ -178,7 +178,7 @@ const QuickActions = () => {
                             <img
                                 src={action.icon}
                                 alt={action.title}
-                                className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 mb-1 sm:mb-2"
+                                className="w-12 h-12 sm:w-8 sm:h-8 lg:w-10 lg:h-10 mb-1 sm:mb-2" // w-12 = 48px تقريباً، لو عايز بالضبط 50px استخدم style
                             />
                             <div
                                 className="text-[10px] sm:text-xs font-semibold mb-0.5 text-center leading-tight"

@@ -276,22 +276,7 @@ const BreakAdmin = () => {
                                   }
                                 </span>
                               </div>
-                              <div className="flex items-center justify-between text-sm">
-                                <span style={{ color: "var(--sub-text-color)" }}>
-                                  {isRtl ? "الاستخدام اليومي:" : "Daily Usage:"}
-                                </span>
-                                <span style={{ color: "var(--text-color)" }}>
-                                  {Math.floor(Math.random() * 10) + 1} {isRtl ? "مرة" : "times"}
-                                </span>
-                              </div>
-                              <div className="flex items-center justify-between text-sm">
-                                <span style={{ color: "var(--sub-text-color)" }}>
-                                  {isRtl ? "متوسط الاستخدام:" : "Avg Usage:"}
-                                </span>
-                                <span style={{ color: "var(--text-color)" }}>
-                                  {Math.floor(Math.random() * 5) + 10} {isRtl ? "د" : "min"}
-                                </span>
-                              </div>
+  
                             </div>
                           </div>
                         ))}

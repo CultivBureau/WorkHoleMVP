@@ -113,7 +113,7 @@ const mainMenuItems = [
 ];
 
 const settingsItems = [
-  { key: "settingsItem", Icon: SettingsIcon, implemented: false },
+  { key: "settingsItem", Icon: SettingsIcon, implemented: true }, // <-- هنا التعديل
   { key: "subscriptions", Icon: RefreshCw, implemented: false },
   { key: "help", Icon: Bot, implemented: false },
 ];
@@ -311,34 +311,7 @@ function ThemeToggle({ theme, onToggle, collapsed, t, isArabic }) {
   if (collapsed) {
     return (
       <div className="w-full flex justify-center items-center py-1">
-        <button
-          onClick={onToggle}
-          role="switch"
-          aria-checked={isDark}
-          className="relative inline-flex items-center justify-center rounded-2xl shadow-sm border-2 border-[var(--toggle-border)] transition-all duration-200"
-          style={{
-            width: 38,
-            height: 38,
-            background: "var(--toggle-bg)",
-          }}
-        >
-          <div
-            className="absolute inset-0 flex items-center justify-center"
-            style={{
-              color: isDark ? "var(--accent-color)" : "var(--sub-text-color)",
-            }}
-          >
-            <Moon size={22} />
-          </div>
-          <div
-            className="absolute bottom-1 right-1 w-3 h-3 rounded-full"
-            style={{
-              background: isDark
-                ? "linear-gradient(135deg, var(--knob-gradient-start) 0%, var(--knob-gradient-end) 100%)"
-                : "linear-gradient(135deg, var(--knob-gradient-end) 0%, var(--knob-gradient-start) 100%)",
-            }}
-          />
-        </button>
+        {/* Remove the button completely when collapsed */}
       </div>
     );
   }
@@ -487,6 +460,10 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
 
   // Settings click handler
   const handleSettingsClick = (key) => {
+    if (key === "settingsItem") {
+      navigate("/pages/User/profile"); // ← هنا المسار الصحيح حسب الراوتنج عندك
+      return;
+    }
     const settingsItem = settingsItems.find(item => item.key === key);
     if (!settingsItem?.implemented) {
       showToast(t('comingSoon'));
