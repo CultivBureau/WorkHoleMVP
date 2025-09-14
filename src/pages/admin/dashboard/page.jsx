@@ -182,7 +182,7 @@ useEffect(() => {
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
               
               {/* Today's Attendance */}
-              <div className="xl:col-span-2">
+              <div className="w-fullxl:col-span-2">
                 <div 
                   className="p-6 rounded-2xl border"
                   style={{
@@ -265,111 +265,9 @@ useEffect(() => {
               {/* Recent Actions & Quick Stats */}
               <div className="space-y-6">
                 
-                {/* Pending Actions */}
-                <div 
-                  className="p-6 rounded-2xl border"
-                  style={{
-                    backgroundColor: "var(--bg-color)",
-                    borderColor: "var(--border-color)",
-                  }}
-                >
-                  <h2 className="text-xl font-bold mb-4" style={{ color: "var(--text-color)" }}>
-                    {isRtl ? "الإجراءات المعلقة" : "Pending Actions"}
-                  </h2>
-                  
-                  <div className="space-y-4">
-                    {[
-                      {
-                        icon: Calendar,
-                        title: isRtl ? "طلبات إجازة جديدة" : "New Leave Requests",
-                        count: pendingLeaves,
-                        color: "#F59E0B"
-                      },
-                      {
-                        icon: Coffee,
-                        title: isRtl ? "فترات راحة مفتوحة" : "Active Breaks",
-                        count: activeBreaksCount,
-                        color: "#8B5CF6"
-                      },
-                      {
-                        icon: AlertTriangle,
-                        title: isRtl ? "تنبيهات متأخرة" : "Late Alerts",
-                        count: lateUsers,
-                        color: "#EF4444"
-                      }
-                    ].map((item, index) => (
-                      <div key={index} className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div 
-                            className="p-2 rounded-lg"
-                            style={{ backgroundColor: `${item.color}20` }}
-                          >
-                            <item.icon size={16} style={{ color: item.color }} />
-                          </div>
-                          <span className="text-sm font-medium" style={{ color: "var(--text-color)" }}>
-                            {item.title}
-                          </span>
-                        </div>
-                        <span 
-                          className="text-sm font-bold px-2 py-1 rounded-full"
-                          style={{ 
-                            backgroundColor: `${item.color}20`, 
-                            color: item.color 
-                          }}
-                        >
-                          {item.count}
-                        </span>
-                      </div>
-                    ))} 
-                  </div>
-                </div>
 
-                {/* System Status */}
-                <div 
-                  className="p-6 rounded-2xl border"
-                  style={{
-                    backgroundColor: "var(--bg-color)",
-                    borderColor: "var(--border-color)",
-                  }}
-                >
-                  <h2 className="text-xl font-bold mb-4" style={{ color: "var(--text-color)" }}>
-                    {isRtl ? "حالة النظام" : "System Status"}
-                  </h2>
-                  
-                  <div className="space-y-4">
-                    {[
-                      {
-                        label: isRtl ? "خادم التطبيق" : "Application Server",
-                        status: "online",
-                        uptime: "99.9%"
-                      },
-                      {
-                        label: isRtl ? "قاعدة البيانات" : "Database",
-                        status: "online", 
-                        uptime: "99.8%"
-                      },
-                      {
-                        label: isRtl ? "خدمة الإشعارات" : "Notification Service",
-                        status: "online",
-                        uptime: "99.5%"
-                      }
-                    ].map((item, index) => (
-                      <div key={index} className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-2 h-2 rounded-full ${
-                            item.status === 'online' ? 'bg-green-500' : 'bg-red-500'
-                          }`} />
-                          <span className="text-sm" style={{ color: "var(--text-color)" }}>
-                            {item.label}
-                          </span>
-                        </div>
-                        <span className="text-xs" style={{ color: "var(--sub-text-color)" }}>
-                          {item.uptime}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+
+
               </div>
             </div>
 
