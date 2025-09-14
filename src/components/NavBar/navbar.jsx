@@ -26,9 +26,11 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
   const [langOpen, setLangOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [profileOpen, setProfileOpen] = useState(false); // desktop only
+  const [mobileProfileOpen, setMobileProfileOpen] = useState(false);
 
   const langRef = useRef(null);
   const profileRef = useRef(null); // desktop only
+  const mobileProfileRef = useRef(null);
 
   // Update time every second
   useEffect(() => {
@@ -45,6 +47,9 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
         setLangOpen(false);
       if (profileRef.current && !profileRef.current.contains(e.target))
         setProfileOpen(false);
+      if (mobileProfileRef.current && !mobileProfileRef.current.contains(e.target)) {
+        setMobileProfileOpen(false);
+      }
     };
     document.addEventListener("mousedown", onClickOutside);
     return () => document.removeEventListener("mousedown", onClickOutside);
@@ -166,66 +171,6 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
           </h1>
         </div>
 
-        {/* Center Section - Language Selector */}
-        <div ref={langRef} className="relative flex-shrink-0 mx-2">
-          <button
-            onClick={() => setLangOpen((v) => !v)}
-            className="flex items-center gap-1 px-2 py-1 rounded-lg sm:rounded-xl transition-all duration-200 border"
-            style={{
-              borderColor: "var(--border-color)",
-              backgroundColor: "var(--bg-color)",
-              color: "var(--text-color)",
-            }}
-          >
-            <Globe
-              className="w-3 h-3 sm:w-4 sm:h-4"
-              style={{ color: "var(--sub-text-color)" }}
-            />
-            <span className="text-xs font-semibold hidden xs:inline">
-              {lang === "ar" ? "عر" : "EN"}
-            </span>
-            <ChevronDown
-              className={`w-2.5 h-2.5 transition-transform duration-200 ${langOpen ? "rotate-180" : ""
-                }`}
-              style={{ color: "var(--sub-text-color)" }}
-            />
-          </button>
-          {langOpen && (
-            <div
-              className={`absolute top-full mt-2 ${popSideLang} w-24 sm:w-28 border shadow-xl rounded-lg sm:rounded-xl overflow-hidden`}
-              style={{
-                backgroundColor: "var(--bg-color)",
-                borderColor: "var(--border-color)",
-                zIndex: 9999, // أضف z-index عالي
-              }}
-            >
-              <button
-                onClick={() => handleLangChange("en")}
-                className="w-full text-left px-2 sm:px-3 py-1.5 sm:py-2 text-xs transition-colors hover:bg-[var(--hover-color)]"
-                style={{
-                  color: "var(--text-color)",
-                  backgroundColor:
-                    lang === "en" ? "var(--hover-color)" : "transparent",
-                  fontWeight: lang === "en" ? "bold" : "medium",
-                }}
-              >
-                English
-              </button>
-              <button
-                onClick={() => handleLangChange("ar")}
-                className="w-full text-left px-2 sm:px-3 py-1.5 sm:py-2 text-xs transition-colors hover:bg-[var(--hover-color)]"
-                style={{
-                  color: "var(--text-color)",
-                  backgroundColor:
-                    lang === "ar" ? "var(--hover-color)" : "transparent",
-                  fontWeight: lang === "ar" ? "bold" : "medium",
-                }}
-              >
-                العربية
-              </button>
-            </div>
-          )}
-        </div>
 
         {/* Right Section - Date & Time + Profile */}
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -266,52 +211,137 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
           </div>
 
           {/* Profile Icon + Dropdown */}
-          <div className="relative">
-            <button
-              className="ml-2 w-8 h-8 rounded-full overflow-hidden border-2 border-[var(--border-color)] flex items-center justify-center"
-              onClick={() => setProfileOpen((v) => !v)}
+         <div className="relative" ref={mobileProfileRef}>
+          <button
+            onClick={() => setMobileProfileOpen((v) => !v)}
+            className="w-10 h-10 rounded-full overflow-hidden ring-2 transition-all duration-200 cursor-pointer hover:ring-4"
+            style={{ borderColor: "var(--border-color)" }}
+          >
+            <img
+              src={
+                user?.profileImage
+                  ? `${import.meta.env.VITE_API_URL}${user.profileImage}`
+                  : AvatarIcon
+              }
+              alt="Avatar"
+              className="w-full h-full rounded-full object-cover shadow-md"
+              style={{
+                border: "3px solid var(--bg-color)",
+              }}
+            />
+          </button>
+
+          {/* Mobile Profile Dropdown */}
+          {mobileProfileOpen && (
+            <div
+              className="fixed left-1/2 top-16 z-[9999] w-56 rounded-2xl shadow-2xl border overflow-hidden"
+              style={{
+                backgroundColor: "var(--bg-color)",
+                borderColor: "var(--border-color)",
+                minWidth: 220,
+                transform: "translateX(-20%)",
+              }}
             >
-              <img
-                src={
-                  user?.profileImage
-                    ? `${import.meta.env.VITE_API_URL}${user.profileImage}`
-                    : AvatarIcon
-                }
-                alt="Avatar"
-                className="w-full h-full object-cover"
-              />
-            </button>
-            {profileOpen && (
+              {/* Header Section */}
               <div
-                className={`absolute ${isRtl ? "left-0" : "right-0"} mt-2 w-44 rounded-xl shadow-xl border z-50 overflow-hidden`}
+                className="px-4 py-3 border-b"
                 style={{
-                  backgroundColor: "var(--bg-color)",
+                  backgroundColor: "var(--hover-color)",
                   borderColor: "var(--border-color)",
                 }}
               >
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <img
+                      src={
+                        user?.profileImage
+                          ? `${import.meta.env.VITE_API_URL}${user.profileImage}`
+                          : AvatarIcon
+                      }
+                      alt="Avatar"
+                      className="w-10 h-10 rounded-full object-cover shadow-md"
+                      style={{
+                        border: "3px solid var(--bg-color)",
+                      }}
+                    />
+                    <div
+                      className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2"
+                      style={{
+                        backgroundColor: "var(--success-color)",
+                        borderColor: "var(--bg-color)",
+                      }}
+                    ></div>
+                  </div>
+                  <div className="flex-1">
+                    <h3
+                      className="font-bold text-sm leading-tight"
+                      style={{ color: "var(--text-color)" }}
+                    >
+                      {userLoading ? "..." : user?.firstName + " " + user?.lastName}
+                    </h3>
+                    <p
+                      className="text-xs"
+                      style={{ color: "var(--sub-text-color)" }}
+                    >
+                      {userLoading ? "..." : user?.role}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Menu Items */}
+              <div className="py-1">
                 <button
-                  className="w-full flex items-center gap-2 px-4 py-2 text-left transition-all duration-200 hover:bg-[var(--hover-color)]"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-all duration-200 group"
+                  style={{
+                    color: "var(--text-color)",
+                    backgroundColor: "transparent",
+                  }}
                   onClick={() => {
-                    setProfileOpen(false);
+                    setMobileProfileOpen(false);
                     navigate("/pages/User/profile");
                   }}
                 >
-                  <User className="w-4 h-4" style={{ color: "var(--accent-color)" }} />
-                  <span className="font-semibold text-xs">{t("navbar.profile")}</span>
+                  <User
+                    className="w-5 h-5"
+                    style={{ color: "var(--accent-color)" }}
+                  />
+                  <span className="font-semibold text-sm">
+                    {t("navbar.profile")}
+                  </span>
                 </button>
-                <div className="mx-4 my-1 border-t" style={{ borderColor: "var(--border-color)" }}></div>
+
+                <div
+                  className="mx-4 my-1 border-t"
+                  style={{ borderColor: "var(--border-color)" }}
+                ></div>
+
                 <button
-                  className="w-full flex items-center gap-2 px-4 py-2 text-left transition-all duration-200 hover:bg-[var(--hover-color)]"
-                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-all duration-200 group"
+                  style={{
+                    backgroundColor: "transparent",
+                    color: "var(--error-color)",
+                  }}
+                  onClick={async () => {
+                    setMobileProfileOpen(false);
+                    await handleLogout();
+                  }}
                 >
-                  <LogOut className="w-4 h-4" style={{ color: "var(--error-color)" }} />
-                  <span className="font-semibold text-xs" style={{ color: "var(--error-color)" }}>
+                  <LogOut
+                    className="w-5 h-5"
+                    style={{ color: "var(--error-color)" }}
+                  />
+                  <span
+                    className="font-semibold text-sm"
+                    style={{ color: "var(--error-color)" }}
+                  >
                     {t("navbar.logout")}
                   </span>
                 </button>
               </div>
-            )}
-          </div>
+            </div>
+          )}
+        </div>
         </div>
       </div>
 
