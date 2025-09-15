@@ -20,6 +20,7 @@ import { LangProvider } from "./contexts/LangContext";
 import { AttendanceUpdateProvider } from "./contexts/AttendanceUpdateContext";
 import { BreakUpdateProvider } from "./contexts/BreakUpdateContext";
 import { TimerProvider } from "./contexts/TimerContext";
+import Performance from "./pages/User/Performance/page";
 
 
 
@@ -76,6 +77,14 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <BreakTracking />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/pages/User/Performance"
+                    element={
+                      <ProtectedRoute>
+                        <Performance />
                       </ProtectedRoute>
                     }
                   />
