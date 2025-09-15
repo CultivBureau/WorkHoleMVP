@@ -71,20 +71,20 @@ const KpiTrend = () => {
     ];
 
     return (
-        <div className='w-full h-[220px] flex justify-center items-center'>
-            <div className='w-[75%] h-[220px] bg-green-500 flex justify-center items-center'>
+        <div className='w-full h-max pb-5 pt-5 gap-4 flex flex-col justify-center items-center'>
+            <div className='w-[100%] h-[240px] bg-green-500 flex justify-center items-center'>
 
             </div>
-            <div className='w-[25%] h-max shadow-2xl flex flex-col gap-4 p-2'>
+            <div className='w-[100%] h-max shadow-2xl rounded-[10px] flex justify-center gap-4 p-2'>
                 {cards.map((card) => (
-                    <div key={card.id} className='w-full h-[52px] bg-[var(--bg-color)] border border-[var(--border-color)] rounded-[6px] p-1 flex items-center gap-2'>
+                    <div key={card.id} className='w-[30%] h-[80px] bg-[var(--bg-color)] border border-[var(--border-color)] rounded-[6px] p-2 flex items-center gap-2'>
                         {/* Left side - Percentage box */}
                         <div 
-                            className='w-[32px] h-[35px] rounded-[4px] flex items-center justify-center flex-shrink-0'
+                            className='w-[50px] h-[50px] rounded-[8px] flex items-center justify-center flex-shrink-0'
                             style={{ backgroundColor: card.bgColor }}
                         >
                             <span 
-                                className='text-[7px]  font-bold'
+                                className='text-[14px] font-bold'
                                 style={{ color: card.textColor }}
                             >
                                 {card.percentage}%
@@ -92,28 +92,28 @@ const KpiTrend = () => {
                         </div>
 
                         {/* Right side - Content */}
-                        <div className='flex-1 h-full flex flex-col justify-between py-1 px-1'>
-                            <div className='flex items-center gap-1'>
+                        <div className='flex-1 h-full flex flex-col justify-between py-1'>
+                            <div className='flex items-center gap-1 mb-1'>
                                 <Calendar 
-                                    size={9} 
+                                    size={14} 
                                     style={{ color: card.textColor }}
                                 />
                                 <span 
-                                    className='text-[10px] text-start font-bold'
+                                    className='text-[14px] text-start font-bold'
                                     style={{ color: card.textColor }}
                                 >
                                     {card.month}
                                 </span>
                             </div>
                             
-                            <p className='text-[7px] text-start text-[var(--sub-text-color)] font-normal leading-tight'>
+                            <p className='text-[10px] text-start text-[var(--sub-text-color)] font-normal leading-tight mb-2'>
                                 {card.title}
                             </p>
 
                             {/* Progress bar */}
-                            <div className='w-full h-[4px] bg-[#E0E0E0] rounded-[2px] overflow-hidden'>
+                            <div className='w-full h-[6px] bg-[#E0E0E0] rounded-[3px] overflow-hidden'>
                                 <div 
-                                    className='h-full rounded-[2px] transition-all duration-300'
+                                    className='h-full rounded-[3px] transition-all duration-300'
                                     style={{ 
                                         backgroundColor: card.progressColor,
                                         width: `${card.progressWidth}%`

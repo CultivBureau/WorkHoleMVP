@@ -25,18 +25,21 @@ const KpiBreakdown = () => {
             title: isRtl ? 'المهام' : 'Tasks',
             percentage: 70,
             color: '#15919B',
+            description: isRtl ? 'المهام المكتملة بنجاح' : 'Successfully completed tasks'
         },
         {
             id: 2,
             title: isRtl ? 'العمل الجماعي' : 'Teamwork',
             percentage: 15,
             color: '#81F5EE',
+            description: isRtl ? 'التعاون مع الفريق' : 'Team collaboration efforts'
         },
         {
             id: 3,
             title: isRtl ? 'المهام المتأخرة' : 'Task overdue',
             percentage: 15,
             color: '#D4D4D4',
+            description: isRtl ? 'المهام غير المكتملة' : 'Incomplete or delayed tasks'
         }
     ];
 
@@ -46,8 +49,12 @@ const KpiBreakdown = () => {
             {
                 data: data.map(item => item.percentage),
                 backgroundColor: data.map(item => item.color),
+                hoverBackgroundColor: data.map(item => item.color + 'CC'), // Add transparency on hover
                 borderWidth: 0,
+                hoverBorderWidth: 3,
+                hoverBorderColor: '#ffffff',
                 cutout: '65%',
+                hoverOffset: 10, // Move segment outward on hover
             },
         ],
     };
@@ -66,6 +73,9 @@ const KpiBreakdown = () => {
                 borderColor: theme === 'dark' ? '#4b5563' : '#e5e7eb',
                 borderWidth: 1,
                 cornerRadius: 8,
+                padding: 10,
+                position: 'average', // Position tooltip at average position
+                yAlign: 'bottom', // Always show tooltip below the chart segment
                 callbacks: {
                     label: function(context) {
                         return `${context.label}: ${context.parsed}%`;
@@ -76,7 +86,12 @@ const KpiBreakdown = () => {
         elements: {
             arc: {
                 borderWidth: 0,
+                hoverBorderWidth: 2,
+                hoverBorderColor: '#ffffff',
             }
+        },
+        onHover: (event, activeElements) => {
+            event.native.target.style.cursor = activeElements.length > 0 ? 'pointer' : 'default';
         }
     };
 
@@ -96,10 +111,15 @@ const KpiBreakdown = () => {
               </div>
               {/* chart */}
               <div className='w-full h-max relative'>
-                <Doughnut data={chartData} options={chartOptions} />
+                <div style={{ position: 'relative', zIndex: 1 }}>
+                    <Doughnut data={chartData} options={chartOptions} />
+                </div>
                 {/* Center text overlay */}
-                <div className='absolute inset-0 flex flex-col justify-center items-center'>
-                    <div className='text-center'>
+                <div 
+                    className='absolute inset-0 flex flex-col justify-center items-center pointer-events-none'
+                    style={{ zIndex: 0 }}
+                >
+                    <div className='text-center pointer-events-none'>
                         <div className='text-[24px] font-bold text-[var(--text-color)]'>{totalTasks}</div>
                         <div className='text-[10px] text-[var(--sub-text-color)] font-normal'>Total Tasks</div>
                     </div>

@@ -7,6 +7,7 @@ import Card from '../../../components/Time_Tracking_Components/Stats/Card'
 import QuickActions from '../../../components/Performance/Quick-Actions/page'
 import KpiBreakdown from '../../../components/Performance/kpi-Breakdown/page'
 import KpiTrend from '../../../components/Performance/kpi-trend/page'
+import AttendanceOverview from '../../../components/Performance/Attendance-Overview/page'
 const Performance = () => {
     const { isRtl } = useLang();
     const { theme } = useTheme();
@@ -65,15 +66,18 @@ const Performance = () => {
                                     />
                                 ))}
                             </div>
-                            <div className='w-full h-max flex justify-center items-center '>
+                            <div className='w-full h-max flex justify-center items-center pt-5 '>
                                  <div className='w-[75%] h-max  flex justify-center items-center flex-col'>
-                                    <QuickActions/>
                                     <KpiTrend/>
                                  </div>
                                  <div className='w-[25%] h-max flex justify-center items-center '>
                                     <KpiBreakdown/>
                                  </div>
+                                 
                             </div>
+                                <div className='w-full h-max flex justify-center items-center pt-2 '>
+                                    <AttendanceOverview/>
+                                </div>
                         </div>
                     </div>
                 </main>
