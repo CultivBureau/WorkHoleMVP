@@ -70,7 +70,7 @@ const Login = () => {
       {/* Left Panel - hidden on mobile */}
       <div className="hidden md:flex flex-1 bg-white items-center justify-center relative overflow-hidden">
         <img
-          src="public/assets/upscalemedia-transformed.png"
+          src="public/upscalemedia-transformed.png"
           alt="Login dashboard mockup"
           className="w-full h-full object-cover"
         />
@@ -103,7 +103,7 @@ const Login = () => {
               </h1>
             </div>
             <img
-              src="public/assets/Login.png"
+              src="public/Login.png"
               alt="Login Illustration"
               className="mx-auto mb-3 sm:mb-4 md:mb-6 w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 xl:w-56 xl:h-56 object-contain"
             />
