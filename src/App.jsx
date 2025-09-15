@@ -20,9 +20,7 @@ import { LangProvider } from "./contexts/LangContext";
 import { AttendanceUpdateProvider } from "./contexts/AttendanceUpdateContext";
 import { BreakUpdateProvider } from "./contexts/BreakUpdateContext";
 import { TimerProvider } from "./contexts/TimerContext";
-
-
-
+import TeamWallet from "./pages/User/team-wallet/page";
 
 function App() {
   return (
@@ -37,7 +35,7 @@ function App() {
                   <Route path="/" element={<Login />} />
                   <Route path="/forget-password" element={<ForgetPassword />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
-                  
+
                   {/* Protected User Routes */}
                   <Route
                     path="/pages/User/dashboard"
@@ -87,7 +85,15 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
-                  
+                  <Route
+                    path="/pages/User/team-wallet"
+                    element={
+                      <ProtectedRoute>
+                        <TeamWallet />
+                      </ProtectedRoute>
+                    }
+                  />
+
                   {/* Protected Admin Routes */}
                   <Route
                     path="/pages/admin/dashboard"
@@ -129,7 +135,7 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
-                  
+
                   {/* Catch all route - redirect to login for any unmatched routes */}
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

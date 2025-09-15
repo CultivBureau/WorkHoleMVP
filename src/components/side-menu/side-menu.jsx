@@ -109,7 +109,7 @@ const mainMenuItems = [
     ],
   },
   { key: "leaves", Icon: LogOut, implemented: true },
-  { key: "wallet", Icon: Wallet, implemented: false },
+  { key: "wallet", Icon: Wallet, implemented: true }, // <-- set implemented: true
 ];
 
 const settingsItems = [
@@ -199,7 +199,7 @@ function SideMenuItem({
                   : "text-[var(--sub-text-color)]",
             ].join(" ")}
             style={{
-              background: isActive 
+              background: isActive
                 ? "linear-gradient(135deg, #09D1C7, #15919B)"
                 : undefined,
               backgroundClip: isActive ? "text" : undefined,
@@ -287,7 +287,7 @@ function SideMenuItem({
                         : "text-[var(--sub-text-color)]",
                   ].join(" ")}
                   style={{
-                    background: isChildActive 
+                    background: isChildActive
                       ? "linear-gradient(135deg, #09D1C7, #15919B)"
                       : undefined,
                     backgroundClip: isChildActive ? "text" : undefined,
@@ -416,6 +416,8 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
       return "attendance";
     if (location.pathname.startsWith("/pages/User/break-tracking"))
       return "break_tracking";
+    if (location.pathname.startsWith("/pages/User/team-wallet")) // <-- add this line
+      return "wallet";
     return "";
   };
   const active = getActiveKey();
@@ -456,6 +458,7 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
     } else if (key === "attendance") navigate("/pages/User/attendance-logs");
     else if (key === "break") navigate("/pages/User/break");
     else if (key === "break_tracking") navigate("/pages/User/break-tracking");
+    else if (key === "wallet") navigate("/pages/User/team-wallet"); // <-- add this line
   };
 
   // Settings click handler
