@@ -100,13 +100,10 @@ const mainMenuItems = [
     ],
   },
   {
-    key: "performance",
+    key: "performance", // <-- Remove children here
     Icon: BarChart3,
-    implemented: false,
-    children: [
-      { key: "overview", Icon: LayoutGrid, implemented: false },
-      { key: "reports", Icon: FileBarChart2, implemented: false },
-    ],
+    implemented: true,  // <-- Make sure it's true
+    // children: [ ... ] <-- REMOVE THIS LINE
   },
   { key: "leaves", Icon: LogOut, implemented: true },
   { key: "wallet", Icon: Wallet, implemented: false },
@@ -456,6 +453,8 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
     } else if (key === "attendance") navigate("/pages/User/attendance-logs");
     else if (key === "break") navigate("/pages/User/break");
     else if (key === "break_tracking") navigate("/pages/User/break-tracking");
+      else if (key === "performance") navigate("/pages/User/Performance"); 
+
   };
 
   // Settings click handler
