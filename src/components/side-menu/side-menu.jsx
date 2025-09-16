@@ -159,17 +159,17 @@ function SideMenuItem({
       <button
         onClick={handleClick}
         className={[
-          "group w-full flex items-center gap-2 rounded-full pl-4 px-2 py-1.5 transition-all duration-200",
+          "group w-full flex items-center gap-2 rounded-full pl-4 px-2 transition-all duration-200",
           "outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-hover)]",
           isActive
             ? ""
             : "bg-transparent hover:bg-[var(--hover-color)]",
-          collapsed ? "justify-center " : "justify-start",
+          collapsed ? "justify-center py-1" : "justify-start py-1.5", // Changed py values
           !isImplemented ? "opacity-60" : "",
         ].join(" ")}
         style={{
           backgroundColor: isActive ? "var(--menu-active-bg)" : "transparent",
-          height: "44px",
+          height: collapsed ? "36px" : "40px", // Reduced height for collapsed state
           fontSize: collapsed ? 0 : "14px",
           direction: isArabic ? "rtl" : "ltr",
         }}
@@ -177,7 +177,7 @@ function SideMenuItem({
         <item.Icon
           className={[
             "shrink-0 transition-colors",
-            collapsed ? "w-6 h-6" : "w-4 h-4",
+            collapsed ? "w-4 h-4" : "w-4 h-4",
             isActive
               ? ""
               : isImplemented
@@ -252,7 +252,7 @@ function SideMenuItem({
                   onClick(child.key);
                 }}
                 className={[
-                  "group w-full flex items-center gap-2 rounded-full pl-4 px-1.5 py-1 text-[13px] font-medium transition-all duration-200",
+                  "group w-full flex items-center gap-2 rounded-full pl-4 px-1.5 py-0.5 text-[13px] font-medium transition-all duration-200", // Changed py-1 to py-0.5
                   isChildActive
                     ? ""
                     : "bg-transparent text-[var(--sub-text-color)] hover:bg-[var(--hover-color)] hover:text-[var(--accent-color)]",
@@ -260,7 +260,7 @@ function SideMenuItem({
                 ].join(" ")}
                 style={{
                   backgroundColor: isChildActive ? "var(--menu-active-bg)" : "transparent",
-                  height: "44px",
+                  height: "36px", // Reduced height
                   fontSize: "14px",
                   direction: isArabic ? "rtl" : "ltr",
                 }}

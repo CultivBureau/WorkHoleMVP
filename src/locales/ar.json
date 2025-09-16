@@ -556,7 +556,11 @@
       "viewAll": "عرض الكل"
     },
     "initiative": "مبادرة",
-    "totalTasks": "إجمالي المهام"
+    "totalTasks": " المهام",
+    "teamChart": {
+      "deductions": "خصومات",
+      "bonuses": "حوافز"
+    }
   },
   "walletTable": {
     "columns": {

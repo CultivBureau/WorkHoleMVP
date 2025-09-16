@@ -557,7 +557,11 @@
       "viewAll": "View All"
     },
     "initiative": "Initiative",
-    "totalTasks": "Total Tasks"
+    "totalTasks": " Tasks",
+    "teamChart": {
+      "deductions": "Deductions",
+      "bonuses": "Bonuses"
+    }
   },
   "walletTable": {
     "columns": {
