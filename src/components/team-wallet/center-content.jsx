@@ -17,7 +17,9 @@ const CenterContent = () => {
     const { t, i18n } = useTranslation();
     const direction = i18n.language === "ar" ? "rtl" : "ltr";
     const textAlign = i18n.language === "ar" ? "text-right" : "text-left";
+   
 
+    
     // State for screen width and responsive layout
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
 
