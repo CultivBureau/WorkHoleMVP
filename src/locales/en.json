@@ -503,5 +503,86 @@
     "loginSuccess": "Login successful",
     "loginFailed": "Login failed",
     "secureLogin": "🔒 Your data is secured with end-to-end encryption"
+  },
+  "walletCards": {
+    "myDeductions": {
+      "header": "My Deductions",
+      "title": "$120",
+      "subTitle": "Total penalties applied this month"
+    },
+    "teamDeductions": {
+      "header": "Team Deductions",
+      "title": "$850",
+      "subTitle": "Penalties across your team"
+    },
+    "incentivesEarned": {
+      "header": "Incentives Earned",
+      "title": "$200",
+      "subTitle": "Linked to your performance"
+    },
+    "hoursLogged": {
+      "header": "Hours Logged",
+      "title": "160hrs",
+      "subTitle": "160 hrs this month"
+    }
+  },
+  "walletCharts": {
+    "teamDeductions": {
+      "header": "Team Deductions Breakdown",
+      "subtitle": "See what affected your balance most"
+    },
+    "deductions": {
+      "header": "Deductions Breakdown",
+      "subtitle": "See what affected your balance most",
+      "legend": {
+        "lateArrivals": "Late Arrivals",
+        "missedDeadline": "Missed Deadline",
+        "absences": "Absences"
+      }
+    },
+    "period": {
+      "year": "Year",
+      "month": "Month"
+    },
+    "bonuses": {
+      "header": "Bonuses Breakdown",
+      "subtitle": "See what boosted your incentives most",
+      "legend": {
+        "tasks": "Tasks",
+        "kpi": "KPI",
+        "attendance": "Attendance"
+      }
+    },
+    "team": {
+      "header": "Team",
+      "viewAll": "View All"
+    },
+    "initiative": "Initiative",
+    "totalTasks": " Tasks",
+    "teamChart": {
+      "deductions": "Deductions",
+      "bonuses": "Bonuses"
+    }
+  },
+  "walletTable": {
+    "columns": {
+      "transactionDate": "Transaction Date",
+      "issuedBy": "Issued by",
+      "action": "Action",
+      "reason": "Reason",
+      "amount": "Amount",
+      "status": "Status"
+    },
+    "status": {
+      "approved": "Approved",
+      "pending": "Pending",
+      "rejected": "Rejected"
+    },
+    "page": "Page",
+    "of": "of"
+  },
+  "walletPopup": {
+    "title": "Transaction Details",
+    "close": "Close"
   }
 }
