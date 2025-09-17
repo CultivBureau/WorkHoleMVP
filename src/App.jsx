@@ -11,6 +11,7 @@ import AttendanceAdmin from "./pages/admin/attendance/page";
 import BreakAdmin from "./pages/admin/break/page";
 import LeavesAdmin from "./pages/admin/leaves/page";
 import UsersAdmin from "./pages/admin/users/page";
+import AllEmployees from "./pages/admin/all-employees/page";
 import Profile from "./pages/Profile";
 import ForgetPassword from "./components/forget-password/ForgetPassword";
 import ResetPassword from "./components/reset-password/resetPassword";
@@ -20,9 +21,6 @@ import { LangProvider } from "./contexts/LangContext";
 import { AttendanceUpdateProvider } from "./contexts/AttendanceUpdateContext";
 import { BreakUpdateProvider } from "./contexts/BreakUpdateContext";
 import { TimerProvider } from "./contexts/TimerContext";
-
-
-
 
 function App() {
   return (
@@ -37,7 +35,7 @@ function App() {
                   <Route path="/" element={<Login />} />
                   <Route path="/forget-password" element={<ForgetPassword />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
-                  
+
                   {/* Protected User Routes */}
                   <Route
                     path="/pages/User/dashboard"
@@ -87,7 +85,7 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
-                  
+
                   {/* Protected Admin Routes */}
                   <Route
                     path="/pages/admin/dashboard"
@@ -129,7 +127,15 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
-                  
+                  <Route
+                    path="/pages/admin/all-employees"
+                    element={
+                      <ProtectedRoute>
+                        <AllEmployees />
+                      </ProtectedRoute>
+                    }
+                  />
+
                   {/* Catch all route - redirect to login for any unmatched routes */}
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

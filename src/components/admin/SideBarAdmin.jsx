@@ -403,7 +403,7 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
   const getActiveKey = () => {
     if (location.pathname.startsWith("/pages/admin/dashboard"))
       return "dashboard";
-    if (location.pathname.startsWith("/pages/admin/users"))
+    if (location.pathname.startsWith("/pages/admin/all-employees") || location.pathname.startsWith("/pages/admin/users"))
       return "All_Employees";
     if (location.pathname.startsWith("/pages/admin/leaves")) 
       return "leaves";
@@ -437,7 +437,7 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
   // تعديل دالة onClick:
   const handleMenuClick = (key) => {
     if (key === "dashboard") navigate("/pages/admin/dashboard");
-    else if (key === "All_Employees") navigate("/pages/admin/users");
+    else if (key === "All_Employees") navigate("/pages/admin/all-employees");
     else if (key === "New_Employees") navigate("/pages/admin/users");
     else if (key === "Roles_Permissions") navigate("/pages/admin/users");
     else if (key === "leaves") navigate("/pages/admin/leaves");
