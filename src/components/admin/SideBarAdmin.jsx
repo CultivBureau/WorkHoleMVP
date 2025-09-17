@@ -4,363 +4,699 @@ import { useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
-  Calendar,
-  Coffee,
+  UserPlus,
   Shield,
-  UserCheck,
+  ListTodo,
+  BarChart3,
+  Calendar,
+  Wallet,
+  Building,
+  Settings as SettingsIcon,
+  RefreshCw,
+  Bot,
+  Moon,
   ChevronLeft,
-  ChevronRight,
+  ChevronDown,
+  ListChecks,
+  FolderKanban,
+  LayoutGrid,
+  FileBarChart2,
   X,
+  Rocket,
+  Menu,
 } from "lucide-react";
 import logo from "../../assets/side-menu-icons/logo.svg?url";
 import { useTheme } from "../../contexts/ThemeContext";
-import { useGetAllUsersQuery } from "../../services/apis/UsersApi";
-import { useGetAllLeavesQuery } from "../../services/apis/LeavesApi";
-import { useGetAllUsersAttendanceQuery } from "../../services/apis/AtteandanceApi";
 
-const adminMenuItems = [
-  { 
-    key: "dashboard", 
-    Icon: LayoutDashboard, 
-    path: "/pages/admin/dashboard",
-    color: "#09D1C7"
-  },
-  { 
-    key: "users", 
-    Icon: Users, 
-    path: "/pages/admin/users",
-    color: "#8B5CF6"
-  },
-  { 
-    key: "attendance", 
-    Icon: UserCheck, 
-    path: "/pages/admin/attendance",
-    color: "#3B82F6"
-  },
-  { 
-    key: "break", 
-    Icon: Coffee, 
-    path: "/pages/admin/break",
-    color: "#F59E0B"
-  },
-  { 
-    key: "leaves", 
-    Icon: Calendar, 
-    path: "/pages/admin/leaves",
-    color: "#10B981"
-  },
-];
 
-const SideBarAdmin = ({ lang, isMobileOpen, onMobileClose }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [hoveredItem, setHoveredItem] = useState(null);
 
-  // Fetch data for quick overview
-  const { data: usersData, isLoading: usersLoading } = useGetAllUsersQuery();
-  const { data: leavesData, isLoading: leavesLoading } = useGetAllLeavesQuery();
-  const { data: attendanceData, isLoading: attendanceLoading } = useGetAllUsersAttendanceQuery();
-
-  const isRtl = lang === "ar";
-
-  // Close mobile sidebar when route changes
+// Custom Toast Component
+const Toast = ({ message, isVisible, onClose, type = 'info', isArabic = false }) => {
   useEffect(() => {
-    if (onMobileClose) onMobileClose();
-  }, [location.pathname, onMobileClose]);
+    if (isVisible) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [isVisible, onClose]);
 
-  // Handle window resize to manage collapsed state
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 1024) {
-        setIsCollapsed(false);
-      }
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Get active menu item
-  const getActiveItem = () => {
-    const path = location.pathname;
-    if (path.startsWith("/pages/admin/users")) return "users";
-    if (path.startsWith("/pages/admin/attendance")) return "attendance";
-    if (path.startsWith("/pages/admin/break")) return "break";
-    if (path.startsWith("/pages/admin/leaves")) return "leaves";
-    if (path.startsWith("/pages/admin/dashboard")) return "dashboard";
-    return "";
-  };
-
-  const activeItem = getActiveItem();
-
-  const handleNavigation = (item) => {
-    navigate(item.path);
-  };
-
-  const getMenuItemText = (key) => {
-    const texts = {
-      dashboard: isRtl ? "لوحة التحكم" : "Dashboard",
-      users: isRtl ? "إدارة المستخدمين" : "User Management",
-      attendance: isRtl ? "الحضور والانصراف" : "Attendance",
-      break: isRtl ? "فترات الراحة" : "Break Management", 
-      leaves: isRtl ? "طلبات الإجازات" : "Leave Requests",
-    };
-    return texts[key] || key;
-  };
-
-  // Calculate statistics
-  const getQuickStats = () => {
-    const totalUsers = usersData?.length || 0;
-    
-    // Count active users (users who checked in today)
-    const today = new Date().toISOString().split('T')[0];
-    const activeUsers = attendanceData?.filter(attendance => 
-      attendance.date?.includes(today) && attendance.checkedIn
-    )?.length || 0;
-    
-    // Count pending leaves
-    const pendingLeaves = leavesData?.filter(leave => 
-      leave.status === 'pending'
-    )?.length || 0;
-    
-    // Count late users (checked in after 9 AM today)
-    const lateUsers = attendanceData?.filter(attendance => {
-      if (!attendance.date?.includes(today) || !attendance.checkedIn) return false;
-      const checkInTime = new Date(attendance.checkInTime);
-      const nineAM = new Date();
-      nineAM.setHours(9, 0, 0, 0);
-      return checkInTime > nineAM;
-    })?.length || 0;
-
-    return {
-      totalUsers,
-      activeUsers,
-      pendingLeaves,
-      lateUsers
-    };
-  };
-
-  const stats = getQuickStats();
-  const sidebarWidth = isCollapsed ? "w-16" : "w-64";
+  if (!isVisible) return null;
 
   return (
-    <>
-      {/* Mobile overlay with backdrop blur */}
-      {isMobileOpen && (
-        <div 
-          className="fixed inset-0 bg-black/20 backdrop-blur-lg z-40"
-          onClick={onMobileClose}
-        />
-      )}
-      
-      {/* Sidebar */}
+    <div
+      className={`fixed bottom-4 z-[9999] ${isArabic
+        ? 'left-4 animate-toast-slide-in-rtl'
+        : 'right-4 animate-toast-slide-in'
+        }`}
+    >
       <div
-        className={`
-          ${sidebarWidth} 
-          h-full 
-          flex flex-col 
-          border-r 
-          transition-all duration-300 ease-in-out
-          ${isMobileOpen ? 'fixed left-0 top-0 z-50 lg:relative lg:top-0' : 'hidden lg:flex'}
-        `}
+        className="flex items-center bg-[#C9EEF0] gap-3 px-5 py-4 rounded-xl shadow-xl border backdrop-blur-sm min-w-[280px]"
         style={{
-          backgroundColor: "var(--bg-color)",
-          borderColor: "var(--border-color)",
+          background: 'var(--bg-color)',
+          borderColor: 'var(--border-color)',
+          color: 'var(--text-color)',
+          boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+          direction: isArabic ? 'rtl' : 'ltr',
         }}
       >
-        {/* Header */}
-        <div className="p-4 border-b" style={{ borderColor: "var(--border-color)" }}>
-          <div className="flex items-center justify-between">
-            {!isCollapsed && (
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <img src={logo} alt="WorkHole" className="w-8 h-8" />
-                  {!isCollapsed && (
-                    <div>
-                      <h2 className="text-lg font-bold gradient-text">WorkHole</h2>
-                      <p className="text-xs" style={{ color: "var(--sub-text-color)" }}>
-                        Admin Panel
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-            
-            {/* Mobile close button */}
-            <button
-              onClick={onMobileClose}
-              className="lg:hidden p-1 rounded hover:bg-gray-100 transition-colors"
-              style={{ color: "var(--sub-text-color)" }}
-            >
-              <X size={20} />
-            </button>
-
-            {/* Desktop collapse button */}
-            <button
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              className="hidden lg:block p-1 rounded hover:bg-gray-100 transition-colors"
-              style={{ color: "var(--sub-text-color)" }}
-            >
-              {isCollapsed ? 
-                (isRtl ? <ChevronLeft size={20} /> : <ChevronRight size={20} />) : 
-                (isRtl ? <ChevronRight size={20} /> : <ChevronLeft size={20} />)
-              }
-            </button>
-          </div>
+        <div className="flex-shrink-0">
+          <Rocket className="w-6 h-6 text-blue-500" />
         </div>
-
-        {/* Admin Badge */}
-        {!isCollapsed && (
-          <div className="p-4">
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg border" style={{
-              backgroundColor: "var(--hover-color)",
-              borderColor: "var(--accent-color)",
-              color: "var(--accent-color)"
-            }}>
-              <Shield size={16} />
-              <span className="text-sm font-semibold">
-                {isRtl ? "مدير النظام" : "Administrator"}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Navigation Menu */}
-        <nav className="flex-1 p-4 space-y-2">
-          {adminMenuItems.map((item) => {
-            const isActive = activeItem === item.key;
-            const isHovered = hoveredItem === item.key;
-            
-            return (
-              <button
-                key={item.key}
-                data-key={item.key}
-                onClick={() => handleNavigation(item)}
-                onMouseEnter={() => setHoveredItem(item.key)}
-                onMouseLeave={() => setHoveredItem(null)}
-                className={`
-                  w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200
-                  ${isActive ? 'shadow-sm' : 'hover:shadow-sm'}
-                  group
-                `}
-                style={{
-                  backgroundColor: isActive ? "var(--hover-color)" : 
-                                 isHovered ? "var(--hover-color)" : "transparent",
-                  color: isActive ? "var(--accent-color)" : "var(--text-color)",
-                  borderLeft: isActive && !isRtl ? `3px solid ${item.color}` : "3px solid transparent",
-                  borderRight: isActive && isRtl ? `3px solid ${item.color}` : "3px solid transparent",
-                }}
-              >
-                <item.Icon 
-                  size={20} 
-                  style={{ 
-                    color: isActive ? item.color : "var(--sub-text-color)",
-                    transition: "color 0.2s"
-                  }}
-                />
-                
-                {!isCollapsed && (
-                  <span className={`font-medium ${isActive ? 'font-semibold' : ''}`}>
-                    {getMenuItemText(item.key)}
-                  </span>
-                )}
-
-                {/* Active indicator */}
-                {isActive && !isCollapsed && (
-                  <div 
-                    className="ml-auto w-2 h-2 rounded-full"
-                    style={{ backgroundColor: item.color }}
-                  />
-                )}
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Dynamic Stats Overview */}
-        {!isCollapsed && (
-          <div className="p-4 border-t" style={{ borderColor: "var(--border-color)" }}>
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold" style={{ color: "var(--text-color)" }}>
-                {isRtl ? "نظرة سريعة" : "Quick Overview"}
-              </h3>
-              
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="p-2 rounded border" style={{ 
-                  backgroundColor: "var(--hover-color)",
-                  borderColor: "var(--border-color)"
-                }}>
-                  <div className="font-semibold" style={{ color: "#3B82F6" }}>
-                    {usersLoading ? "..." : stats.totalUsers}
-                  </div>
-                  <div style={{ color: "var(--sub-text-color)" }}>
-                    {isRtl ? "موظف" : "Users"}
-                  </div>
-                </div>
-                
-                <div className="p-2 rounded border" style={{ 
-                  backgroundColor: "var(--hover-color)",
-                  borderColor: "var(--border-color)"
-                }}>
-                  <div className="font-semibold" style={{ color: "#10B981" }}>
-                    {attendanceLoading ? "..." : stats.activeUsers}
-                  </div>
-                  <div style={{ color: "var(--sub-text-color)" }}>
-                    {isRtl ? "نشط" : "Active"}
-                  </div>
-                </div>
-                
-                <div className="p-2 rounded border" style={{ 
-                  backgroundColor: "var(--hover-color)",
-                  borderColor: "var(--border-color)"
-                }}>
-                  <div className="font-semibold" style={{ color: "#F59E0B" }}>
-                    {leavesLoading ? "..." : stats.pendingLeaves}
-                  </div>
-                  <div style={{ color: "var(--sub-text-color)" }}>
-                    {isRtl ? "إجازات" : "Leaves"}
-                  </div>
-                </div>
-                
-                <div className="p-2 rounded border" style={{ 
-                  backgroundColor: "var(--hover-color)",
-                  borderColor: "var(--border-color)"
-                }}>
-                  <div className="font-semibold" style={{ color: "#EF4444" }}>
-                    {attendanceLoading ? "..." : stats.lateUsers}
-                  </div>
-                  <div style={{ color: "var(--sub-text-color)" }}>
-                    {isRtl ? "متأخر" : "Late"}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Collapsed tooltip */}
-        {isCollapsed && hoveredItem && (
-          <div
-            className={`fixed z-50 px-3 py-2 rounded-lg shadow-lg border animate-popup-scale ${
-              isRtl ? 'right-20' : 'left-20'
-            }`}
-            style={{
-              backgroundColor: "var(--bg-color)",
-              borderColor: "var(--border-color)",
-              color: "var(--text-color)",
-              top: `${document.querySelector(`[data-key="${hoveredItem}"]`)?.offsetTop + 40}px`,
-            }}
-          >
-            <span className="text-sm font-medium whitespace-nowrap">
-              {getMenuItemText(hoveredItem)}
-            </span>
-          </div>
-        )}
+        <div className="flex-1">
+          <span className="font-semibold text-lg">{message}</span>
+        </div>
+        <button
+          onClick={onClose}
+          className="flex-shrink-0 p-1 rounded-lg hover:bg-gray-100 transition-colors"
+          style={{
+            color: 'var(--sub-text-color)',
+          }}
+        >
+          <X className="w-5 h-5" />
+        </button>
       </div>
-    </>
+    </div>
   );
 };
 
-export default SideBarAdmin;
+const mainMenuItems = [
+  { key: "dashboard", Icon: LayoutDashboard, implemented: true },
+  {
+    key: "All_Employees",
+    Icon: Users,
+    implemented: true,
+    children: [
+      { key: "New_Employees", Icon: UserPlus, implemented: true },
+      { key: "Roles_Permissions", Icon: Shield, implemented: true },
+    ],
+  },
+  {
+    key: "tasks",
+    Icon: ListTodo,
+    implemented: false,
+    children: [
+      { key: "tasks-list", Icon: ListChecks, implemented: false },
+      { key: "projects", Icon: FolderKanban, implemented: false },
+    ],
+  },
+  { key: "performance", Icon: BarChart3, implemented: true },
+  { key: "leaves", Icon: Calendar, implemented: true },
+  { key: "wallet", Icon: Wallet, implemented: true },
+  { key: "My_Company", Icon: Building, implemented: true },
+];
+
+const settingsItems = [
+  { key: "settingsItem", Icon: SettingsIcon, implemented: true }, // <-- هنا التعديل
+  { key: "subscriptions", Icon: RefreshCw, implemented: false },
+  { key: "help", Icon: Bot, implemented: false },
+];
+
+function SideMenuItem({
+  item,
+  active,
+  collapsed,
+  onClick,
+  openDropdown,
+  setOpenDropdown,
+  setCollapsed,
+  t,
+  isArabic,
+  onShowToast,
+}) {
+  const isActive = active === item.key;
+  const hasChildren = !!item.children;
+  const isOpen = openDropdown === item.key;
+  const isImplemented = item.implemented !== false;
+
+  const handleClick = () => {
+    if (!isImplemented) {
+      onShowToast(t('comingSoon') || 'Coming Soon!');
+      return;
+    }
+
+    if (hasChildren) {
+      if (collapsed) {
+        setCollapsed(false);
+        setTimeout(() => setOpenDropdown(item.key), 200);
+      } else {
+        setOpenDropdown(isOpen ? null : item.key);
+      }
+      onClick(item.key);
+    } else {
+      onClick(item.key);
+    }
+  };
+
+  return (
+    <>
+      <button
+        onClick={handleClick}
+        className={[
+          "group w-full flex items-center gap-2 rounded-full pl-4 px-2 py-1.5 transition-all duration-200",
+          "outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-hover)]",
+          isActive
+            ? ""
+            : "bg-transparent hover:bg-[var(--hover-color)]",
+          collapsed ? "justify-center " : "justify-start",
+          !isImplemented ? "opacity-60" : "",
+        ].join(" ")}
+        style={{
+          backgroundColor: isActive ? "var(--menu-active-bg)" : "transparent",
+          height: "44px",
+          fontSize: collapsed ? 0 : "14px",
+          direction: isArabic ? "rtl" : "ltr",
+        }}
+      >
+        <item.Icon
+          className={[
+            "shrink-0 transition-colors",
+            collapsed ? "w-6 h-6" : "w-4 h-4",
+            isActive
+              ? ""
+              : isImplemented
+                ? "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]"
+                : "text-[var(--sub-text-color)]",
+          ].join(" ")}
+          style={{
+            color: isActive ? "#15919B" : undefined,
+          }}
+        />
+        {!collapsed && (
+          <span
+            className={[
+              "font-medium transition-colors",
+              isActive
+                ? ""
+                : isImplemented
+                  ? "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]"
+                  : "text-[var(--sub-text-color)]",
+            ].join(" ")}
+            style={{
+              background: isActive 
+                ? "linear-gradient(135deg, #09D1C7, #15919B)"
+                : undefined,
+              backgroundClip: isActive ? "text" : undefined,
+              WebkitBackgroundClip: isActive ? "text" : undefined,
+              WebkitTextFillColor: isActive ? "transparent" : undefined,
+            }}
+          >
+            {t(`aside.${item.key}`)}
+          </span>
+        )}
+        {hasChildren && !collapsed && (
+          <ChevronDown
+            className={[
+              isArabic ? "mr-auto" : "ml-auto",
+              "transition-transform",
+              isOpen ? "rotate-180" : "",
+              isActive
+                ? ""
+                : isImplemented
+                  ? "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]"
+                  : "text-[var(--sub-text-color)]",
+            ].join(" ")}
+            size={16}
+            style={{
+              color: isActive ? "#15919B" : undefined,
+            }}
+          />
+        )}
+      </button>
+      {/* Dropdown */}
+      {hasChildren && isOpen && !collapsed && (
+        <div
+          className={
+            isArabic
+              ? "pr-2 flex flex-col gap-0.5"
+              : "pl-6 flex flex-col gap-0.5"
+          }
+        >
+          {item.children.map((child) => {
+            const childImplemented = child.implemented !== false;
+            const isChildActive = active === child.key;
+            return (
+              <button
+                key={child.key}
+                onClick={() => {
+                  if (!childImplemented) {
+                    onShowToast(t('comingSoon') || 'Coming Soon!');
+                    return;
+                  }
+                  onClick(child.key);
+                }}
+                className={[
+                  "group w-full flex items-center gap-2 rounded-full pl-4 px-1.5 py-1 text-[13px] font-medium transition-all duration-200",
+                  isChildActive
+                    ? ""
+                    : "bg-transparent text-[var(--sub-text-color)] hover:bg-[var(--hover-color)] hover:text-[var(--accent-color)]",
+                  !childImplemented ? "opacity-60" : "",
+                ].join(" ")}
+                style={{
+                  backgroundColor: isChildActive ? "var(--menu-active-bg)" : "transparent",
+                  height: "44px",
+                  fontSize: "14px",
+                  direction: isArabic ? "rtl" : "ltr",
+                }}
+              >
+                <child.Icon
+                  className={[
+                    "shrink-0 transition-colors w-4 h-4",
+                    isChildActive
+                      ? ""
+                      : childImplemented
+                        ? "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]"
+                        : "text-[var(--sub-text-color)]",
+                  ].join(" ")}
+                  style={{
+                    color: isChildActive ? "#15919B" : undefined,
+                  }}
+                />
+                <span
+                  className={[
+                    isChildActive
+                      ? ""
+                      : childImplemented
+                        ? "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]"
+                        : "text-[var(--sub-text-color)]",
+                  ].join(" ")}
+                  style={{
+                    background: isChildActive 
+                      ? "linear-gradient(135deg, #09D1C7, #15919B)"
+                      : undefined,
+                    backgroundClip: isChildActive ? "text" : undefined,
+                    WebkitBackgroundClip: isChildActive ? "text" : undefined,
+                    WebkitTextFillColor: isChildActive ? "transparent" : undefined,
+                  }}
+                >
+                  {t(`aside.${child.key}`)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </>
+  );
+}
+
+function ThemeToggle({ theme, onToggle, collapsed, t, isArabic }) {
+  const isDark = theme === "dark";
+  if (collapsed) {
+    return (
+      <div className="w-full flex justify-center items-center py-1">
+        {/* Remove the button completely when collapsed */}
+      </div>
+    );
+  }
+  return (
+    <div
+      className="w-full flex items-center justify-between rounded-2xl px-2 py-2 shadow-sm border"
+      style={{
+        backgroundColor: "var(--bg-color)",
+        borderColor: "var(--border-color)",
+        direction: isArabic ? "rtl" : "ltr",
+      }}
+    >
+      <span
+        className="text-sm font-medium"
+        style={{ color: "var(--text-color)" }}
+      >
+        {isDark ? t("aside.darkMode") : t("aside.lightMode")}
+      </span>
+      <button
+        onClick={onToggle}
+        role="switch"
+        aria-checked={isDark}
+        className="relative inline-flex items-center justify-start rounded-full shadow-sm border transition-all duration-200"
+        style={{
+          width: 42,
+          height: 22,
+          background: "var(--toggle-bg)",
+          borderColor: "var(--toggle-border)",
+          paddingLeft: 3,
+          paddingRight: 3,
+        }}
+      >
+        <div className="absolute left-1 top-1/2 -translate-y-1/2 text-[var(--accent-color)]">
+          <Moon className="w-3 h-3" />
+        </div>
+        <div
+          className="absolute top-1/2 -translate-y-1/2 transition-all duration-200 ease-out rounded-full shadow-md"
+          style={{
+            left: isDark ? 20 : 3,
+            width: 12,
+            height: 12,
+            background:
+              "linear-gradient(135deg, var(--knob-gradient-start) 0%, var(--knob-gradient-end) 100%)",
+          }}
+        >
+          <div className="absolute top-0.5 left-0.5 w-1 h-1 bg-white/40 rounded-full"></div>
+          <div className="absolute bottom-0.5 right-0.5 w-1 h-1 bg-white/20 rounded-full"></div>
+        </div>
+      </button>
+    </div>
+  );
+}
+
+export default function SideMenu({ isMobileOpen, onMobileClose }) {
+  const { t, i18n } = useTranslation();
+  const [collapsed, setCollapsed] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+
+  // Add this temporary state for testing
+  const [tempMobileOpen, setTempMobileOpen] = useState(false);
+
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isArabic = i18n.language === "ar";
+  const { theme, setTheme } = useTheme();
+
+  // Use temporary state if props are not provided
+  const actualIsMobileOpen = isMobileOpen !== undefined ? isMobileOpen : tempMobileOpen;
+  const actualOnMobileClose = onMobileClose || (() => setTempMobileOpen(false));
+
+  // Custom toast function
+  const showToast = (message) => {
+    setToastMessage(message);
+    setToastVisible(true);
+  };
+
+  const hideToast = () => {
+    setToastVisible(false);
+  };
+
+  // Add temporary button to test mobile sidebar (remove this after fixing)
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === 'm' && e.ctrlKey) {
+        setTempMobileOpen(!tempMobileOpen);
+      }
+    };
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [tempMobileOpen]);
+
+  // تحديد الـ active بناءً على الـ route الحالي
+  const getActiveKey = () => {
+    if (location.pathname.startsWith("/pages/admin/dashboard"))
+      return "dashboard";
+    if (location.pathname.startsWith("/pages/admin/users"))
+      return "All_Employees";
+    if (location.pathname.startsWith("/pages/admin/leaves")) 
+      return "leaves";
+    return "";
+  };
+  const active = getActiveKey();
+
+  // فتح dropdown تلقائي لو كنت على All_Employees
+  useEffect(() => {
+    if (active === "All_Employees") {
+      setOpenDropdown("All_Employees");
+    }
+  }, [active]);
+
+  // Set language from localStorage or default to "en"
+  useEffect(() => {
+    const lang = localStorage.getItem("lang") || "en";
+    if (i18n.language !== lang) i18n.changeLanguage(lang);
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  }, [i18n]);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    try {
+      localStorage.setItem("theme", theme);
+    } catch {
+      // Ignore errors
+    }
+  }, [theme]);
+
+  // تعديل دالة onClick:
+  const handleMenuClick = (key) => {
+    if (key === "dashboard") navigate("/pages/admin/dashboard");
+    else if (key === "All_Employees") navigate("/pages/admin/users");
+    else if (key === "New_Employees") navigate("/pages/admin/users");
+    else if (key === "Roles_Permissions") navigate("/pages/admin/users");
+    else if (key === "leaves") navigate("/pages/admin/leaves");
+    else if (key === "performance") navigate("/pages/admin/dashboard");
+    else if (key === "wallet") navigate("/pages/admin/dashboard");
+    else if (key === "My_Company") navigate("/pages/admin/dashboard");
+  };
+
+  // Settings click handler
+  const handleSettingsClick = (key) => {
+    if (key === "settingsItem") {
+      navigate("/pages/admin/dashboard");
+      return;
+    }
+    const settingsItem = settingsItems.find(item => item.key === key);
+    if (!settingsItem?.implemented) {
+      showToast(t('comingSoon'));
+      return;
+    }
+  };
+
+  // Handle mobile menu item click
+  const handleMobileMenuClick = (key) => {
+    const allItems = [...mainMenuItems, ...settingsItems];
+    const item = allItems.find(item => item.key === key) ||
+      allItems.flatMap(item => item.children || []).find(child => child.key === key);
+
+    if (!item?.implemented) {
+      showToast(t('comingSoon'));
+      actualOnMobileClose();
+      return;
+    }
+
+    handleMenuClick(key);
+    actualOnMobileClose();
+  };
+
+  // Desktop sidebar classes
+  const desktopSidebarClasses = [
+    "hidden lg:flex flex-col min-h-0 overflow-hidden rounded-3xl shadow-sm",
+    collapsed ? "w-20" : "w-[280px]",
+    "ml-4 mr-2 my-4 p-3 border",
+  ].join(" ");
+
+  // Mobile sidebar classes
+  const mobileSidebarClasses = [
+    "fixed inset-y-0 left-0 z-50 w-80 flex flex-col bg-[var(--bg-color)] border-r border-[var(--border-color)]",
+    "transform transition-transform duration-300 ease-in-out lg:hidden",
+    actualIsMobileOpen ? "translate-x-0" : "-translate-x-full",
+  ].join(" ");
+
+  // Mobile overlay
+  const MobileOverlay = () => {
+    if (!actualIsMobileOpen) return null;
+    return (
+      <div
+        className="fixed inset-0 bg-black/20 backdrop-blur-lg z-40 lg:hidden"
+        onClick={actualOnMobileClose}
+      />
+    );
+  };
+
+  // Sidebar content component
+  const SidebarContent = ({ isMobile = false }) => (
+    <>
+      {/* Header */}
+      <div className="flex items-center justify-between shrink-0 mb-4 p-2">
+        <div className="flex items-center gap-3">
+          <div className="size-10 grid place-items-center">
+            <img src={logo} alt="WorkHole" className="h-10" />
+          </div>
+          {(!collapsed || isMobile) && (
+            <div className="text-left flex items-center" dir="ltr">
+              <span className="text-lg font-bold gradient-text">Work</span>
+              <span className="text-lg font-bold text-[var(--sub-text-color]">
+                Hole
+              </span>
+            </div>
+          )}
+        </div>
+
+        {isMobile ? (
+          <button
+            onClick={actualOnMobileClose}
+            className="rounded-xl p-2 hover:bg-[var(--hover-color)] transition-colors"
+            title="Close"
+          >
+            <X
+              className="w-5 h-5"
+              style={{ color: "var(--text-color)" }}
+            />
+          </button>
+        ) : (
+          !collapsed && (
+            <button
+              onClick={() => setCollapsed((v) => !v)}
+              className="rounded-xl p-2 hover:bg-[var(--hover-color)] transition-colors"
+              title="Collapse"
+            >
+              <ChevronLeft
+                className="w-5 h-5 transition-transform"
+                style={{ color: "var(--text-color)" }}
+              />
+            </button>
+          )
+        )}
+      </div>
+
+      {/* Collapse/Expand button when collapsed (desktop only) */}
+      {collapsed && !isMobile && (
+        <div className="flex justify-center mb-3">
+          <button
+            onClick={() => setCollapsed((v) => !v)}
+            className="rounded-2xl p-2 hover:bg-[var(--hover-color)] transition-colors"
+            title="Expand"
+          >
+            <ChevronLeft
+              className="w-5 h-5 transition-transform rotate-180"
+              style={{ color: "var(--text-color)" }}
+            />
+          </button>
+        </div>
+      )}
+
+      {/* Scrollable content */}
+      <div className={collapsed && !isMobile ? "min-h-0 flex-1 pr-1" : "min-h-0 flex-1 overflow-y-auto pr-1"}>
+        {(!collapsed || isMobile) && (
+          <p
+            className={`px-3 pb-2 text-xs tracking-wide uppercase font-semibold ${isArabic ? "text-right" : "text-left"
+              }`}
+            style={{
+              color: "var(--sub-text-color)",
+              direction: isArabic ? "rtl" : "ltr",
+            }}
+          >
+            {t("aside.mainMenu")}
+          </p>
+        )}
+        <nav
+          className="flex px-2 flex-col gap-1"
+          style={{ alignItems: collapsed && !isMobile ? "center" : "stretch" }}
+        >
+          {mainMenuItems.map((item) => (
+            <SideMenuItem
+              key={item.key}
+              item={item}
+              active={getActiveKey()}
+              collapsed={collapsed && !isMobile}
+              onClick={isMobile ? handleMobileMenuClick : handleMenuClick}
+              openDropdown={openDropdown}
+              setOpenDropdown={setOpenDropdown}
+              setCollapsed={setCollapsed}
+              t={t}
+              isArabic={isArabic}
+              onShowToast={showToast}
+            />
+          ))}
+        </nav>
+
+        {(!collapsed || isMobile) && (
+          <p
+            className={`px-3 pt-4 pb-2 text-xs tracking-wide uppercase font-semibold ${isArabic ? "text-right" : "text-left"
+              }`}
+            style={{
+              color: "var(--sub-text-color)",
+              direction: isArabic ? "rtl" : "ltr",
+            }}
+          >
+            {t("aside.settings")}
+          </p>
+        )}
+        <nav
+          className="flex px-2 flex-col gap-1 pb-2"
+          style={{ alignItems: collapsed && !isMobile ? "center" : "stretch" }}
+        >
+          {settingsItems.map((item) => (
+            <SideMenuItem
+              key={item.key}
+              item={item}
+              active={getActiveKey()}
+              collapsed={collapsed && !isMobile}
+              onClick={isMobile ? handleMobileMenuClick : handleSettingsClick}
+              openDropdown={openDropdown}
+              setOpenDropdown={setOpenDropdown}
+              setCollapsed={setCollapsed}
+              t={t}
+              isArabic={isArabic}
+              onShowToast={showToast}
+            />
+          ))}
+        </nav>
+      </div>
+
+      {/* Bottom Theme Toggle */}
+      <div className="shrink-0 pt-3 mb-2">
+        <ThemeToggle
+          theme={theme}
+          onToggle={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+          collapsed={collapsed && !isMobile}
+          t={t}
+          isArabic={isArabic}
+        />
+      </div>
+    </>
+  );
+
+  return (
+    <>
+      {/* Custom Toast - pass isArabic prop */}
+      <Toast
+        message={toastMessage}
+        isVisible={toastVisible}
+        onClose={hideToast}
+        isArabic={isArabic}
+      />
+
+      {/* Hamburger Menu Button - Only Visible on Mobile/Small Screens */}
+      <button
+        className="fixed bottom-4 left-4 z-50 p-3 rounded-xl shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 lg:hidden"
+        style={{
+          background: 'var(--bg-color)',
+          borderColor: 'var(--border-color)',
+          border: '1px solid',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+        }}
+        onClick={() => setTempMobileOpen(!tempMobileOpen)}
+        aria-label="Toggle Menu"
+      >
+        <Menu
+          className="w-6 h-6 transition-colors"
+          style={{ color: 'var(--text-color)' }}
+        />
+      </button>
+
+      {/* Mobile Overlay */}
+      <MobileOverlay />
+
+      {/* Mobile Sidebar */}
+      <aside
+        className={mobileSidebarClasses}
+        style={{
+          height: "100vh",
+          padding: "1rem",
+        }}
+      >
+        <SidebarContent isMobile={true} />
+      </aside>
+
+      {/* Desktop Sidebar */}
+      <aside
+        className={desktopSidebarClasses}
+        style={{
+          background: "var(--bg-color)",
+          borderColor: "var(--border-color)",
+          height: "calc(100vh - 96px)",
+        }}
+      >
+        <SidebarContent isMobile={false} />
+      </aside>
+    </>
+  );
+}
