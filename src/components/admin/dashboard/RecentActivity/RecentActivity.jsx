@@ -34,34 +34,34 @@ const RecentActivity = () => {
   ]
 
   return (
-    <div className="w-full max-w-md mt-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+    <div className="w-full xl:max-w-md mt-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-3 sm:p-4">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
         <div>
-          <h2 className="text-[14px] font-semibold text-start text-[var(--text-color)] mb-1">Recent Activity</h2>
-          <p className="text-[11px] text-start  text-[var(--text-color)]">Today</p>
+          <h2 className="text-[12px] sm:text-[14px] font-semibold text-start text-[var(--text-color)] mb-1">Recent Activity</h2>
+          <p className="text-[10px] sm:text-[11px] text-start text-[var(--text-color)]">Today</p>
         </div>
         <button className="p-1 hover:bg-gray-100 rounded-full transition-colors">
-          <MoreHorizontal className="w-5 h-5 text-[var(--sub-text-color)]" />
+          <MoreHorizontal className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--sub-text-color)]" />
         </button>
       </div>
 
       {/* Activity List */}
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {recentActivity.map((activity) => (
-          <div key={activity.id} className="flex items-center gap-3">
+          <div key={activity.id} className="flex items-center gap-2 sm:gap-3">
             {/* Avatar */}
             <div className="flex-shrink-0">
               <img
                 src={activity.avatar || "/assets/AdminDashboard/avatar.svg"}
                 alt={`${activity.name}'s avatar`}
-                className="w-10 h-10 rounded-full object-cover"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
               />
             </div>
 
             {/* Content */}
             <div className="flex-1 text-start min-w-0">
-              <p className="text-sm text-gray-900">
+              <p className="text-xs sm:text-sm text-gray-900">
                 <span className="font-medium">{activity.name}</span>
                 <span className="text-gray-500 ml-1">{activity.title}</span>
               </p>
@@ -69,7 +69,7 @@ const RecentActivity = () => {
 
             {/* Time */}
             <div className="flex-shrink-0">
-              <span className="text-xs text-gray-400">{activity.time}</span>
+              <span className="text-[10px] sm:text-xs text-gray-400">{activity.time}</span>
             </div>
           </div>
         ))}
