@@ -94,8 +94,8 @@ const Profile = () => {
         return (
             <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--bg-color)" }}>
                 <div className="flex flex-col items-center gap-4">
-                    <div className="w-16 h-16 border-4 border-[var(--accent-color)] border-t-transparent rounded-full animate-spin"></div>
-                    <p style={{ color: "var(--text-color)" }}>{isRtl ? 'جاري التحميل...' : 'Loading...'}</p>
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-[var(--accent-color)] border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-sm sm:text-base" style={{ color: "var(--text-color)" }}>{isRtl ? 'جاري التحميل...' : 'Loading...'}</p>
                 </div>
             </div>
         )
@@ -105,8 +105,8 @@ const Profile = () => {
         return (
             <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--bg-color)" }}>
                 <div className="text-center">
-                    <User className="w-16 h-16 mx-auto mb-4" style={{ color: "var(--sub-text-color)" }} />
-                    <p style={{ color: "var(--text-color)" }}>{isRtl ? 'لا توجد بيانات مستخدم' : 'No user data found'}</p>
+                    <User className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4" style={{ color: "var(--sub-text-color)" }} />
+                    <p className="text-sm sm:text-base" style={{ color: "var(--text-color)" }}>{isRtl ? 'لا توجد بيانات مستخدم' : 'No user data found'}</p>
                 </div>
             </div>
         )
@@ -114,50 +114,49 @@ const Profile = () => {
 
     return (
         <div 
-            className="min-h-screen p-4 sm:p-6" 
+            className="min-h-screen p-2 sm:p-4 md:p-6 lg:p-6 xl:p-8" 
             style={{ backgroundColor: "var(--bg-color)", direction: isRtl ? 'rtl' : 'ltr' }}
         >
             {/* Header */}
-            <div className="max-w-6xl mx-auto">
-                {/* Top Navigation */}
-                <div className="flex items-center justify-between mb-6">
+            <div className="max-w-7xl mx-auto">
+                {/* Top Navigation - Responsive */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
                     <button
                         onClick={() => navigate(-1)}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 hover:scale-105"
+                        className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl border transition-all duration-300 hover:scale-105 w-full sm:w-auto"
                         style={{
                             backgroundColor: "var(--card-bg)",
                             borderColor: "var(--border-color)",
                             color: "var(--text-color)"
                         }}
                     >
-                        <ArrowLeft className={`w-5 h-5 ${isRtl ? 'rotate-180' : ''}`} />
-                        <span className="hidden sm:block">{isRtl ? 'رجوع' : 'Back'}</span>
+                        <ArrowLeft className={`w-4 h-4 sm:w-5 sm:h-5 ${isRtl ? 'rotate-180' : ''}`} />
+                        <span className="text-sm sm:text-base">{isRtl ? 'رجوع' : 'Back'}</span>
                     </button>
 
-                    {/* Edit Profile Button - Top Right */}
+                    {/* Edit Profile Button - Responsive */}
                     <button
                         onClick={() => setEditOpen(true)}
-                        className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 rounded-xl bg-gradient-to-r from-[var(--accent-color)] to-[var(--gradient-end)] text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                        className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 rounded-xl bg-gradient-to-r from-[var(--accent-color)] to-[var(--gradient-end)] text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 w-full sm:w-auto"
                     >
                         <Edit3 className="w-4 h-4 sm:w-5 sm:h-5" />
-                        <span className="hidden sm:block">{isRtl ? 'تعديل الملف الشخصي' : 'Edit Profile'}</span>
-                        <span className="sm:hidden">{isRtl ? 'تعديل' : 'Edit'}</span>
+                        <span className="text-sm sm:text-base">{isRtl ? 'تعديل الملف الشخصي' : 'Edit Profile'}</span>
                     </button>
                 </div>
 
-                {/* Profile Header Card */}
+                {/* Profile Header Card - Fully Responsive */}
                 <div 
-                    className="rounded-3xl p-4 sm:p-8 mb-8 shadow-xl border"
+                    className="rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 mb-6 sm:mb-8 shadow-xl border"
                     style={{
                         backgroundColor: "var(--card-bg)",
                         borderColor: "var(--border-color)",
                         background: `linear-gradient(135deg, var(--card-bg) 0%, var(--hover-color) 100%)`
                     }}
                 >
-                    <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6 lg:gap-8">
-                        {/* Profile Image */}
+                    <div className="flex flex-col lg:flex-row items-center lg:items-start gap-4 sm:gap-6 lg:gap-8">
+                        {/* Profile Image - Responsive */}
                         <div className="relative group mx-auto lg:mx-0">
-                            <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-[var(--accent-color)] shadow-2xl">
+                            <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-3 sm:border-4 border-[var(--accent-color)] shadow-2xl">
                                 {user.profileImage ? (
                                     <img
                                         src={`${import.meta.env.VITE_API_URL}${user.profileImage}`}
@@ -170,7 +169,7 @@ const Profile = () => {
                                     />
                                 ) : null}
                                 <div
-                                    className={`w-full h-full rounded-full flex items-center justify-center text-2xl sm:text-4xl font-bold ${user.profileImage ? 'hidden' : 'flex'}`}
+                                    className={`w-full h-full rounded-full flex items-center justify-center text-lg sm:text-2xl md:text-4xl font-bold ${user.profileImage ? 'hidden' : 'flex'}`}
                                     style={{
                                         backgroundColor: "var(--accent-color)",
                                         color: "white"
@@ -179,29 +178,29 @@ const Profile = () => {
                                     {user.firstName?.[0]?.toUpperCase()}{user.lastName?.[0]?.toUpperCase()}
                                 </div>
                             </div>
-                            {/* Online Indicator */}
+                            {/* Online Indicator - Responsive */}
                             {user.isActive && (
-                                <div className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 w-4 h-4 sm:w-6 sm:h-6 bg-green-500 rounded-full border-2 sm:border-4 border-white shadow-lg"></div>
+                                <div className="absolute bottom-0 right-0 sm:bottom-1 sm:right-1 md:bottom-2 md:right-2 w-3 h-3 sm:w-4 sm:h-4 md:w-6 md:h-6 bg-green-500 rounded-full border-2 sm:border-3 md:border-4 border-white shadow-lg"></div>
                             )}
-                            {/* Camera Icon */}
+                            {/* Camera Icon - Responsive */}
                             <div 
                                 className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                                 onClick={() => setEditOpen(true)}
                             >
-                                <Camera className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                                <Camera className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white" />
                             </div>
                         </div>
 
-                        {/* User Info */}
-                        <div className="flex-1 text-center lg:text-left">
-                            <div className="mb-4">
-                                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2" style={{ color: "var(--text-color)" }}>
+                        {/* User Info - Responsive */}
+                        <div className="flex-1 text-center lg:text-left w-full">
+                            <div className="mb-4 sm:mb-6">
+                                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2" style={{ color: "var(--text-color)" }}>
                                     {user.firstName} {user.lastName}
                                 </h1>
                                 <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-2 sm:gap-3 mb-3">
                                     <div className="flex items-center gap-2">
                                         <Briefcase className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: "var(--accent-color)" }} />
-                                        <span className="text-base sm:text-lg font-medium" style={{ color: "var(--sub-text-color)" }}>
+                                        <span className="text-sm sm:text-base md:text-lg font-medium" style={{ color: "var(--sub-text-color)" }}>
                                             {getRoleLabel(user.role)}
                                         </span>
                                     </div>
@@ -215,25 +214,25 @@ const Profile = () => {
                                         {getStatusLabel(user.status)}
                                     </div>
                                 </div>
-                                <div className="flex items-center justify-center lg:justify-start gap-2 text-sm sm:text-lg">
+                                <div className="flex items-center justify-center lg:justify-start gap-2 text-sm sm:text-base md:text-lg">
                                     <Mail className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: "var(--accent-color)" }} />
                                     <span style={{ color: "var(--text-color)" }} className="break-all">{user.email}</span>
                                 </div>
                             </div>
 
-                            {/* Quick Stats */}
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                            {/* Quick Stats - Responsive Grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                                 <div 
                                     className="p-3 sm:p-4 rounded-xl border"
                                     style={{ backgroundColor: "var(--bg-color)", borderColor: "var(--border-color)" }}
                                 >
                                     <div className="flex items-center gap-2 sm:gap-3 justify-center sm:justify-start">
-                                        <Clock className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: "var(--accent-color)" }} />
+                                        <Clock className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" style={{ color: "var(--accent-color)" }} />
                                         <div className="text-center sm:text-left">
                                             <p className="text-xs sm:text-sm font-medium" style={{ color: "var(--sub-text-color)" }}>
                                                 {getFieldLabel('shiftHours')}
                                             </p>
-                                            <p className="text-lg sm:text-xl font-bold" style={{ color: "var(--text-color)" }}>
+                                            <p className="text-base sm:text-lg md:text-xl font-bold" style={{ color: "var(--text-color)" }}>
                                                 {user.shiftHours}h
                                             </p>
                                         </div>
@@ -244,28 +243,28 @@ const Profile = () => {
                                     style={{ backgroundColor: "var(--bg-color)", borderColor: "var(--border-color)" }}
                                 >
                                     <div className="flex items-center gap-2 sm:gap-3 justify-center sm:justify-start">
-                                        <Calendar className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: "var(--accent-color)" }} />
+                                        <Calendar className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" style={{ color: "var(--accent-color)" }} />
                                         <div className="text-center sm:text-left">
                                             <p className="text-xs sm:text-sm font-medium" style={{ color: "var(--sub-text-color)" }}>
                                                 {getFieldLabel('availableLeaves')}
                                             </p>
-                                            <p className="text-lg sm:text-xl font-bold" style={{ color: "var(--text-color)" }}>
+                                            <p className="text-base sm:text-lg md:text-xl font-bold" style={{ color: "var(--text-color)" }}>
                                                 {user.availableLeaves} {isRtl ? 'يوم' : 'days'}
                                             </p>
                                         </div>
                                     </div>
                                 </div>
                                 <div 
-                                    className="p-3 sm:p-4 rounded-xl border"
+                                    className="p-3 sm:p-4 rounded-xl border sm:col-span-2 lg:col-span-1"
                                     style={{ backgroundColor: "var(--bg-color)", borderColor: "var(--border-color)" }}
                                 >
                                     <div className="flex items-center gap-2 sm:gap-3 justify-center sm:justify-start">
-                                        <Clock className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: "var(--accent-color)" }} />
+                                        <Clock className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" style={{ color: "var(--accent-color)" }} />
                                         <div className="text-center sm:text-left">
                                             <p className="text-xs sm:text-sm font-medium" style={{ color: "var(--sub-text-color)" }}>
                                                 {getFieldLabel('shiftStart')}
                                             </p>
-                                            <p className="text-lg sm:text-xl font-bold" style={{ color: "var(--text-color)" }}>
+                                            <p className="text-base sm:text-lg md:text-xl font-bold" style={{ color: "var(--text-color)" }}>
                                                 {user.shiftStartLocal}
                                             </p>
                                         </div>
@@ -276,16 +275,16 @@ const Profile = () => {
                     </div>
                 </div>
 
-                {/* Detailed Information */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-                    {/* Personal Information */}
+                {/* Detailed Information - Responsive Grid */}
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+                    {/* Personal Information - Responsive */}
                     <div 
-                        className="rounded-2xl p-4 sm:p-6 shadow-lg border"
+                        className="rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border"
                         style={{ backgroundColor: "var(--card-bg)", borderColor: "var(--border-color)" }}
                     >
-                        <div className="flex items-center gap-3 mb-6">
+                        <div className="flex items-center gap-3 mb-4 sm:mb-6">
                             <User className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: "var(--accent-color)" }} />
-                            <h2 className="text-lg sm:text-xl font-bold" style={{ color: "var(--text-color)" }}>
+                            <h2 className="text-base sm:text-lg md:text-xl font-bold" style={{ color: "var(--text-color)" }}>
                                 {isRtl ? 'المعلومات الشخصية' : 'Personal Information'}
                             </h2>
                         </div>
@@ -318,14 +317,14 @@ const Profile = () => {
                         </div>
                     </div>
 
-                    {/* Work Information */}
+                    {/* Work Information - Responsive */}
                     <div 
-                        className="rounded-2xl p-4 sm:p-6 shadow-lg border"
+                        className="rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border"
                         style={{ backgroundColor: "var(--card-bg)", borderColor: "var(--border-color)" }}
                     >
-                        <div className="flex items-center gap-3 mb-6">
+                        <div className="flex items-center gap-3 mb-4 sm:mb-6">
                             <Briefcase className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: "var(--accent-color)" }} />
-                            <h2 className="text-lg sm:text-xl font-bold" style={{ color: "var(--text-color)" }}>
+                            <h2 className="text-base sm:text-lg md:text-xl font-bold" style={{ color: "var(--text-color)" }}>
                                 {isRtl ? 'معلومات العمل' : 'Work Information'}
                             </h2>
                         </div>
@@ -371,11 +370,11 @@ const Profile = () => {
                 </div>
             </div>
 
-            {/* Edit Profile Modal */}
+            {/* Edit Profile Modal - Responsive */}
             {editOpen && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
                     <div 
-                        className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl"
+                        className="w-full max-w-sm sm:max-w-md max-h-[90vh] overflow-y-auto rounded-xl sm:rounded-2xl shadow-2xl"
                         style={{ backgroundColor: "var(--card-bg)" }}
                     >
                         <EditProfile onClose={() => setEditOpen(false)} />
@@ -386,7 +385,7 @@ const Profile = () => {
     )
 }
 
-// Helper Component for Info Fields
+// Helper Component for Info Fields - Responsive
 const InfoField = ({ icon: Icon, label, value }) => (
     <div className="flex items-center gap-3 p-2 sm:p-3 rounded-xl transition-all duration-200 hover:bg-[var(--hover-color)]">
         <Icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" style={{ color: "var(--accent-color)" }} />
