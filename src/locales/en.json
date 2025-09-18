@@ -21,7 +21,9 @@
     "darkMode": "Dark Mode",
     "lightMode": "Light Mode",
     "time_tracking": "Time Tracking",
-    "break_tracking": "Break Tracking"
+    "break_tracking": "Break Tracking",
+    "all_attendance": "All Attendance",
+    "all_department": "All Department"
   },
   "comingSoon": "Coming Soon",
   "navbar": {

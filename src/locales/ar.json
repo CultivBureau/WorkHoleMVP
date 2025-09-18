@@ -21,7 +21,9 @@
     "darkMode": "الوضع الليلي",
     "lightMode": "الوضع النهاري",
     "time_tracking": "تتبع الوقت",
-    "break_tracking": "تتبع الاستراحة"
+    "break_tracking": "تتبع الاستراحة",
+    "all_attendance": "جميع الحضور",
+    "all_department": "جميع الأقسام"
   },
   "comingSoon": "قريبًا",
   "navbar": {
