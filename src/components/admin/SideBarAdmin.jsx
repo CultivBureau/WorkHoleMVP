@@ -87,7 +87,7 @@ const mainMenuItems = [
     Icon: Users,
     implemented: true,
     children: [
-      { key: "New_Employees", Icon: UserPlus, implemented: true },
+      { key: "New_Employee", Icon: UserPlus, implemented: true },
       { key: "Roles_Permissions", Icon: Shield, implemented: true },
     ],
   },
@@ -129,6 +129,11 @@ function SideMenuItem({
   const isOpen = openDropdown === item.key;
   const isImplemented = item.implemented !== false;
 
+  // Check if any child is active
+  const hasActiveChild = hasChildren && item.children?.some(child => child.key === active);
+  // Parent should be highlighted if it's active OR has an active child
+  const shouldHighlight = isActive || hasActiveChild;
+
   const handleClick = () => {
     if (!isImplemented) {
       onShowToast(t('comingSoon') || 'Coming Soon!');
@@ -155,14 +160,14 @@ function SideMenuItem({
         className={[
           "group w-full flex items-center gap-2 rounded-full pl-4 px-2 py-1.5 transition-all duration-200",
           "outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-hover)]",
-          isActive
+          shouldHighlight
             ? ""
             : "bg-transparent hover:bg-[var(--hover-color)]",
           collapsed ? "justify-center " : "justify-start",
           !isImplemented ? "opacity-60" : "",
         ].join(" ")}
         style={{
-          backgroundColor: isActive ? "var(--menu-active-bg)" : "transparent",
+          backgroundColor: shouldHighlight ? "var(--menu-active-bg)" : "transparent",
           height: "44px",
           fontSize: collapsed ? 0 : "14px",
           direction: isArabic ? "rtl" : "ltr",
@@ -172,33 +177,33 @@ function SideMenuItem({
           className={[
             "shrink-0 transition-colors",
             collapsed ? "w-6 h-6" : "w-4 h-4",
-            isActive
+            shouldHighlight
               ? ""
               : isImplemented
                 ? "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]"
                 : "text-[var(--sub-text-color)]",
           ].join(" ")}
           style={{
-            color: isActive ? "#15919B" : undefined,
+            color: shouldHighlight ? "#15919B" : undefined,
           }}
         />
         {!collapsed && (
           <span
             className={[
               "font-medium transition-colors",
-              isActive
+              shouldHighlight
                 ? ""
                 : isImplemented
                   ? "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]"
                   : "text-[var(--sub-text-color)]",
             ].join(" ")}
             style={{
-              background: isActive 
+              background: shouldHighlight
                 ? "linear-gradient(135deg, #09D1C7, #15919B)"
                 : undefined,
-              backgroundClip: isActive ? "text" : undefined,
-              WebkitBackgroundClip: isActive ? "text" : undefined,
-              WebkitTextFillColor: isActive ? "transparent" : undefined,
+              backgroundClip: shouldHighlight ? "text" : undefined,
+              WebkitBackgroundClip: shouldHighlight ? "text" : undefined,
+              WebkitTextFillColor: shouldHighlight ? "transparent" : undefined,
             }}
           >
             {t(`aside.${item.key}`)}
@@ -210,7 +215,7 @@ function SideMenuItem({
               isArabic ? "mr-auto" : "ml-auto",
               "transition-transform",
               isOpen ? "rotate-180" : "",
-              isActive
+              shouldHighlight
                 ? ""
                 : isImplemented
                   ? "text-[var(--sub-text-color)] group-hover:text-[var(--accent-color)]"
@@ -218,7 +223,7 @@ function SideMenuItem({
             ].join(" ")}
             size={16}
             style={{
-              color: isActive ? "#15919B" : undefined,
+              color: shouldHighlight ? "#15919B" : undefined,
             }}
           />
         )}
@@ -281,7 +286,7 @@ function SideMenuItem({
                         : "text-[var(--sub-text-color)]",
                   ].join(" ")}
                   style={{
-                    background: isChildActive 
+                    background: isChildActive
                       ? "linear-gradient(135deg, #09D1C7, #15919B)"
                       : undefined,
                     backgroundClip: isChildActive ? "text" : undefined,
@@ -405,15 +410,20 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
       return "dashboard";
     if (location.pathname.startsWith("/pages/admin/all-employees") || location.pathname.startsWith("/pages/admin/users"))
       return "All_Employees";
-    if (location.pathname.startsWith("/pages/admin/leaves")) 
+    if (location.pathname.startsWith("/pages/admin/new-employee"))
+      return "New_Employee";
+    if (location.pathname.startsWith("/pages/admin/users"))
+      return "Roles_Permissions";
+    if (location.pathname.startsWith("/pages/admin/leaves"))
       return "leaves";
     return "";
   };
+
   const active = getActiveKey();
 
-  // فتح dropdown تلقائي لو كنت على All_Employees
+  // فتح dropdown تلقائي لو كنت على All_Employees أو أي من children
   useEffect(() => {
-    if (active === "All_Employees") {
+    if (active === "All_Employees" || active === "New_Employee" || active === "Roles_Permissions") {
       setOpenDropdown("All_Employees");
     }
   }, [active]);
@@ -438,7 +448,7 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
   const handleMenuClick = (key) => {
     if (key === "dashboard") navigate("/pages/admin/dashboard");
     else if (key === "All_Employees") navigate("/pages/admin/all-employees");
-    else if (key === "New_Employees") navigate("/pages/admin/users");
+    else if (key === "New_Employee") navigate("/pages/admin/new-employee");
     else if (key === "Roles_Permissions") navigate("/pages/admin/users");
     else if (key === "leaves") navigate("/pages/admin/leaves");
     else if (key === "performance") navigate("/pages/admin/dashboard");

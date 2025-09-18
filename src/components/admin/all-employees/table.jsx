@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronLeft, ChevronRight, Search, LayoutGrid, TableIcon, Plus, Eye, Edit, Trash2 } from "lucide-react";
 import EmployeeCard from "./employee-card";
 
 const EmployeesTable = () => {
     const { t, i18n } = useTranslation();
+    const navigate = useNavigate();
     const isArabic = i18n.language === "ar";
     const [searchTerm, setSearchTerm] = useState("");
     const [joinDateFilter, setJoinDateFilter] = useState("");
@@ -159,7 +161,7 @@ const EmployeesTable = () => {
             <select
                 value=""
                 onChange={onChange}
-                className="w-full border rounded-full px-4 py-2 text-xs font-medium gradient-text transition-all duration-200 appearance-none"
+                className="w-full border text-center     rounded-full px-4 py-2 text-xs font-medium gradient-text transition-all duration-200 appearance-none"
                 style={{
                     borderColor: 'var(--border-color)',
                     backgroundColor: 'var(--bg-color)',
@@ -205,11 +207,15 @@ const EmployeesTable = () => {
         </div>
     );
 
+    const handleAddNewEmployee = () => {
+        navigate("/pages/admin/new-employee");
+    };
+
     return (
         <div className="w-full" dir={isArabic ? "rtl" : "ltr"}>
             {/* Filters and Controls Container */}
             <div
-                className="rounded-xl border shadow-sm p-3 md:p-6 mb-2"
+                className="rounded-xl border shadow-sm p-3 md:p-3 mb-2"
                 style={{
                     backgroundColor: 'var(--bg-color)',
                     borderColor: 'var(--border-color)',
@@ -247,7 +253,7 @@ const EmployeesTable = () => {
                             value={joinDateFilter}
                             onChange={(e) => setJoinDateFilter(e.target.value)}
                             options={uniqueJoinDates}
-                            placeholder={t("Join Date")}
+                            placeholder={t("employees.filters.joinDate")}
                         />
                     </div>
                     <div className="md:col-span-1 col-span-1 w-full">
@@ -255,7 +261,7 @@ const EmployeesTable = () => {
                             value={departmentFilter}
                             onChange={(e) => setDepartmentFilter(e.target.value)}
                             options={uniqueDepartments}
-                            placeholder={t("Department")}
+                            placeholder={t("employees.filters.department")}
                         />
                     </div>
                     <div className="md:col-span-1 col-span-1 w-full">
@@ -263,7 +269,7 @@ const EmployeesTable = () => {
                             value={roleFilter}
                             onChange={(e) => setRoleFilter(e.target.value)}
                             options={uniqueRoles}
-                            placeholder={t("Role")}
+                            placeholder={t("employees.filters.role")}
                         />
                     </div>
                     <div className="md:col-span-1 col-span-1 w-full">
@@ -271,7 +277,7 @@ const EmployeesTable = () => {
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
                             options={["Active", "Inactive", "Pending"]}
-                            placeholder={t("Status")}
+                            placeholder={t("employees.filters.status")}
                         />
                     </div>
                     <div className="md:col-span-1 col-span-1 w-full">
@@ -366,6 +372,7 @@ const EmployeesTable = () => {
 
                         {/* Add New Employee Button */}
                         <button
+                            onClick={handleAddNewEmployee}
                             className="gradient-bg flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-white transition-all duration-200 hover:shadow-lg"
                             style={{
                                 border: '1px solid var(--accent-color)'
