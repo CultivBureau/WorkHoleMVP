@@ -113,10 +113,9 @@ const SideBarAdmin = ({ lang, isMobileOpen, onMobileClose }) => {
   const getQuickStats = () => {
     const totalUsers = usersData?.length || 0;
     
-    // Count active users (users who checked in today)
-    const today = new Date().toISOString().split('T')[0];
-    const activeUsers = attendanceData?.filter(attendance => 
-      attendance.date?.includes(today) && attendance.checkedIn
+    // Count active users (users with status 'present' or 'late')
+    const activeUsers = attendanceData?.filter(user => 
+      user.status === 'present' || user.status === 'late'
     )?.length || 0;
     
     // Count pending leaves
@@ -124,14 +123,10 @@ const SideBarAdmin = ({ lang, isMobileOpen, onMobileClose }) => {
       leave.status === 'pending'
     )?.length || 0;
     
-    // Count late users (checked in after 9 AM today)
-    const lateUsers = attendanceData?.filter(attendance => {
-      if (!attendance.date?.includes(today) || !attendance.checkedIn) return false;
-      const checkInTime = new Date(attendance.checkInTime);
-      const nineAM = new Date();
-      nineAM.setHours(9, 0, 0, 0);
-      return checkInTime > nineAM;
-    })?.length || 0;
+    // Count late users (users with status 'late')
+    const lateUsers = attendanceData?.filter(user => 
+      user.status === 'late'
+    )?.length || 0;
 
     return {
       totalUsers,

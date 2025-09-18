@@ -677,6 +677,63 @@ const AttendanceAdmin = () => {
                     </tbody>
                   </table>
                 </div>
+              ) : dateFilter === "lastMonth" ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead style={{ backgroundColor: "var(--hover-color)" }}>
+                      <tr>
+                        <th className="text-left py-4 px-6 font-semibold" style={{ color: "var(--text-color)" }}>
+                          {isRtl ? "الموظف" : "Employee"}
+                        </th>
+                        <th className="text-left py-4 px-6 font-semibold" style={{ color: "var(--text-color)" }}>
+                          {isRtl ? "حاضر" : "Present"}
+                        </th>
+                        <th className="text-left py-4 px-6 font-semibold" style={{ color: "var(--text-color)" }}>
+                          {isRtl ? "غائب" : "Absent"}
+                        </th>
+                        <th className="text-left py-4 px-6 font-semibold" style={{ color: "var(--text-color)" }}>
+                          {isRtl ? "متأخر" : "Late"}
+                        </th>
+                        <th className="text-left py-4 px-6 font-semibold" style={{ color: "var(--text-color)" }}>
+                          {isRtl ? "متوسط وقت الحضور" : "Avg Clock In"}
+                        </th>
+                        <th className="text-left py-4 px-6 font-semibold" style={{ color: "var(--text-color)" }}>
+                          {isRtl ? "من المكتب" : "Office"}
+                        </th>
+                        <th className="text-left py-4 px-6 font-semibold" style={{ color: "var(--text-color)" }}>
+                          {isRtl ? "من المنزل" : "Home"}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {attendanceData?.map((row, idx) => (
+                        <tr key={row.user._id} className="border-b" style={{ borderColor: "var(--border-color)" }}>
+                          <td className="py-4 px-6">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
+                                {row.user.firstName?.charAt(0)}{row.user.lastName?.charAt(0)}
+                              </div>
+                              <div>
+                                <p className="font-medium" style={{ color: "var(--text-color)" }}>
+                                  {row.user.firstName} {row.user.lastName}
+                                </p>
+                                <p className="text-sm" style={{ color: "var(--sub-text-color)" }}>
+                                  {row.user.email}
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-4 px-6">{row.present}</td>
+                          <td className="py-4 px-6">{row.absent}</td>
+                          <td className="py-4 px-6">{row.late}</td>
+                          <td className="py-4 px-6">{row.avgClockIn}</td>
+                          <td className="py-4 px-6">{row.office}</td>
+                          <td className="py-4 px-6">{row.home}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full">

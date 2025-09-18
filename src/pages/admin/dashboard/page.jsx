@@ -182,7 +182,7 @@ useEffect(() => {
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
               
               {/* Today's Attendance */}
-              <div className="w-fullxl:col-span-2">
+              <div className="w-full xl:col-span-2">
                 <div 
                   className="p-6 rounded-2xl border"
                   style={{

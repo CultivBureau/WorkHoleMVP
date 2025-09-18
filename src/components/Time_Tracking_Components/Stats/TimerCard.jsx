@@ -108,7 +108,7 @@ const TimerCard = () => {
   return (
     <>
       <div
-        className={`w-full min-h-[140px] flex flex-col justify-between p-2 rounded-2xl transition-all duration-300 relative overflow-hidden ${
+        className={`w-full min-h-[140px]  flex flex-col justify-between p-2 rounded-2xl transition-all duration-300 relative overflow-hidden ${
           hasActiveTimer ? 'cursor-pointer' : 'cursor-default'
         } ${isRunning ? 'bg-gradient-to-br from-[#CDFFFC]/30 to-[#E0FFFE]/30' : ''}`}
         onClick={() => hasActiveTimer ? setShowControlPopup(true) : null}
