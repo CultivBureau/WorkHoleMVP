@@ -25,6 +25,7 @@ body {
   --border-color: #E0FFFD;
   --divider-color: #E0FFFD;
   --text-color-2: #202224;
+  --shadow-color: rgba(0, 0, 0, 0.2);
 
   /* Active menu item background */
   --menu-active-bg: #DDF8FA;
@@ -68,7 +69,7 @@ body {
   --pending-leave-box-bg: #FED7AA;
   --approved-leave-box-bg: #BBF7D0;
 
-  
+
 }
 
 /* Gradient Text Utilities */
@@ -126,12 +127,10 @@ body {
   --hover-color: #CDFFFC9C;
   --border-color: #e5e7eb;
   --divider-color: #e5e7eb;
+  --shadow-color: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
 
   --card-color: #0000;
-
-  /* Light mode active menu background */
   --menu-active-bg: #DDF8FA;
-
 }
 
 [data-theme="dark"] {
@@ -150,12 +149,10 @@ body {
   --table-bg: #111827;
   --table-header-bg: #4b5563;
   --table-text: #fff;
+  --shadow-color: 0 4px 6px -1px rgba(255, 255, 255, 0.05), 0 2px 4px -2px rgba(255, 255, 255, 0.05);
 
-  /* bg for card in time tracking page */
   --card-bg: #111827;
   --card-color: #ffffff;
-
-  /* Dark mode active menu background */
   --menu-active-bg: #1a3a3d;
 
   /* Chart Colors for Dark Mode */

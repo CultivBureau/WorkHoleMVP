@@ -233,9 +233,9 @@ const EmployeeCard = ({
             </div>
 
             {/* Bottom Section: Status Badge */}
-            <div className="flex justify-center mt-1 mb-3">
+            <div className="flex justify-center  mt-2 mb-3">
                 <span
-                    className="px-3 py-1 rounded-full text-xs font-medium border"
+                    className="px-8 py-0.5 rounded-full text-xs font-medium border"
                     style={{
                         backgroundColor: statusColors.bg,
                         color: statusColors.text,

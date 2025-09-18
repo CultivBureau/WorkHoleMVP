@@ -13,7 +13,34 @@ const EmployeesTable = () => {
     const [statusFilter, setStatusFilter] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [viewMode, setViewMode] = useState("grid"); // "grid" or "table"
-    const itemsPerPage = viewMode === "grid" ? 8 : 6; // 8 cards (4x2) or 6 table rows per page
+
+    // Responsive items per page based on screen size and view mode
+    const getItemsPerPage = () => {
+        if (viewMode === "grid") {
+            // For grid: 8 on desktop (4x2), 4 on mobile (2x2)
+            return window.innerWidth < 768 ? 4 : 8;
+        } else {
+            // For table: same as before
+            return 6;
+        }
+    };
+
+    const [itemsPerPage, setItemsPerPage] = useState(getItemsPerPage());
+
+    // Update items per page on resize
+    useEffect(() => {
+        const handleResize = () => {
+            setItemsPerPage(getItemsPerPage());
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [viewMode]);
+
+    // Update items per page when view mode changes
+    useEffect(() => {
+        setItemsPerPage(getItemsPerPage());
+    }, [viewMode]);
 
     // Mock data - replace with actual API call
     const mockEmployees = [
@@ -99,7 +126,7 @@ const EmployeesTable = () => {
     // Reset to page 1 when filters change
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchTerm, joinDateFilter, departmentFilter, roleFilter, statusFilter, viewMode]);
+    }, [searchTerm, joinDateFilter, departmentFilter, roleFilter, statusFilter, viewMode, itemsPerPage]);
 
     // Get unique values for filter options
     const uniqueDepartments = [...new Set(mockEmployees.map(emp => emp.department))];
@@ -126,62 +153,54 @@ const EmployeesTable = () => {
         { key: 'status', value: statusFilter, setter: setStatusFilter }
     ].filter(filter => filter.value !== "");
 
-    // Filter component
-    const FilterSelect = ({ value, onChange, options, label, placeholder, icon }) => (
-        <div className="relative">
+    // Responsive FilterSelect
+    const FilterSelect = ({ value, onChange, options, placeholder }) => (
+        <div className="relative w-full mb-2 md:mb-0">
             <select
-                value={value}
+                value=""
                 onChange={onChange}
-                className="border rounded-lg px-4 py-2 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200 min-w-[140px] font-medium"
+                className="w-full border rounded-full px-4 py-2 text-xs font-medium gradient-text transition-all duration-200 appearance-none"
                 style={{
                     borderColor: 'var(--border-color)',
                     backgroundColor: 'var(--bg-color)',
-                    color: value ? 'var(--primary-color)' : 'var(--sub-text-color)',
-                    paddingRight: isArabic ? '16px' : '35px',
-                    paddingLeft: isArabic ? '35px' : '16px',
+                    color: 'var(--accent-color)',
                     direction: isArabic ? 'rtl' : 'ltr',
+                    cursor: 'pointer'
                 }}
             >
-                <option value="">{placeholder}</option>
+                <option value="" disabled className="gradient-text">{placeholder}</option>
                 {options.map((option) => (
-                    <option key={option} value={option}>
+                    <option key={option} value={option} style={{ color: 'var(--text-color)' }}>
                         {option}
                     </option>
                 ))}
             </select>
             <ChevronDown
-                className={`absolute top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none ${isArabic ? 'left-3' : 'right-3'}`}
-                style={{ color: 'var(--primary-color)' }}
+                className={`absolute top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none gradient-text ${isArabic ? 'left-4' : 'right-4'}`}
             />
-            {value && (
-                <div
-                    className={`absolute top-1 ${isArabic ? 'left-1' : 'right-1'} w-2 h-2 rounded-full`}
-                    style={{ backgroundColor: 'var(--primary-color)' }}
-                />
-            )}
         </div>
     );
 
     // Action buttons for table
     const ActionButtons = ({ employee }) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 md:gap-2">
             <button
                 className="p-1 rounded hover:bg-gray-100 transition-colors"
                 title={t("employees.actions.view", "View")}
             >
-                <Eye className="w-4 h-4" style={{ color: 'var(--sub-text-color)' }} />
+                <Eye className="w-3 h-3 md:w-4 md:h-4" style={{ color: 'var(--sub-text-color)' }} />
             </button>
             <button
                 className="p-1 rounded hover:bg-gray-100 transition-colors"
                 title={t("employees.actions.edit", "Edit")}
             >
-                <Edit className="w-4 h-4" style={{ color: 'var(--sub-text-color)' }} />
+                <Edit className="w-3 h-3 md:w-4 md:h-4" style={{ color: 'var(--sub-text-color)' }} />
             </button>
             <button
                 className="p-1 rounded hover:bg-gray-100 transition-colors"
                 title={t("employees.actions.delete", "Delete")}
             >
-                <Trash2 className="w-4 h-4" style={{ color: '#ef4444' }} />
+                <Trash2 className="w-3 h-3 md:w-4 md:h-4" style={{ color: '#ef4444' }} />
             </button>
         </div>
     );
@@ -190,16 +209,17 @@ const EmployeesTable = () => {
         <div className="w-full" dir={isArabic ? "rtl" : "ltr"}>
             {/* Filters and Controls Container */}
             <div
-                className="rounded-xl border shadow-sm p-6 mb-2"
+                className="rounded-xl border shadow-sm p-3 md:p-6 mb-2"
                 style={{
                     backgroundColor: 'var(--bg-color)',
-                    borderColor: 'var(--border-color)'
+                    borderColor: 'var(--border-color)',
+                    boxShadow: 'var(--shadow-color)'
                 }}
             >
-                {/* Search and View Toggle */}
-                <div className={`flex items-center justify-between mb-4 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                    {/* Search */}
-                    <div className="relative flex-1 max-w-md">
+                {/* First Row - Search and Filter Buttons */}
+                <div className={`grid grid-cols-1 md:grid-cols-8 gap-2 md:gap-3 mb-4 items-center ${isArabic ? 'direction-rtl' : ''}`}>
+                    {/* Search - Takes 3 columns on desktop, full width on mobile */}
+                    <div className="md:col-span-3 col-span-1 w-full mb-2 md:mb-0 relative">
                         <Search
                             className={`absolute top-1/2 transform -translate-y-1/2 w-4 h-4 ${isArabic ? 'right-3' : 'left-3'}`}
                             style={{ color: 'var(--sub-text-color)' }}
@@ -209,128 +229,154 @@ const EmployeesTable = () => {
                             placeholder={t("employees.search.placeholder", "Search employees...")}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full border rounded-lg py-2 text-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200"
+                            className="w-full border rounded-xl py-2 text-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200"
                             style={{
                                 borderColor: 'var(--border-color)',
                                 backgroundColor: 'var(--bg-color)',
                                 color: 'var(--text-color)',
                                 paddingLeft: isArabic ? '16px' : '40px',
                                 paddingRight: isArabic ? '40px' : '16px',
+                                focusRingColor: 'var(--accent-color)'
                             }}
                         />
                     </div>
 
-                    {/* View Toggle and Add Button */}
-                    <div className={`flex items-center gap-4 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                    {/* Each filter/select is full width on mobile, 1 col on desktop */}
+                    <div className="md:col-span-1 col-span-1 w-full">
+                        <FilterSelect
+                            value={joinDateFilter}
+                            onChange={(e) => setJoinDateFilter(e.target.value)}
+                            options={uniqueJoinDates}
+                            placeholder={t("Join Date")}
+                        />
+                    </div>
+                    <div className="md:col-span-1 col-span-1 w-full">
+                        <FilterSelect
+                            value={departmentFilter}
+                            onChange={(e) => setDepartmentFilter(e.target.value)}
+                            options={uniqueDepartments}
+                            placeholder={t("Department")}
+                        />
+                    </div>
+                    <div className="md:col-span-1 col-span-1 w-full">
+                        <FilterSelect
+                            value={roleFilter}
+                            onChange={(e) => setRoleFilter(e.target.value)}
+                            options={uniqueRoles}
+                            placeholder={t("Role")}
+                        />
+                    </div>
+                    <div className="md:col-span-1 col-span-1 w-full">
+                        <FilterSelect
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            options={["Active", "Inactive", "Pending"]}
+                            placeholder={t("Status")}
+                        />
+                    </div>
+                    <div className="md:col-span-1 col-span-1 w-full">
+                        {activeFiltersCount > 0 ? (
+                            <button
+                                onClick={clearAllFilters}
+                                className="w-full px-3 py-1 rounded-xl text-xs md:text-sm font-medium transition-all duration-200 border gradient-bg"
+                                style={{
+                                    color: 'white',
+                                    borderColor: 'var(--accent-color)'
+                                }}
+                            >
+                                <span className="hidden md:inline">{t("employees.clearAll", "Clear All")}</span>
+                                <span className="md:hidden">Clear</span>
+                            </button>
+                        ) : (
+                            <div className="w-full h-full"></div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Second Row - View Toggle, Add Button, and Active Filters */}
+                <div className={`flex flex-col md:flex-row items-center justify-between gap-2 md:gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                    {/* Left side - Active Filters Chips */}
+                    <div className={`flex flex-wrap items-center gap-2 flex-1 w-full md:w-auto ${isArabic ? 'flex-row-reverse' : ''}`}>
+                        {activeFilters.length > 0 && (
+                            <>
+                                {activeFilters.map((filter) => (
+                                    <div
+                                        key={filter.key}
+                                        className="flex items-center gap-2 px-2 md:px-3 py-1 rounded-full text-xs border"
+                                        style={{
+                                            backgroundColor: 'var(--menu-active-bg)',
+                                            borderColor: 'var(--accent-color)',
+                                            color: 'var(--text-color)'
+                                        }}
+                                    >
+                                        <span>{filter.value}</span>
+                                        <button
+                                            onClick={() => filter.setter("")}
+                                            className="w-3 h-3 md:w-4 md:h-4 rounded-full flex items-center justify-center hover:bg-red-100 transition-colors"
+                                            style={{ color: 'var(--accent-color)' }}
+                                        >
+                                            <span className="text-xs">×</span>
+                                        </button>
+                                    </div>
+                                ))}
+                                {/* Results Count */}
+                                <div className="text-xs md:text-sm font-medium ml-2" style={{ color: 'var(--sub-text-color)' }}>
+                                    {filteredEmployees.length} {t("employees.results", "results")}
+                                </div>
+                            </>
+                        )}
+                        {activeFilters.length === 0 && (
+                            <div className="text-xs md:text-sm font-medium" style={{ color: 'var(--sub-text-color)' }}>
+                                {filteredEmployees.length} {t("employees.results", "results")}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Right side - View Toggle and Add Button */}
+                    <div className={`flex items-center gap-3 md:gap-4 w-full md:w-auto justify-end`}>
                         {/* View Mode Toggle */}
-                        <div className="flex items-center border rounded-lg p-1" style={{ borderColor: 'var(--border-color)' }}>
+                        <div
+                            className="flex items-center rounded-xl p-1"
+                            style={{
+                                backgroundColor: 'var(--menu-active-bg)',
+                                border: '1px solid var(--border-color)'
+                            }}
+                        >
                             <button
                                 onClick={() => setViewMode("grid")}
-                                className={`p-2 rounded transition-all duration-200 ${viewMode === "grid" ? 'shadow-sm' : ''}`}
+                                className={`p-1.5 md:p-2 rounded-lg transition-all duration-200 ${viewMode === "grid" ? 'shadow-sm' : ''}`}
                                 style={{
-                                    backgroundColor: viewMode === "grid" ? 'var(--primary-color)' : 'transparent',
+                                    backgroundColor: viewMode === "grid" ? 'var(--accent-color)' : 'transparent',
                                     color: viewMode === "grid" ? 'white' : 'var(--sub-text-color)'
                                 }}
                             >
-                                <LayoutGrid className="w-4 h-4" />
+                                <LayoutGrid className="w-3 h-3 md:w-4 md:h-4" />
                             </button>
                             <button
                                 onClick={() => setViewMode("table")}
-                                className={`p-2 rounded transition-all duration-200 ${viewMode === "table" ? 'shadow-sm' : ''}`}
+                                className={`p-1.5 md:p-2 rounded-lg transition-all duration-200 ${viewMode === "table" ? 'shadow-sm' : ''}`}
                                 style={{
-                                    backgroundColor: viewMode === "table" ? 'var(--primary-color)' : 'transparent',
+                                    backgroundColor: viewMode === "table" ? 'var(--accent-color)' : 'transparent',
                                     color: viewMode === "table" ? 'white' : 'var(--sub-text-color)'
                                 }}
                             >
-                                <TableIcon className="w-4 h-4" />
+                                <TableIcon className="w-3 h-3 md:w-4 md:h-4" />
                             </button>
                         </div>
 
                         {/* Add New Employee Button */}
                         <button
-                            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white transition-all duration-200 hover:shadow-lg"
-                            style={{ backgroundColor: 'var(--primary-color)' }}
-                        >
-                            <Plus className="w-4 h-4" />
-                            {t("employees.addNew", "Add New Employee")}
-                        </button>
-                    </div>
-                </div>
-
-                {/* Filters Row */}
-                <div className={`flex flex-wrap items-center gap-4 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                    <FilterSelect
-                        value={joinDateFilter}
-                        onChange={(e) => setJoinDateFilter(e.target.value)}
-                        options={uniqueJoinDates}
-                        placeholder={t("employees.filters.joinDate", "Join Date")}
-                    />
-
-                    <FilterSelect
-                        value={departmentFilter}
-                        onChange={(e) => setDepartmentFilter(e.target.value)}
-                        options={uniqueDepartments}
-                        placeholder={t("employees.filters.department", "Department")}
-                    />
-
-                    <FilterSelect
-                        value={roleFilter}
-                        onChange={(e) => setRoleFilter(e.target.value)}
-                        options={uniqueRoles}
-                        placeholder={t("employees.filters.role", "Role")}
-                    />
-
-                    <FilterSelect
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                        options={["Active", "Inactive", "Pending"]}
-                        placeholder={t("employees.filters.status", "Status")}
-                    />
-
-                    {/* Clear All Button */}
-                    {activeFiltersCount > 0 && (
-                        <button
-                            onClick={clearAllFilters}
-                            className="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md"
+                            className="gradient-bg flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-white transition-all duration-200 hover:shadow-lg"
                             style={{
-                                backgroundColor: 'var(--primary-color)',
-                                color: 'white'
+                                border: '1px solid var(--accent-color)'
                             }}
                         >
-                            {t("employees.clearAll", "Clear All")}
+                            <Plus className="w-3 h-3 md:w-4 md:h-4" />
+                            <span className="hidden sm:inline">{t("employees.addNew", "Add New Employee")}</span>
+                            <span className="sm:hidden">{t("employees.add", "Add")}</span>
                         </button>
-                    )}
-
-                    {/* Results Count */}
-                    <div className="text-sm font-medium" style={{ color: 'var(--sub-text-color)' }}>
-                        {filteredEmployees.length} {t("employees.results", "results")}
                     </div>
                 </div>
-
-                {/* Active Filters Chips */}
-                {activeFilters.length > 0 && (
-                    <div className={`flex flex-wrap items-center gap-2 mt-4 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                        {activeFilters.map((filter) => (
-                            <div
-                                key={filter.key}
-                                className="flex items-center gap-2 px-3 py-1 rounded-full text-xs border"
-                                style={{
-                                    backgroundColor: 'var(--table-header-bg)',
-                                    borderColor: 'var(--border-color)',
-                                    color: 'var(--text-color)'
-                                }}
-                            >
-                                <span>{filter.value}</span>
-                                <button
-                                    onClick={() => filter.setter("")}
-                                    className="w-4 h-4 rounded-full flex items-center justify-center hover:bg-red-100 transition-colors"
-                                >
-                                    <span className="text-xs">×</span>
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                )}
             </div>
 
             {/* Content Container */}
@@ -339,16 +385,17 @@ const EmployeesTable = () => {
                 style={{
                     backgroundColor: 'var(--bg-color)',
                     borderColor: 'var(--border-color)',
-                    height: '525px' // Increased height to accommodate pagination properly
+                    height: '400px md:525px', // Responsive height
+                    boxShadow: 'var(--shadow-color)'
                 }}
             >
                 {viewMode === "grid" ? (
-                    /* Grid View - Fixed Height */
+                    /* Grid View - Responsive */
                     <div className="h-full flex flex-col">
-                        <div className="flex-1 p-4" style={{ height: 'calc(100% - 60px)' }}>
-                            <div className="grid grid-cols-4 grid-rows-2 gap-4 h-full">
-                                {/* Render exactly 8 cards in 4x2 grid */}
-                                {Array.from({ length: 8 }).map((_, index) => {
+                        <div className="flex-1 p-2 md:p-4" style={{ height: 'calc(100% - 60px)' }}>
+                            <div className="grid grid-cols-2 md:grid-cols-4 grid-rows-2 gap-2 md:gap-4 h-full">
+                                {/* Render cards based on responsive layout */}
+                                {Array.from({ length: itemsPerPage }).map((_, index) => {
                                     const employee = paginatedEmployees[index];
                                     return employee ? (
                                         <EmployeeCard
@@ -371,70 +418,75 @@ const EmployeesTable = () => {
 
                         {/* Pagination for Grid */}
                         <div
-                            className={`px-6 py-3 border-t flex items-center justify-between h-[60px] ${isArabic ? 'flex-row-reverse' : ''}`}
+                            className={`px-3 md:px-6 py-3 border-t flex items-center justify-between h-[60px] ${isArabic ? 'flex-row-reverse' : ''}`}
                             style={{ borderColor: 'var(--divider-color)' }}
                         >
-                            <div className="text-sm font-medium" style={{ color: 'var(--sub-text-color)' }}>
-                                {t("employees.pagination.page", "Page")} {currentPage} {t("employees.pagination.of", "of")} {totalPages}
-                                ({filteredEmployees.length} {t("employees.pagination.total", "total employees")})
+                            <div className="text-xs md:text-sm font-medium" style={{ color: 'var(--sub-text-color)' }}>
+                                <span className="hidden md:inline">
+                                    {t("employees.pagination.page", "Page")} {currentPage} {t("employees.pagination.of", "of")} {totalPages}
+                                    ({filteredEmployees.length} {t("employees.pagination.total", "total employees")})
+                                </span>
+                                <span className="md:hidden">
+                                    {currentPage}/{totalPages} ({filteredEmployees.length})
+                                </span>
                             </div>
                             <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
                                 <button
                                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                                     disabled={currentPage === 1}
-                                    className="p-2 rounded-xl border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="p-1.5 md:p-2 rounded-xl border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                                     style={{
                                         borderColor: 'var(--border-color)',
                                         backgroundColor: 'var(--bg-color)',
                                         color: 'var(--text-color)'
                                     }}
                                 >
-                                    {isArabic ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+                                    {isArabic ? <ChevronRight className="w-3 h-3 md:w-4 md:h-4" /> : <ChevronLeft className="w-3 h-3 md:w-4 md:h-4" />}
                                 </button>
                                 <button
                                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                                     disabled={currentPage === totalPages}
-                                    className="p-2 rounded-xl border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="p-1.5 md:p-2 rounded-xl border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                                     style={{
                                         borderColor: 'var(--border-color)',
                                         backgroundColor: 'var(--bg-color)',
                                         color: 'var(--text-color)'
                                     }}
                                 >
-                                    {isArabic ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                                    {isArabic ? <ChevronLeft className="w-3 h-3 md:w-4 md:h-4" /> : <ChevronRight className="w-3 h-3 md:w-4 md:h-4" />}
                                 </button>
                             </div>
                         </div>
                     </div>
                 ) : (
-                    /* Table View - Fixed Height */
+                    /* Table View - Responsive with horizontal scroll */
                     <div className="h-full flex flex-col">
-                        <div className="flex-1" style={{ height: 'calc(100% - 60px)' }}>
-                            <table className="w-full">
+                        <div className="flex-1 overflow-x-auto" style={{ height: 'calc(100% - 60px)' }}>
+                            <table className="w-full min-w-[800px]"> {/* Minimum width to prevent squashing */}
                                 <thead style={{ backgroundColor: 'var(--table-header-bg)' }} className="sticky top-0">
                                     <tr>
-                                        <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
-                                            style={{ color: 'var(--table-header-text)' }}>
+                                        <th className={`px-3 md:px-6 py-3 md:py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                                            style={{ color: 'var(--table-header-text)', minWidth: '150px' }}>
                                             {t("employees.table.employee", "Employee")}
                                         </th>
-                                        <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
-                                            style={{ color: 'var(--table-header-text)' }}>
+                                        <th className={`px-3 md:px-6 py-3 md:py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                                            style={{ color: 'var(--table-header-text)', minWidth: '120px' }}>
                                             {t("employees.table.role", "Role")}
                                         </th>
-                                        <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
-                                            style={{ color: 'var(--table-header-text)' }}>
+                                        <th className={`px-3 md:px-6 py-3 md:py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                                            style={{ color: 'var(--table-header-text)', minWidth: '100px' }}>
                                             {t("employees.table.joinDate", "Join Date")}
                                         </th>
-                                        <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
-                                            style={{ color: 'var(--table-header-text)' }}>
+                                        <th className={`px-3 md:px-6 py-3 md:py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                                            style={{ color: 'var(--table-header-text)', minWidth: '120px' }}>
                                             {t("employees.table.department", "Department")}
                                         </th>
-                                        <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
-                                            style={{ color: 'var(--table-header-text)' }}>
+                                        <th className={`px-3 md:px-6 py-3 md:py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                                            style={{ color: 'var(--table-header-text)', minWidth: '100px' }}>
                                             {t("employees.table.status", "Status")}
                                         </th>
-                                        <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
-                                            style={{ color: 'var(--table-header-text)' }}>
+                                        <th className={`px-3 md:px-6 py-3 md:py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                                            style={{ color: 'var(--table-header-text)', minWidth: '100px' }}>
                                             {t("employees.table.action", "Action")}
                                         </th>
                                     </tr>
@@ -456,41 +508,41 @@ const EmployeesTable = () => {
                                                     index % 2 === 0 ? 'var(--table-row-bg)' : 'var(--table-row-alt-bg)';
                                             }}
                                         >
-                                            <td className={`px-6 py-4 ${isArabic ? 'text-right' : 'text-left'}`}>
-                                                <div className={`flex items-center gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                            <td className={`px-3 md:px-6 py-3 md:py-4 ${isArabic ? 'text-right' : 'text-left'}`}>
+                                                <div className={`flex items-center gap-2 md:gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
                                                     <img
                                                         src={employee.avatar}
                                                         alt={employee.name}
-                                                        className="w-10 h-10 rounded-full object-cover"
+                                                        className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover flex-shrink-0"
                                                         onError={(e) => {
                                                             e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(employee.name)}&background=15919B&color=fff&size=40`;
                                                         }}
                                                     />
-                                                    <div>
-                                                        <div className="text-sm font-medium" style={{ color: 'var(--text-color)' }}>
+                                                    <div className="min-w-0 flex-1">
+                                                        <div className="text-xs md:text-sm font-medium truncate" style={{ color: 'var(--text-color)' }}>
                                                             {employee.name}
                                                         </div>
-                                                        <div className="text-xs" style={{ color: 'var(--sub-text-color)' }}>
+                                                        <div className="text-xs truncate" style={{ color: 'var(--sub-text-color)' }}>
                                                             {employee.employeeId}
                                                         </div>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
+                                            <td className={`px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm ${isArabic ? 'text-right' : 'text-left'}`}
                                                 style={{ color: 'var(--sub-text-color)' }}>
-                                                {employee.position}
+                                                <div className="truncate">{employee.position}</div>
                                             </td>
-                                            <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
+                                            <td className={`px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm ${isArabic ? 'text-right' : 'text-left'}`}
                                                 style={{ color: 'var(--sub-text-color)' }}>
                                                 {employee.joinDate}
                                             </td>
-                                            <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
+                                            <td className={`px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm ${isArabic ? 'text-right' : 'text-left'}`}
                                                 style={{ color: 'var(--sub-text-color)' }}>
-                                                {employee.department}
+                                                <div className="truncate">{employee.department}</div>
                                             </td>
-                                            <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}>
+                                            <td className={`px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm ${isArabic ? 'text-right' : 'text-left'}`}>
                                                 <span
-                                                    className={`px-3 py-1 rounded-full text-xs font-medium ${employee.status === "Active"
+                                                    className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${employee.status === "Active"
                                                         ? 'bg-green-100 text-green-700'
                                                         : employee.status === "Inactive"
                                                             ? 'bg-red-100 text-red-700'
@@ -500,7 +552,7 @@ const EmployeesTable = () => {
                                                     {employee.status}
                                                 </span>
                                             </td>
-                                            <td className={`px-6 py-4 ${isArabic ? 'text-right' : 'text-left'}`}>
+                                            <td className={`px-3 md:px-6 py-3 md:py-4 ${isArabic ? 'text-right' : 'text-left'}`}>
                                                 <ActionButtons employee={employee} />
                                             </td>
                                         </tr>
@@ -511,37 +563,42 @@ const EmployeesTable = () => {
 
                         {/* Pagination for Table */}
                         <div
-                            className={`px-6 py-3 border-t flex items-center justify-between h-[60px] ${isArabic ? 'flex-row-reverse' : ''}`}
+                            className={`px-3 md:px-6 py-3 border-t flex items-center justify-between h-[60px] ${isArabic ? 'flex-row-reverse' : ''}`}
                             style={{ borderColor: 'var(--divider-color)' }}
                         >
-                            <div className="text-sm font-medium" style={{ color: 'var(--sub-text-color)' }}>
-                                {t("employees.pagination.page", "Page")} {currentPage} {t("employees.pagination.of", "of")} {totalPages}
-                                ({filteredEmployees.length} {t("employees.pagination.total", "total employees")})
+                            <div className="text-xs md:text-sm font-medium" style={{ color: 'var(--sub-text-color)' }}>
+                                <span className="hidden md:inline">
+                                    {t("employees.pagination.page", "Page")} {currentPage} {t("employees.pagination.of", "of")} {totalPages}
+                                    ({filteredEmployees.length} {t("employees.pagination.total", "total employees")})
+                                </span>
+                                <span className="md:hidden">
+                                    {currentPage}/{totalPages} ({filteredEmployees.length})
+                                </span>
                             </div>
                             <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
                                 <button
                                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                                     disabled={currentPage === 1}
-                                    className="p-2 rounded-xl border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="p-1.5 md:p-2 rounded-xl border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                                     style={{
                                         borderColor: 'var(--border-color)',
                                         backgroundColor: 'var(--bg-color)',
                                         color: 'var(--text-color)'
                                     }}
                                 >
-                                    {isArabic ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+                                    {isArabic ? <ChevronRight className="w-3 h-3 md:w-4 md:h-4" /> : <ChevronLeft className="w-3 h-3 md:w-4 md:h-4" />}
                                 </button>
                                 <button
                                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                                     disabled={currentPage === totalPages}
-                                    className="p-2 rounded-xl border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="p-1.5 md:p-2 rounded-xl border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                                     style={{
                                         borderColor: 'var(--border-color)',
                                         backgroundColor: 'var(--bg-color)',
                                         color: 'var(--text-color)'
                                     }}
                                 >
-                                    {isArabic ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                                    {isArabic ? <ChevronLeft className="w-3 h-3 md:w-4 md:h-4" /> : <ChevronRight className="w-3 h-3 md:w-4 md:h-4" />}
                                 </button>
                             </div>
                         </div>
