@@ -23,32 +23,36 @@ const Leaves = () => {
         {/* Side Menu - Left side under navbar */}
         <SideMenu />
 
-        {/* Main Content - Rest of the space */}
-        <main className="flex-1 overflow-auto p-4" style={{ background: "var(--bg-all)" }}>
+        {/* Main Content - Responsive padding for 1024px-1300px */}
+        <main className="flex-1 overflow-auto p-2 sm:p-3 md:p-4 lg:p-3 xl:p-4 2xl:p-6" style={{ background: "var(--bg-all)" }}>
           <div
-            className="h-max rounded-2xl border border-gray-200"
+            className="h-max rounded-xl lg:rounded-2xl border border-gray-200"
             style={{ background: "var(--bg-color)" }}
           >
-            {/* Leave Management content */}
-            <div className="w-full h-max p-6">
+            {/* Leave Management content with responsive padding */}
+            <div className="w-full h-max p-3 sm:p-4 md:p-5 lg:p-4 xl:p-5 2xl:p-8">
               {/* Top Status Cards - Leave Balances */}
-              <StatusCards />
+              <div className="mb-4 sm:mb-5 md:mb-6 lg:mb-4 xl:mb-5 2xl:mb-6">
+                <StatusCards />
+              </div>
 
-              {/* Main Content Grid - Leave Request and Summary Cards Side by Side */}
-              <div className="flex flex-col lg:flex-row gap-6 mb-6">
+              {/* Main Content Grid - Responsive for 1024px-1300px */}
+              <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 md:gap-5 lg:gap-3 xl:gap-4 2xl:gap-6 mb-4 sm:mb-5 md:mb-6 lg:mb-4 xl:mb-5 2xl:mb-6">
                 {/* Leave Request Form - Left Column - Takes half width */}
                 <div className="flex-1">
                   <LeaveRequest />
                 </div>
 
                 {/* Leave Summary Cards - Right Column - Takes half width */}
-                <div className="flex-1 ">
+                <div className="flex-1">
                   <LeaveSummaryCards />
                 </div>
               </div>
 
               {/* Leave History Table */}
-              <LeaveTable />
+              <div className="w-full">
+                <LeaveTable />
+              </div>
             </div>
           </div>
         </main>

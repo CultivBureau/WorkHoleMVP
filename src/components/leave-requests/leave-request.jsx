@@ -706,17 +706,17 @@ const LeaveRequest = ({ refetch }) => {
 
   return (
     <div
-      className="rounded-xl p-3 border shadow-sm h-full flex flex-col relative"
+      className="rounded-xl p-2 sm:p-3 md:p-4 lg:p-2 xl:p-3 2xl:p-6 border shadow-sm h-full flex flex-col relative"
       style={{
         backgroundColor: "var(--bg-color)",
         borderColor: "var(--border-color)",
-        minHeight: "280px",
-        maxHeight: "280px",
+        minHeight: "260px sm:280px lg:260px xl:280px 2xl:280px",
+        maxHeight: "260px sm:280px lg:260px xl:280px 2xl:280px",
       }}
       dir={isArabic ? "rtl" : "ltr"}
     >
       <div className="mb-2">
-        <h2 className="text-sm font-semibold gradient-text mb-2" dir="ltr">
+        <h2 className="text-xs sm:text-sm lg:text-xs xl:text-sm 2xl:text-sm font-semibold gradient-text mb-2" dir="ltr">
           {getStepTitle()}
         </h2>
         {renderProgressBar()}
@@ -733,18 +733,18 @@ const LeaveRequest = ({ refetch }) => {
         )}
       </div>
       {!showSuccess && (
-        <div className="flex justify-between mt-3 pt-2 border-t" style={{ borderColor: "var(--border-color)" }}>
+        <div className="flex justify-between mt-2 sm:mt-3 lg:mt-2 xl:mt-3 2xl:mt-3 pt-2 border-t" style={{ borderColor: "var(--border-color)" }}>
           <div>
-            <p className="text-xs" style={{ color: "var(--sub-text-color)" }}>
+            <p className="text-[10px] sm:text-xs lg:text-[10px] xl:text-xs 2xl:text-xs" style={{ color: "var(--sub-text-color)" }}>
               {t("leaves.form.step", "Step")} {currentStep} {t("leaves.form.of", "of")} 3
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-1.5 sm:gap-2 lg:gap-1.5 xl:gap-2 2xl:gap-2">
             {currentStep !== 1 && (
               <button
                 onClick={handleBack}
                 disabled={isSubmitting || isLoading}
-                className="px-3 py-1 border rounded-md font-medium hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+                className="px-2 sm:px-3 lg:px-2 xl:px-3 2xl:px-3 py-1 border rounded-md font-medium hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed text-[10px] sm:text-xs lg:text-[10px] xl:text-xs 2xl:text-xs"
                 style={{
                   borderColor: "var(--border-color)",
                   color: "var(--sub-text-color)",
@@ -757,10 +757,10 @@ const LeaveRequest = ({ refetch }) => {
             <button
               onClick={handleNext}
               disabled={isSubmitting || isLoading}
-              className="px-3 py-1 gradient-bg text-white rounded-md font-medium hover:opacity-90 transition-opacity disabled:opacity-70 disabled:cursor-not-allowed text-xs flex items-center gap-2"
+              className="px-2 sm:px-3 lg:px-2 xl:px-3 2xl:px-3 py-1 gradient-bg text-white rounded-md font-medium hover:opacity-90 transition-opacity disabled:opacity-70 disabled:cursor-not-allowed text-[10px] sm:text-xs lg:text-[10px] xl:text-xs 2xl:text-xs flex items-center gap-1 sm:gap-2 lg:gap-1 xl:gap-2 2xl:gap-2"
             >
               {(isSubmitting || isLoading) && currentStep === 3 && (
-                <Loader2 className="w-3 h-3 animate-spin" />
+                <Loader2 className="w-2.5 h-2.5 sm:w-3 sm:h-3 lg:w-2.5 lg:h-2.5 xl:w-3 xl:h-3 2xl:w-3 2xl:h-3 animate-spin" />
               )}
               {currentStep === 3
                 ? (isSubmitting || isLoading)

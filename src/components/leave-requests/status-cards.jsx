@@ -22,7 +22,7 @@ const LeaveStatusCards = () => {
                 <img
                     src="/assets/leaves/anual.svg"
                     alt="annual leave"
-                    className="w-8 h-8"
+                    className="w-6 h-6 sm:w-8 sm:h-8 lg:w-6 lg:h-6 xl:w-8 xl:h-8 2xl:w-8 2xl:h-8 transition-transform duration-200 hover:scale-110"
                 />
             ),
         },
@@ -34,7 +34,7 @@ const LeaveStatusCards = () => {
                 <img
                     src="/assets/leaves/sick.svg"
                     alt="sick leave"
-                    className="w-8 h-8"
+                    className="w-6 h-6 sm:w-8 sm:h-8 lg:w-6 lg:h-6 xl:w-8 xl:h-8 2xl:w-8 2xl:h-8 transition-transform duration-200 hover:scale-110"
                 />
             ),
         },
@@ -46,7 +46,7 @@ const LeaveStatusCards = () => {
                 <img
                     src="/assets/leaves/emergency.svg"
                     alt="emergency leave"
-                    className="w-8 h-8"
+                    className="w-6 h-6 sm:w-8 sm:h-8 lg:w-6 lg:h-6 xl:w-8 xl:h-8 2xl:w-8 2xl:h-8 transition-transform duration-200 hover:scale-110"
                 />
             ),
         },
@@ -58,23 +58,32 @@ const LeaveStatusCards = () => {
                 <img
                     src="/assets/leaves/unpaid.svg"
                     alt="unpaid leave"
-                    className="w-8 h-8"
+                    className="w-6 h-6 sm:w-8 sm:h-8 lg:w-6 lg:h-6 xl:w-8 xl:h-8 2xl:w-8 2xl:h-8 transition-transform duration-200 hover:scale-110"
                 />
             ),
         },
     ];
 
     return (
-        <div className="space-y-6 mb-6">
-            {/* Top Row - Leave Balance Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="w-full">
+            {/* Enhanced grid optimized for 1024px-1300px range */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-3 xl:gap-4 2xl:gap-6">
                 {statusCardsData.map((card, index) => (
                     <Card
                         key={index}
                         header={card.header}
-                        title={card.title}
+                        title={
+                            <span className="text-sm sm:text-base lg:text-sm xl:text-base 2xl:text-base transition-all duration-200">
+                                {card.title}
+                            </span>
+                        }
+                        subTitle={
+                            <span className="text-xs sm:text-sm lg:text-xs xl:text-sm 2xl:text-sm transition-all duration-200">
+                                {card.subTitle}
+                            </span>
+                        }
                         rightIcon={card.rightIcon}
-                        className="h-full"
+                        className="h-full min-h-[120px] sm:min-h-[140px] lg:min-h-[130px] xl:min-h-[140px] 2xl:min-h-[160px]"
                     />
                 ))}
             </div>
