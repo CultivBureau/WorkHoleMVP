@@ -20,120 +20,140 @@ import { LangProvider } from "./contexts/LangContext";
 import { AttendanceUpdateProvider } from "./contexts/AttendanceUpdateContext";
 import { BreakUpdateProvider } from "./contexts/BreakUpdateContext";
 import { TimerProvider } from "./contexts/TimerContext";
-
-
-
+import React, { useContext } from "react";
+import Error from "./components/Error/Error";
+import { GlobalErrorContext } from "./contexts/GlobalErrorContext";
 
 function App() {
+  const { globalError, setGlobalError } = useContext(GlobalErrorContext);
+
   return (
     <ThemeProvider>
       <LangProvider>
         <AttendanceUpdateProvider>
           <BreakUpdateProvider>
             <TimerProvider>
-              <BrowserRouter>
-                <Routes>
-                  {/* Public Routes - No Protection */}
-                  <Route path="/" element={<Login />} />
-                  <Route path="/forget-password" element={<ForgetPassword />} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-                  
-                  {/* Protected User Routes */}
-                  <Route
-                    path="/pages/User/dashboard"
-                    element={
-                      <ProtectedRoute>
-                        <Dashboard />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/pages/User/leaves"
-                    element={
-                      <ProtectedRoute>
-                        <Leaves />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/pages/User/time_tracking"
-                    element={
-                      <ProtectedRoute>
-                        <TimeTracking />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/pages/User/attendance-logs"
-                    element={
-                      <ProtectedRoute>
-                        <AttendanceLogs />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/pages/User/break-tracking"
-                    element={
-                      <ProtectedRoute>
-                        <BreakTracking />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/pages/User/profile"
-                    element={
-                      <ProtectedRoute>
-                        <Profile />
-                      </ProtectedRoute>
-                    }
-                  />
-                  
-                  {/* Protected Admin Routes */}
-                  <Route
-                    path="/pages/admin/dashboard"
-                    element={
-                      <ProtectedRoute>
-                        <DashboardAdmin />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/pages/admin/attendance"
-                    element={
-                      <ProtectedRoute>
-                        <AttendanceAdmin />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/pages/admin/break"
-                    element={
-                      <ProtectedRoute>
-                        <BreakAdmin />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/pages/admin/leaves"
-                    element={
-                      <ProtectedRoute>
-                        <LeavesAdmin />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/pages/admin/users"
-                    element={
-                      <ProtectedRoute>
-                        <UsersAdmin />
-                      </ProtectedRoute>
-                    }
-                  />
-                  
-                  {/* Catch all route - redirect to login for any unmatched routes */}
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-              </BrowserRouter>
+              {globalError ? (
+                <Error
+                  {...globalError}
+                  onRefresh={() => {
+                    setGlobalError(null);
+                    window.location.reload();
+                  }}
+                  onGoHome={() => {
+                    setGlobalError(null);
+                    window.location.href = "/";
+                  }}
+                  onGoBack={() => setGlobalError(null)}
+                />
+              ) : (
+                <BrowserRouter>
+                  <Routes>
+                    {/* Public Routes - No Protection */}
+                    <Route path="/" element={<Login />} />
+                    <Route
+                      path="/forget-password"
+                      element={<ForgetPassword />}
+                    />
+                    <Route path="/reset-password" element={<ResetPassword />} />
+
+                    {/* Protected User Routes */}
+                    <Route
+                      path="/pages/User/dashboard"
+                      element={
+                        <ProtectedRoute>
+                          <Dashboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/pages/User/leaves"
+                      element={
+                        <ProtectedRoute>
+                          <Leaves />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/pages/User/time_tracking"
+                      element={
+                        <ProtectedRoute>
+                          <TimeTracking />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/pages/User/attendance-logs"
+                      element={
+                        <ProtectedRoute>
+                          <AttendanceLogs />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/pages/User/break-tracking"
+                      element={
+                        <ProtectedRoute>
+                          <BreakTracking />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/pages/User/profile"
+                      element={
+                        <ProtectedRoute>
+                          <Profile />
+                        </ProtectedRoute>
+                      }
+                    />
+
+                    {/* Protected Admin Routes */}
+                    <Route
+                      path="/pages/admin/dashboard"
+                      element={
+                        <ProtectedRoute>
+                          <DashboardAdmin />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/pages/admin/attendance"
+                      element={
+                        <ProtectedRoute>
+                          <AttendanceAdmin />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/pages/admin/break"
+                      element={
+                        <ProtectedRoute>
+                          <BreakAdmin />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/pages/admin/leaves"
+                      element={
+                        <ProtectedRoute>
+                          <LeavesAdmin />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/pages/admin/users"
+                      element={
+                        <ProtectedRoute>
+                          <UsersAdmin />
+                        </ProtectedRoute>
+                      }
+                    />
+
+                    {/* Catch all route - redirect to login for any unmatched routes */}
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </Routes>
+                </BrowserRouter>
+              )}
             </TimerProvider>
           </BreakUpdateProvider>
         </AttendanceUpdateProvider>
