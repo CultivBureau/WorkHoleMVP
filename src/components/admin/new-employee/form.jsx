@@ -15,7 +15,7 @@ export default function NewEmployeeForm() {
     ];
 
     return (
-        <div className="w-full max-w-4xl mx-auto bg-[var(--bg-color)] rounded-xl border border-[var(--border-color)] p-8" dir={isArabic ? "rtl" : "ltr"}>
+        <div className="w-full  mx-auto bg-[var(--bg-color)] rounded-xl border border-[var(--border-color)] p-8" dir={isArabic ? "rtl" : "ltr"}>
             {/* Progress Bar */}
             <div className="mb-8">
                 {/* Progress Line */}
