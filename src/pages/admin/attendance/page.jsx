@@ -201,13 +201,13 @@ const cardData = [
 
 
   return (
-    <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
+    <div className="w-full h-screen flex flex-col bg-[var(--bg-color)]">
       <NavBarAdmin
       />
       <div className="flex flex-1 min-h-0">
         <SideBarAdmin />
         {/* Main Content */}
-        <main className="flex-1 overflow-auto p-6" style={{ background: "var(--bg-all)" }}>
+        <main className="flex-1 overflow-auto p-6 bg-[var(--bg-color)]">
           {/* Stats Cards - Responsive Grid */}
           <div className="w-full h-max grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-5">
             {cardData.map((card, index) => (
