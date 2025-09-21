@@ -176,7 +176,7 @@ const LeavesTable = () => {
 		<div className="bg-[var(--bg-color)] rounded-lg border border-[var(--border-color)]">
 			{/* Header with filters */}
 			<div className="px-6 py-4 border-b flex justify-center items-center bg-[var(--bg-color)]">
-				<div className="flex bg-[var(--bg-color)] p-4 w-[95%] h-max shadow-xl rounded-3xl border border-[var(--border-color)] flex-wrap items-center gap-4 justify-between">
+				<div className="flex bg-[var(--bg-color)] p-4 w-[98%] h-max shadow-xl rounded-3xl border border-[var(--border-color)] flex-wrap items-center gap-4 justify-between">
 					<div className="flex flex-wrap items-center gap-4">
 						<div className="flex items-center gap-2">
 							<span className="text-[10px] font-medium text-[var(--sub-text-color)]">
