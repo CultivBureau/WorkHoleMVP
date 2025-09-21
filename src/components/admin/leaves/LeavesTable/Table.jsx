@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import LeavePopUp from "../leavePopUp/LeavePopUp"
 
 // Sample leave request data
 const leaveData = [
@@ -27,6 +28,7 @@ const leaveData = [
 		status: "Rejected",
 		reason: "Sorry.! I can't approve",
 		approver: "Avinash",
+		comment : "Get well soon!",
 	},
 	{
 		id: 3,
@@ -63,6 +65,7 @@ const leaveData = [
 		status: "Pending",
 		reason: "Travelling to village",
 		approver: "--------",
+		
 	},
 	{
 		id: 6,
@@ -75,6 +78,7 @@ const leaveData = [
 		status: "Approved",
 		reason: "Travelling to village",
 		approver: "Avinash",
+		comment : "Enjoy your vacation!",
 	},
 	{
 		id: 7,
@@ -87,6 +91,7 @@ const leaveData = [
 		status: "Approved",
 		reason: "Travelling to village",
 		approver: "Avinash",
+		comment : "Enjoy your vacation!",
 	},
 	{
 		id: 8,
@@ -99,6 +104,7 @@ const leaveData = [
 		status: "Approved",
 		reason: "Travelling to village",
 		approver: "Avinash",
+		comment : "Enjoy your vacation!",
 	},
 	{
 		id: 9,
@@ -110,7 +116,8 @@ const leaveData = [
 		days: 5,
 		status: "Approved",
 		reason: "Travelling to village",
-		approver: "Avinash",
+		approver: "Avinash",	
+		comment : "Enjoy your vacation!",
 	},
 	{
 		id: 10,
@@ -123,6 +130,7 @@ const leaveData = [
 		status: "Approved",
 		reason: "Travelling to village",
 		approver: "Avinash",
+		comment : "Enjoy your vacation!",
 	},
 ]
 
@@ -171,142 +179,112 @@ const LeavesTable = () => {
 	const [status, setStatus] = useState("All Status")
 	const [dateFrom, setDateFrom] = useState("00/00/2025")
 	const [dateTo, setDateTo] = useState("00/00/2025")
+	const [selectedLeave, setSelectedLeave] = useState(null)
 
 	return (
-		<div className="bg-[var(--bg-color)] rounded-lg border border-[var(--border-color)]">
-			{/* Header with filters */}
-			<div className="px-6 py-4 border-b flex justify-center items-center bg-[var(--bg-color)]">
-				<div className="flex bg-[var(--bg-color)] p-4 w-[98%] h-max shadow-xl rounded-3xl border border-[var(--border-color)] flex-wrap items-center gap-4 justify-between">
-					<div className="flex flex-wrap items-center gap-4">
-						<div className="flex items-center gap-2">
-							<span className="text-[10px] font-medium text-[var(--sub-text-color)]">
-								Sort By
-							</span>
-							<select
-								value={sortBy}
-								onChange={(e) => setSortBy(e.target.value)}
-								className="h-8 px-3 border border-[var(--border-color)] rounded-md text-[10px] bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)]"
-							>
-								<option value="Newest First">Newest First</option>
-								<option value="Oldest First">Oldest First</option>
-							</select>
-						</div>
-						<div className="flex items-center gap-2">
-							<span className="text-[10px] font-medium text-[var(--sub-text-color)]">
-								Leave type
-							</span>
-							<select
-								value={leaveType}
-								onChange={(e) => setLeaveType(e.target.value)}
-								className="h-8 px-3 border border-[var(--border-color)] rounded-md text-[10px] bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)]"
-							>
-								<option value="All Leave">All Leave</option>
-								<option value="Annual">Annual</option>
-								<option value="Sick">Sick</option>
-								<option value="Emergency">Emergency</option>
-								<option value="Unpaid">Unpaid</option>
-							</select>
-						</div>
-						<div className="flex items-center gap-2">
-							<span className="text-[10px] font-medium text-[var(--sub-text-color)]">
-								Status
-							</span>
-							<select
-								value={status}
-								onChange={(e) => setStatus(e.target.value)}
-								className="h-8 px-3 border border-[var(--border-color)] rounded-md text-[10px] bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)]"
-							>
-								<option value="All Status">All Status</option>
-								<option value="Pending">Pending</option>
-								<option value="Rejected">Rejected</option>
-								<option value="Approved">Approved</option>
-							</select>
-						</div>
-						<div className="flex items-center gap-2">
-							<span className="text-[10px] font-medium text-[var(--sub-text-color)]">
-								Date from
-							</span>
-							<select
-								value={dateFrom}
-								onChange={(e) => setDateFrom(e.target.value)}
-								className="h-8 px-3 border border-[var(--border-color)] rounded-md text-[10px] bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)]"
-							>
-								<option value="00/00/2025">00/00/2025</option>
-							</select>
-						</div>
-						<div className="flex items-center gap-2">
-							<span className="text-[10px] font-medium text-[var(--sub-text-color)]">
-								Date To
-							</span>
-							<select
-								value={dateTo}
-								onChange={(e) => setDateTo(e.target.value)}
-								className="h-8 px-3 border border-[var(--border-color)] rounded-md text-[10px] bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)]"
-							>
-								<option value="00/00/2025">00/00/2025</option>
-							</select>
-						</div>
-					</div>
-
-					<div className="flex items-center gap-3">
-						<span className="text-[10px] text-[var(--sub-text-color)]">
-							5 of 18 page
-						</span>
-						<div className="flex items-center gap-1">
-							<button className="h-8 w-8 border border-[var(--border-color)] rounded-md bg-[var(--bg-color)] hover:bg-[var(--hover-color)] flex items-center justify-center transition-colors">
-								<svg
-									className="h-4 w-4 text-[var(--sub-text-color)]"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
+		<>
+			{selectedLeave && (
+				<LeavePopUp
+					name={selectedLeave.name}
+					avatar={selectedLeave.avatar}
+					type={selectedLeave.type}
+					from={selectedLeave.from}
+					to={selectedLeave.to}
+					days={selectedLeave.days}
+					status={selectedLeave.status}
+					reason={selectedLeave.reason}
+					approver={{
+						name: selectedLeave.approver,
+						role: selectedLeave.status === "Approved" ? "Team Lead" : "",
+						avatar: selectedLeave.approverAvatar,
+					}}
+					comment={selectedLeave.comment}
+					onClose={() => setSelectedLeave(null)}
+				/>
+			)}
+			<div className="bg-[var(--bg-color)] rounded-lg border border-[var(--border-color)]">
+				{/* Header with filters */}
+				<div className="px-6 py-4 border-b flex justify-center items-center bg-[var(--bg-color)]">
+					<div className="flex bg-[var(--bg-color)] p-4 w-[98%] h-max shadow-xl rounded-3xl border border-[var(--border-color)] flex-wrap items-center gap-4 justify-between">
+						<div className="flex flex-wrap items-center gap-4">
+							<div className="flex items-center gap-2">
+								<span className="text-[10px] font-medium text-[var(--sub-text-color)]">
+									Sort By
+								</span>
+								<select
+									value={sortBy}
+									onChange={(e) => setSortBy(e.target.value)}
+									className="h-8 px-3 border border-[var(--border-color)] rounded-md text-[10px] bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)]"
 								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M15 19l-7-7 7-7"
-									/>
-								</svg>
-							</button>
-							<button className="h-8 w-8 border border-[var(--border-color)] rounded-md bg-[var(--bg-color)] hover:bg-[var(--hover-color)] flex items-center justify-center transition-colors">
-								<svg
-									className="h-4 w-4 text-[var(--sub-text-color)]"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
+									<option value="Newest First">Newest First</option>
+									<option value="Oldest First">Oldest First</option>
+								</select>
+							</div>
+							<div className="flex items-center gap-2">
+								<span className="text-[10px] font-medium text-[var(--sub-text-color)]">
+									Leave type
+								</span>
+								<select
+									value={leaveType}
+									onChange={(e) => setLeaveType(e.target.value)}
+									className="h-8 px-3 border border-[var(--border-color)] rounded-md text-[10px] bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)]"
 								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M9 5l7 7-7 7"
-									/>
-								</svg>
-							</button>
+									<option value="All Leave">All Leave</option>
+									<option value="Annual">Annual</option>
+									<option value="Sick">Sick</option>
+									<option value="Emergency">Emergency</option>
+									<option value="Unpaid">Unpaid</option>
+								</select>
+							</div>
+							<div className="flex items-center gap-2">
+								<span className="text-[10px] font-medium text-[var(--sub-text-color)]">
+									Status
+								</span>
+								<select
+									value={status}
+									onChange={(e) => setStatus(e.target.value)}
+									className="h-8 px-3 border border-[var(--border-color)] rounded-md text-[10px] bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)]"
+								>
+									<option value="All Status">All Status</option>
+									<option value="Pending">Pending</option>
+									<option value="Rejected">Rejected</option>
+									<option value="Approved">Approved</option>
+								</select>
+							</div>
+							<div className="flex items-center gap-2">
+								<span className="text-[10px] font-medium text-[var(--sub-text-color)]">
+									Date from
+								</span>
+								<select
+									value={dateFrom}
+									onChange={(e) => setDateFrom(e.target.value)}
+									className="h-8 px-3 border border-[var(--border-color)] rounded-md text-[10px] bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)]"
+								>
+									<option value="00/00/2025">00/00/2025</option>
+								</select>
+							</div>
+							<div className="flex items-center gap-2">
+								<span className="text-[10px] font-medium text-[var(--sub-text-color)]">
+									Date To
+								</span>
+								<select
+									value={dateTo}
+									onChange={(e) => setDateTo(e.target.value)}
+									className="h-8 px-3 border border-[var(--border-color)] rounded-md text-[10px] bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)]"
+								>
+									<option value="00/00/2025">00/00/2025</option>
+								</select>
+							</div>
 						</div>
-					</div>
-				</div>
-			</div>
 
-			{/* Table */}
-			<div className="overflow-x-auto">
-				<table className="w-full">
-					<thead className="bg-[var(--table-header-bg)]">
-						<tr>
-							<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-								Name
-							</th>
-							<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-								Leave type
-							</th>
-							<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-								From
-							</th>
-							<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-								<div className="flex items-center gap-1 cursor-pointer">
-									To
+						<div className="flex items-center gap-3">
+							<span className="text-[10px] text-[var(--sub-text-color)]">
+								5 of 18 page
+							</span>
+							<div className="flex items-center gap-1">
+								<button className="h-8 w-8 border border-[var(--border-color)] rounded-md bg-[var(--bg-color)] hover:bg-[var(--hover-color)] flex items-center justify-center transition-colors">
 									<svg
-										className="h-3 w-3 text-gray-400"
+										className="h-4 w-4 text-[var(--sub-text-color)]"
 										fill="none"
 										stroke="currentColor"
 										viewBox="0 0 24 24"
@@ -315,79 +293,49 @@ const LeavesTable = () => {
 											strokeLinecap="round"
 											strokeLinejoin="round"
 											strokeWidth={2}
-											d="M19 9l-7 7-7-7"
+											d="M15 19l-7-7 7-7"
 										/>
 									</svg>
-								</div>
-							</th>
-							<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-								Days
-							</th>
-							<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-								Status
-							</th>
-							<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-								Reason
-							</th>
-							<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-								Approver
-							</th>
-							<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-								Action
-							</th>
-						</tr>
-					</thead>
-					<tbody className="bg-[var(--table-bg)]">
-						{leaveData.map((leave, index) => (
-							<tr
-								key={leave.id}
-								className="border-b border-[var(--border-color)] hover:bg-[var(--hover-color)] transition-colors"
-							>
-								<td className="py-4 px-6">
-									<div className="flex items-center gap-3">
-										<div className="h-10 w-10 rounded-full bg-[var(--container-color)] flex items-center justify-center overflow-hidden flex-shrink-0 border border-[var(--border-color)]">
-											{leave.avatar ? (
-												<img
-													src={leave.avatar}
-													alt={leave.name}
-													className="h-full w-full object-cover"
-												/>
-											) : (
-												<span className="text-sm font-medium text-[var(--sub-text-color)]">
-													{leave.name.split(" ").map((n) => n[0]).join("")}
-												</span>
-											)}
-										</div>
-										<span className="font-medium text-[var(--text-color)] text-sm">
-											{leave.name}
-										</span>
-									</div>
-								</td>
-								<td className="py-4 px-6 text-[var(--text-color)] text-sm">
-									{leave.type}
-								</td>
-								<td className="py-4 px-6 text-[var(--text-color)] text-sm">
-									{leave.from}
-								</td>
-								<td className="py-4 px-6 text-[var(--text-color)] text-sm">
-									{leave.to}
-								</td>
-								<td className="py-4 px-6 text-[var(--text-color)] text-sm">
-									{leave.days}
-								</td>
-								<td className="py-4 px-6">
-									{getStatusBadge(leave.status)}
-								</td>
-								<td className="py-4 px-6 text-[var(--text-color)] text-sm">
-									{leave.reason}
-								</td>
-								<td className="py-4 px-6 text-[var(--text-color)] text-sm">
-									{leave.approver}
-								</td>
-								<td className="py-4 px-6">
-									<button className="h-8 w-8 flex items-center justify-center rounded-full bg-[var(--container-color)] border border-[var(--border-color)] hover:bg-[var(--hover-color)] transition-colors">
+								</button>
+								<button className="h-8 w-8 border border-[var(--border-color)] rounded-md bg-[var(--bg-color)] hover:bg-[var(--hover-color)] flex items-center justify-center transition-colors">
+									<svg
+										className="h-4 w-4 text-[var(--sub-text-color)]"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth={2}
+											d="M9 5l7 7-7 7"
+										/>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				{/* Table */}
+				<div className="overflow-x-auto">
+					<table className="w-full">
+						<thead className="bg-[var(--table-header-bg)]">
+							<tr>
+								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
+									Name
+								</th>
+								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
+									Leave type
+								</th>
+								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
+									From
+								</th>
+								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
+									<div className="flex items-center gap-1 cursor-pointer">
+										To
 										<svg
-											className="h-5 w-5 text-[var(--accent-color)]"
+											className="h-3 w-3 text-gray-400"
 											fill="none"
 											stroke="currentColor"
 											viewBox="0 0 24 24"
@@ -396,23 +344,108 @@ const LeavesTable = () => {
 												strokeLinecap="round"
 												strokeLinejoin="round"
 												strokeWidth={2}
-												d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-											/>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												strokeWidth={2}
-												d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+												d="M19 9l-7 7-7-7"
 											/>
 										</svg>
-									</button>
-								</td>
+									</div>
+								</th>
+								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
+									Days
+								</th>
+								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
+									Status
+								</th>
+								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
+									Reason
+								</th>
+								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
+									Approver
+								</th>
+								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
+									Action
+								</th>
 							</tr>
-						))}
-					</tbody>
-				</table>
+						</thead>
+						<tbody className="bg-[var(--table-bg)]">
+							{leaveData.map((leave, index) => (
+								<tr
+									key={leave.id}
+									className="border-b border-[var(--border-color)] hover:bg-[var(--hover-color)] transition-colors"
+								>
+									<td className="py-4 px-6">
+										<div className="flex items-center gap-3">
+											<div className="h-10 w-10 rounded-full bg-[var(--container-color)] flex items-center justify-center overflow-hidden flex-shrink-0 border border-[var(--border-color)]">
+												{leave.avatar ? (
+													<img
+														src={leave.avatar}
+														alt={leave.name}
+														className="h-full w-full object-cover"
+													/>
+												) : (
+													<span className="text-sm font-medium text-[var(--sub-text-color)]">
+														{leave.name.split(" ").map((n) => n[0]).join("")}
+													</span>
+												)}
+											</div>
+											<span className="font-medium text-[var(--text-color)] text-sm">
+												{leave.name}
+											</span>
+										</div>
+									</td>
+									<td className="py-4 px-6 text-[var(--text-color)] text-sm">
+										{leave.type}
+									</td>
+									<td className="py-4 px-6 text-[var(--text-color)] text-sm">
+										{leave.from}
+									</td>
+									<td className="py-4 px-6 text-[var(--text-color)] text-sm">
+										{leave.to}
+									</td>
+									<td className="py-4 px-6 text-[var(--text-color)] text-sm">
+										{leave.days}
+									</td>
+									<td className="py-4 px-6">
+										{getStatusBadge(leave.status)}
+									</td>
+									<td className="py-4 px-6 text-[var(--text-color)] text-sm">
+										{leave.reason}
+									</td>
+									<td className="py-4 px-6 text-[var(--text-color)] text-sm">
+										{leave.approver}
+									</td>
+									<td className="py-4 px-6">
+										<button
+											className="h-8 w-8 flex items-center justify-center rounded-full bg-[var(--container-color)] border border-[var(--border-color)] hover:bg-[var(--hover-color)] transition-colors"
+											onClick={() => setSelectedLeave(leave)}
+										>
+											<svg
+												className="h-5 w-5 text-[var(--accent-color)]"
+												fill="none"
+												stroke="currentColor"
+												viewBox="0 0 24 24"
+											>
+												<path
+													strokeLinecap="round"
+													strokeLinejoin="round"
+													strokeWidth={2}
+													d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+												/>
+												<path
+													strokeLinecap="round"
+													strokeLinejoin="round"
+													strokeWidth={2}
+													d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+												/>
+											</svg>
+										</button>
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
 			</div>
-		</div>
+		</>
 	)
 }
 
