@@ -12,430 +12,108 @@ import {
   Activity,
   MapPin,
 } from "lucide-react";
-import { useGetAllUsersAttendanceQuery } from "../../../services/apis/AtteandanceApi";
-import { useGetAllLeavesQuery } from "../../../services/apis/LeavesApi";
-import { useGetAllUsersQuery } from "../../../services/apis/UsersApi";
-import { useGetActiveBreaksCountQuery } from "../../../services/apis/BreakApi";
+
 import { useNavigate } from "react-router-dom";
 import { useLang } from "../../../contexts/LangContext";
+import Card from "../../../components/Time_Tracking_Components/Stats/Card";
+import Table from "../../../components/admin/dashboard/Table/Table";
+import Departments from "../../../components/admin/dashboard/Departments/Departments";
+import RecentActivity from "../../../components/admin/dashboard/RecentActivity/RecentActivity";
 
 const DashboardAdmin = () => {
   const { lang, isRtl } = useLang();
   const { i18n } = useTranslation();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-// أضف هذا لجعل الـtoggle button يشتغل
-useEffect(() => {
-  window.onMobileSidebarOpen = () => setIsMobileSidebarOpen(true);
-  return () => {
-    window.onMobileSidebarOpen = null;
-  };
-}, []);
-  // Fetch admin data
-  const { data: attendanceData = [], isLoading: attendanceLoading } = useGetAllUsersAttendanceQuery();
-  const { data: leavesData = [], isLoading: leavesLoading } = useGetAllLeavesQuery();
-  const { data: usersData = [], isLoading: usersLoading } = useGetAllUsersQuery();
-  const { data: activeBreaksCount = 0 } = useGetActiveBreaksCountQuery();
   const navigate = useNavigate();
 
-  // Stats calculations (all dynamic)
-  const totalUsers = usersData.length;
-  const activeUsers = attendanceData.filter(user => user.status === 'present' || user.status === 'late').length;
-  const pendingLeaves = leavesData.filter(leave => leave.status === 'pending').length;
-  const lateUsers = attendanceData.filter(user => user.status === 'late').length;
-
-  const statsCards = [
+  const CardData = [
     {
-      title: isRtl ? "إجمالي الموظفين" : "Total Users",
-      value: totalUsers,
-      icon: Users,
-      color: "#3B82F6",
-      bgColor: "#EFF6FF",
-      change: "+0",
-      changeType: "positive"
+      title: "Active Employees",
+      value: 100,
+      icon: <img src="/assets/AdminDashboard/Active.svg" alt="employees" />
     },
     {
-      title: isRtl ? "الحاضرون اليوم" : "Present Today",
-      value: activeUsers,
-      icon: UserCheck,
-      color: "#10B981",
-      bgColor: "#ECFDF5",
-      change: `${totalUsers ? Math.round((activeUsers/totalUsers)*100) : 0}%`,
-      changeType: "positive"
+      title: "Today Attendance",
+      value: 90,
+      icon: <img src="/assets/AdminDashboard/today.svg" alt="employees" />
     },
     {
-      title: isRtl ? "طلبات الإجازات المعلقة" : "Pending Leaves",
-      value: pendingLeaves,
-      icon: Calendar,
-      color: "#F59E0B",
-      bgColor: "#FFFBEB",
-      change: "",
-      changeType: "neutral"
+      title: "Leave Requests",
+      value: 2,
+      icon: <img src="/assets/AdminDashboard/leavee.svg" alt="employees" />
     },
     {
-      title: isRtl ? "المتأخرون" : "Late Arrivals",
-      value: lateUsers,
-      icon: AlertTriangle,
-      color: "#EF4444",
-      bgColor: "#FEF2F2",
-      change: "",
-      changeType: "neutral"
+      title: "Overdue Tasks",
+      value: 4,
+      icon: <img src="/assets/AdminDashboard/task.svg" alt="employees" />
     }
-  ];
-
-  // Create stable toggle functions using useCallback
-  const toggleMobileSidebar = useCallback(() => {
-    setIsMobileSidebarOpen(prev => !prev);
-  }, []);
-
-  const closeMobileSidebar = useCallback(() => {
-    setIsMobileSidebarOpen(false);
-  }, []);
+  ]
 
   return (
     <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
       {/* Navigation Bar */}
-      <NavBarAdmin
-        onMobileSidebarToggle={toggleMobileSidebar}
-        isMobileSidebarOpen={isMobileSidebarOpen}
-      />
+      <NavBarAdmin />
 
       {/* Content Area */}
       <div className="flex flex-1 min-h-0">
         {/* Sidebar */}
-    <SideBarAdmin
-  lang={lang}
-  isMobileOpen={isMobileSidebarOpen}
-  onMobileClose={closeMobileSidebar}
-/>
+        <SideBarAdmin />
 
         {/* Main Content */}
-        <main className="flex-1 overflow-auto p-6" style={{ background: "var(--bg-all)" }}>
-          <div className="max-w-7xl mx-auto space-y-6">
-            
-            {/* Welcome Header */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              <div>
-                <h1 className="text-3xl font-bold gradient-text">
-                  {isRtl ? "لوحة تحكم المدير" : "Admin Dashboard"}
-                </h1>
-                <p className="text-lg mt-2" style={{ color: "var(--sub-text-color)" }}>
-                  {isRtl ? "نظرة شاملة على أداء الموظفين والعمليات" : "Complete overview of employee performance and operations"}
-                </p>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 px-4 py-2 rounded-lg border" style={{
-                  backgroundColor: "var(--hover-color)",
-                  borderColor: "var(--accent-color)",
-                  color: "var(--accent-color)"
-                }}>
-                  <Activity size={20} />
-                  <span className="font-semibold">
-                    {isRtl ? "النظام نشط" : "System Active"}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Stats Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-              {statsCards.map((card, index) => (
-                <div
-                  key={index}
-                  className="p-6 rounded-2xl border transition-all duration-300 hover:shadow-lg hover:scale-[1.02]"
-                  style={{
-                    backgroundColor: "var(--bg-color)",
-                    borderColor: "var(--border-color)",
-                  }}
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <div 
-                      className="p-3 rounded-xl"
-                      style={{ backgroundColor: card.bgColor }}
-                    >
-                      <card.icon size={24} style={{ color: card.color }} />
-                    </div>
-                    {card.change !== "" && (
-                      <div className={`text-sm px-2 py-1 rounded-full ${
-                        card.changeType === 'positive' ? 'bg-green-100 text-green-600' : 
-                        card.changeType === 'negative' ? 'bg-red-100 text-red-600' : ''
-                      }`}>
-                        {card.change}
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-2xl font-bold mb-1" style={{ color: "var(--text-color)" }}>
-                      {card.value}
-                    </h3>
-                    <p className="text-sm" style={{ color: "var(--sub-text-color)" }}>
-                      {card.title}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Main Content Grid */}
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-              
-              {/* Today's Attendance */}
-              <div className="w-full xl:col-span-2">
-                <div 
-                  className="p-6 rounded-2xl border"
-                  style={{
-                    backgroundColor: "var(--bg-color)",
-                    borderColor: "var(--border-color)",
-                  }}
-                >
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold" style={{ color: "var(--text-color)" }}>
-                      {isRtl ? "حضور اليوم" : "Today's Attendance"}
-                    </h2>
-                    <button 
-                      className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                      style={{
-                        backgroundColor: "var(--hover-color)",
-                        color: "var(--accent-color)"
-                      }}
-                      onClick={() => navigate("/pages/admin/attendance")}
-                    >
-                      {isRtl ? "عرض الكل" : "View All"}
-                    </button>
-                  </div>
-
-                  {attendanceLoading ? (
-                    <div className="flex items-center justify-center py-12">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: "var(--accent-color)" }}></div>
-                    </div>
-                  ) : (
-                    <div className="space-y-3 max-h-96 overflow-y-auto">
-                      {attendanceData.slice(0, 8).map((attendance, index) => (
-                        <div 
-                          key={index}
-                          className="flex items-center justify-between p-4 rounded-xl border"
-                          style={{
-                            backgroundColor: "var(--hover-color)",
-                            borderColor: "var(--border-color)"
-                          }}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div 
-                              className={`w-3 h-3 rounded-full ${
-                                attendance.status === 'present' ? 'bg-green-500' :
-                                attendance.status === 'late' ? 'bg-yellow-500' : 'bg-red-500'
-                              }`}
-                            />
-                            <div>
-                              <p className="font-medium" style={{ color: "var(--text-color)" }}>
-                                {attendance.user?.firstName} {attendance.user?.lastName}
-                              </p>
-                              <p className="text-sm" style={{ color: "var(--sub-text-color)" }}>
-                                {attendance.user?.email}
-                              </p>
-                            </div>
-                          </div>
-                          
-                          <div className="text-right">
-                            <div className="flex items-center gap-2">
-                              <Clock size={16} style={{ color: "var(--sub-text-color)" }} />
-                              <span className="text-sm font-medium" style={{ color: "var(--text-color)" }}>
-                                {attendance.clockIn || 'N/A'}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2 mt-1">
-                              <MapPin size={16} style={{ color: "var(--sub-text-color)" }} />
-                              <span className="text-xs" style={{ color: "var(--sub-text-color)" }}>
-                                {attendance.location === 'office' ? 
-                                  (isRtl ? 'المكتب' : 'Office') : 
-                                  (isRtl ? 'من المنزل' : 'Remote')
-                                }
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Recent Actions & Quick Stats */}
-              <div className="space-y-6">
-                
-
-
-
-              </div>
-            </div>
-
-            {/* Recent Leave Requests */}
-            <div 
-              className="p-6 rounded-2xl border"
-              style={{
-                backgroundColor: "var(--bg-color)",
-                borderColor: "var(--border-color)",
-              }}
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold" style={{ color: "var(--text-color)" }}>
-                  {isRtl ? "طلبات الإجازات الأخيرة" : "Recent Leave Requests"}
-                </h2>
-                <button 
-                  className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                  style={{
-                    backgroundColor: "var(--hover-color)",
-                    color: "var(--accent-color)"
-                  }}
-                  onClick={() => navigate("/pages/admin/leaves")}
-                >
-                  {isRtl ? "إدارة الإجازات" : "Manage Leaves"}
-                </button>
-              </div>
-
-              {leavesLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: "var(--accent-color)" }}></div>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b" style={{ borderColor: "var(--border-color)" }}>
-                        <th className="text-left py-3 px-4 font-medium" style={{ color: "var(--sub-text-color)" }}>
-                          {isRtl ? "الموظف" : "Employee"}
-                        </th>
-                        <th className="text-left py-3 px-4 font-medium" style={{ color: "var(--sub-text-color)" }}>
-                          {isRtl ? "نوع الإجازة" : "Leave Type"}
-                        </th>
-                        <th className="text-left py-3 px-4 font-medium" style={{ color: "var(--sub-text-color)" }}>
-                          {isRtl ? "التاريخ" : "Date"}
-                        </th>
-                        <th className="text-left py-3 px-4 font-medium" style={{ color: "var(--sub-text-color)" }}>
-                          {isRtl ? "المدة" : "Duration"}
-                        </th>
-                        <th className="text-left py-3 px-4 font-medium" style={{ color: "var(--sub-text-color)" }}>
-                          {isRtl ? "الحالة" : "Status"}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {leavesData.slice(0, 5).map((leave, index) => (
-                        <tr key={index} className="border-b hover:bg-gray-50 transition-colors" style={{ borderColor: "var(--border-color)" }}>
-                          <td className="py-4 px-4">
-                            <div>
-                              <p className="font-medium" style={{ color: "var(--text-color)" }}>
-                                {leave.user}
-                              </p>
-                              <p className="text-sm" style={{ color: "var(--sub-text-color)" }}>
-                                {leave.userEmail}
-                              </p>
-                            </div>
-                          </td>
-                          <td className="py-4 px-4">
-                            <span className="text-sm" style={{ color: "var(--text-color)" }}>
-                              {leave.leaveType}
-                            </span>
-                          </td>
-                          <td className="py-4 px-4">
-                            <span className="text-sm" style={{ color: "var(--text-color)" }}>
-                              {leave.startDate} - {leave.endDate}
-                            </span>
-                          </td>
-                          <td className="py-4 px-4">
-                            <span className="text-sm" style={{ color: "var(--text-color)" }}>
-                              {leave.days} {isRtl ? "يوم" : "days"}
-                            </span>
-                          </td>
-                          <td className="py-4 px-4">
-                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                              leave.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                              leave.status === 'approved' ? 'bg-green-100 text-green-800' :
-                              'bg-red-100 text-red-800'
-                            }`}>
-                              {leave.status === 'pending' ? (isRtl ? 'معلق' : 'Pending') :
-                               leave.status === 'approved' ? (isRtl ? 'موافق عليه' : 'Approved') :
-                               (isRtl ? 'مرفوض' : 'Rejected')}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-
-            {/* Users List Section */}
-            <div className="p-6 rounded-2xl border" style={{
-              backgroundColor: "var(--bg-color)",
-              borderColor: "var(--border-color)",
-            }}>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold" style={{ color: "var(--text-color)" }}>
-                  {isRtl ? "المستخدمون" : "Users"}
-                </h2>
-                {/* زر إدارة المستخدمين لو عندك صفحة خاصة */}
-                <button
-                  className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                  style={{
-                    backgroundColor: "var(--hover-color)",
-                    color: "var(--accent-color)"
-                  }}
-                  onClick={() => navigate("/pages/admin/users")}
-                >
-                  {isRtl ? "إدارة المستخدمين" : "Manage Users"}
-                </button>
-              </div>
-              {usersLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: "var(--accent-color)" }}></div>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b" style={{ borderColor: "var(--border-color)" }}>
-                        <th className="text-left py-3 px-4 font-medium" style={{ color: "var(--sub-text-color)" }}>
-                          {isRtl ? "الاسم" : "Name"}
-                        </th>
-                        <th className="text-left py-3 px-4 font-medium" style={{ color: "var(--sub-text-color)" }}>
-                          {isRtl ? "البريد الإلكتروني" : "Email"}
-                        </th>
-                        <th className="text-left py-3 px-4 font-medium" style={{ color: "var(--sub-text-color)" }}>
-                          {isRtl ? "الدور" : "Role"}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {usersData.slice(0, 8).map((user, index) => (
-                        <tr key={index} className="border-b hover:bg-gray-50 transition-colors" style={{ borderColor: "var(--border-color)" }}>
-                          <td className="py-4 px-4">
-                            <span className="font-medium" style={{ color: "var(--text-color)" }}>
-                              {user.firstName} {user.lastName}
-                            </span>
-                          </td>
-                          <td className="py-4 px-4">
-                            <span className="text-sm" style={{ color: "var(--sub-text-color)" }}>
-                              {user.email}
-                            </span>
-                          </td>
-                          <td className="py-4 px-4">
-                            <span className="text-sm" style={{ color: "var(--sub-text-color)" }}>
-                              {user.role}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-
+        <main className="flex-1 overflow-auto p-3 sm:p-4 md:p-6 bg-[var(--bg-color)] rounded-[22px]">
+          {/* Stats Cards - Responsive Grid */}
+          <div className="w-full h-max grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-5">
+            {CardData.map((card, index) => (
+              <Card
+                key={index}
+                header={card.title}
+                rightIcon={card.icon}
+                title={card.value}
+              />
+            ))}
           </div>
+
+          {/* Main Content Section */}
+          <section className="w-full h-max flex flex-col xl:flex-row justify-center items-start gap-4 lg:gap-5">
+            {/* Left Section - Table and Buttons */}
+            <div className="w-full xl:w-[73%] h-max flex flex-col gap-3 justify-center items-center">
+              {/* Action Buttons */}
+              <div className="w-full max-w-none h-auto p-4 sm:p-[29px] flex flex-col sm:flex-row flex-wrap justify-center shadow-lg border border-[var(--border-color)] rounded-[22px] items-center gap-3 sm:gap-4 lg:gap-5">
+                {/* add new employee button */}
+                <button className="w-full sm:w-auto sm:flex-1 sm:min-w-[150px] lg:min-w-[170px] cursor-pointer h-[40px] text-[9px] sm:text-[10px] bg-[var(--bg-color)] border border-[var(--border-color)] font-semibold gradient-text flex justify-center items-center gap-2 text-white rounded-md transition-all duration-200 hover:shadow-md hover:scale-[1.02] hover:border-[var(--accent-color)] active:scale-[0.98] active:shadow-sm">
+                  <img src="/assets/AdminDashboard/add.svg" alt="add" className="transition-transform duration-200 group-hover:scale-110 w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="truncate">{isRtl ? "إضافة موظف جديد" : "Add New Employee"}</span>
+                </button>
+                {/* approve requests button */}
+                <button className="w-full sm:w-auto sm:flex-1 sm:min-w-[150px] lg:min-w-[170px] h-[40px] text-[9px] sm:text-[10px] cursor-pointer bg-[var(--bg-color)] border border-[var(--border-color)] font-semibold gradient-text flex justify-center items-center gap-2 text-white rounded-md transition-all duration-200 hover:shadow-md hover:scale-[1.02] hover:border-[var(--accent-color)] active:scale-[0.98] active:shadow-sm">
+                  <img src="/assets/AdminDashboard/approve.svg" alt="approve" className="transition-transform duration-200 group-hover:scale-110 w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="truncate">{isRtl ? "موافقة على الطلبات" : "Approve Requests"}</span>
+                </button>
+                {/* view attendance button */}
+                <button className="w-full sm:w-auto sm:flex-1 sm:min-w-[150px] lg:min-w-[170px] h-[40px] text-[9px] sm:text-[10px] cursor-pointer bg-[var(--bg-color)] border border-[var(--border-color)] font-semibold gradient-text flex justify-center items-center gap-2 text-white rounded-md transition-all duration-200 hover:shadow-md hover:scale-[1.02] hover:border-[var(--accent-color)] active:scale-[0.98] active:shadow-sm">
+                  <img src="/assets/AdminDashboard/view.svg" alt="view" className="transition-transform duration-200 group-hover:scale-110 w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="truncate">{isRtl ? "مشاهدة الحضور" : "View Attendance"}</span>
+                </button>
+                {/* manage roles, permissions button */}
+                <button className="w-full sm:w-auto sm:flex-1 sm:min-w-[150px] lg:min-w-[170px] h-[40px] text-[9px] sm:text-[10px] cursor-pointer bg-[var(--bg-color)] border border-[var(--border-color)] font-semibold gradient-text flex justify-center items-center gap-2 text-white rounded-md transition-all duration-200 hover:shadow-md hover:scale-[1.02] hover:border-[var(--accent-color)] active:scale-[0.98] active:shadow-sm">
+                  <img src="/assets/AdminDashboard/manage.svg" alt="manage" className="transition-transform duration-200 group-hover:scale-110 w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="truncate text-center">{isRtl ? "إدارة الأدوار والصلاحيات" : "Manage Roles, Permissions"}</span>
+                </button>
+              </div>
+              
+              {/* Table Section */}
+              <div className="w-full h-max flex justify-center items-center mt-2">
+                <Table />
+              </div>
+            </div>
+
+            {/* Right Section - Departments and Recent Activity */}
+            <div className="w-full xl:w-[27%] h-max pb-3 flex justify-center items-center flex-col gap-4">
+              <Departments />
+              <RecentActivity />
+            </div>
+          </section>
         </main>
       </div>
     </div>

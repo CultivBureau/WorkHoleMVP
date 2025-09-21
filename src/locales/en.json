@@ -3,9 +3,9 @@
     "mainMenu": "Main Menu",
     "settings": "Settings",
     "dashboard": "Dashboard",
-    "time": "Time Tracking",
-    "attendance": "Attendance Logs",
-    "break": "Break Tracking",
+    "All_Employees": "All Employees",
+    "New_Employee": "New Employee",
+    "Roles_Permissions": "Roles & Permissions",
     "tasks": "Tasks & Projects",
     "tasks-list": "Tasks List",
     "projects": "Projects",
@@ -14,13 +14,16 @@
     "reports": "Reports",
     "leaves": "Leaves",
     "wallet": "Team Wallet",
+    "My_Company": "My Company",
     "settingsItem": "Settings",
     "subscriptions": "Subscriptions",
     "help": "Help",
     "darkMode": "Dark Mode",
     "lightMode": "Light Mode",
     "time_tracking": "Time Tracking",
-    "break_tracking": "Break Tracking"
+    "break_tracking": "Break Tracking",
+    "all_attendance": "All Attendance",
+    "all_department": "All Department"
   },
   "comingSoon": "Coming Soon",
   "navbar": {
@@ -502,5 +505,204 @@
     "loginSuccess": "Login successful",
     "loginFailed": "Login failed",
     "secureLogin": "🔒 Your data is secured with end-to-end encryption"
+  },
+  "employees": {
+    "totalEmployees": "Total Employees",
+    "activeStaffMembers": "Active staff members",
+    "newHires": "New Hires",
+    "joinedThisMonth": "Joined this month",
+    "maleEmployees": "Male Employees",
+    "activeMaleEmployees": "Active male employees",
+    "femaleEmployees": "Female Employees",
+    "activeFemaleEmployees": "Active female employees",
+    "search": {
+      "placeholder": "Search employees..."
+    },
+    "clearAll": "Clear All",
+    "results": "results",
+    "addNew": "Add New Employee",
+    "add": "Add",
+    "filters": {
+      "status": "Status",
+      "role": "Role",
+      "department": "Department",
+      "joinDate": "Join Date"
+    },
+    "table": {
+      "employee": "Employee",
+      "role": "Role",
+      "joinDate": "Join Date",
+      "department": "Department",
+      "status": "Status",
+      "action": "Action"
+    },
+    "pagination": {
+      "page": "Page",
+      "of": "of",
+      "total": "total employees"
+    },
+    "actions": {
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "newEmployeeForm": {
+      "title": "Add New Employee",
+      "breadcrumb": "All Employee",
+      "steps": {
+        "personalInfo": "Personal Information",
+        "professionalInfo": "Professional Information",
+        "documents": "Documents",
+        "accountAccess": "Account Access & Permissions"
+      },
+      "personalInfo": {
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "mobileNumber": "Mobile Number",
+        "emailAddress": "Email Address",
+        "dateOfBirth": "Date of Birth",
+        "status": "Status",
+        "gender": "Gender",
+        "nationality": "Nationality",
+        "address": "Address",
+        "active": "Active",
+        "inactive": "Inactive",
+        "male": "Male",
+        "female": "Female",
+        "other": "Other",
+        "unitedStates": "United States",
+        "unitedKingdom": "United Kingdom",
+        "canada": "Canada"
+      },
+      "professionalInfo": {
+        "employeeId": "Employee ID",
+        "userName": "User Name",
+        "selectEmployeeRole": "Select Employee Role",
+        "selectDepartment": "Select Department",
+        "managerSupervisor": "Enter Manager / Supervisor",
+        "selectWorkingDays": "Select Working Days",
+        "selectEmploymentType": "Select Employment Type",
+        "selectOfficeLocation": "Select Office Location",
+        "selectJoiningDate": "Select Joining Date",
+        "generate": "Generate",
+        "manager": "Manager",
+        "developer": "Developer",
+        "designer": "Designer",
+        "humanResources": "Human Resources",
+        "it": "IT",
+        "finance": "Finance",
+        "fiveDays": "5 Days",
+        "sixDays": "6 Days",
+        "fullTime": "Full Time",
+        "partTime": "Part Time",
+        "contract": "Contract",
+        "mainOffice": "Main Office",
+        "branchOffice": "Branch Office"
+      },
+      "documents": {
+        "uploadProofOfIdentity": "Upload Proof of Identity",
+        "uploadEmploymentContract": "Upload Employment Contract",
+        "uploadCertificatesQualifications": "Upload Certificates & Qualifications",
+        "uploadSocialInsuranceDocs": "Upload Social Insurance Docs",
+        "optional": "(optional)",
+        "dragDrop": "Drag & Drop or",
+        "chooseFile": "choose file",
+        "toUpload": "to upload",
+        "supportedFormats": "Supported formats: Jpeg, pdf",
+        "removeFile": "Remove file",
+        "fileSizeLimit": "File size must be less than 5MB",
+        "invalidFileType": "Please upload only JPEG or PDF files"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "next": "Next",
+        "back": "Back"
+      },
+      "success": {
+        "title": "Employee Added!",
+        "message": "You have successfully added a new employee."
+      }
+    }
+  },
+  "walletCards": {
+    "myDeductions": {
+      "header": "My Deductions",
+      "title": "$120",
+      "subTitle": "Total penalties applied this month"
+    },
+    "teamDeductions": {
+      "header": "Team Deductions",
+      "title": "$850",
+      "subTitle": "Penalties across your team"
+    },
+    "incentivesEarned": {
+      "header": "Incentives Earned",
+      "title": "$200",
+      "subTitle": "Linked to your performance"
+    },
+    "hoursLogged": {
+      "header": "Hours Logged",
+      "title": "160hrs",
+      "subTitle": "160 hrs this month"
+    }
+  },
+  "walletCharts": {
+    "teamDeductions": {
+      "header": "Team Deductions Breakdown",
+      "subtitle": "See what affected your balance most"
+    },
+    "deductions": {
+      "header": "Deductions Breakdown",
+      "subtitle": "See what affected your balance most",
+      "legend": {
+        "lateArrivals": "Late Arrivals",
+        "missedDeadline": "Missed Deadline",
+        "absences": "Absences"
+      }
+    },
+    "period": {
+      "year": "Year",
+      "month": "Month"
+    },
+    "bonuses": {
+      "header": "Bonuses Breakdown",
+      "subtitle": "See what boosted your incentives most",
+      "legend": {
+        "tasks": "Tasks",
+        "kpi": "KPI",
+        "attendance": "Attendance"
+      }
+    },
+    "team": {
+      "header": "Team",
+      "viewAll": "View All"
+    },
+    "initiative": "Initiative",
+    "totalTasks": " Tasks",
+    "teamChart": {
+      "deductions": "Deductions",
+      "bonuses": "Bonuses"
+    }
+  },
+  "walletTable": {
+    "columns": {
+      "transactionDate": "Transaction Date",
+      "issuedBy": "Issued by",
+      "action": "Action",
+      "reason": "Reason",
+      "amount": "Amount",
+      "status": "Status"
+    },
+    "status": {
+      "approved": "Approved",
+      "pending": "Pending",
+      "rejected": "Rejected"
+    },
+    "page": "Page",
+    "of": "of"
+  },
+  "walletPopup": {
+    "title": "Transaction Details",
+    "close": "Close"
   }
 }
