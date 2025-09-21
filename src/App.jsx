@@ -13,6 +13,8 @@ import LeavesAdmin from "./pages/admin/leaves/page";
 import UsersAdmin from "./pages/admin/users/page";
 import AllEmployees from "./pages/admin/all-employees/page";
 import NewEmployee from "./pages/admin/new-employee/page";
+import RolesAndPermissions from "./pages/admin/Roles&Permissions/page";
+import NewRole from "./pages/admin/new_role/page";
 import Profile from "./pages/Profile";
 import ForgetPassword from "./components/forget-password/ForgetPassword";
 import ResetPassword from "./components/reset-password/resetPassword";
@@ -154,7 +156,22 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
-
+                  <Route
+                    path="/pages/admin/Roles&Permissions"
+                    element={
+                      <ProtectedRoute>
+                        <RolesAndPermissions />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/pages/admin/new_role"
+                    element={
+                      <ProtectedRoute>
+                        <NewRole />
+                      </ProtectedRoute>
+                    }
+                  />
                   {/* Catch all route - redirect to login for any unmatched routes */}
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
