@@ -3,7 +3,9 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
 import "./i18n";
-import ClientProvider from "./services/ClientProvider.jsx"; 
+import ClientProvider from "./services/ClientProvider.jsx";
+import { GlobalErrorProvider } from "./contexts/GlobalErrorContext"; // import here
+
 export default function ThemeBootstrap({ children }) {
   useEffect(() => {
     const saved = (() => {
@@ -23,7 +25,9 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ThemeBootstrap>
       <ClientProvider>
-        <App />
+        <GlobalErrorProvider>
+          <App />
+        </GlobalErrorProvider>
       </ClientProvider>
     </ThemeBootstrap>
   </StrictMode>

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef, useState, useContext } from "react"
 import { Clock, ClipboardList, Coffee, BarChart3, MapPin, Loader2, AlertCircle, CheckCircle2, Timer } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useGetDashboardQuery, useClockInMutation, useClockOutMutation } from "../../services/apis/AtteandanceApi"
@@ -7,6 +7,10 @@ import { useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
 import { useAttendanceUpdate } from "../../contexts/AttendanceUpdateContext"
 import { useTimer } from "../../contexts/TimerContext"
+import { GlobalErrorContext } from "../../contexts/GlobalErrorContext"
+import ErrorComponent from "../Error/Error"
+
+const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const MainContent = () => {
   const { t, i18n } = useTranslation()
@@ -17,6 +21,7 @@ const MainContent = () => {
   const [clockOut, { isLoading: isClockingOut }] = useClockOutMutation()
   const { triggerUpdate } = useAttendanceUpdate()
   const navigate = useNavigate();
+  const { setGlobalError } = useContext(GlobalErrorContext);
 
   // Enhanced timer context integration
   const { 
@@ -127,7 +132,7 @@ const MainContent = () => {
   const getCurrentLocation = () => {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
-        reject(new Error(isAr ? 'المتصفح لا يدعم تحديد الموقع' : 'Browser does not support geolocation'))
+        reject(new window.Error(isAr ? 'المتصفح لا يدعم تحديد الموقع' : 'Browser does not support geolocation'))
         return
       }
 
@@ -150,12 +155,7 @@ const MainContent = () => {
         (position) => {
           setIsGettingLocation(false)
           toast.dismiss(loadingToast)
-          
           const { latitude, longitude, accuracy } = position.coords
-          
-          console.log('Location success:', { latitude, longitude, accuracy })
-          
-          // Success toast with location info
           toast.success(
             isAr ? `تم تحديد الموقع بدقة ${Math.round(accuracy)}م` : `Location found with ${Math.round(accuracy)}m accuracy`,
             {
@@ -167,47 +167,38 @@ const MainContent = () => {
               },
             }
           )
-
-          resolve({
-            latitude,
-            longitude,
-            accuracy
-          })
+          resolve({ latitude, longitude, accuracy })
         },
         (error) => {
           setIsGettingLocation(false)
           toast.dismiss(loadingToast)
-          
-          console.error('Location error details:', {
-            code: error.code,
-            message: error.message,
-          })
-          
           let errorMessage = isAr ? 'خطأ في تحديد الموقع' : 'Location error'
-          let errorIcon = '❌'
-          
           switch (error.code) {
             case error.PERMISSION_DENIED:
               errorMessage = isAr 
                 ? 'تم رفض إذن الموقع. يرجى السماح بالوصول إلى الموقع' 
                 : 'Location permission denied. Please allow location access'
-              errorIcon = '🚫'
               break
             case error.POSITION_UNAVAILABLE:
               errorMessage = isAr 
                 ? 'الموقع غير متاح. تأكد من اتصال الإنترنت' 
                 : 'Location unavailable. Check your internet connection'
-              errorIcon = '📡'
               break
             case error.TIMEOUT:
               errorMessage = isAr 
                 ? 'انتهت مهلة تحديد الموقع. يرجى المحاولة مرة أخرى' 
                 : 'Location request timeout. Please try again'
-              errorIcon = '⏰'
               break
           }
-          
-          reject(new Error(errorMessage))
+          setGlobalError({
+            title: isAr ? "خطأ في تحديد الموقع" : "Location Error",
+            message: errorMessage,
+            errorCode: "LOC",
+            showRefresh: true,
+            showHome: false,
+            showBack: true,
+          });
+          reject(new window.Error(errorMessage));
         },
         {
           enableHighAccuracy: true,
