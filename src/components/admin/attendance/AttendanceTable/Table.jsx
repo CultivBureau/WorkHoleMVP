@@ -178,11 +178,11 @@ const AttendanceTable = () => {
         <div className="flex flex-wrap items-center gap-4 justify-between">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 font-medium">Sort By</span>
+              <span className="text-[10px] text-gray-600 font-medium">Sort By</span>
               <select 
                 value={sortBy} 
                 onChange={(e) => setSortBy(e.target.value)}
-                className="h-8 px-3 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                className="h-8 px-3 border border-gray-300 rounded-md text-[10px] bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="Newest First">Newest First</option>
                 <option value="Oldest First">Oldest First</option>
@@ -190,11 +190,11 @@ const AttendanceTable = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 font-medium">Location</span>
+              <span className="text-[10px] text-gray-600 font-medium">Location</span>
               <select 
                 value={location} 
                 onChange={(e) => setLocation(e.target.value)}
-                className="h-8 px-3 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                className="h-8 px-3 border border-gray-300 rounded-md text-[10px] bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="All">All</option>
                 <option value="Office">Office</option>
@@ -203,11 +203,11 @@ const AttendanceTable = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 font-medium">Status</span>
+              <span className="text-[10px] text-gray-600 font-medium">Status</span>
               <select 
                 value={status} 
                 onChange={(e) => setStatus(e.target.value)}
-                className="h-8 px-3 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                className="h-8 px-3 border border-gray-300 rounded-md text-[10px] bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="All Status">All Status</option>
                 <option value="Present">Present</option>
@@ -217,22 +217,22 @@ const AttendanceTable = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 font-medium">Date from</span>
+              <span className="text-[10px] text-gray-600 font-medium">Date from</span>
               <select 
                 value={dateFrom} 
                 onChange={(e) => setDateFrom(e.target.value)}
-                className="h-8 px-3 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                className="h-8 px-3 border border-gray-300 rounded-md text-[10px] bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="09/09/2025">09/09/2025</option>
               </select>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 font-medium">Date To</span>
+              <span className="text-[10px] text-gray-600 font-medium">Date To</span>
               <select 
                 value={dateTo} 
                 onChange={(e) => setDateTo(e.target.value)}
-                className="h-8 px-3 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                className="h-8 px-3 border border-gray-300 rounded-md text-[10px] bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="09/09/2025">09/09/2025</option>
               </select>
@@ -240,7 +240,7 @@ const AttendanceTable = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-600">5 of 18 page</span>
+            <span className="text-[10px] text-gray-600">5 of 18 page</span>
             <div className="flex items-center gap-1">
               <button className="h-8 w-8 border border-gray-300 rounded-md bg-white hover:bg-gray-50 flex items-center justify-center transition-colors">
                 <svg className="h-4 w-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
