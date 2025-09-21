@@ -11,6 +11,10 @@ import AttendanceAdmin from "./pages/admin/attendance/page";
 import BreakAdmin from "./pages/admin/break/page";
 import LeavesAdmin from "./pages/admin/leaves/page";
 import UsersAdmin from "./pages/admin/users/page";
+import AllEmployees from "./pages/admin/all-employees/page";
+import NewEmployee from "./pages/admin/new-employee/page";
+import RolesAndPermissions from "./pages/admin/Roles&Permissions/page";
+import NewRole from "./pages/admin/new_role/page";
 import Profile from "./pages/Profile";
 import ForgetPassword from "./components/forget-password/ForgetPassword";
 import ResetPassword from "./components/reset-password/resetPassword";
@@ -107,54 +111,78 @@ function App() {
                       }
                     />
 
-                    {/* Protected Admin Routes */}
-                    <Route
-                      path="/pages/admin/dashboard"
-                      element={
-                        <ProtectedRoute>
-                          <DashboardAdmin />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/pages/admin/attendance"
-                      element={
-                        <ProtectedRoute>
-                          <AttendanceAdmin />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/pages/admin/break"
-                      element={
-                        <ProtectedRoute>
-                          <BreakAdmin />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/pages/admin/leaves"
-                      element={
-                        <ProtectedRoute>
-                          <LeavesAdmin />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/pages/admin/users"
-                      element={
-                        <ProtectedRoute>
-                          <UsersAdmin />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* Catch all route - redirect to login for any unmatched routes */}
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                  </Routes>
-                </BrowserRouter>
+                  {/* Protected Admin Routes */}
+                  <Route
+                    path="/pages/admin/dashboard"
+                    element={
+                      <ProtectedRoute>
+                        <DashboardAdmin />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/pages/admin/attendance"
+                    element={
+                      <ProtectedRoute>
+                        <AttendanceAdmin />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/pages/admin/break"
+                    element={
+                      <ProtectedRoute>
+                        <BreakAdmin />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/pages/admin/leaves"
+                    element={
+                      <ProtectedRoute>
+                        <LeavesAdmin />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/pages/admin/new-employee"
+                    element={
+                      <ProtectedRoute>
+                        <NewEmployee />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/pages/admin/all-employees"
+                    element={
+                      <ProtectedRoute>
+                        <AllEmployees />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/pages/admin/Roles&Permissions"
+                    element={
+                      <ProtectedRoute>
+                        <RolesAndPermissions />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/pages/admin/new_role"
+                    element={
+                      <ProtectedRoute>
+                        <NewRole />
+                      </ProtectedRoute>
+                    }
+                  />
+                  {/* Catch all route - redirect to login for any unmatched routes */}
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </BrowserRouter>
               )}
             </TimerProvider>
+
           </BreakUpdateProvider>
         </AttendanceUpdateProvider>
       </LangProvider>
