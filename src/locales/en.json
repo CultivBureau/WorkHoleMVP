@@ -4,7 +4,7 @@
     "settings": "Settings",
     "dashboard": "Dashboard",
     "All_Employees": "All Employees",
-    "New_Employees": "New Employees",
+    "New_Employee": "New Employee",
     "Roles_Permissions": "Roles & Permissions",
     "tasks": "Tasks & Projects",
     "tasks-list": "Tasks List",
@@ -505,6 +505,124 @@
     "loginSuccess": "Login successful",
     "loginFailed": "Login failed",
     "secureLogin": "🔒 Your data is secured with end-to-end encryption"
+  },
+  "employees": {
+    "totalEmployees": "Total Employees",
+    "activeStaffMembers": "Active staff members",
+    "newHires": "New Hires",
+    "joinedThisMonth": "Joined this month",
+    "maleEmployees": "Male Employees",
+    "activeMaleEmployees": "Active male employees",
+    "femaleEmployees": "Female Employees",
+    "activeFemaleEmployees": "Active female employees",
+    "search": {
+      "placeholder": "Search employees..."
+    },
+    "clearAll": "Clear All",
+    "results": "results",
+    "addNew": "Add New Employee",
+    "add": "Add",
+    "filters": {
+      "status": "Status",
+      "role": "Role",
+      "department": "Department",
+      "joinDate": "Join Date"
+    },
+    "table": {
+      "employee": "Employee",
+      "role": "Role",
+      "joinDate": "Join Date",
+      "department": "Department",
+      "status": "Status",
+      "action": "Action"
+    },
+    "pagination": {
+      "page": "Page",
+      "of": "of",
+      "total": "total employees"
+    },
+    "actions": {
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "newEmployeeForm": {
+      "title": "Add New Employee",
+      "breadcrumb": "All Employee",
+      "steps": {
+        "personalInfo": "Personal Information",
+        "professionalInfo": "Professional Information",
+        "documents": "Documents",
+        "accountAccess": "Account Access & Permissions"
+      },
+      "personalInfo": {
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "mobileNumber": "Mobile Number",
+        "emailAddress": "Email Address",
+        "dateOfBirth": "Date of Birth",
+        "status": "Status",
+        "gender": "Gender",
+        "nationality": "Nationality",
+        "address": "Address",
+        "active": "Active",
+        "inactive": "Inactive",
+        "male": "Male",
+        "female": "Female",
+        "other": "Other",
+        "unitedStates": "United States",
+        "unitedKingdom": "United Kingdom",
+        "canada": "Canada"
+      },
+      "professionalInfo": {
+        "employeeId": "Employee ID",
+        "userName": "User Name",
+        "selectEmployeeRole": "Select Employee Role",
+        "selectDepartment": "Select Department",
+        "managerSupervisor": "Enter Manager / Supervisor",
+        "selectWorkingDays": "Select Working Days",
+        "selectEmploymentType": "Select Employment Type",
+        "selectOfficeLocation": "Select Office Location",
+        "selectJoiningDate": "Select Joining Date",
+        "generate": "Generate",
+        "manager": "Manager",
+        "developer": "Developer",
+        "designer": "Designer",
+        "humanResources": "Human Resources",
+        "it": "IT",
+        "finance": "Finance",
+        "fiveDays": "5 Days",
+        "sixDays": "6 Days",
+        "fullTime": "Full Time",
+        "partTime": "Part Time",
+        "contract": "Contract",
+        "mainOffice": "Main Office",
+        "branchOffice": "Branch Office"
+      },
+      "documents": {
+        "uploadProofOfIdentity": "Upload Proof of Identity",
+        "uploadEmploymentContract": "Upload Employment Contract",
+        "uploadCertificatesQualifications": "Upload Certificates & Qualifications",
+        "uploadSocialInsuranceDocs": "Upload Social Insurance Docs",
+        "optional": "(optional)",
+        "dragDrop": "Drag & Drop or",
+        "chooseFile": "choose file",
+        "toUpload": "to upload",
+        "supportedFormats": "Supported formats: Jpeg, pdf",
+        "removeFile": "Remove file",
+        "fileSizeLimit": "File size must be less than 5MB",
+        "invalidFileType": "Please upload only JPEG or PDF files"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "next": "Next",
+        "back": "Back"
+      },
+      "success": {
+        "title": "Employee Added!",
+        "message": "You have successfully added a new employee."
+      }
+    }
   },
   "walletCards": {
     "myDeductions": {

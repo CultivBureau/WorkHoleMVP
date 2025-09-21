@@ -11,6 +11,8 @@ import AttendanceAdmin from "./pages/admin/attendance/page";
 import BreakAdmin from "./pages/admin/break/page";
 import LeavesAdmin from "./pages/admin/leaves/page";
 import UsersAdmin from "./pages/admin/users/page";
+import AllEmployees from "./pages/admin/all-employees/page";
+import NewEmployee from "./pages/admin/new-employee/page";
 import Profile from "./pages/Profile";
 import ForgetPassword from "./components/forget-password/ForgetPassword";
 import ResetPassword from "./components/reset-password/resetPassword";
@@ -22,9 +24,6 @@ import { BreakUpdateProvider } from "./contexts/BreakUpdateContext";
 import { TimerProvider } from "./contexts/TimerContext";
 import TeamWallet from "./pages/User/team-wallet/page";
 import Performance from "./pages/User/Performance/page";
-
-
-
 
 function App() {
   return (
@@ -140,10 +139,18 @@ function App() {
                     }
                   />
                   <Route
-                    path="/pages/admin/users"
+                    path="/pages/admin/new-employee"
                     element={
                       <ProtectedRoute>
-                        <UsersAdmin />
+                        <NewEmployee />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/pages/admin/all-employees"
+                    element={
+                      <ProtectedRoute>
+                        <AllEmployees />
                       </ProtectedRoute>
                     }
                   />

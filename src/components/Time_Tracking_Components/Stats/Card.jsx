@@ -23,7 +23,7 @@ const Card = ({
       className={`w-full h-full min-h-[140px] border border-[var(--border-color)] flex flex-col justify-between p-3 rounded-2xl transition-all duration-300 hover:shadow-lg ${isRtl ? 'text-right' : 'text-left'} ${className || ''}`}
       style={{
         backgroundColor: 'var(--bg-color)',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04)',
+        boxShadow: 'var(--shadow-color)',
       }}
     >
       {/* Header Row */}
@@ -70,7 +70,7 @@ const Card = ({
             />
           </div>
           {/* Gradient bg for bottom icon */}
-          {/* {footer && (
+      {/* {footer && (
             <div
               className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg"
               style={{
@@ -81,7 +81,7 @@ const Card = ({
             </div>
           )}
         </div>
-      )} */} 
+      )} */}
 
       {/* Footer without progress bar */}
       {(!bar || bar === 0) && footer && (
@@ -99,7 +99,7 @@ const Card = ({
 
       {/* Button always at the end of the card */}
       {button && <div className="mt-3">{button}</div>}
-      
+
       {/* Bottom Content */}
       {bottomContent && <div>{bottomContent}</div>}
     </div>

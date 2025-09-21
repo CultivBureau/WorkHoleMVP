@@ -41,7 +41,7 @@ export default function ActivityHeatmap({
     if (activeHours <= 2) return "var(--hover-color)"; // Light work - hover color
     if (activeHours <= 4) return "var(--accent-hover)"; // Moderate work - accent hover
     if (activeHours <= 6) return "var(--accent-color)"; // Good work - main accent
-    if (activeHours <= 8) return "var(--gradient-start)"; // High productivity - gradient start
+    if (activeHours >= 8) return "var(--gradient-start)"; // High productivity - gradient start
     return "var(--gradient-end)"; // Excellent productivity - gradient end
   };
 
