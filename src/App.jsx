@@ -11,8 +11,6 @@ import AttendanceAdmin from "./pages/admin/attendance/page";
 import BreakAdmin from "./pages/admin/break/page";
 import LeavesAdmin from "./pages/admin/leaves/page";
 import UsersAdmin from "./pages/admin/users/page";
-import AllEmployees from "./pages/admin/all-employees/page";
-import NewEmployee from "./pages/admin/new-employee/page";
 import Profile from "./pages/Profile";
 import ForgetPassword from "./components/forget-password/ForgetPassword";
 import ResetPassword from "./components/reset-password/resetPassword";
@@ -22,8 +20,6 @@ import { LangProvider } from "./contexts/LangContext";
 import { AttendanceUpdateProvider } from "./contexts/AttendanceUpdateContext";
 import { BreakUpdateProvider } from "./contexts/BreakUpdateContext";
 import { TimerProvider } from "./contexts/TimerContext";
-import TeamWallet from "./pages/User/team-wallet/page";
-import Performance from "./pages/User/Performance/page";
 import React, { useContext } from "react";
 import Error from "./components/Error/Error";
 import { GlobalErrorContext } from "./contexts/GlobalErrorContext";
@@ -37,133 +33,6 @@ function App() {
         <AttendanceUpdateProvider>
           <BreakUpdateProvider>
             <TimerProvider>
-              <BrowserRouter>
-                <Routes>
-                  {/* Public Routes - No Protection */}
-                  <Route path="/" element={<Login />} />
-                  <Route path="/forget-password" element={<ForgetPassword />} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-
-                  {/* Protected User Routes */}
-                  <Route
-                    path="/pages/User/dashboard"
-                    element={
-                      <ProtectedRoute>
-                        <Dashboard />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/pages/User/leaves"
-                    element={
-                      <ProtectedRoute>
-                        <Leaves />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/pages/User/time_tracking"
-                    element={
-                      <ProtectedRoute>
-                        <TimeTracking />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/pages/User/attendance-logs"
-                    element={
-                      <ProtectedRoute>
-                        <AttendanceLogs />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/pages/User/break-tracking"
-                    element={
-                      <ProtectedRoute>
-                        <BreakTracking />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/pages/User/Performance"
-                    element={
-                      <ProtectedRoute>
-                        <Performance />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/pages/User/profile"
-                    element={
-                      <ProtectedRoute>
-                        <Profile />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/pages/User/team-wallet"
-                    element={
-                      <ProtectedRoute>
-                        <TeamWallet />
-                      </ProtectedRoute>
-                    }
-                  />
-
-                  {/* Protected Admin Routes */}
-                  <Route
-                    path="/pages/admin/dashboard"
-                    element={
-                      <ProtectedRoute>
-                        <DashboardAdmin />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/pages/admin/attendance"
-                    element={
-                      <ProtectedRoute>
-                        <AttendanceAdmin />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/pages/admin/break"
-                    element={
-                      <ProtectedRoute>
-                        <BreakAdmin />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/pages/admin/leaves"
-                    element={
-                      <ProtectedRoute>
-                        <LeavesAdmin />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/pages/admin/new-employee"
-                    element={
-                      <ProtectedRoute>
-                        <NewEmployee />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/pages/admin/all-employees"
-                    element={
-                      <ProtectedRoute>
-                        <AllEmployees />
-                      </ProtectedRoute>
-                    }
-                  />
-
-                  {/* Catch all route - redirect to login for any unmatched routes */}
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-              </BrowserRouter>
               {globalError ? (
                 <Error
                   {...globalError}
