@@ -22,6 +22,8 @@ import { LangProvider } from "./contexts/LangContext";
 import { AttendanceUpdateProvider } from "./contexts/AttendanceUpdateContext";
 import { BreakUpdateProvider } from "./contexts/BreakUpdateContext";
 import { TimerProvider } from "./contexts/TimerContext";
+import TeamWallet from "./pages/User/team-wallet/page";
+import Performance from "./pages/User/Performance/page";
 
 function App() {
   return (
@@ -79,10 +81,26 @@ function App() {
                     }
                   />
                   <Route
+                    path="/pages/User/Performance"
+                    element={
+                      <ProtectedRoute>
+                        <Performance />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
                     path="/pages/User/profile"
                     element={
                       <ProtectedRoute>
                         <Profile />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/pages/User/team-wallet"
+                    element={
+                      <ProtectedRoute>
+                        <TeamWallet />
                       </ProtectedRoute>
                     }
                   />

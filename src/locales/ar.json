@@ -21,7 +21,9 @@
     "darkMode": "الوضع الليلي",
     "lightMode": "الوضع النهاري",
     "time_tracking": "تتبع الوقت",
-    "break_tracking": "تتبع الاستراحة"
+    "break_tracking": "تتبع الاستراحة",
+    "all_attendance": "جميع الحضور",
+    "all_department": "جميع الأقسام"
   },
   "comingSoon": "قريبًا",
   "navbar": {
@@ -620,5 +622,86 @@
         "message": "لقد قمت بإضافة موظف جديد بنجاح."
       }
     }
+  },
+  "walletCards": {
+    "myDeductions": {
+      "header": "خصوماتي",
+      "title": "$120",
+      "subTitle": "إجمالي العقوبات المطبقة هذا الشهر"
+    },
+    "teamDeductions": {
+      "header": "خصومات الفريق",
+      "title": "$850",
+      "subTitle": "العقوبات على مستوى الفريق"
+    },
+    "incentivesEarned": {
+      "header": "الحوافز المكتسبة",
+      "title": "$200",
+      "subTitle": "مرتبطة بأدائك"
+    },
+    "hoursLogged": {
+      "header": "ساعات العمل",
+      "title": "160ساعة",
+      "subTitle": "160 ساعة هذا الشهر"
+    }
+  },
+  "walletCharts": {
+    "teamDeductions": {
+      "header": "تفصيل خصومات الفريق",
+      "subtitle": "شاهد ما أثر على رصيدك أكثر"
+    },
+    "deductions": {
+      "header": "تفصيل الخصومات",
+      "subtitle": "شاهد ما أثر على رصيدك أكثر",
+      "legend": {
+        "lateArrivals": "الوصول المتأخر",
+        "missedDeadline": "تجاوز الموعد النهائي",
+        "absences": "الغيابات"
+      }
+    },
+    "bonuses": {
+      "header": "تفصيل الحوافز",
+      "subtitle": "شاهد ما عزز حوافزك أكثر",
+      "legend": {
+        "tasks": "المهام",
+        "kpi": "مؤشرات الأداء",
+        "attendance": "الحضور"
+      }
+    },
+    "period": {
+      "year": " سنة",
+      "month": " شهر"
+    },
+    "team": {
+      "header": "الفريق",
+      "viewAll": "عرض الكل"
+    },
+    "initiative": "مبادرة",
+    "totalTasks": " المهام",
+    "teamChart": {
+      "deductions": "خصومات",
+      "bonuses": "حوافز"
+    }
+  },
+  "walletTable": {
+    "columns": {
+      "transactionDate": "تاريخ المعاملة",
+      "issuedBy": "صادر من",
+      "action": "الإجراء",
+      "reason": "السبب",
+      "amount": "المبلغ",
+      "status": "الحالة"
+    },
+    "status": {
+      "approved": "مقبول",
+      "pending": "معلق",
+      "rejected": "مرفوض"
+    },
+    "page": "صفحة",
+    "of": "من"
+  },
+  "walletPopup": {
+    "title": "تفاصيل المعاملة",
+    "close": "إغلاق"
   }
 }

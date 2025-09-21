@@ -144,20 +144,20 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                 border: '1px solid rgba(255, 255, 255, 0.15)'
             }}>
 
-            {/* Header */}
-            <div className="flex items-center justify-between mb-6">
+            {/* Header - flex-col until 1300px, then flex-row */}
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 xl:gap-3 mb-6">
                 <h3 className="text-xl font-bold gradient-text tracking-tight transition-all duration-200 group-hover:scale-105">
                     {t('breakTime.title', 'Break Time')}
                 </h3>
 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col xl:flex-row xl:items-center gap-2 xl:gap-3">
                     {/* Enhanced Select */}
-                    <div className="relative group/select">
+                    <div className="relative group/select xl:w-48">
                         <select
                             value={selectedReason}
                             onChange={(e) => setSelectedReason(e.target.value)}
                             disabled={isBreakActive}
-                            className="border-2 rounded-xl font-semibold px-4 py-2.5 pr-10 text-xs gradient-text appearance-none backdrop-blur-sm transition-all duration-300 hover:border-opacity-80 focus:ring-2 focus:ring-opacity-20 focus:scale-[1.02]"
+                            className="w-full xl:w-auto xl:pr-[80px] border-2 rounded-xl font-semibold px-4 py-2.5 pr-10 text-xs gradient-text appearance-none backdrop-blur-sm transition-all duration-300 hover:border-opacity-80 focus:ring-2 focus:ring-opacity-20 focus:scale-[1.02]"
                             style={{
                                 borderColor: 'var(--accent-color)',
                                 backgroundColor: 'var(--bg-color)',
@@ -192,7 +192,7 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                     {/* Enhanced Button */}
                     <button
                         onClick={handleStartBreak}
-                        className="text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all duration-300 transform hover:scale-105 hover:shadow-xl active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed group/btn"
+                        className="w-full xl:w-auto text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all duration-300 transform hover:scale-105 hover:shadow-xl active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed group/btn"
                         style={{
                             background: isBreakActive
                                 ? 'linear-gradient(135deg, #ef4444, #dc2626)'

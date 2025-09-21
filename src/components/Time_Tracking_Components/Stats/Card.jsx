@@ -20,7 +20,7 @@ const Card = ({
   const isRtl = i18n.dir() === "rtl";
   return (
     <div
-      className={`w-full h-full min-h-[140px] flex flex-col justify-between p-3 rounded-2xl transition-all duration-300 hover:shadow-xl ${isRtl ? 'text-right' : 'text-left'} ${className || ''}`}
+      className={`w-full h-full min-h-[140px] border border-[var(--border-color)] flex flex-col justify-between p-3 rounded-2xl transition-all duration-300 hover:shadow-lg ${isRtl ? 'text-right' : 'text-left'} ${className || ''}`}
       style={{
         backgroundColor: 'var(--bg-color)',
         boxShadow: 'var(--shadow-color)',

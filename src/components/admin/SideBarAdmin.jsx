@@ -24,6 +24,8 @@ import {
   X,
   Rocket,
   Menu,
+  CalendarCheck,
+  Building2,
 } from "lucide-react";
 import logo from "../../assets/side-menu-icons/logo.svg?url";
 import { useTheme } from "../../contexts/ThemeContext";
@@ -101,6 +103,8 @@ const mainMenuItems = [
     ],
   },
   { key: "performance", Icon: BarChart3, implemented: true },
+  { key: "all_attendance", Icon: CalendarCheck, implemented: true },
+  { key: "all_department", Icon: Building2, implemented: true },
   { key: "leaves", Icon: Calendar, implemented: true },
   { key: "wallet", Icon: Wallet, implemented: true },
   { key: "My_Company", Icon: Building, implemented: true },
@@ -454,6 +458,8 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
     else if (key === "performance") navigate("/pages/admin/dashboard");
     else if (key === "wallet") navigate("/pages/admin/dashboard");
     else if (key === "My_Company") navigate("/pages/admin/dashboard");
+    else if (key === "all_attendance") navigate("/pages/admin/attendance");
+    else if (key === "all_department") navigate("/pages/admin/departments");
   };
 
   // Settings click handler

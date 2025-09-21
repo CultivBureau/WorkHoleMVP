@@ -140,7 +140,7 @@ const QuickActions = () => {
 
             {/* Quick Actions Component */}
             <div
-                className={`rounded-xl shadow-lg border p-3 sm:p-4 lg:p-5 h-full flex flex-col ${isArabic ? "text-right" : "text-left"
+                className={`rounded-xl shadow-lg border p-3 sm:p-4  lg:p-4 xl:p-5 h-full flex flex-col ${isArabic ? "text-right" : "text-left"
                     }`}
                 style={{
                     background: "var(--bg-color)",
@@ -148,23 +148,23 @@ const QuickActions = () => {
                 }}
                 dir={isArabic ? "rtl" : "ltr"}
             >
-                <h3 className="text-base sm:text-lg gradient-text font-semibold mb-1 sm:mb-2">
+                <h3 className="text-sm sm:text-base lg:text-sm xl:text-lg gradient-text font-semibold mb-1 sm:mb-2">
                     {t("dashboard.quickActions.title")}
                 </h3>
                 <p
-                    className="text-xs mb-3 sm:mb-4"
+                    className="text-xs sm:text-sm lg:text-xs xl:text-sm mb-3 sm:mb-4"
                     style={{ color: "var(--sub-text-color)" }}
                 >
                     {t("dashboard.quickActions.subtitle")}
                 </p>
 
-                {/* Responsive Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
+                {/* Responsive Grid - Optimized for 1025px-1200px */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-3 lg:gap-2 xl:gap-4">
                     {actions.map((action, idx) => (
                         <button
                             key={idx}
                             type="button"
-                            className={`flex flex-col items-center justify-center rounded-lg p-2 sm:p-3 shadow transition hover:shadow-md aspect-square focus:outline-none ${!action.implemented ? 'opacity-60' : 'hover:scale-105'
+                            className={`flex flex-col items-center justify-center rounded-lg p-2 sm:p-3  lg:p-2 xl:p-3 shadow transition hover:shadow-md aspect-square focus:outline-none ${!action.implemented ? 'opacity-60' : 'hover:scale-105'
                                 }`}
                             style={{
                                 background: "var(--bg-color)",
@@ -178,16 +178,16 @@ const QuickActions = () => {
                             <img
                                 src={action.icon}
                                 alt={action.title}
-                                className="w-12 h-12 sm:w-8 sm:h-8 lg:w-10 lg:h-10 mb-1 sm:mb-2" // w-12 = 48px تقريباً، لو عايز بالضبط 50px استخدم style
+                                className="w-8 h-8 sm:w-10 sm:h-10 lg:w-8 lg:h-8 xl:w-10 xl:h-10 mb-1 sm:mb-2"
                             />
                             <div
-                                className="text-[10px] sm:text-xs font-semibold mb-0.5 text-center leading-tight"
+                                className="text-[9px] sm:text-[10px] lg:text-[9px] xl:text-xs font-semibold mb-0.5 text-center leading-tight"
                                 style={{ color: "var(--text-color)" }}
                             >
                                 {action.title}
                             </div>
                             <div
-                                className="text-[8px] sm:text-[10px] text-center leading-tight hidden sm:block"
+                                className="text-[8px] sm:text-[9px] lg:text-[8px] xl:text-[10px] text-center leading-tight hidden sm:block"
                                 style={{ color: "var(--sub-text-color)" }}
                             >
                                 {action.subtitle}

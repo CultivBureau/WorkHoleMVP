@@ -102,7 +102,7 @@ const Stats = () => {
 
   return (
     <section
-      className="w-full rounded-2xl min-h-[140px] flex flex-col sm:flex-row justify-center items-stretch gap-4 sm:gap-6 p-4 sm:p-6"
+      className="w-full rounded-2xl min-h-[140px] flex flex-col max-[1200px]:flex-wrap sm:flex-row justify-center items-stretch gap-4 sm:gap-6 p-4 sm:p-6"
       style={{ backgroundColor: "var(--bg-color)" }}
     >
      

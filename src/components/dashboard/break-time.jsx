@@ -153,20 +153,21 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                 border: '1px solid rgba(255, 255, 255, 0.1)'
             }}>
 
-            {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold gradient-text tracking-tight transition-all duration-200 group-hover:scale-105">
+            {/* Header - flex-col only for 1024px-1250px range */}
+            <div className="flex flex-col lg:flex-col xl:flex-row 2xl:flex-row gap-3 mb-4 sm:mb-6 lg:mb-4 xl:mb-6">
+                <h3 className="text-lg sm:text-xl lg:text-lg xl:text-xl font-bold gradient-text tracking-tight transition-all duration-200 group-hover:scale-105">
                     {t('breakTime.title', 'Break Time')}
                 </h3>
 
-                <div className="flex items-center gap-3">
-                    {/* Enhanced Select */}
-                    <div className="relative group/select">
+                {/* Controls - flex-col only for 1024px-1250px range */}
+                <div className="flex flex-col lg:flex-col xl:flex-row 2xl:flex-row lg:items-start xl:items-center gap-2 xl:ml-auto">
+                    {/* Select Reason */}
+                    <div className="relative group/select lg:w-full xl:w-48">
                         <select
                             value={selectedReason}
                             onChange={(e) => setSelectedReason(e.target.value)}
                             disabled={isBreakActive}
-                            className="border-2 rounded-xl font-semibold px-4 py-2.5 pr-10 text-xs gradient-text appearance-none backdrop-blur-sm transition-all duration-300 hover:border-opacity-80 focus:ring-2 focus:ring-opacity-20 focus:scale-[1.02]"
+                            className="w-full border-2 rounded-xl font-semibold px-3 sm:px-4 lg:px-3 xl:px-4 py-2 sm:py-2.5 lg:py-2 xl:py-2.5 pr-8 sm:pr-10 lg:pr-8 xl:pr-10 text-xs sm:text-sm lg:text-xs xl:text-sm gradient-text appearance-none backdrop-blur-sm transition-all duration-300 hover:border-opacity-80 focus:ring-2 focus:ring-opacity-20 focus:scale-[1.02]"
                             style={{
                                 borderColor: 'var(--accent-color)',
                                 backgroundColor: 'var(--bg-color)',
@@ -185,8 +186,8 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                                 </option>
                             ))}
                         </select>
-                        <div className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 pointer-events-none transition-transform duration-300 group-hover/select:scale-110 group-hover/select:rotate-180">
-                            <svg width="12" height="12" className="sm:w-[14px] sm:h-[14px] gradient-text" viewBox="0 0 24 24" fill="none" >
+                        <div className="absolute right-2 sm:right-3 lg:right-2 xl:right-3 top-1/2 transform -translate-y-1/2 pointer-events-none transition-transform duration-300 group-hover/select:scale-110 group-hover/select:rotate-180">
+                            <svg width="10" height="10" className="sm:w-3 sm:h-3 lg:w-2.5 lg:h-2.5 xl:w-3 xl:h-3 gradient-text" viewBox="0 0 24 24" fill="none" >
                                 <path d="M6 9l6 6 6-6" stroke="url(#gradient)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                                 <defs>
                                     <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -198,10 +199,10 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                         </div>
                     </div>
 
-                    {/* Enhanced Button - Responsive */}
+                    {/* Start Break Button */}
                     <button
                         onClick={handleStartBreak}
-                        className="text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all duration-300 transform hover:scale-105 hover:shadow-xl active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed group/btn whitespace-nowrap"
+                        className="w-full xl:w-auto 2xl:w-auto text-white px-3 sm:px-4 lg:px-3 xl:px-4 py-2 sm:py-2.5 lg:py-2 xl:py-2.5 rounded-xl text-xs sm:text-sm lg:text-xs xl:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all duration-300 transform hover:scale-105 hover:shadow-xl active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed group/btn"
                         style={{
                             background: isBreakActive
                                 ? 'linear-gradient(135deg, #ef4444, #dc2626)'
@@ -215,17 +216,14 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                         <img
                             src="/assets/clock.svg"
                             alt={isBreakActive ? t('breakTime.endBreak', 'End Break') : t('breakTime.startBreak', 'Start Break')}
-                            className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-300 group-hover/btn:rotate-12"
+                            className="w-3 h-3 sm:w-4 sm:h-4 lg:w-3 lg:h-3 xl:w-4 xl:h-4 transition-transform duration-300 group-hover/btn:rotate-12"
                         />
-                        <span className="hidden xs:inline">
+                        <span>
                             {(starting || stopping) ? (
                                 <span className="animate-pulse">Loading...</span>
                             ) : (
                                 isBreakActive ? t('breakTime.endBreak', 'End Break') : t('breakTime.startBreak', 'Start Break')
                             )}
-                        </span>
-                        <span className="xs:hidden">
-                            {(starting || stopping) ? "..." : (isBreakActive ? "End" : "Start")}
                         </span>
                     </button>
                 </div>
@@ -240,26 +238,25 @@ const BreakTime = ({ breakDashboard, refetch }) => {
 
                 {/* Analog Clock - Responsive Size */}
                 <div className="relative mb-2 sm:mb-3 transition-transform duration-300 hover:scale-105">
-                    <svg width="32" height="32" className="sm:w-9 sm:h-9 lg:w-10 lg:h-10 drop-shadow-lg">
+                    <svg width="28" height="28" className="sm:w-8 sm:h-8 md:w-9 md:h-9 lg:w-10 lg:h-10 drop-shadow-lg">
                         {/* Clock face */}
                         <circle
-                            cx="16"
-                            cy="16"
-                            r="14"
-                            className="sm:cx-[18] sm:cy-[18] sm:r-[16] lg:cx-[20] lg:cy-[20] lg:r-[18] transition-all duration-300"
+                            cx="14"
+                            cy="14"
+                            r="12"
+                            className="sm:cx-[16] sm:cy-[16] sm:r-[14] md:cx-[18] md:cy-[18] md:r-[16] lg:cx-[20] lg:cy-[20] lg:r-[18] transition-all duration-300"
                             fill={isBreakActive ? "var(--error-color)" : "var(--accent-color)"}
                             fillOpacity="0.08"
                             stroke={isBreakActive ? "var(--error-color)" : "var(--accent-color)"}
                             strokeWidth="2"
-                            
                         />
 
                         {/* Outer ring */}
                         <circle
-                            cx="16"
-                            cy="16"
-                            r="13"
-                            className="sm:cx-[18] sm:cy-[18] sm:r-[15] lg:cx-[20] lg:cy-[20] lg:r-[17]"
+                            cx="14"
+                            cy="14"
+                            r="11"
+                            className="sm:cx-[16] sm:cy-[16] sm:r-[13] md:cx-[18] md:cy-[18] md:r-[15] lg:cx-[20] lg:cy-[20] lg:r-[17]"
                             fill="none"
                             stroke={isBreakActive ? "var(--error-color)" : "var(--accent-color)"}
                             strokeWidth="0.5"
@@ -269,11 +266,11 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                         {/* Hour markers - Responsive */}
                         {[...Array(12)].map((_, i) => {
                             const angle = i * 30 - 90;
-                            // Base dimensions for mobile (32x32), scale for larger screens
-                            const centerX = 16; // Will be overridden by responsive CSS
-                            const centerY = 16;
-                            const innerRadius = 8;
-                            const outerRadius = 11;
+                            // Base dimensions for mobile (28x28), scale for larger screens
+                            const centerX = 14; // Will be overridden by responsive CSS
+                            const centerY = 14;
+                            const innerRadius = 7;
+                            const outerRadius = 10;
                             
                             const x1 = centerX + innerRadius * Math.cos((angle * Math.PI) / 180);
                             const y1 = centerY + innerRadius * Math.sin((angle * Math.PI) / 180);
@@ -296,22 +293,22 @@ const BreakTime = ({ breakDashboard, refetch }) => {
 
                         {/* Hour hand - Responsive */}
                         <line
-                            x1="16"
-                            y1="16"
-                            x2={16 + 4.5 * Math.cos((hourAngle * Math.PI) / 180)}
-                            y2={16 + 4.5 * Math.sin((hourAngle * Math.PI) / 180)}
+                            x1="14"
+                            y1="14"
+                            x2={14 + 4 * Math.cos((hourAngle * Math.PI) / 180)}
+                            y2={14 + 4 * Math.sin((hourAngle * Math.PI) / 180)}
                             stroke={isBreakActive ? "var(--error-color)" : "var(--accent-color)"}
-                            strokeWidth="2.5"
+                            strokeWidth="2"
                             strokeLinecap="round"
                             className="transition-all duration-300"
                         />
 
                         {/* Minute hand - Responsive */}
                         <line
-                            x1="16"
-                            y1="16"
-                            x2={16 + 7 * Math.cos((minuteAngle * Math.PI) / 180)}
-                            y2={16 + 7 * Math.sin((minuteAngle * Math.PI) / 180)}
+                            x1="14"
+                            y1="14"
+                            x2={14 + 6 * Math.cos((minuteAngle * Math.PI) / 180)}
+                            y2={14 + 6 * Math.sin((minuteAngle * Math.PI) / 180)}
                             stroke={isBreakActive ? "var(--error-color)" : "var(--accent-color)"}
                             strokeWidth="1.5"
                             strokeLinecap="round"
@@ -320,10 +317,10 @@ const BreakTime = ({ breakDashboard, refetch }) => {
 
                         {/* Second hand - Responsive */}
                         <line
-                            x1="16"
-                            y1="16"
-                            x2={16 + 8 * Math.cos((secondAngle * Math.PI) / 180)}
-                            y2={16 + 8 * Math.sin((secondAngle * Math.PI) / 180)}
+                            x1="14"
+                            y1="14"
+                            x2={14 + 7 * Math.cos((secondAngle * Math.PI) / 180)}
+                            y2={14 + 7 * Math.sin((secondAngle * Math.PI) / 180)}
                             stroke="var(--accent-hover)"
                             strokeWidth="1"
                             strokeLinecap="round"
@@ -332,15 +329,15 @@ const BreakTime = ({ breakDashboard, refetch }) => {
 
                         {/* Center dot - Responsive */}
                         <circle
-                            cx="16"
-                            cy="16"
+                            cx="14"
+                            cy="14"
                             r="1.5"
                             fill={isBreakActive ? "var(--error-color)" : "var(--accent-color)"}
                             className="transition-all duration-300"
                         />
                         <circle
-                            cx="16"
-                            cy="16"
+                            cx="14"
+                            cy="14"
                             r="0.8"
                             fill="white"
                             fillOpacity="0.8"
@@ -363,23 +360,23 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                         <DigitalNumber 
                             value={timerMinutes} 
                             size="sm" 
-                            className="sm:text-base transition-all duration-200"
+                            className="text-sm sm:text-base transition-all duration-200"
                             style={{ color: 'var(--text-color)', lineHeight: '1' }}
                         />
-                        <div className="text-[8px] sm:text-[9px] font-semibold tracking-widest opacity-70 uppercase transition-all duration-200"
+                        <div className="text-[7px] sm:text-[8px] md:text-[9px] font-semibold tracking-widest opacity-70 uppercase transition-all duration-200"
                             style={{ color: 'var(--sub-text-color2)', lineHeight: '1' }}>
                             MIN
                         </div>
                     </div>
-                    <div className="w-px h-6 sm:h-8 bg-white bg-opacity-20"></div>
+                    <div className="w-px h-5 sm:h-6 md:h-8 bg-white bg-opacity-20"></div>
                     <div className="flex flex-col items-center">
                         <DigitalNumber 
                             value={timerSeconds} 
                             size="sm" 
-                            className="sm:text-base transition-all duration-200"
+                            className="text-sm sm:text-base transition-all duration-200"
                             style={{ color: 'var(--text-color)', lineHeight: '1' }}
                         />
-                        <div className="text-[8px] sm:text-[9px] font-semibold tracking-widest opacity-70 uppercase transition-all duration-200"
+                        <div className="text-[7px] sm:text-[8px] md:text-[9px] font-semibold tracking-widest opacity-70 uppercase transition-all duration-200"
                             style={{ color: 'var(--sub-text-color2)', lineHeight: '1' }}>
                             SEC
                         </div>
@@ -401,7 +398,7 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                 <div
                     className="flex-1 overflow-hidden"
                     style={{
-                        maxHeight: sortedBreaks.length > 2 ? "120px" : "none",
+                        maxHeight: sortedBreaks.length > 2 ? "100px sm:120px" : "none",
                         overflowY: sortedBreaks.length > 2 ? "auto" : "visible",
                         minHeight: 0,
                     }}
@@ -411,14 +408,14 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                         {sortedBreaks.map((item, idx) => (
                             <div key={idx} className="bg-gray-50 rounded-lg p-2 space-y-1" style={{ backgroundColor: 'var(--hover-color)' }}>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-[10px] sm:text-xs font-medium" style={{ color: 'var(--text-color)' }}>
+                                    <span className="text-[9px] sm:text-[10px] font-medium" style={{ color: 'var(--text-color)' }}>
                                         {item.date}
                                     </span>
-                                    <span className="text-[10px] sm:text-xs font-semibold" style={{ color: 'var(--accent-color)' }}>
+                                    <span className="text-[9px] sm:text-[10px] font-semibold" style={{ color: 'var(--accent-color)' }}>
                                         {t(`breakTime.reasons.${item.breakType}`, item.breakType)}
                                     </span>
                                 </div>
-                                <div className="flex justify-between items-center text-[9px] sm:text-[10px]" style={{ color: 'var(--sub-text-color)' }}>
+                                <div className="flex justify-between items-center text-[8px] sm:text-[9px]" style={{ color: 'var(--sub-text-color)' }}>
                                     <span>{formatMinutes(item.duration.replace(' min', ''))}</span>
                                     <span className="hidden xs:inline">{formatLocalTime(item.startTime)} - {formatLocalTime(item.endTime)}</span>
                                     <span className={item.exceeded ? 'text-red-500 font-semibold' : ''}>
@@ -433,27 +430,27 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                     <table className="w-full hidden md:table">
                         <thead className="sticky top-0 z-10" style={{ backgroundColor: 'var(--bg-color)' }}>
                             <tr>
-                                <th className="text-[9px] lg:text-[10px] xl:text-xs font-bold py-0.5 lg:py-1 transition-colors duration-200 hover:opacity-80"
+                                <th className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs font-bold py-0.5 sm:py-1 transition-colors duration-200 hover:opacity-80"
                                     style={{ color: 'var(--sub-text-color)' }}>
                                     {t('breakTime.date', 'Date')}
                                 </th>
-                                <th className="text-[9px] lg:text-[10px] xl:text-xs font-bold py-0.5 lg:py-1 transition-colors duration-200 hover:opacity-80"
+                                <th className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs font-bold py-0.5 sm:py-1 transition-colors duration-200 hover:opacity-80"
                                     style={{ color: 'var(--sub-text-color)' }}>
                                     {t('breakTime.breakType', 'Type')}
                                 </th>
-                                <th className="text-[9px] lg:text-[10px] xl:text-xs font-bold py-0.5 lg:py-1 transition-colors duration-200 hover:opacity-80"
+                                <th className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs font-bold py-0.5 sm:py-1 transition-colors duration-200 hover:opacity-80"
                                     style={{ color: 'var(--sub-text-color)' }}>
                                     {t('breakTime.duration', 'Duration')}
                                 </th>
-                                <th className="text-[9px] lg:text-[10px] xl:text-xs font-bold py-0.5 lg:py-1 transition-colors duration-200 hover:opacity-80 hidden xl:table-cell"
+                                <th className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs font-bold py-0.5 sm:py-1 transition-colors duration-200 hover:opacity-80 hidden xl:table-cell"
                                     style={{ color: 'var(--sub-text-color)' }}>
                                     {t('breakTime.startTime', 'Start')}
                                 </th>
-                                <th className="text-[9px] lg:text-[10px] xl:text-xs font-bold py-0.5 lg:py-1 transition-colors duration-200 hover:opacity-80 hidden xl:table-cell"
+                                <th className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs font-bold py-0.5 sm:py-1 transition-colors duration-200 hover:opacity-80 hidden xl:table-cell"
                                     style={{ color: 'var(--sub-text-color)' }}>
                                     {t('breakTime.endTime', 'End')}
                                 </th>
-                                <th className="text-[9px] lg:text-[10px] xl:text-xs font-bold py-0.5 lg:py-1 transition-colors duration-200 hover:opacity-80"
+                                <th className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs font-bold py-0.5 sm:py-1 transition-colors duration-200 hover:opacity-80"
                                     style={{ color: 'var(--sub-text-color)' }}>
                                     {t('breakTime.exceeded', 'Exceeded')}
                                 </th>
@@ -462,22 +459,22 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                         <tbody>
                             {sortedBreaks.map((item, idx) => (
                                 <tr key={idx} className="hover:bg-opacity-50 transition-all duration-200 group/row" style={{ backgroundColor: 'transparent' }}>
-                                    <td className="py-0.5 lg:py-1 text-[9px] lg:text-[10px] xl:text-xs font-medium transition-all duration-200 group-hover/row:opacity-80" style={{ color: 'var(--text-color)' }}>
+                                    <td className="py-0.5 sm:py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs font-medium transition-all duration-200 group-hover/row:opacity-80" style={{ color: 'var(--text-color)' }}>
                                         {item.date}
                                     </td>
-                                    <td className="py-0.5 lg:py-1 text-[9px] lg:text-[10px] xl:text-xs font-semibold transition-all duration-200 group-hover/row:scale-105" style={{ color: 'var(--accent-color)' }}>
+                                    <td className="py-0.5 sm:py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs font-semibold transition-all duration-200 group-hover/row:scale-105" style={{ color: 'var(--accent-color)' }}>
                                         {t(`breakTime.reasons.${item.breakType}`, item.breakType)}
                                     </td>
-                                    <td className="py-0.5 lg:py-1 text-[9px] lg:text-[10px] xl:text-xs transition-all duration-200 group-hover/row:opacity-80" style={{ color: 'var(--sub-text-color)' }}>
+                                    <td className="py-0.5 sm:py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs transition-all duration-200 group-hover/row:opacity-80" style={{ color: 'var(--sub-text-color)' }}>
                                         {formatMinutes(item.duration.replace(' min', ''))}
                                     </td>
-                                    <td className="py-0.5 lg:py-1 text-[9px] lg:text-[10px] xl:text-xs transition-all duration-200 group-hover/row:opacity-80 hidden xl:table-cell" style={{ color: 'var(--sub-text-color)' }}>
+                                    <td className="py-0.5 sm:py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs transition-all duration-200 group-hover/row:opacity-80 hidden xl:table-cell" style={{ color: 'var(--sub-text-color)' }}>
                                         {formatLocalTime(item.startTime)}
                                     </td>
-                                    <td className="py-0.5 lg:py-1 text-[9px] lg:text-[10px] xl:text-xs transition-all duration-200 group-hover/row:opacity-80 hidden xl:table-cell" style={{ color: 'var(--sub-text-color)' }}>
+                                    <td className="py-0.5 sm:py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs transition-all duration-200 group-hover/row:opacity-80 hidden xl:table-cell" style={{ color: 'var(--sub-text-color)' }}>
                                         {formatLocalTime(item.endTime)}
                                     </td>
-                                    <td className="py-0.5 lg:py-1 text-[9px] lg:text-[10px] xl:text-xs font-semibold transition-all duration-200 group-hover/row:scale-105" style={{ color: item.exceeded ? '#ef4444' : 'var(--sub-text-color)' }}>
+                                    <td className="py-0.5 sm:py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs font-semibold transition-all duration-200 group-hover/row:scale-105" style={{ color: item.exceeded ? '#ef4444' : 'var(--sub-text-color)' }}>
                                         {item.exceeded ? t('breakTime.exceededYes', 'Yes') : t('breakTime.exceededNo', 'No')}
                                     </td>
                                 </tr>
