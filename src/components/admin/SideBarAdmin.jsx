@@ -90,7 +90,14 @@ const mainMenuItems = [
     implemented: true,
     children: [
       { key: "New_Employee", Icon: UserPlus, implemented: true },
-      { key: "Roles_Permissions", Icon: Shield, implemented: true },
+    ],
+  },
+  {
+    key: "Roles_Permissions",
+    Icon: Shield,
+    implemented: true,
+    children: [
+      { key: "New_Role", Icon: Shield, implemented: true },
     ],
   },
   {
@@ -416,8 +423,10 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
       return "All_Employees";
     if (location.pathname.startsWith("/pages/admin/new-employee"))
       return "New_Employee";
-    if (location.pathname.startsWith("/pages/admin/users"))
+    if (location.pathname.startsWith("/pages/admin/Roles&Permissions"))
       return "Roles_Permissions";
+    if (location.pathname.startsWith("/pages/admin/New_Role"))
+      return "New_Role";
     if (location.pathname.startsWith("/pages/admin/leaves"))
       return "leaves";
     return "";
@@ -427,8 +436,11 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
 
   // فتح dropdown تلقائي لو كنت على All_Employees أو أي من children
   useEffect(() => {
-    if (active === "All_Employees" || active === "New_Employee" || active === "Roles_Permissions") {
+    if (active === "All_Employees" || active === "New_Employee") {
       setOpenDropdown("All_Employees");
+    }
+    if (active === "Roles_Permissions" || active === "New_Role") {
+      setOpenDropdown("Roles_Permissions");
     }
   }, [active]);
 
@@ -453,7 +465,8 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
     if (key === "dashboard") navigate("/pages/admin/dashboard");
     else if (key === "All_Employees") navigate("/pages/admin/all-employees");
     else if (key === "New_Employee") navigate("/pages/admin/new-employee");
-    else if (key === "Roles_Permissions") navigate("/pages/admin/users");
+    else if (key === "Roles_Permissions") navigate("/pages/admin/Roles&Permissions");
+    else if (key === "New_Role") navigate("/pages/admin/New_Role");
     else if (key === "leaves") navigate("/pages/admin/leaves");
     else if (key === "performance") navigate("/pages/admin/dashboard");
     else if (key === "wallet") navigate("/pages/admin/dashboard");
