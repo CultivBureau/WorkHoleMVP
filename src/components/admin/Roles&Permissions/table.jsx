@@ -239,7 +239,7 @@ const RolesTable = () => {
         <div className="flex flex-col h-full min-h-0" style={{ direction: isArabic ? 'rtl' : 'ltr' }}>
             {/* Filters and header section - keep this outside the scroll container */}
             <div className="mb-4 flex-shrink-0">
-                <div className="flex bg-[var(--bg-color)] p-4 w-[98%] h-max shadow-xl rounded-3xl border border-[var(--border-color)] flex-wrap items-center gap-4 justify-between">
+                <div className="flex bg-[var(--bg-color)] p-4 w-100%] h-max shadow-xl rounded-3xl border border-[var(--border-color)] flex-wrap items-center gap-4 justify-between">
                     <div className="flex flex-wrap items-center gap-4">
                         <div className="flex items-center gap-2">
                             <span className="text-[10px] font-medium text-[var(--sub-text-color)]">{t('roles.table.role')}</span>

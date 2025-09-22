@@ -9,7 +9,7 @@ const Header = ({ searchValue, onSearchChange }) => {
     const isArabic = i18n.language === "ar";
 
     const handleAddNewRole = () => {
-        navigate("/pages/admin/new-role");
+        navigate("/pages/admin/New_Role");
     };
 
     return (

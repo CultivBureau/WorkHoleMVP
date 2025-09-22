@@ -11,32 +11,34 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
         permissions: {
             timeAndAttendance: {
                 clockInOut: false,
-                editAttendanceLogic: false,
+                editAttendanceLogs: false,
                 viewAttendanceReports: false,
                 approveLateArrivalJustifications: false
             },
             tasksAndProjects: {
                 createTasks: false,
-                assignTasks: false,
+                assignTasksToOthers: false,
                 changeTaskStatus: false,
-                viewAllTasksAndProjects: false
-            },
-            leaveManagement: {
-                requestLeaves: false,
-                approveLeaves: false,
-                viewLeaveCalendar: false,
+                viewAllTasksProjects: false,
                 createProjects: false
             },
+            leaveManagement: {
+                requestLeave: false,
+                approveRejectLeaveRequests: false,
+                editLeaveBalance: false,
+                viewLeaveCalendar: false
+            },
             employeeManagement: {
-                addEmployee: false,
-                viewTeam: false,
-                viewEmployeePerformance: false
+                addEditEmployees: false,
+                assignRoles: false,
+                viewEmployeeProfiles: false,
+                deactivateEmployees: false
             },
             hrAndAdminTools: {
-                viewReportsAndAnalytics: false,
-                accessPayroll: false,
-                managePolicyCompliance: false,
-                accessRecruitmentTools: false
+                viewReportsDashboard: false,
+                editCompanySettings: false,
+                manageBreakCategories: false,
+                accessPayrollData: false
             }
         }
     });
@@ -48,32 +50,34 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                 permissions: {
                     timeAndAttendance: {
                         clockInOut: false,
-                        editAttendanceLogic: false,
+                        editAttendanceLogs: false,
                         viewAttendanceReports: false,
                         approveLateArrivalJustifications: false
                     },
                     tasksAndProjects: {
                         createTasks: false,
-                        assignTasks: false,
+                        assignTasksToOthers: false,
                         changeTaskStatus: false,
-                        viewAllTasksAndProjects: false
-                    },
-                    leaveManagement: {
-                        requestLeaves: false,
-                        approveLeaves: false,
-                        viewLeaveCalendar: false,
+                        viewAllTasksProjects: false,
                         createProjects: false
                     },
+                    leaveManagement: {
+                        requestLeave: false,
+                        approveRejectLeaveRequests: false,
+                        editLeaveBalance: false,
+                        viewLeaveCalendar: false
+                    },
                     employeeManagement: {
-                        addEmployee: false,
-                        viewTeam: false,
-                        viewEmployeePerformance: false
+                        addEditEmployees: false,
+                        assignRoles: false,
+                        viewEmployeeProfiles: false,
+                        deactivateEmployees: false
                     },
                     hrAndAdminTools: {
-                        viewReportsAndAnalytics: false,
-                        accessPayroll: false,
-                        managePolicyCompliance: false,
-                        accessRecruitmentTools: false
+                        viewReportsDashboard: false,
+                        editCompanySettings: false,
+                        manageBreakCategories: false,
+                        accessPayrollData: false
                     }
                 }
             });
@@ -113,48 +117,50 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
             category: 'timeAndAttendance',
             items: [
                 { key: 'clockInOut', label: t('roles.editRole.permissions.clockInOut') },
-                { key: 'editAttendanceLogic', label: t('roles.editRole.permissions.editAttendanceLogic') },
-                { key: 'viewAttendanceReports', label: t('roles.editRole.permissions.viewAttendanceReports') },
-                { key: 'approveLateArrivalJustifications', label: t('roles.editRole.permissions.approveLateArrivalJustifications') }
+                { key: 'editAttendanceLogs', label: t('roles.permissionsList.editAttendanceLogs') },
+                { key: 'viewAttendanceReports', label: t('roles.permissionsList.viewAttendanceReports') },
+                { key: 'approveLateArrivalJustifications', label: t('roles.permissionsList.approveLateArrivalJustifications') }
             ]
         },
         {
             title: t('roles.editRole.categories.tasksAndProjects'),
             category: 'tasksAndProjects',
             items: [
-                { key: 'createTasks', label: t('roles.editRole.permissions.createTasks') },
-                { key: 'assignTasks', label: t('roles.editRole.permissions.assignTasks') },
-                { key: 'changeTaskStatus', label: t('roles.editRole.permissions.changeTaskStatus') },
-                { key: 'viewAllTasksAndProjects', label: t('roles.editRole.permissions.viewAllTasksAndProjects') }
+                { key: 'createTasks', label: t('roles.permissionsList.createTasks') },
+                { key: 'assignTasksToOthers', label: t('roles.permissionsList.assignTasksToOthers') },
+                { key: 'changeTaskStatus', label: t('roles.permissionsList.changeTaskStatus') },
+                { key: 'viewAllTasksProjects', label: t('roles.permissionsList.viewAllTasksProjects') },
+                { key: 'createProjects', label: t('roles.permissionsList.createProjects') }
             ]
         },
         {
             title: t('roles.editRole.categories.leaveManagement'),
             category: 'leaveManagement',
             items: [
-                { key: 'requestLeaves', label: t('roles.editRole.permissions.requestLeaves') },
-                { key: 'approveLeaves', label: t('roles.editRole.permissions.approveLeaves') },
-                { key: 'viewLeaveCalendar', label: t('roles.editRole.permissions.viewLeaveCalendar') },
-                { key: 'createProjects', label: t('roles.editRole.permissions.createProjects') }
+                { key: 'requestLeave', label: t('roles.permissionsList.requestLeave') },
+                { key: 'approveRejectLeaveRequests', label: t('roles.permissionsList.approveRejectLeaveRequests') },
+                { key: 'editLeaveBalance', label: t('roles.permissionsList.editLeaveBalance') },
+                { key: 'viewLeaveCalendar', label: t('roles.permissionsList.viewLeaveCalendar') }
             ]
         },
         {
             title: t('roles.editRole.categories.employeeManagement'),
             category: 'employeeManagement',
             items: [
-                { key: 'addEmployee', label: t('roles.editRole.permissions.addEmployee') },
-                { key: 'viewTeam', label: t('roles.editRole.permissions.viewTeam') },
-                { key: 'viewEmployeePerformance', label: t('roles.editRole.permissions.viewEmployeePerformance') }
+                { key: 'addEditEmployees', label: t('roles.permissionsList.addEditEmployees') },
+                { key: 'assignRoles', label: t('roles.permissionsList.assignRoles') },
+                { key: 'viewEmployeeProfiles', label: t('roles.permissionsList.viewEmployeeProfiles') },
+                { key: 'deactivateEmployees', label: t('roles.permissionsList.deactivateEmployees') }
             ]
         },
         {
             title: t('roles.editRole.categories.hrAndAdminTools'),
             category: 'hrAndAdminTools',
             items: [
-                { key: 'viewReportsAndAnalytics', label: t('roles.editRole.permissions.viewReportsAndAnalytics') },
-                { key: 'accessPayroll', label: t('roles.editRole.permissions.accessPayroll') },
-                { key: 'managePolicyCompliance', label: t('roles.editRole.permissions.managePolicyCompliance') },
-                { key: 'accessRecruitmentTools', label: t('roles.editRole.permissions.accessRecruitmentTools') }
+                { key: 'viewReportsDashboard', label: t('roles.permissionsList.viewReportsDashboard') },
+                { key: 'editCompanySettings', label: t('roles.permissionsList.editCompanySettings') },
+                { key: 'manageBreakCategories', label: t('roles.permissionsList.manageBreakCategories') },
+                { key: 'accessPayrollData', label: t('roles.permissionsList.accessPayrollData') }
             ]
         }
     ];
@@ -176,7 +182,7 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                         {/* Header */}
                         <div className="flex items-center justify-between p-4 border-b border-[var(--border-color)]">
                             <h2 className="text-lg font-semibold text-[var(--text-color)]">
-                                {t('roles.editRole.title')}
+                                {t('roles.editRoleTitle')}
                             </h2>
                             <button
                                 onClick={onClose}
@@ -190,7 +196,10 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                         <div className="flex-1 overflow-y-auto p-4 space-y-4">
                             {/* Role Name */}
                             <div>
-                                <label className="block text-sm font-medium text-[var(--text-color)] mb-2">
+                                <label 
+                                    className={`block text-sm font-medium text-[var(--text-color)] mb-2 ${isArabic ? 'text-right' : 'text-left'}`}
+                                    dir={isArabic ? 'rtl' : 'ltr'}
+                                >
                                     {t('roles.editRole.roleName')}
                                 </label>
                                 <input
@@ -207,14 +216,17 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                             {permissionSections.map((section) => (
                                 <div key={section.category} className="space-y-3">
                                     <div>
-                                        <h3 className="text-sm font-semibold text-[var(--text-color)] pb-2">
+                                        <h3 
+                                            className={`text-sm font-semibold text-[var(--text-color)] pb-2 ${isArabic ? 'text-right' : 'text-left'}`}
+                                            dir={isArabic ? 'rtl' : 'ltr'}
+                                        >
                                             {section.title}
                                         </h3>
                                         <div className="w-full h-px bg-[var(--border-color)]"></div>
                                     </div>
                                     <div className="space-y-2">
                                         {section.items.map(item => (
-                                            <label key={item.key} className={`flex items-center gap-3 cursor-pointer ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                            <label key={item.key} className={`flex items-center gap-3 cursor-pointer ${isArabic ? 'flex-row-reverse justify-end' : ''}`}>
                                                 <input
                                                     type="checkbox"
                                                     checked={formData.permissions[section.category][item.key]}
@@ -224,7 +236,12 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                                                         accentColor: 'var(--accent-color)'
                                                     }}
                                                 />
-                                                <span className="text-sm text-[var(--text-color)]">{item.label}</span>
+                                                <span 
+                                                    className={`text-sm text-[var(--text-color)] ${isArabic ? 'text-right' : 'text-left'}`}
+                                                    dir={isArabic ? 'rtl' : 'ltr'}
+                                                >
+                                                    {item.label}
+                                                </span>
                                             </label>
                                         ))}
                                     </div>
@@ -239,14 +256,14 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                                     onClick={handleCancel}
                                     className="flex-1 px-4 py-3 border border-[var(--border-color)] text-[var(--text-color)] rounded-lg font-medium hover:bg-[var(--hover-color)] transition-colors"
                                 >
-                                    {t('roles.editRole.cancel')}
+                                    {t('roles.cancel')}
                                 </button>
                                 <button
                                     onClick={handleSave}
                                     className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--accent-color)] text-white rounded-lg font-medium hover:opacity-90 transition-opacity ${isArabic ? 'flex-row-reverse' : ''}`}
                                 >
                                     <Check className="w-4 h-4" />
-                                    {t('roles.editRole.save')}
+                                    {t('roles.save')}
                                 </button>
                             </div>
                         </div>
@@ -263,7 +280,7 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-[var(--border-color)] flex-shrink-0">
                 <h2 className="text-lg font-semibold text-[var(--text-color)]">
-                    {t('roles.editRole.title')}
+                    {t('roles.editRoleTitle')}
                 </h2>
                 <button
                     onClick={onClose}
@@ -277,7 +294,10 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
             <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
                 {/* Role Name */}
                 <div>
-                    <label className="block text-sm font-medium text-[var(--text-color)] mb-2">
+                    <label 
+                        className={`block text-sm font-medium text-[var(--text-color)] mb-2 ${isArabic ? 'text-right' : 'text-left'}`}
+                        dir={isArabic ? 'rtl' : 'ltr'}
+                    >
                         {t('roles.editRole.roleName')}
                     </label>
                     <input
@@ -294,14 +314,17 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                 {permissionSections.map((section) => (
                     <div key={section.category} className="space-y-3">
                         <div>
-                            <h3 className="text-sm font-semibold text-[var(--text-color)] pb-2">
+                            <h3 
+                                className={`text-sm font-semibold text-[var(--text-color)] pb-2 ${isArabic ? 'text-right' : 'text-left'}`}
+                                dir={isArabic ? 'rtl' : 'ltr'}
+                            >
                                 {section.title}
                             </h3>
                             <div className="w-full h-px bg-[var(--border-color)]"></div>
                         </div>
                         <div className="space-y-2">
                             {section.items.map(item => (
-                                <label key={item.key} className={`flex items-center gap-3 cursor-pointer ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                <label key={item.key} className={`flex items-center gap-3 cursor-pointer ${isArabic ? 'flex-row-reverse justify-end' : ''}`}>
                                     <input
                                         type="checkbox"
                                         checked={formData.permissions[section.category][item.key]}
@@ -311,7 +334,12 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                                             accentColor: 'var(--accent-color)'
                                         }}
                                     />
-                                    <span className="text-sm text-[var(--text-color)]">{item.label}</span>
+                                    <span 
+                                        className={`text-sm text-[var(--text-color)] ${isArabic ? 'text-right' : 'text-left'}`}
+                                        dir={isArabic ? 'rtl' : 'ltr'}
+                                    >
+                                        {item.label}
+                                    </span>
                                 </label>
                             ))}
                         </div>
@@ -326,14 +354,14 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                         onClick={handleCancel}
                         className="flex-1 px-4 py-3 border border-[var(--border-color)] text-[var(--text-color)] rounded-lg font-medium hover:bg-[var(--hover-color)] transition-colors"
                     >
-                        {t('roles.editRole.cancel')}
+                        {t('roles.cancel')}
                     </button>
                     <button
                         onClick={handleSave}
                         className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--accent-color)] text-white rounded-lg font-medium hover:opacity-90 transition-opacity ${isArabic ? 'flex-row-reverse' : ''}`}
                     >
                         <Check className="w-4 h-4" />
-                        {t('roles.editRole.save')}
+                        {t('roles.save')}
                     </button>
                 </div>
             </div>
