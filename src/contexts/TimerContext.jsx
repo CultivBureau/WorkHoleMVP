@@ -41,10 +41,14 @@ export function TimerProvider({ children }) {
     }
   });
 
-  // Backend API hooks
+  // Only fetch backend timer when we have an active timer locally
+  const shouldFetchBackend = localTimer.status !== 'idle' || localTimer.id;
+  
+  // Backend API hooks - only fetch when needed
   const { data: backendTimer, refetch: refetchBackend } = useGetCurrentTimerQuery(undefined, {
-    pollingInterval: 30000, // Sync every 30 seconds
-    refetchOnFocus: true,
+    skip: !shouldFetchBackend, // Skip if no active timer
+    pollingInterval: shouldFetchBackend ? 60000 : 0, // Poll every 60 seconds only when needed
+    refetchOnFocus: false, // Disable refetch on focus to reduce requests
     refetchOnReconnect: true,
   });
 
@@ -59,7 +63,7 @@ export function TimerProvider({ children }) {
     localStorage.setItem(TIMER_KEY, JSON.stringify(localTimer));
   }, [localTimer]);
 
-  // Sync with backend timer
+  // Sync with backend timer - only when we have backend data
   useEffect(() => {
     if (backendTimer?.isRunning && backendTimer?.timer) {
       const backendData = backendTimer.timer;
@@ -125,26 +129,31 @@ export function TimerProvider({ children }) {
           duration: response.timer.duration,
           id: response.timer.id
         });
-        await refetchBackend();
+        // Only refetch if we're already polling
+        if (shouldFetchBackend) {
+          await refetchBackend();
+        }
       }
     } catch (error) {
       console.error('Failed to start timer:', error);
       throw error;
     }
-  }, [startTimerMutation, refetchBackend]);
+  }, [startTimerMutation, refetchBackend, shouldFetchBackend]);
 
   const pauseTimer = useCallback(async () => {
     if (localTimer.id) {
       try {
         await pauseTimerMutation(localTimer.id).unwrap();
         setLocalTimer(prev => ({ ...prev, status: 'paused' }));
-        await refetchBackend();
+        if (shouldFetchBackend) {
+          await refetchBackend();
+        }
       } catch (error) {
         console.error('Failed to pause timer:', error);
         throw error;
       }
     }
-  }, [localTimer.id, pauseTimerMutation, refetchBackend]);
+  }, [localTimer.id, pauseTimerMutation, refetchBackend, shouldFetchBackend]);
 
   const resumeTimer = useCallback(async () => {
     if (localTimer.id) {
@@ -155,13 +164,15 @@ export function TimerProvider({ children }) {
           status: 'running',
           startTime: Date.now() - prev.seconds * 1000,
         }));
-        await refetchBackend();
+        if (shouldFetchBackend) {
+          await refetchBackend();
+        }
       } catch (error) {
         console.error('Failed to resume timer:', error);
         throw error;
       }
     }
-  }, [localTimer.id, resumeTimerMutation, refetchBackend]);
+  }, [localTimer.id, resumeTimerMutation, refetchBackend, shouldFetchBackend]);
 
   const completeTimer = useCallback(async (note = '') => {
     if (localTimer.id) {
@@ -178,13 +189,15 @@ export function TimerProvider({ children }) {
           duration: 25,
           id: null
         });
-        await refetchBackend();
+        if (shouldFetchBackend) {
+          await refetchBackend();
+        }
       } catch (error) {
         console.error('Failed to complete timer:', error);
         throw error;
       }
     }
-  }, [localTimer.id, completeTimerMutation, refetchBackend]);
+  }, [localTimer.id, completeTimerMutation, refetchBackend, shouldFetchBackend]);
 
   const cancelTimer = useCallback(async (note = '') => {
     if (localTimer.id) {
@@ -201,13 +214,15 @@ export function TimerProvider({ children }) {
           duration: 25,
           id: null
         });
-        await refetchBackend();
+        if (shouldFetchBackend) {
+          await refetchBackend();
+        }
       } catch (error) {
         console.error('Failed to cancel timer:', error);
         throw error;
       }
     }
-  }, [localTimer.id, cancelTimerMutation, refetchBackend]);
+  }, [localTimer.id, cancelTimerMutation, refetchBackend, shouldFetchBackend]);
 
   const stopTimer = useCallback(() => {
     setLocalTimer({

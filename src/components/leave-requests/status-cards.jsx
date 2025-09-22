@@ -77,11 +77,6 @@ const LeaveStatusCards = () => {
                                 {card.title}
                             </span>
                         }
-                        subTitle={
-                            <span className="text-xs sm:text-sm lg:text-xs xl:text-sm 2xl:text-sm transition-all duration-200">
-                                {card.subTitle}
-                            </span>
-                        }
                         rightIcon={card.rightIcon}
                         className="h-full min-h-[120px] sm:min-h-[140px] lg:min-h-[130px] xl:min-h-[140px] 2xl:min-h-[160px]"
                     />

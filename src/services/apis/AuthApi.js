@@ -1,68 +1,69 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { getAuthToken, setAuthToken, removeAuthToken } from "../../utils/page";
-
-const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { baseQueryWithReauth } from "./baseQuery";
+import { setAuthTokens, removeAuthToken } from "../../utils/page";
 
 export const authApi = createApi({
   reducerPath: "authApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: `${baseUrl}/auth`,
-    prepareHeaders: (headers) => {
-      const token = getAuthToken();
-      if (token) headers.set("Authorization", `Bearer ${token}`);
-      return headers;
-    },
-  }),
+  baseQuery: baseQueryWithReauth,
   endpoints: (builder) => ({
     login: builder.mutation({
       query: (body) => ({
-        url: "/login",
+        url: "/auth/login",
         method: "POST",
         body,
       }),
       async onQueryStarted(arg, { queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          if (data.access_token) setAuthToken(data.access_token);
+          if (data.access_token && data.refresh_token) {
+            setAuthTokens(data.access_token, data.refresh_token);
+          }
         } catch {}
       },
     }),
     register: builder.mutation({
       query: (body) => ({
-        url: "/register",
+        url: "/auth/register",
         method: "POST",
         body,
       }),
     }),
     me: builder.query({
       query: () => ({
-        url: "/me",
+        url: "/auth/me",
         method: "GET",
       }),
     }),
     forgetPassword: builder.mutation({
       query: (body) => ({
-        url: "/forget-password",
+        url: "/auth/forget-password",
         method: "POST",
         body,
       }),
     }),
     resetPassword: builder.mutation({
       query: (body) => ({
-        url: "/reset-password",
+        url: "/auth/reset-password",
         method: "POST",
         body,
       }),
     }),
     logout: builder.mutation({
-      queryFn: async () => {
-        removeAuthToken();
-        return { data: true };
+      query: () => ({
+        url: "/auth/logout",
+        method: "POST",
+      }),
+      async onQueryStarted(arg, { queryFulfilled }) {
+        try {
+          await queryFulfilled;
+        } finally {
+          removeAuthToken();
+        }
       },
     }),
     updateProfile: builder.mutation({
       query: (body) => ({
-        url: "/update-profile",
+        url: "/auth/update-profile",
         method: "PUT",
         body,
         formData: true,

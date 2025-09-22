@@ -1,6 +1,6 @@
 "use client"
 import { useTranslation } from "react-i18next";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function ActivityHeatmap({ 
@@ -12,19 +12,10 @@ export default function ActivityHeatmap({
 }) {
   const { t } = useTranslation();
   const [hoveredDay, setHoveredDay] = useState(null);
-  const [calendarWeeks, setCalendarWeeks] = useState([]);
 
   // Use heatChart from API response
   const heatChart = dashboardData?.heatChart || {};
   const weeks = heatChart?.weeks || [];
-
-  // Debug logging
-  useEffect(() => {
-    console.log("Dashboard Data:", dashboardData);
-    console.log("Heat Chart:", heatChart);
-    console.log("Weeks:", weeks);
-    console.log("Selected Month:", selectedMonth);
-  }, [dashboardData, heatChart, weeks, selectedMonth]);
 
   // Month names for the header
   const monthNames = t("dashboard.activityHeatmap.months", {
@@ -55,59 +46,55 @@ export default function ActivityHeatmap({
     return "Excellent productivity";
   };
 
+  // Generate fallback calendar weeks
+  const generateFallbackWeeks = useCallback(() => {
+    const currentYear = new Date().getFullYear();
+    const firstDay = new Date(currentYear, selectedMonth - 1, 1);
+    
+    // Find first Monday
+    let weekStart = new Date(firstDay);
+    while (weekStart.getDay() !== 1) {
+      weekStart.setDate(weekStart.getDate() - 1);
+    }
+
+    const fallbackWeeks = [];
+    let currentWeekStart = new Date(weekStart);
+
+    for (let weekNumber = 1; weekNumber <= 4; weekNumber++) {
+      const weekDays = [];
+      for (let dayNum = 0; dayNum < 7; dayNum++) {
+        const currentDay = new Date(currentWeekStart);
+        currentDay.setDate(currentWeekStart.getDate() + dayNum);
+        const isCurrentMonth = currentDay.getMonth() === selectedMonth - 1;
+        
+        weekDays.push({
+          date: currentDay.toISOString().split('T')[0],
+          workHours: 0, // No data
+          isCurrentMonth,
+          dayOfMonth: currentDay.getDate(),
+          dayOfWeek: dayNum,
+        });
+      }
+      
+      fallbackWeeks.push({
+        weekNumber,
+        days: weekDays,
+      });
+      
+      currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+    }
+    
+    return fallbackWeeks;
+  }, [selectedMonth]);
+
   // Use backend data directly if available, otherwise generate fallback
-  const memoizedCalendarWeeks = useMemo(() => {
+  const calendarWeeks = useMemo(() => {
     if (weeks && weeks.length > 0) {
-      console.log("Using backend weeks data:", weeks);
       return weeks;
     } else {
-      console.log("Generating fallback calendar for month:", selectedMonth);
-      // Fallback: generate basic calendar
-      const currentYear = new Date().getFullYear();
-      const firstDay = new Date(currentYear, selectedMonth - 1, 1);
-      const lastDay = new Date(currentYear, selectedMonth, 0);
-      
-      // Find first Monday
-      let weekStart = new Date(firstDay);
-      while (weekStart.getDay() !== 1) {
-        weekStart.setDate(weekStart.getDate() - 1);
-      }
-
-      const fallbackWeeks = [];
-      let currentWeekStart = new Date(weekStart);
-
-      for (let weekNumber = 1; weekNumber <= 4; weekNumber++) {
-        const weekDays = [];
-        for (let dayNum = 0; dayNum < 7; dayNum++) {
-          const currentDay = new Date(currentWeekStart);
-          currentDay.setDate(currentWeekStart.getDate() + dayNum);
-          const isCurrentMonth = currentDay.getMonth() === selectedMonth - 1;
-          
-          weekDays.push({
-            date: currentDay.toISOString().split('T')[0],
-            workHours: 0, // No data
-            isCurrentMonth,
-            dayOfMonth: currentDay.getDate(),
-            dayOfWeek: dayNum,
-          });
-        }
-        
-        fallbackWeeks.push({
-          weekNumber,
-          days: weekDays,
-        });
-        
-        currentWeekStart.setDate(currentWeekStart.getDate() + 7);
-      }
-      
-      return fallbackWeeks;
+      return generateFallbackWeeks();
     }
-  }, [weeks, selectedMonth]);
-
-  // Update calendar weeks when memoized value changes
-  useEffect(() => {
-    setCalendarWeeks(memoizedCalendarWeeks);
-  }, [memoizedCalendarWeeks]);
+  }, [weeks, generateFallbackWeeks]);
 
   // Navigation handlers
   const goToPreviousMonth = () => {
