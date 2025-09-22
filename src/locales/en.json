@@ -705,5 +705,51 @@
   "walletPopup": {
     "title": "Transaction Details",
     "close": "Close"
+  },
+  "roles": {
+    "title": "Roles & Permissions",
+    "description": "Allow this employee to access Workhole",
+    "searchPlaceholder": "Search Role",
+    "addNewRole": "Add New Role",
+    "editRole": "Edit Role",
+    "roleNameLabel": "Role Name",
+    "roleNamePlaceholder": "Enter role name",
+    "permissions": "Permissions",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirmDelete": "Are you sure you want to delete this role?",
+    "roleDeleted": "Role deleted successfully",
+    "roleSaved": "Role saved successfully",
+    "timeAndAttendance": "Time and Attendance",
+    "tasksAndProjects": "Tasks and Projects",
+    "leaveManagement": "Leave Management",
+    "employeeManagement": "Employee Management",
+    "hrAndAdminTools": "HR & Admin Tools",
+    "users": "Users",
+    "lastUpdated": "Last Updated Date",
+    "view": "View",
+    "table": {
+      "role": "Role",
+      "users": "Users",
+      "actions": "Actions",
+      "lastUpdated": "Last Updated Date",
+      "status": "Status"
+    },
+    "filters": {
+      "roleType": "Role Type",
+      "allStatus": "All Status",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "statusCards": {
+      "totalRoles": "Total Roles",
+      "activeRoles": "Active Roles",
+      "customRoles": "Custom Roles",
+      "totalUsers": "Total Users",
+      "allRolesAvailable": "All roles available in the system",
+      "rolesAssignedToActive": "Roles assigned to active users",
+      "createdManually": "Created manually for specific needs",
+      "allUsersInSystem": "All users in the system"
+    }
   }
 }

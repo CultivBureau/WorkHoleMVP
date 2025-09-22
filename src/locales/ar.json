@@ -704,5 +704,51 @@
   "walletPopup": {
     "title": "تفاصيل المعاملة",
     "close": "إغلاق"
+  },
+  "roles": {
+    "title": "الأدوار والصلاحيات",
+    "description": "السماح لهذا الموظف بالوصول إلى ووركهول",
+    "searchPlaceholder": "بحث عن دور",
+    "addNewRole": "إضافة دور جديد",
+    "editRole": "تعديل الدور",
+    "roleNameLabel": "اسم الدور",
+    "roleNamePlaceholder": "أدخل اسم الدور",
+    "permissions": "الصلاحيات",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "confirmDelete": "هل أنت متأكد من رغبتك في حذف هذا الدور؟",
+    "roleDeleted": "تم حذف الدور بنجاح",
+    "roleSaved": "تم حفظ الدور بنجاح",
+    "timeAndAttendance": "الوقت والحضور",
+    "tasksAndProjects": "المهام والمشاريع",
+    "leaveManagement": "إدارة الإجازات",
+    "employeeManagement": "إدارة الموظفين",
+    "hrAndAdminTools": "أدوات الموارد البشرية والإدارة",
+    "users": "المستخدمون",
+    "lastUpdated": "آخر تحديث",
+    "view": "عرض",
+    "table": {
+      "role": "الدور",
+      "users": "المستخدمون",
+      "actions": "الإجراءات",
+      "lastUpdated": "آخر تحديث",
+      "status": "الحالة"
+    },
+    "filters": {
+      "roleType": "نوع الدور",
+      "allStatus": "جميع الحالات",
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "statusCards": {
+      "totalRoles": "إجمالي الأدوار",
+      "activeRoles": "الأدوار النشطة",
+      "customRoles": "الأدوار المخصصة",
+      "totalUsers": "إجمالي المستخدمين",
+      "allRolesAvailable": "جميع الأدوار المتاحة في النظام",
+      "rolesAssignedToActive": "الأدوار المخصصة للمستخدمين النشطين",
+      "createdManually": "تم إنشاؤها يدوياً للاحتياجات الخاصة",
+      "allUsersInSystem": "جميع المستخدمين في النظام"
+    }
   }
 }
