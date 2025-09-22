@@ -565,17 +565,24 @@ const AttendanceAdmin = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {uniqueUsers.map(user => {
-                        // بيانات الموظف لكل الأيام (بدون holidays)
-                        const userLogs = attendanceData
-                          ?.filter(a => a.user?._id === user._id && a.status !== "holiday")
-                          .sort((a, b) => a.date.localeCompare(b.date));
-                        
-                        if (!userLogs || userLogs.length === 0) return null;
+                      {uniqueUsers
+    .filter(user =>
+      searchTerm.trim() === "" ||
+      user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .map(user => {
+      // بيانات الموظف لكل الأيام (بدون holidays)
+      const userLogs = attendanceData
+        ?.filter(a => a.user?._id === user._id && a.status !== "holiday")
+        .sort((a, b) => a.date.localeCompare(b.date));
+      
+      if (!userLogs || userLogs.length === 0) return null;
 
-                        return (
-                          <React.Fragment key={user._id}>
-                            {userLogs.map((att, idx) => {
+      return (
+        <React.Fragment key={user._id}>
+          {userLogs.map((att, idx) => {
                               const statusStyle = getStatusColor(att.status);
                               return (
                                 <tr key={att.date + user._id} className="border-b hover:bg-opacity-30 transition-colors duration-200" style={{ borderColor: "var(--border-color)" }}>
