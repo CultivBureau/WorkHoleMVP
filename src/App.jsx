@@ -8,6 +8,7 @@ import AttendanceLogs from "./pages/User/attendance-logs/page";
 import BreakTracking from "./pages/User/break-tracking/page";
 import DashboardAdmin from "./pages/admin/dashboard/page";
 import AttendanceAdmin from "./pages/admin/attendance/page";
+import PerformanceAdmin from "./pages/admin/Performance/page";
 import BreakAdmin from "./pages/admin/break/page";
 import LeavesAdmin from "./pages/admin/leaves/page";
 import UsersAdmin from "./pages/admin/users/page";
@@ -175,6 +176,14 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <NewRole />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/pages/admin/Performance"
+                    element={
+                      <ProtectedRoute>
+                        <PerformanceAdmin />
                       </ProtectedRoute>
                     }
                   />
