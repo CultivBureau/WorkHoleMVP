@@ -6,13 +6,30 @@ import { useGetTimerLogsQuery } from "../../../services/apis/TimerApi"
 export function TimeFocusLogs({ refreshTrigger }) {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
-  const { data: logs = [], isLoading, refetch } = useGetTimerLogsQuery()
+  
+  // Only refetch when refreshTrigger actually changes, not on every render
+  const { data: logs = [], isLoading, refetch } = useGetTimerLogsQuery(undefined, {
+    refetchOnMountOrArgChange: false,
+    refetchOnWindowFocus: false,
+  })
+  
   const [showModal, setShowModal] = useState(false)
+  const [lastRefreshTrigger, setLastRefreshTrigger] = useState(refreshTrigger)
 
-  // Refetch logs when refreshTrigger changes (pass a value from parent after timer actions)
+  // Only refetch when refreshTrigger actually changes
   useEffect(() => {
-    refetch()
-  }, [refreshTrigger, showModal])
+    if (refreshTrigger !== lastRefreshTrigger) {
+      setLastRefreshTrigger(refreshTrigger)
+      refetch()
+    }
+  }, [refreshTrigger, lastRefreshTrigger, refetch])
+
+  // Only refetch when modal opens, not on every state change
+  useEffect(() => {
+    if (showModal) {
+      refetch()
+    }
+  }, [showModal, refetch])
 
   const localizeMin = (duration) => (isAr ? duration.replace("min", "دقيقة") : duration)
 

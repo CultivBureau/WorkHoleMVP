@@ -23,8 +23,10 @@ import { TimerProvider } from "./contexts/TimerContext";
 import React, { useContext } from "react";
 import Error from "./components/Error/Error";
 import { GlobalErrorContext } from "./contexts/GlobalErrorContext";
+import { useTokenRefresh } from './hooks/useTokenRefresh';
 
 function App() {
+  useTokenRefresh();
   const { globalError, setGlobalError } = useContext(GlobalErrorContext);
 
   return (

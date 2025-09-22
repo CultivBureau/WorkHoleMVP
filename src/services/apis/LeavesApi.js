@@ -1,18 +1,9 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { getAuthToken } from "../../utils/page";
-
-const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { baseQueryWithReauth } from "./baseQuery";
 
 export const leavesApi = createApi({
     reducerPath: "leavesApi",
-    baseQuery: fetchBaseQuery({
-        baseUrl,
-        prepareHeaders: (headers) => {
-            const token = getAuthToken();
-            if (token) headers.set("authorization", `Bearer ${token}`);
-            return headers;
-        },
-    }),
+    baseQuery: baseQueryWithReauth,
     tagTypes: ["Leaves", "LeaveStats", "AdminLeaves"],
     endpoints: (builder) => ({
         // Get my leaves (paginated)

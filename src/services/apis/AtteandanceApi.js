@@ -1,22 +1,9 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { getAuthToken } from "../../utils/page";
-
-const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { baseQueryWithReauth } from "./baseQuery";
 
 export const attendanceApi = createApi({
   reducerPath: "attendanceApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl,
-    prepareHeaders: (headers) => {
-      // JWT from cookies (if you use cookies for auth)
-      const token = getAuthToken(); // should read from cookies
-      if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
-      }
-      return headers;
-    },
-    credentials: "include", // send cookies
-  }),
+  baseQuery: baseQueryWithReauth,
   endpoints: (builder) => ({
     // Clock In
     clockIn: builder.mutation({
@@ -45,6 +32,27 @@ export const attendanceApi = createApi({
     getStats: builder.query({
       query: ({ page = 1, limit = 8 }) => ({
         url: `/api/attendance/stats?page=${page}&limit=${limit}`,
+        method: "GET",
+      }),
+    }),
+    // Get Attendance Logs
+    getAttendanceLogs: builder.query({
+      query: ({ page = 1, limit = 10, filter = "all" } = {}) => ({
+        url: `/api/attendance/logs?page=${page}&limit=${limit}&filter=${filter}`,
+        method: "GET",
+      }),
+    }),
+    // Get Attendance by Date Range
+    getAttendanceByDateRange: builder.query({
+      query: ({ startDate, endDate, page = 1, limit = 10 } = {}) => ({
+        url: `/api/attendance/date-range?startDate=${startDate}&endDate=${endDate}&page=${page}&limit=${limit}`,
+        method: "GET",
+      }),
+    }),
+    // Get Attendance Summary
+    getAttendanceSummary: builder.query({
+      query: ({ month, year } = {}) => ({
+        url: `/api/attendance/summary?month=${month || new Date().getMonth() + 1}&year=${year || new Date().getFullYear()}`,
         method: "GET",
       }),
     }),
@@ -94,6 +102,9 @@ export const {
   useClockOutMutation,
   useGetDashboardQuery,
   useGetStatsQuery,
+  useGetAttendanceLogsQuery,
+  useGetAttendanceByDateRangeQuery,
+  useGetAttendanceSummaryQuery,
   useGetAllUsersAttendanceQuery,
   useSetOfficeLocationMutation,
   useGetAllOfficesQuery,

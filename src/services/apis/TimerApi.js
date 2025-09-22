@@ -1,18 +1,9 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { getAuthToken } from "../../utils/page";
-
-const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { baseQueryWithReauth } from "./baseQuery";
 
 export const timerApi = createApi({
   reducerPath: "timerApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl,
-    prepareHeaders: (headers) => {
-      const token = getAuthToken();
-      if (token) headers.set("Authorization", `Bearer ${token}`);
-      return headers;
-    },
-  }),
+  baseQuery: baseQueryWithReauth,
   endpoints: (builder) => ({
     startTimer: builder.mutation({
       query: (body) => ({
@@ -26,6 +17,10 @@ export const timerApi = createApi({
         url: "/api/timer/current",
         method: "GET",
       }),
+      // Reduce polling frequency and add better caching
+      keepUnusedDataFor: 30, // Keep data for 30 seconds
+      refetchOnMountOrArgChange: false, // Don't refetch on mount if data exists
+      refetchOnWindowFocus: false, // Don't refetch on window focus
     }),
     pauseTimer: builder.mutation({
       query: (id) => ({
@@ -64,12 +59,20 @@ export const timerApi = createApi({
         url: "/api/timer/logs",
         method: "GET",
       }),
+      // Add caching for timer logs
+      keepUnusedDataFor: 60, // Keep data for 1 minute
+      refetchOnMountOrArgChange: false,
+      refetchOnWindowFocus: false,
     }),
     getWeeklyFocusTime: builder.query({
       query: () => ({
         url: "/api/timer/time",
         method: "GET",
       }),
+      // Add caching for weekly focus time
+      keepUnusedDataFor: 300, // Keep data for 5 minutes
+      refetchOnMountOrArgChange: false,
+      refetchOnWindowFocus: false,
     }),
   }),
 });

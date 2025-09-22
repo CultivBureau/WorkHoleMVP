@@ -1,30 +1,19 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { getAuthToken } from "../../utils/page";
-
-const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { baseQueryWithReauth } from "./baseQuery";
 
 export const breakApi = createApi({
   reducerPath: "breakApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: `${baseUrl}/api/break`,
-    prepareHeaders: (headers) => {
-      const token = getAuthToken();
-      if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery: baseQueryWithReauth,
   endpoints: (builder) => ({
     getBreakTypes: builder.query({
       query: () => ({
-        url: "types",
+        url: "/api/break/types",
         method: "GET",
       }),
     }),
     startBreak: builder.mutation({
       query: (breakType) => ({
-        url: "start",
+        url: "/api/break/start",
         method: "POST",
         body: { breakType },
       }),
@@ -32,33 +21,33 @@ export const breakApi = createApi({
     }),
     stopBreak: builder.mutation({
       query: () => ({
-        url: "stop",
+        url: "/api/break/stop",
         method: "POST",
       }),
       invalidatesTags: ["BreakDashboard"],
     }),
     getBreakDashboard: builder.query({
       query: () => ({
-        url: "me",
+        url: "/api/break/me",
         method: "GET",
       }),
       providesTags: ["BreakDashboard"],
     }),
     getBreakStats: builder.query({
       query: ({ page = 1, limit = 4, sortBy = 'newest', date = '', type = '' } = {}) => ({
-        url: `stats?page=${page}&limit=${limit}&sortBy=${sortBy}&date=${date}&type=${type}`,
+        url: `/api/break/stats?page=${page}&limit=${limit}&sortBy=${sortBy}&date=${date}&type=${type}`,
         method: "GET",
       }),
     }),
     getActiveBreaksCount: builder.query({
       query: () => ({
-        url: "active-count",
+        url: "/api/break/active-count",
         method: "GET",
       }),
     }),
     createBreakType: builder.mutation({
       query: (body) => ({
-        url: "type",
+        url: "/api/break/type",
         method: "POST",
         body,
       }),
@@ -66,7 +55,7 @@ export const breakApi = createApi({
     }),
     updateBreakType: builder.mutation({
       query: ({ id, ...body }) => ({
-        url: `type/${id}`,
+        url: `/api/break/type/${id}`,
         method: "PUT",
         body,
       }),
@@ -74,7 +63,7 @@ export const breakApi = createApi({
     }),
     deleteBreakType: builder.mutation({
       query: (id) => ({
-        url: `type/${id}`,
+        url: `/api/break/type/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["BreakTypes"],

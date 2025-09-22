@@ -1,38 +1,27 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { getAuthToken } from "../../utils/page";
-
-const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { baseQueryWithReauth } from "./baseQuery";
 
 export const usersApi = createApi({
   reducerPath: "usersApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: `${baseUrl}/api/users`,
-    prepareHeaders: (headers) => {
-      const token = getAuthToken();
-      if (token) {
-        headers.set("authorization", `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery: baseQueryWithReauth,
   tagTypes: ["Users"],
   endpoints: (builder) => ({
     getAllUsers: builder.query({
       query: () => ({
-        url: "",
+        url: "/api/users",
         method: "GET",
       }),
       providesTags: ["Users"],
     }),
     getUserById: builder.query({
       query: (id) => ({
-        url: `/${id}`,
+        url: `/api/users/${id}`,
         method: "GET",
       }),
     }),
     createUser: builder.mutation({
       query: (body) => ({
-        url: "",
+        url: "/api/users",
         method: "POST",
         body,
       }),
@@ -40,7 +29,7 @@ export const usersApi = createApi({
     }),
     updateUser: builder.mutation({
       query: ({ id, ...body }) => ({
-        url: `/${id}`,
+        url: `/api/users/${id}`,
         method: "PUT",
         body,
       }),
@@ -48,7 +37,7 @@ export const usersApi = createApi({
     }),
     deleteUser: builder.mutation({
       query: (id) => ({
-        url: `/${id}`,
+        url: `/api/users/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Users"],
