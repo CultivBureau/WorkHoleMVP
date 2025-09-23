@@ -12,6 +12,8 @@ import PerformanceAdmin from "./pages/admin/Performance/page";
 import BreakAdmin from "./pages/admin/break/page";
 import LeavesAdmin from "./pages/admin/leaves/page";
 import UsersAdmin from "./pages/admin/users/page";
+import Performance from "./pages/User/Performance/page";
+import TeamWallet from "./pages/User/team-wallet/page";
 import AllEmployees from "./pages/admin/all-employees/page";
 import NewEmployee from "./pages/admin/new-employee/page";
 import RolesAndPermissions from "./pages/admin/Roles&Permissions/page";
@@ -78,6 +80,22 @@ function App() {
                       element={
                         <ProtectedRoute>
                           <Leaves />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/pages/User/Performance"
+                      element={
+                        <ProtectedRoute>
+                          <Performance />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/pages/User/team-wallet"
+                      element={
+                        <ProtectedRoute>
+                          <TeamWallet />
                         </ProtectedRoute>
                       }
                     />
