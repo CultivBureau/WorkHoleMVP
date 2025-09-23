@@ -468,7 +468,7 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
     else if (key === "Roles_Permissions") navigate("/pages/admin/Roles&Permissions");
     else if (key === "New_Role") navigate("/pages/admin/New_Role");
     else if (key === "leaves") navigate("/pages/admin/leaves");
-    else if (key === "wallet") navigate("/pages/admin/dashboard");
+    else if (key === "wallet") navigate("/pages/admin/TeamWallet");
     else if (key === "My_Company") navigate("/pages/admin/dashboard");
     else if (key === "all_attendance") navigate("/pages/admin/attendance");
     else if (key === "all_department") navigate("/pages/admin/departments");

@@ -31,6 +31,7 @@ import React, { useContext } from "react";
 import Error from "./components/Error/Error";
 import { GlobalErrorContext } from "./contexts/GlobalErrorContext";
 import { useTokenRefresh } from './hooks/useTokenRefresh';
+import AdminTeamWallet from "./pages/admin/TeamWallet/page";
 
 function App() {
   useTokenRefresh();
@@ -202,6 +203,14 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <PerformanceAdmin />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/pages/admin/TeamWallet"
+                    element={
+                      <ProtectedRoute>
+                        <AdminTeamWallet />
                       </ProtectedRoute>
                     }
                   />
