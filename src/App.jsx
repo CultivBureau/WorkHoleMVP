@@ -15,7 +15,7 @@ import UsersAdmin from "./pages/admin/users/page";
 import AllEmployees from "./pages/admin/all-employees/page";
 import NewEmployee from "./pages/admin/new-employee/page";
 import RolesAndPermissions from "./pages/admin/Roles&Permissions/page";
-import NewRole from "./pages/admin/new_role/page";
+import NewRole from "./pages/admin/New_Role/page";
 import Profile from "./pages/Profile";
 import ForgetPassword from "./components/forget-password/ForgetPassword";
 import ResetPassword from "./components/reset-password/resetPassword";
@@ -172,7 +172,7 @@ function App() {
                     }
                   />
                   <Route
-                    path="/pages/admin/new_role"
+                    path="/pages/admin/New_Role"
                     element={
                       <ProtectedRoute>
                         <NewRole />

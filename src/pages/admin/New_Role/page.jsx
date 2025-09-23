@@ -1,6 +1,7 @@
 import NavBarAdmin from "../../../components/admin/NavBarAdmin";
 import SideBarAdmin from "../../../components/admin/SideBarAdmin";
 import { useTranslation } from "react-i18next";
+import NewRoleForm from "../../../components/admin/New_Role/form";
 
 const NewRole = () => {
   const { t, i18n } = useTranslation();
@@ -17,14 +18,15 @@ const NewRole = () => {
         <SideBarAdmin />
 
         {/* Main Content */}
-         <main className="flex-1 overflow-auto p-4" style={{ background: "var(--bg-all)" }}>
+        <main className="flex-1 overflow-auto p-4" style={{ background: "var(--bg-all)" }}>
           <div
             className="h-max rounded-2xl border border-gray-200"
             style={{ background: "var(--bg-color)" }}
           >
             {/* Break Tracking content */}
             <div className="w-full h-max p-6">
-                {/* Status Cards Row */}
+              {/* Status Cards Row */}
+              <NewRoleForm />
             </div>
           </div>
         </main>

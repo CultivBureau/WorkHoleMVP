@@ -3,37 +3,38 @@ import { useTranslation } from "react-i18next";
 import Card from "../../Time_Tracking_Components/Stats/Card";
 
 const StatusCards = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const isArabic = i18n.language === "ar";
 
     const statusCards = [
         {
-            header: "Total Roles",
+            header: t('roles.statusCards.totalRoles'),
             title: "26",
-            subTitle: "All roles available in the system",
-            rightIcon: <img src="/assets/RolesAndPermissions/total.svg" alt="Total Roles" className="w-6 h-6" />,
+            subTitle: t('roles.statusCards.allRolesAvailable'),
+            rightIcon: <img src="/assets/RolesAndPermissions/total.svg" alt={t('roles.statusCards.totalRoles')} className="w-6 h-6" />,
         },
         {
-            header: "Active Roles",
+            header: t('roles.statusCards.activeRoles'),
             title: "26",
-            subTitle: "Roles assigned to active users",
-            rightIcon: <img src="/assets/RolesAndPermissions/active.svg" alt="Active Roles" className="w-6 h-6" />,
+            subTitle: t('roles.statusCards.rolesAssignedToActive'),
+            rightIcon: <img src="/assets/RolesAndPermissions/active.svg" alt={t('roles.statusCards.activeRoles')} className="w-6 h-6" />,
         },
         {
-            header: "Custom Roles",
+            header: t('roles.statusCards.customRoles'),
             title: "26",
-            subTitle: "Created manually for specific needs",
-            rightIcon: <img src="/assets/RolesAndPermissions/custom.svg" alt="Custom Roles" className="w-6 h-6" />,
+            subTitle: t('roles.statusCards.createdManually'),
+            rightIcon: <img src="/assets/RolesAndPermissions/custom.svg" alt={t('roles.statusCards.customRoles')} className="w-6 h-6" />,
         },
         {
-            header: "Total Users",
+            header: t('roles.statusCards.totalUsers'),
             title: "26",
-            subTitle: "All users in the system",
-            rightIcon: <img src="/assets/RolesAndPermissions/totalusers.svg" alt="Total Users" className="w-6 h-6" />,
+            subTitle: t('roles.statusCards.allUsersInSystem'),
+            rightIcon: <img src="/assets/RolesAndPermissions/totalusers.svg" alt={t('roles.statusCards.totalUsers')} className="w-6 h-6" />,
         },
     ];
 
     return (
-        <section className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <section className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6" dir={isArabic ? 'rtl' : 'ltr'}>
             {statusCards.map((card, index) => (
                 <Card
                     key={index}

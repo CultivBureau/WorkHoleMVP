@@ -9,7 +9,7 @@ const Header = ({ searchValue, onSearchChange }) => {
     const isArabic = i18n.language === "ar";
 
     const handleAddNewRole = () => {
-        navigate("/pages/admin/new-role");
+        navigate("/pages/admin/New_Role");
     };
 
     return (
@@ -25,7 +25,7 @@ const Header = ({ searchValue, onSearchChange }) => {
                             direction: isArabic ? "rtl" : "ltr"
                         }}
                     >
-                        Add Roles & Permissions
+                        {t('roles.title')}
                     </h1>
                     <p
                         className="text-xs md:text-sm"
@@ -34,7 +34,7 @@ const Header = ({ searchValue, onSearchChange }) => {
                             direction: isArabic ? "rtl" : "ltr"
                         }}
                     >
-                        Allow this employee to access Workhole
+                        {t('roles.description')}
                     </p>
                 </div>
 
@@ -50,7 +50,7 @@ const Header = ({ searchValue, onSearchChange }) => {
                         </div>
                         <input
                             type="text"
-                            placeholder="Search Role"
+                            placeholder={t('roles.searchPlaceholder')}
                             value={searchValue || ""}
                             onChange={(e) => onSearchChange?.(e.target.value)}
                             className="w-full pl-10 pr-4 py-3 rounded-xl border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
@@ -78,10 +78,10 @@ const Header = ({ searchValue, onSearchChange }) => {
                     <button
                         onClick={handleAddNewRole}
                         className="flex gradient-bg items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 active:scale-95 whitespace-nowrap  text-white hover:shadow-lg text-sm"
-                        
+
                     >
                         <Plus className="w-4 h-4" />
-                        <span>Add New Role</span>
+                        <span>{t('roles.addNewRole')}</span>
                     </button>
                 </div>
             </div>
