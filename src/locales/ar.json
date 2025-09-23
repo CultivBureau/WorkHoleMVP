@@ -24,7 +24,8 @@
     "time_tracking": "تتبع الوقت",
     "break_tracking": "تتبع الاستراحة",
     "all_attendance": "جميع الحضور",
-    "all_department": "جميع الأقسام"
+    "all_departments": "جميع الأقسام",
+    "new_department": "قسم جديد"
   },
   "comingSoon": "قريبًا",
   "navbar": {
@@ -622,6 +623,94 @@
         "title": "تم إضافة الموظف!",
         "message": "لقد قمت بإضافة موظف جديد بنجاح."
       }
+    }
+  },
+  "departments": {
+    "newDepartmentForm": {
+      "title": "إنشاء قسم جديد",
+      "breadcrumb": {
+        "allDepartments": "جميع الأقسام",
+        "addNewDepartment": "إضافة قسم جديد"
+      },
+      "steps": {
+        "departmentInfo": "معلومات القسم",
+        "assignSupervisor": "تعيين المشرف",
+        "setupTeams": "إعداد الفرق",
+        "reviewAndDone": "المراجعة والإنهاء"
+      },
+      "departmentInfo": {
+        "departmentName": "اسم القسم",
+        "shortName": "الاسم المختصر",
+        "description": "الوصف",
+        "status": "الحالة",
+        "active": "نشط",
+        "inactive": "غير نشط"
+      },
+      "assignSupervisor": {
+        "chooseSupervisor": "اختر المشرف",
+        "supervisor": "المشرف",
+        "supervisorManager": "مدير المشرف"
+      },
+      "setupTeams": {
+        "teamName": "اسم الفريق",
+        "chooseEmployee": "اختر الموظف",
+        "description": "الوصف",
+        "addNewTeam": "إضافة فريق جديد",
+        "members": "الأعضاء"
+      },
+      "review": {
+        "reviewDepartmentDetails": "مراجعة تفاصيل القسم",
+        "departmentName": "اسم القسم",
+        "shortName": "الاسم المختصر",
+        "description": "الوصف",
+        "status": "الحالة",
+        "supervisor": "المشرف"
+      },
+      "buttons": {
+        "cancel": "إلغاء",
+        "next": "التالي",
+        "back": "رجوع",
+        "add": "إضافة"
+      },
+      "success": {
+        "title": "تم إنشاء القسم!",
+        "message": "لقد قمت بإنشاء قسم جديد بنجاح."
+      }
+    }
+  },
+  "allDepartments": {
+    "statusCards": {
+      "totalDepartments": {
+        "title": "إجمالي الأقسام",
+        "count": "20",
+        "description": "عدد الأقسام في الشركة"
+      },
+      "highestDepartment": {
+        "title": "أعلى قسم",
+        "name": "قسم التصميم",
+        "description": "القسم الأكثر شعبية"
+      },
+      "employeesDepartment": {
+        "title": "موظفو الأقسام",
+        "count": "120",
+        "description": "إجمالي الموظفين في جميع الأقسام"
+      },
+      "departmentsIssues": {
+        "title": "مشاكل الأقسام",
+        "count": "4",
+        "description": "الأقسام ذات التقارير التأديبية العالية"
+      }
+    },
+    "search": {
+      "placeholder": "البحث في الأقسام...",
+      "addNewDepartment": "إضافة قسم جديد",
+      "editDepartment": "تعديل القسم"
+    },
+    "departmentCard": {
+      "members": "الأعضاء",
+      "teams": "الفرق",
+      "viewAll": "عرض الكل",
+      "supervisor": "المشرف"
     }
   },
   "walletCards": {

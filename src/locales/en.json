@@ -24,7 +24,8 @@
     "time_tracking": "Time Tracking",
     "break_tracking": "Break Tracking",
     "all_attendance": "All Attendance",
-    "all_department": "All Department"
+    "all_departments": "All Departments",
+    "new_department": "New Department"
   },
   "comingSoon": "Coming Soon",
   "navbar": {
@@ -623,6 +624,94 @@
         "title": "Employee Added!",
         "message": "You have successfully added a new employee."
       }
+    }
+  },
+  "departments": {
+    "newDepartmentForm": {
+      "title": "Create New Department",
+      "breadcrumb": {
+        "allDepartments": "All Departments",
+        "addNewDepartment": "Add New Department"
+      },
+      "steps": {
+        "departmentInfo": "Department Info",
+        "assignSupervisor": "Assign Supervisor",
+        "setupTeams": "Setup Teams",
+        "reviewAndDone": "Review & Done"
+      },
+      "departmentInfo": {
+        "departmentName": "Department Name",
+        "shortName": "Short Name",
+        "description": "Description",
+        "status": "Status",
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "assignSupervisor": {
+        "chooseSupervisor": "Choose Supervisor",
+        "supervisor": "Supervisor",
+        "supervisorManager": "Supervisor Manager"
+      },
+      "setupTeams": {
+        "teamName": "Team Name",
+        "chooseEmployee": "Choose Employee",
+        "description": "Description",
+        "addNewTeam": "Add New Team",
+        "members": "Members"
+      },
+      "review": {
+        "reviewDepartmentDetails": "Review Department Details",
+        "departmentName": "Department Name",
+        "shortName": "Short Name",
+        "description": "Description",
+        "status": "Status",
+        "supervisor": "Supervisor"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "next": "Next",
+        "back": "Back",
+        "add": "Add"
+      },
+      "success": {
+        "title": "Department Created!",
+        "message": "You have successfully created a new department."
+      }
+    }
+  },
+  "allDepartments": {
+    "statusCards": {
+      "totalDepartments": {
+        "title": "Total Departments",
+        "count": "20",
+        "description": "Number of departments in the company"
+      },
+      "highestDepartment": {
+        "title": "Highest Department",
+        "name": "Design Department",
+        "description": "Most popular department"
+      },
+      "employeesDepartment": {
+        "title": "Employees Department",
+        "count": "120",
+        "description": "Total employees in all departments"
+      },
+      "departmentsIssues": {
+        "title": "Departments Issues",
+        "count": "4",
+        "description": "Departments with high disciplinary reports"
+      }
+    },
+    "search": {
+      "placeholder": "Search departments...",
+      "addNewDepartment": "Add New Department",
+      "editDepartment": "Edit Department"
+    },
+    "departmentCard": {
+      "members": "Members",
+      "teams": "Teams",
+      "viewAll": "View all",
+      "supervisor": "Supervisor"
     }
   },
   "walletCards": {
