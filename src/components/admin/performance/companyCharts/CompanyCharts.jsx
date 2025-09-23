@@ -141,7 +141,7 @@ const CompanyCharts = () => {
         ticks: {
           color: '#9CA3AF',
           font: {
-            size: 12,
+            size: window.innerWidth < 640 ? 10 : window.innerWidth < 1024 ? 11 : 12,
           },
         },
         grid: {
@@ -157,7 +157,7 @@ const CompanyCharts = () => {
         ticks: {
           color: '#9CA3AF',
           font: {
-            size: 12,
+            size: window.innerWidth < 640 ? 10 : window.innerWidth < 1024 ? 11 : 12,
           },
           callback: function(value) {
             return value + '%';
@@ -180,12 +180,12 @@ const CompanyCharts = () => {
   };
 
   return (
-    <div className='w-full h-auto bg-[var(--bg-color)] border border-[var(--border-color)] rounded-[10px] p-2 sm:p-3 lg:p-4 xl:p-6 shadow-sm'>
+    <div className='w-full h-auto bg-[var(--bg-color)] border border-[var(--border-color)] rounded-[10px] p-2 sm:p-3 md:p-4 lg:p-4 xl:p-6 shadow-sm'>
       {/* Header Section */}
       <div className='flex flex-col xl:flex-row xl:justify-between xl:items-start gap-3 sm:gap-4 mb-3 sm:mb-4 lg:mb-6'>
         {/* Left side - Title and Legend */}
-        <div className='flex flex-col lg:flex-row text-start gap-2 sm:gap-3 lg:gap-4'>
-          <div>
+        <div className='flex flex-col 2xl:flex-row text-start gap-2 sm:gap-3 lg:gap-4'>
+          <div className="mb-2 sm:mb-0">
             <p className='text-[10px] sm:text-[11px] lg:text-[13px] text-[var(--sub-text-color)] mb-1'>
               Presence vs absence
             </p>
@@ -195,7 +195,7 @@ const CompanyCharts = () => {
           </div>
           
           {/* Legend */}
-          <div className='flex lg:items-center flex-row lg:flex-col gap-2'>
+          <div className='flex items-center flex-row gap-3 sm:gap-4 mb-2 sm:mb-0'>
             <div className='flex items-center gap-2'>
               <div className='w-[6px] h-[6px] sm:w-[8px] sm:h-[8px] lg:w-[10px] lg:h-[10px] rounded-full gradient-bg'></div>
               <span className='text-[10px] sm:text-[12px] lg:text-[14px] text-[var(--sub-text-color)]'>Present</span>
@@ -211,7 +211,7 @@ const CompanyCharts = () => {
             {/* Presence Rate Card */}
             <div className='px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 lg:py-3 pl-2 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-[12px] hover:shadow-md transition-shadow'>
               <div className='flex items-center gap-2 sm:gap-3'>
-                <div className='w-[24px] h-[24px] sm:w-[28px] sm:h-[28px] lg:w-[34px] lg:h-[34px] bg-[#E0F7FA] flex justify-center items-center shadow-sm'>
+                <div className='w-[24px] h-[24px] sm:w-[28px] sm:h-[28px] lg:w-[34px] lg:h-[34px] bg-[#E0F7FA] flex justify-center items-center shadow-sm rounded-lg'>
                   <span className='text-[8px] sm:text-[9px] lg:text-[11px] font-semibold text-[#26C8B9]'>
                     {presenceRate}%
                   </span>
@@ -225,7 +225,7 @@ const CompanyCharts = () => {
             {/* Absence Rate Card */}
             <div className='px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 lg:py-3 pl-2 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-[12px] hover:shadow-md transition-shadow'>
               <div className='flex items-center gap-2 sm:gap-3'>
-                <div className='w-[24px] h-[24px] sm:w-[28px] sm:h-[28px] lg:w-[34px] lg:h-[34px] bg-[#FFEBEE] flex justify-center items-center shadow-sm'>
+                <div className='w-[24px] h-[24px] sm:w-[28px] sm:h-[28px] lg:w-[34px] lg:h-[34px] bg-[#FFEBEE] flex justify-center items-center shadow-sm rounded-lg'>
                   <span className='text-[8px] sm:text-[9px] lg:text-[11px] font-semibold text-[#D32F2F]'>
                     {absenceRate}%
                   </span>
@@ -249,7 +249,7 @@ const CompanyCharts = () => {
       </div>
 
       {/* Chart Container */}
-      <div className='w-full h-[150px] sm:h-[180px] lg:h-[200px] xl:h-[300px]'>
+      <div className='w-full h-[150px] xs:h-[180px] sm:h-[200px] md:h-[220px] lg:h-[250px] xl:h-[300px]'>
         <Bar data={chartData} options={chartOptions} />
       </div>
     </div>

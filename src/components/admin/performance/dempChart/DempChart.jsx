@@ -32,6 +32,7 @@ const DempChart = () => {
     { department: "Logistics", efficiency: 70 },
     { department: "Operations", efficiency: 80 },
   ]
+  
   const KeyInsights = [
     {
       status: "Best Performing",
@@ -39,8 +40,12 @@ const DempChart = () => {
       desc: "Highest average KPI this period",
       efficiency: "90%",
     },
-
-    { status: "Needs Attention", department: "Sales", desc: "Below average KPI this period", efficiency: "60%" },
+    { 
+      status: "Needs Attention", 
+      department: "Sales", 
+      desc: "Below average KPI this period", 
+      efficiency: "60%" 
+    },
   ]
 
   useEffect(() => {
@@ -102,13 +107,13 @@ const DempChart = () => {
             ticks: {
               color: chartLabelColor,
               font: {
-                size: 10,
+                size: window.innerWidth < 640 ? 8 : window.innerWidth < 1024 ? 9 : 10,
                 family: "Poppins",
                 weight: "400",
               },
-              maxRotation: 45,
-              minRotation: 45,
-              padding: 8,
+              maxRotation: window.innerWidth < 768 ? 90 : 45,
+              minRotation: window.innerWidth < 768 ? 90 : 45,
+              padding: window.innerWidth < 640 ? 4 : 8,
               align: "center",
               autoSkip: false,
             },
@@ -126,7 +131,7 @@ const DempChart = () => {
             ticks: {
               color: chartLabelColor,
               font: {
-                size: 12,
+                size: window.innerWidth < 640 ? 10 : 12,
                 family: "Poppins",
               },
               callback: (value) => value + "%",
@@ -139,10 +144,10 @@ const DempChart = () => {
         },
         layout: {
           padding: {
-            top: 20,
-            right: 20,
-            bottom: 30,
-            left: 20,
+            top: window.innerWidth < 640 ? 10 : 20,
+            right: window.innerWidth < 640 ? 10 : 20,
+            bottom: window.innerWidth < 640 ? 20 : 30,
+            left: window.innerWidth < 640 ? 10 : 20,
           },
         },
         elements: {
@@ -166,59 +171,85 @@ const DempChart = () => {
   }, [])
 
   return (
-    <div className="w-full h-max pb-5 flex bg-white gap-6">
-      <div className="w-[70%] h-full bg-white p-6 rounded-lg border border-gray-100">
-        <div className="mb-6 text-start">
-          <div className="flex justify-between items-start mb-2">
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-1">Department KPI Overview users</h2>
-              <p className="text-sm text-gray-500">Average KPI score per department</p>
+    <div className="w-full h-max pb-3 sm:pb-4 lg:pb-5 flex flex-col xl:flex-row bg-[var(--bg-color)] gap-3 sm:gap-4 lg:gap-6">
+      {/* Chart Section */}
+      <div className="w-full xl:w-[70%] h-full bg-[var(--bg-color)] p-3 sm:p-4 lg:p-6 rounded-lg border border-gray-100">
+        <div className="mb-4 sm:mb-5 lg:mb-6 text-start">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2 gap-3 sm:gap-4">
+            <div className="flex-1">
+              <h2 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-1">
+                Department KPI Overview users
+              </h2>
+              <p className="text-xs sm:text-sm text-gray-500">Average KPI score per department</p>
             </div>
-            <div className="flex gap-1 bg-gray-50 rounded-lg p-1">
-              <button className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors rounded-md">
+            <div className="flex gap-1 bg-gray-50 rounded-lg p-1 w-full sm:w-auto">
+              <button className="flex-1 sm:flex-none px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-600 hover:text-gray-900 transition-colors rounded-md">
                 Quarter
               </button>
-              <button className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors rounded-md">
+              <button className="flex-1 sm:flex-none px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-600 hover:text-gray-900 transition-colors rounded-md">
                 Semester
               </button>
-              <button className="px-4 py-2 text-sm bg-teal-500 text-white rounded-md font-medium">Annual</button>
+              <button className="flex-1 sm:flex-none px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-teal-500 text-white rounded-md font-medium">
+                Annual
+              </button>
             </div>
           </div>
         </div>
 
-        <div className="h-[400px]">
+        <div className="h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px]">
           <canvas ref={chartRef}></canvas>
         </div>
       </div>
 
-      <div className="w-[30%] h-full flex flex-col justify-start rounded-2xl shadow-lg border border-gray-100 items-center bg-white p-6 gap-6">
+      {/* Enhanced Key Insights Section */}
+      <div className="w-full xl:w-[30%] h-full flex flex-col justify-start rounded-2xl shadow-lg border border-gray-100 items-center bg-white p-3 sm:p-4 md:p-5 lg:p-6 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+        
+        {/* All Department Button - Enhanced Responsive */}
         <div className="w-full flex justify-center items-center">
-          <button className="w-full h-12 px-4 bg-teal-50 rounded-full text-teal-600 flex justify-center items-center gap-3 font-medium hover:bg-teal-100 transition-colors">
-           <img src="/assets/AdminPerformance/btn.svg" alt="" />
-            <span className="text-sm">All Department</span>
-      
+          <button className="w-full h-9 sm:h-10 md:h-11 lg:h-12 px-3 sm:px-4 md:px-5 bg-teal-50 rounded-full text-teal-600 flex justify-center items-center gap-2 sm:gap-3 font-medium hover:bg-teal-100 transition-colors">
+            <img 
+              src="/assets/AdminPerformance/btn.svg" 
+              alt="" 
+              className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5"
+            />
+            <span className="text-[11px] sm:text-xs md:text-sm font-medium">All Department</span>
           </button>
         </div>
 
-        <div className="w-full flex flex-col justify-start items-start gap-4">
-          <div className="w-full flex justify-between items-center">
-            <div className="flex justify-center items-center gap-1 text-start">
-              <div className="w-[50%] h-max flex flex-col justify-center items-start text-start">
-                <h3 className="text-[15px] font-semibold text-start text-teal-600">Key Insights</h3>
-                <span className="text-gray-500 text-[9px]">Quick highlights of team and department performance</span>
+        {/* Key Insights Content - Enhanced Responsive */}
+        <div className="w-full flex flex-col justify-start items-start gap-3 sm:gap-4">
+          
+          {/* Header Section - Enhanced Layout */}
+          <div className="w-full">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
+              {/* Text Content */}
+              <div className="flex-1">
+                <h3 className="text-sm sm:text-[15px] md:text-base lg:text-[17px] font-semibold text-teal-600 mb-1">
+                  Key Insights
+                </h3>
+                <span className="text-gray-500 text-[9px] sm:text-[10px] md:text-xs leading-tight">
+                  Quick highlights of team and department performance
+                </span>
               </div>
-              <div className="w-[50%] h-max flex justify-center items-center">
-                <img src="/assets/AdminPerformance/key.svg" alt="Insights" />
+              
+              {/* Icon - More Responsive */}
+              <div className="flex justify-center sm:justify-end items-center mt-2 sm:mt-0">
+                <img 
+                  src="/assets/AdminPerformance/key.svg" 
+                  alt="Insights" 
+                  className="w-16 h-14 xs:w-20 xs:h-16 sm:w-12 sm:h-10 md:w-16 md:h-14 lg:w-[85px] lg:h-[75px] xl:w-20 xl:h-18 object-contain"
+                />
               </div>
             </div>
           </div>
 
-          {/* Render KeyInsights dynamically */}
+          {/* Insights Cards - Enhanced Responsive */}
           {KeyInsights.map((item, idx) => (
-            <div key={idx} className="w-full flex flex-col gap-3">
-              <button className="w-full h-10 bg-gray-50 rounded-full flex justify-center items-center gap-2 text-gray-600 hover:bg-gray-100 transition-colors">
-                {/* You can change the icon based on status if you want */}
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <div key={idx} className="w-full flex flex-col gap-2 sm:gap-3">
+              
+              {/* Status Button - Enhanced */}
+              <button className="w-full h-8 sm:h-9 md:h-10 bg-gray-50 rounded-full flex justify-center items-center gap-2 text-gray-600 hover:bg-gray-100 transition-colors px-3 sm:px-4">
+                <svg className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   {item.status === "Best Performing" ? (
                     <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   ) : (
@@ -229,16 +260,27 @@ const DempChart = () => {
                     />
                   )}
                 </svg>
-                <span className="text-sm font-medium">{item.status}</span>
+                <span className="text-[11px] sm:text-xs md:text-sm font-medium truncate">{item.status}</span>
               </button>
 
-              <div className="w-full bg-white rounded-xl p-4 border border-gray-100 shadow-sm flex items-center gap-3">
-                <div className="w-12 h-12 bg-teal-100 rounded-lg flex justify-center items-center">
-                  <span className="text-lg font-bold text-teal-600">{item.efficiency}</span>
+              {/* Department Card - Enhanced */}
+              <div className="w-full bg-white rounded-xl p-3 sm:p-4 md:p-5 border border-gray-100 shadow-sm flex items-center gap-2 sm:gap-3 hover:shadow-md transition-shadow">
+                
+                {/* Efficiency Badge - Enhanced */}
+                <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-teal-100 rounded-lg flex justify-center items-center flex-shrink-0">
+                  <span className="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-teal-600">
+                    {item.efficiency}
+                  </span>
                 </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-gray-900 text-sm">{item.department}</h4>
-                  <p className="text-gray-500 text-xs">{item.desc}</p>
+                
+                {/* Content - Enhanced */}
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-gray-900 text-xs sm:text-sm md:text-base truncate mb-1">
+                    {item.department}
+                  </h4>
+                  <p className="text-gray-500 text-[9px] sm:text-[10px] md:text-xs leading-tight">
+                    {item.desc}
+                  </p>
                 </div>
               </div>
             </div>
