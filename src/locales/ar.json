@@ -670,11 +670,64 @@
         "cancel": "إلغاء",
         "next": "التالي",
         "back": "رجوع",
-        "add": "إضافة"
+        "add": "إضافة",
+        "allDepartments": "جميع الأقسام"
       },
       "success": {
         "title": "تم إنشاء القسم!",
         "message": "لقد قمت بإنشاء قسم جديد بنجاح."
+      }
+    },
+    "editDepartmentForm": {
+      "title": "تعديل القسم",
+      "breadcrumb": {
+        "allDepartments": "جميع الأقسام",
+        "editDepartment": "تعديل القسم"
+      },
+      "steps": {
+        "departmentInfo": "معلومات القسم",
+        "assignSupervisor": "تعيين المشرف",
+        "setupTeams": "إعداد الفرق",
+        "reviewAndSave": "المراجعة والحفظ"
+      },
+      "departmentInfo": {
+        "departmentName": "اسم القسم",
+        "shortName": "الاسم المختصر",
+        "description": "الوصف",
+        "status": "الحالة",
+        "active": "نشط",
+        "inactive": "غير نشط"
+      },
+      "assignSupervisor": {
+        "chooseSupervisor": "اختر المشرف",
+        "supervisor": "المشرف"
+      },
+      "setupTeams": {
+        "teamName": "اسم الفريق",
+        "chooseEmployee": "اختر الموظف",
+        "description": "الوصف",
+        "addNewTeam": "إضافة فريق جديد",
+        "members": "الأعضاء"
+      },
+      "review": {
+        "reviewDepartmentDetails": "مراجعة تفاصيل القسم",
+        "departmentName": "اسم القسم",
+        "shortName": "الاسم المختصر",
+        "description": "الوصف",
+        "status": "الحالة",
+        "supervisor": "المشرف"
+      },
+      "buttons": {
+        "cancel": "إلغاء",
+        "next": "التالي",
+        "back": "رجوع",
+        "add": "إضافة",
+        "save": "حفظ التغييرات",
+        "allDepartments": "جميع الأقسام"
+      },
+      "success": {
+        "title": "تم تحديث القسم!",
+        "message": "لقد قمت بتحديث القسم بنجاح."
       }
     }
   },
@@ -710,7 +763,46 @@
       "members": "الأعضاء",
       "teams": "الفرق",
       "viewAll": "عرض الكل",
-      "supervisor": "المشرف"
+      "supervisor": "المشرف",
+      "edit": "تعديل"
+    }
+  },
+  "allTeams": {
+    "title": "جميع الفرق",
+    "statusCards": {
+      "totalTeams": {
+        "title": "إجمالي الفرق",
+        "count": "15",
+        "description": "عدد الفرق عبر الأقسام"
+      },
+      "pendingTasks": {
+        "title": "المهام المعلقة",
+        "count": "8",
+        "description": "المهام في انتظار الإنجاز"
+      },
+      "attendanceRate": {
+        "title": "معدل الحضور",
+        "count": "95%",
+        "description": "متوسط حضور الفريق هذا الشهر"
+      },
+      "kpiPerformance": {
+        "title": "أداء مؤشرات الأداء",
+        "count": "87%",
+        "description": "الفرق التي تحقق أهداف الأداء"
+      }
+    },
+    "search": {
+      "placeholder": "البحث في الفرق...",
+      "addNewTeam": "إضافة فريق جديد"
+    },
+    "teamCard": {
+      "members": "الأعضاء",
+      "department": "القسم",
+      "lead": "قائد الفريق",
+      "view": "عرض التفاصيل",
+      "edit": "تعديل",
+      "tasks": "المهام",
+      "performance": "الأداء"
     }
   },
   "walletCards": {

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { Search, Plus, Edit3 } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 import DepartmentCard from "./department-card";
 
 export default function AllDepartments() {
@@ -11,13 +11,10 @@ export default function AllDepartments() {
     const navigate = useNavigate();
 
     const handleAddNewDepartment = () => {
-        navigate('/admin/new-department');
+        navigate('/pages/admin/new-department');
     };
 
-    const handleEditDepartment = () => {
-        // Add edit functionality here
-        console.log('Edit department functionality');
-    };
+
 
     // Mock departments data
     const departmentsData = [
@@ -47,10 +44,10 @@ export default function AllDepartments() {
                 "/assets/navbar/Avatar.png"
             ],
             teams: [
-                { name: "UX Team", description: "User Experience", memberCount: 5 },
-                { name: "UI Team", description: "User Interface", memberCount: 4 },
-                { name: "Graphic Design", description: "Visual Design", memberCount: 5 },
-                { name: "UX Writing", description: "Content Design", memberCount: 4 }
+                { name: "Inside Sales", description: "Internal Sales Team", memberCount: 6 },
+                { name: "Field Sales", description: "External Sales Representatives", memberCount: 5 },
+                { name: "Sales Support", description: "Sales Operations & Support", memberCount: 4 },
+                { name: "Business Development", description: "New Business Opportunities", memberCount: 3 }
             ]
         },
         {
@@ -63,9 +60,9 @@ export default function AllDepartments() {
                 "/assets/navbar/Avatar.png"
             ],
             teams: [
-                { name: "UX Team", description: "User Experience", memberCount: 4 },
-                { name: "UI Team", description: "User Interface", memberCount: 4 },
-                { name: "Graphic Design", description: "Visual Design", memberCount: 4 }
+                { name: "Agile Team", description: "Scrum & Agile Management", memberCount: 4 },
+                { name: "Waterfall Team", description: "Traditional Project Management", memberCount: 4 },
+                { name: "PMO Team", description: "Project Management Office", memberCount: 4 }
             ]
         },
         {
@@ -78,29 +75,11 @@ export default function AllDepartments() {
                 "/assets/navbar/Avatar.png"
             ],
             teams: [
-                { name: "UX Team", description: "User Experience", memberCount: 6 },
-                { name: "UI Team", description: "User Interface", memberCount: 4 },
-                { name: "Graphic Design", description: "Visual Design", memberCount: 4 }
+                { name: "Digital Marketing", description: "Online Marketing & SEO", memberCount: 6 },
+                { name: "Content Marketing", description: "Content Creation & Strategy", memberCount: 4 },
+                { name: "Brand Marketing", description: "Brand Management & PR", memberCount: 4 }
             ]
-        },
-        {
-            id: 1,
-            name: "Design Department",
-            totalMembers: 15,
-            memberAvatars: [
-                "/assets/navbar/Avatar.png",
-                "/assets/navbar/Avatar.png",
-                "/assets/navbar/Avatar.png"
-            ],
-            teams: [
-                { name: "UX Team", description: "User Experience", memberCount: 5 },
-                { name: "UI Team", description: "User Interface", memberCount: 4 },
-                { name: "Graphic Design", description: "Visual Design", memberCount: 3 },
-                { name: "UX Writing", description: "Content Design", memberCount: 3 },
-                { name: "UX Writing", description: "Content Design", memberCount: 3 },
-                { name: "UX Writing", description: "Content Design", memberCount: 3 }
-            ]
-        },
+        }
     ];
 
     // Filter departments based on search term
@@ -118,27 +97,30 @@ export default function AllDepartments() {
             <div className={`flex flex-col sm:flex-row gap-4 items-center justify-between ${isArabic ? 'sm:flex-row-reverse' : ''}`}>
                 {/* Search Bar */}
                 <div className="relative flex-1 max-w-md">
-                    <div className={`absolute inset-y-0 ${isArabic ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center pointer-events-none`}>
-                        <Search className="h-5 w-5 text-[var(--sub-text-color)]" />
-                    </div>
+                    <Search
+                        className={`absolute top-1/2 transform -translate-y-1/2 w-4 h-4 ${isArabic ? 'right-3' : 'left-3'}`}
+                        style={{ color: 'var(--sub-text-color)' }}
+                    />
                     <input
                         type="text"
                         placeholder={t("allDepartments.search.placeholder")}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className={`form-input w-full ${isArabic ? 'pr-10 text-right' : 'pl-10'}`}
+                        className="w-full border rounded-xl py-3 text-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200"
+                        style={{
+                            borderColor: 'var(--border-color)',
+                            backgroundColor: 'var(--bg-color)',
+                            color: 'var(--text-color)',
+                            paddingLeft: isArabic ? '16px' : '40px',
+                            paddingRight: isArabic ? '40px' : '16px',
+                            focusRingColor: 'var(--accent-color)',
+                            textAlign: isArabic ? 'right' : 'left'
+                        }}
                     />
                 </div>
 
                 {/* Action Buttons */}
-                <div className={`flex gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                    <button 
-                        onClick={handleEditDepartment}
-                        className="btn-secondary flex items-center gap-2"
-                    >
-                        <Edit3 size={16} />
-                        <span className="hidden sm:inline">{t("allDepartments.search.editDepartment")}</span>
-                    </button>
+                <div className={` ${isArabic ? 'flex-row-reverse' : ''}`}>
                     <button 
                         onClick={handleAddNewDepartment}
                         className="btn-primary flex items-center gap-2"

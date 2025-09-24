@@ -438,6 +438,8 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
       return "all_departments";
     if (location.pathname.startsWith("/pages/admin/new-department"))
       return "new_department";
+    if (location.pathname.startsWith("/pages/admin/edit-department"))
+      return "all_departments";
     if (location.pathname.startsWith("/pages/admin/leaves"))
       return "leaves";
     return "";

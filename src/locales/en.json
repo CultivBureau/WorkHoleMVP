@@ -671,11 +671,64 @@
         "cancel": "Cancel",
         "next": "Next",
         "back": "Back",
-        "add": "Add"
+        "add": "Add",
+        "allDepartments": "All Departments"
       },
       "success": {
         "title": "Department Created!",
         "message": "You have successfully created a new department."
+      }
+    },
+    "editDepartmentForm": {
+      "title": "Edit Department",
+      "breadcrumb": {
+        "allDepartments": "All Departments",
+        "editDepartment": "Edit Department"
+      },
+      "steps": {
+        "departmentInfo": "Department Info",
+        "assignSupervisor": "Assign Supervisor",
+        "setupTeams": "Setup Teams",
+        "reviewAndSave": "Review & Save"
+      },
+      "departmentInfo": {
+        "departmentName": "Department Name",
+        "shortName": "Short Name",
+        "description": "Description",
+        "status": "Status",
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "assignSupervisor": {
+        "chooseSupervisor": "Choose Supervisor",
+        "supervisor": "Supervisor"
+      },
+      "setupTeams": {
+        "teamName": "Team Name",
+        "chooseEmployee": "Choose Employee",
+        "description": "Description",
+        "addNewTeam": "Add New Team",
+        "members": "Members"
+      },
+      "review": {
+        "reviewDepartmentDetails": "Review Department Details",
+        "departmentName": "Department Name",
+        "shortName": "Short Name",
+        "description": "Description",
+        "status": "Status",
+        "supervisor": "Supervisor"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "next": "Next",
+        "back": "Back",
+        "add": "Add",
+        "save": "Save Changes",
+        "allDepartments": "All Departments"
+      },
+      "success": {
+        "title": "Department Updated!",
+        "message": "You have successfully updated the department."
       }
     }
   },
@@ -711,7 +764,46 @@
       "members": "Members",
       "teams": "Teams",
       "viewAll": "View all",
-      "supervisor": "Supervisor"
+      "supervisor": "Supervisor",
+      "edit": "Edit"
+    }
+  },
+  "allTeams": {
+    "title": "All Teams",
+    "statusCards": {
+      "totalTeams": {
+        "title": "Total Teams",
+        "count": "15",
+        "description": "Number of teams across departments"
+      },
+      "pendingTasks": {
+        "title": "Pending Tasks",
+        "count": "8",
+        "description": "Tasks awaiting completion"
+      },
+      "attendanceRate": {
+        "title": "Attendance Rate",
+        "count": "95%",
+        "description": "Average team attendance this month"
+      },
+      "kpiPerformance": {
+        "title": "KPI Performance",
+        "count": "87%",
+        "description": "Teams meeting performance targets"
+      }
+    },
+    "search": {
+      "placeholder": "Search teams...",
+      "addNewTeam": "Add New Team"
+    },
+    "teamCard": {
+      "members": "Members",
+      "department": "Department",
+      "lead": "Team Lead",
+      "view": "View Details",
+      "edit": "Edit",
+      "tasks": "Tasks",
+      "performance": "Performance"
     }
   },
   "walletCards": {
