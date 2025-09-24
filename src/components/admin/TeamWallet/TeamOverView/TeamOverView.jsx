@@ -118,15 +118,8 @@ const TeamOverView = () => {
       chartInstance.current.destroy()
     }
 
-    // Create gradient for regular bars
-    const gradient = ctx.createLinearGradient(0, 0, 0, 400)
-    gradient.addColorStop(0, "#D10909")
-    gradient.addColorStop(1, "#6B0505")
-
-    // Create gradient for highlighted bar
-    const highlightGradient = ctx.createLinearGradient(0, 0, 0, 400)
-    highlightGradient.addColorStop(0, "#FF4444")
-    highlightGradient.addColorStop(1, "#D10909")
+    // Single color for all bars
+    const barColor = "#D10909"
 
     chartInstance.current = new ChartJS(ctx, {
       type: "bar",
@@ -135,10 +128,7 @@ const TeamOverView = () => {
         datasets: [
           {
             data: currentData.map((item) => item.value),
-            backgroundColor: currentData.map((item, index) => {
-              if (item.value === maxValue) return highlightGradient
-              return gradient
-            }),
+            backgroundColor: barColor, // Single color for all bars
             borderColor: "transparent",
             borderWidth: 0,
             borderRadius: 2,
