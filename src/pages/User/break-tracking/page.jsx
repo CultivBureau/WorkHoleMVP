@@ -1,16 +1,51 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import SideMenu from "../../../components/side-menu/side-menu";
 import NavBar from "../../../components/NavBar/navbar";
 import StatusCards from "../../../components/break-tracking/status-cards";
 import BreakTime from "../../../components/break-tracking/break-time";
 import BreakTypeChart from "../../../components/break-tracking/chart";
 import BreakHistoryTable from "../../../components/break-tracking/table";
+import Loading from "../../../components/Loading/Loading";
 import { useGetBreakDashboardQuery } from "../../../services/apis/BreakApi";
 import { useLang } from "../../../contexts/LangContext";
 
 const BreakTrackingPage = () => {
   const { isRtl } = useLang();
-  const { data: breakDashboard, refetch } = useGetBreakDashboardQuery();
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const { data: breakDashboard, isLoading, error, refetch } = useGetBreakDashboardQuery();
+
+  // Track initial load to ensure loading screen shows
+  useEffect(() => {
+    if (breakDashboard || error) {
+      setIsInitialLoad(false);
+    }
+  }, [breakDashboard, error]);
+
+  // Show loading screen while data is being fetched or during initial load
+  if (isLoading || isInitialLoad) {
+    return <Loading />;
+  }
+
+  // Show error state if there's an error
+  if (error) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-red-600 mb-2">Error Loading Data</h2>
+          <p className="text-gray-600 mb-4">There was an error loading the break tracking data.</p>
+          <button 
+            onClick={() => {
+              setIsInitialLoad(true);
+              refetch();
+            }} 
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

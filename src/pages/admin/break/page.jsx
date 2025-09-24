@@ -18,6 +18,7 @@ import {
 } from "../../../services/apis/BreakApi";
 import BreakTypeModal from "../../../components/admin/BreakTypeModal";
 import { useLang } from "../../../contexts/LangContext";
+import Loading from "../../../components/Loading/Loading";
 
 const BreakAdmin = () => {
   const { lang, isRtl } = useLang();
@@ -42,6 +43,11 @@ const BreakAdmin = () => {
 
   const { data: breakTypes, isLoading, refetch } = useGetBreakTypesQuery();
   const [deleteBreakType, { isLoading: deleting }] = useDeleteBreakTypeMutation();
+
+  // Show loading screen while data is being fetched
+  if (isLoading) {
+    return <Loading />;
+  }
 
   const tabs = [
     { key: "types", label: isRtl ? "أنواع الراحة" : "Break Types", icon: Coffee },

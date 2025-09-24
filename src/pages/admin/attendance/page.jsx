@@ -26,6 +26,7 @@ import EditOfficeModal from "../../../components/admin/EditOfficeModal";
 import ConfirmModal from "../../../components/admin/ConfirmModal";
 import toast from 'react-hot-toast';
 import { useLang } from "../../../contexts/LangContext";
+import Loading from "../../../components/Loading/Loading";
 
 const AttendanceAdmin = () => {
   const { lang, isRtl } = useLang();
@@ -332,6 +333,11 @@ const AttendanceAdmin = () => {
   };
 
   const { getDynamicClockIn, getDynamicClockOut, getDynamicWorkHours } = useDynamicTime(filteredData);
+
+  // Show loading screen while data is being fetched
+  if (isLoading) {
+    return <Loading />;
+  }
 
   return (
     <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
