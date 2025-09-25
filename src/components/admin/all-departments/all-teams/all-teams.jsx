@@ -4,24 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { Search, Plus, ArrowLeft } from "lucide-react";
 import TeamCard from "./team-card";
 import TeamsStatusCards from "./status-cards";
+import AddTeamModal from "./add-team";
+import EditTeamModal from "./edit-team";
 
-export default function AllTeams() {
-    const { t, i18n } = useTranslation();
-    const isArabic = i18n.language === "ar";
-    const [searchTerm, setSearchTerm] = useState("");
-    const navigate = useNavigate();
-
-    const handleAddNewTeam = () => {
-        // Navigation for adding new team - you can implement this later
-        console.log("Add new team");
-    };
-
-    const handleGoBack = () => {
-        navigate('/pages/admin/all-departments');
-    };
-
-    // Mock teams data
-    const teamsData = [
+// Mock teams data
+const initialTeamsData = [
         {
             id: 1,
             name: "UX Team",
@@ -110,8 +97,60 @@ export default function AllTeams() {
         },
     ];
 
+export default function AllTeams() {
+    const { t, i18n } = useTranslation();
+    const isArabic = i18n.language === "ar";
+    const [searchTerm, setSearchTerm] = useState("");
+    const [isAddTeamModalOpen, setIsAddTeamModalOpen] = useState(false);
+    const [isEditTeamModalOpen, setIsEditTeamModalOpen] = useState(false);
+    const [selectedTeam, setSelectedTeam] = useState(null);
+    const [teams, setTeams] = useState(initialTeamsData);
+    const navigate = useNavigate();
+
+    const handleAddNewTeam = () => {
+        setIsAddTeamModalOpen(true);
+    };
+
+    const handleAddTeam = (teamData) => {
+        const newTeam = {
+            ...teamData,
+            department: "Design Department",
+            lead: teamData.teamLeader?.name || "Unknown",
+            leadAvatar: teamData.teamLeader?.avatar || "/assets/navbar/Avatar.png",
+            leadRole: teamData.teamLeader?.role || "Team Lead",
+            totalMembers: teamData.selectedEmployees.length,
+            tasks: Math.floor(Math.random() * 15) + 1,
+            performance: `${Math.floor(Math.random() * 20) + 80}%`,
+            memberAvatars: teamData.selectedEmployees.slice(0, 3).map(emp => emp.avatar),
+            members: teamData.selectedEmployees
+        };
+        setTeams(prev => [...prev, newTeam]);
+    };
+
+    const handleEditTeam = (team) => {
+        setSelectedTeam(team);
+        setIsEditTeamModalOpen(true);
+    };
+
+    const handleUpdateTeam = (updatedTeam) => {
+        setTeams(prev => prev.map(team => 
+            team.id === updatedTeam.id ? updatedTeam : team
+        ));
+        setIsEditTeamModalOpen(false);
+        setSelectedTeam(null);
+    };
+
+    const handleDeleteTeam = (teamId) => {
+        // Add confirmation dialog here if needed
+        setTeams(prev => prev.filter(team => team.id !== teamId));
+    };
+
+    const handleGoBack = () => {
+        navigate('/pages/admin/all-departments');
+    };
+
     // Filter teams based on search term
-    const filteredTeams = teamsData.filter(team =>
+    const filteredTeams = teams.filter(team =>
         team.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         team.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
         team.lead.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -182,7 +221,12 @@ export default function AllTeams() {
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {filteredTeams.length > 0 ? (
                     filteredTeams.map((team) => (
-                        <TeamCard key={team.id} team={team} />
+                        <TeamCard 
+                            key={team.id} 
+                            team={team} 
+                            onEdit={handleEditTeam}
+                            onDelete={handleDeleteTeam}
+                        />
                     ))
                 ) : (
                     <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
@@ -205,9 +249,27 @@ export default function AllTeams() {
             {/* Results Summary */}
             {searchTerm && filteredTeams.length > 0 && (
                 <div className={`text-sm text-[var(--sub-text-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
-                    Showing {filteredTeams.length} of {teamsData.length} teams
+                    Showing {filteredTeams.length} of {teams.length} teams
                 </div>
             )}
+
+            {/* Add Team Modal */}
+            <AddTeamModal 
+                isOpen={isAddTeamModalOpen}
+                onClose={() => setIsAddTeamModalOpen(false)}
+                onAddTeam={handleAddTeam}
+            />
+
+            {/* Edit Team Modal */}
+            <EditTeamModal
+                isOpen={isEditTeamModalOpen}
+                onClose={() => {
+                    setIsEditTeamModalOpen(false);
+                    setSelectedTeam(null);
+                }}
+                onUpdateTeam={handleUpdateTeam}
+                teamData={selectedTeam}
+            />
         </div>
     );
 }

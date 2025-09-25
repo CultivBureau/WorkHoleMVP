@@ -268,20 +268,30 @@ function SetupTeamsStep({ onNext, onBack }) {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
     const [teams, setTeams] = useState([
-        { id: 1, name: "UX Team", description: "User Experience", members: 5 },
-        { id: 2, name: "UX Team", description: "User Experience", members: 5 }
+        { id: 1, name: "UX Team", description: "User Experience", members: 5, teamLeader: { name: "Leslie Alexander", role: "Senior Manager" } },
+        { id: 2, name: "UI Team", description: "User Interface", members: 5, teamLeader: { name: "John Doe", role: "Team Lead" } }
     ]);
     const [showAddTeam, setShowAddTeam] = useState(false);
-    const [newTeam, setNewTeam] = useState({ name: '', description: '', selectedEmployees: [] });
+    const [newTeam, setNewTeam] = useState({ name: '', description: '', selectedEmployees: [], teamLeader: null });
     const [isEmployeeDropdownOpen, setIsEmployeeDropdownOpen] = useState(false);
+    const [isLeaderDropdownOpen, setIsLeaderDropdownOpen] = useState(false);
 
     // Mock employee data
     const employees = [
         { id: 1, name: "Alice Johnson", role: "UX Designer", avatar: "/assets/navbar/Avatar.png" },
         { id: 2, name: "Bob Smith", role: "UI Designer", avatar: "/assets/navbar/Avatar.png" },
         { id: 3, name: "Carol Davis", role: "UX Researcher", avatar: "/assets/navbar/Avatar.png" },
-        { id: 4, name: "David Wilson", role: "Product Designer", avatar: "/assets/navbar/Avatar.png" }
+        { id: 4, name: "David Wilson", role: "Product Designer", avatar: "/assets/navbar/Avatar.png" },
+        { id: 5, name: "Emily Chen", role: "Senior Designer", avatar: "/assets/navbar/Avatar.png" },
+        { id: 6, name: "Frank Miller", role: "Design Lead", avatar: "/assets/navbar/Avatar.png" }
     ];
+
+    // Team leaders can be selected from employees or could be a separate list
+    const teamLeaders = employees.filter(emp => 
+        emp.role.includes("Lead") || 
+        emp.role.includes("Senior") || 
+        emp.role.includes("Manager")
+    );
 
     const toggleEmployee = (employee) => {
         setNewTeam(prev => ({
@@ -292,15 +302,24 @@ function SetupTeamsStep({ onNext, onBack }) {
         }));
     };
 
+    const selectTeamLeader = (leader) => {
+        setNewTeam(prev => ({
+            ...prev,
+            teamLeader: leader
+        }));
+        setIsLeaderDropdownOpen(false);
+    };
+
     const addTeam = () => {
         if (newTeam.name.trim()) {
             setTeams(prev => [...prev, {
                 id: Date.now(),
                 name: newTeam.name,
                 description: newTeam.description,
-                members: newTeam.selectedEmployees.length
+                members: newTeam.selectedEmployees.length,
+                teamLeader: newTeam.teamLeader
             }]);
-            setNewTeam({ name: '', description: '', selectedEmployees: [] });
+            setNewTeam({ name: '', description: '', selectedEmployees: [], teamLeader: null });
             setShowAddTeam(false);
         }
     };
@@ -318,11 +337,77 @@ function SetupTeamsStep({ onNext, onBack }) {
                             value={newTeam.name}
                             onChange={(e) => setNewTeam(prev => ({ ...prev, name: e.target.value }))}
                         />
+                        
+                        {/* Team Leader Dropdown */}
                         <div className="relative">
                             <div
                                 className="form-input cursor-pointer flex items-center justify-between"
-                                onClick={() => setIsEmployeeDropdownOpen(!isEmployeeDropdownOpen)}
+                                onClick={() => setIsLeaderDropdownOpen(!isLeaderDropdownOpen)}
                             >
+                                {newTeam.teamLeader ? (
+                                    <div className="flex items-center gap-3">
+                                        <img 
+                                            src={newTeam.teamLeader.avatar} 
+                                            alt={newTeam.teamLeader.name} 
+                                            className="w-6 h-6 rounded-full" 
+                                        />
+                                        <div>
+                                            <div className="text-[var(--text-color)] font-medium text-sm">
+                                                {newTeam.teamLeader.name}
+                                            </div>
+                                            <div className="text-[var(--sub-text-color)] text-xs">
+                                                {newTeam.teamLeader.role}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <span className="text-[var(--sub-text-color)]">
+                                        Choose Team Leader
+                                    </span>
+                                )}
+                                <ChevronDown 
+                                    className={`text-[var(--sub-text-color)] transition-transform ${isLeaderDropdownOpen ? 'rotate-180' : ''}`} 
+                                    size={16} 
+                                />
+                            </div>
+                            
+                            {isLeaderDropdownOpen && (
+                                <div className="absolute top-full left-0 right-0 z-20 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                    {teamLeaders.map(leader => (
+                                        <div
+                                            key={leader.id}
+                                            className="p-3 hover:bg-[var(--hover-color)] cursor-pointer flex items-center justify-between"
+                                            onClick={() => selectTeamLeader(leader)}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <img src={leader.avatar} alt={leader.name} className="w-8 h-8 rounded-full" />
+                                                <div>
+                                                    <div className="text-[var(--text-color)] font-medium">{leader.name}</div>
+                                                    <div className="text-[var(--sub-text-color)] text-sm">{leader.role}</div>
+                                                </div>
+                                            </div>
+                                            <div className={`w-5 h-5 rounded border-2 ${
+                                                newTeam.teamLeader?.id === leader.id 
+                                                    ? 'bg-[var(--accent-color)] border-[var(--accent-color)]' 
+                                                    : 'border-[var(--border-color)]'
+                                            } flex items-center justify-center`}>
+                                                {newTeam.teamLeader?.id === leader.id && (
+                                                    <Check className="text-white" size={12} />
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    
+                    {/* Team Members - Full Width */}
+                    <div className="relative">
+                        <div
+                            className="form-input cursor-pointer flex items-center justify-between"
+                            onClick={() => setIsEmployeeDropdownOpen(!isEmployeeDropdownOpen)}
+                        >
                                 <span className="text-[var(--sub-text-color)]">
                                     {newTeam.selectedEmployees.length > 0 
                                         ? `${newTeam.selectedEmployees.length} selected`
@@ -371,8 +456,9 @@ function SetupTeamsStep({ onNext, onBack }) {
                                     ))}
                                 </div>
                             )}
-                        </div>
                     </div>
+                    
+                    {/* Team Description - Full Width */}
                     <textarea
                         className="form-input w-full"
                         placeholder={t("departments.newDepartmentForm.setupTeams.description")}
@@ -416,20 +502,38 @@ function SetupTeamsStep({ onNext, onBack }) {
                 <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {teams.map(team => (
-                            <div key={team.id} className="p-4 bg-[var(--container-color)] rounded-lg border border-[var(--border-color)] flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 gradient-bg rounded-full flex items-center justify-center">
-                                        <Users className="text-white" size={20} />
+                            <div key={team.id} className="p-4 bg-[var(--container-color)] rounded-lg border border-[var(--border-color)]">
+                                <div className="flex items-start justify-between mb-3">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 gradient-bg rounded-full flex items-center justify-center">
+                                            <Users className="text-white" size={20} />
+                                        </div>
+                                        <div>
+                                            <div className="text-[var(--text-color)] font-medium">{team.name}</div>
+                                            <div className="text-[var(--sub-text-color)] text-sm">{team.description}</div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <div className="text-[var(--text-color)] font-medium">{team.name}</div>
-                                        <div className="text-[var(--sub-text-color)] text-sm">{team.description}</div>
+                                    <div className="flex items-center gap-2 text-[var(--sub-text-color)]">
+                                        <span className="text-sm">{team.members} {t("departments.newDepartmentForm.setupTeams.members")}</span>
+                                        <ChevronDown size={16} />
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 text-[var(--sub-text-color)]">
-                                    <span className="text-sm">{team.members} {t("departments.newDepartmentForm.setupTeams.members")}</span>
-                                    <ChevronDown size={16} />
-                                </div>
+                                
+                                {/* Team Leader Info */}
+                                {team.teamLeader && (
+                                    <div className="flex items-center gap-2 pt-2 border-t border-[var(--border-color)]">
+                                        <img 
+                                            src={team.teamLeader.avatar || "/assets/navbar/Avatar.png"} 
+                                            alt={team.teamLeader.name} 
+                                            className="w-6 h-6 rounded-full" 
+                                        />
+                                        <div className="flex-1">
+                                            <div className="text-xs text-[var(--sub-text-color)]">Team Leader</div>
+                                            <div className="text-sm font-medium text-[var(--text-color)]">{team.teamLeader.name}</div>
+                                        </div>
+                                        <UserCheck className="text-[var(--accent-color)]" size={16} />
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -466,8 +570,8 @@ function ReviewStep({ onBack }) {
     ];
 
     const teams = [
-        { name: "UX Team", description: "User Experience", members: 5 },
-        { name: "UI Team", description: "User Interface", members: 3 }
+        { name: "UX Team", description: "User Experience", members: 5, teamLeader: { name: "Leslie Alexander", role: "Senior Manager" } },
+        { name: "UI Team", description: "User Interface", members: 3, teamLeader: { name: "John Doe", role: "Team Lead" } }
     ];
 
     const handleSubmit = async () => {
@@ -556,19 +660,37 @@ function ReviewStep({ onBack }) {
                 <h3 className="text-lg font-semibold text-[var(--text-color)]">Teams</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {teams.map((team, index) => (
-                        <div key={index} className="p-4 bg-[var(--container-color)] rounded-lg border border-[var(--border-color)] flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 gradient-bg rounded-full flex items-center justify-center">
-                                    <Users className="text-white" size={20} />
+                        <div key={index} className="p-4 bg-[var(--container-color)] rounded-lg border border-[var(--border-color)]">
+                            <div className="flex items-start justify-between mb-3">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 gradient-bg rounded-full flex items-center justify-center">
+                                        <Users className="text-white" size={20} />
+                                    </div>
+                                    <div>
+                                        <div className="text-[var(--text-color)] font-medium">{team.name}</div>
+                                        <div className="text-[var(--sub-text-color)] text-sm">{team.description}</div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <div className="text-[var(--text-color)] font-medium">{team.name}</div>
-                                    <div className="text-[var(--sub-text-color)] text-sm">{team.description}</div>
-                                </div>
+                                <span className="text-[var(--sub-text-color)] text-sm">
+                                    {team.members} {t("departments.newDepartmentForm.setupTeams.members")}
+                                </span>
                             </div>
-                            <span className="text-[var(--sub-text-color)] text-sm">
-                                {team.members} {t("departments.newDepartmentForm.setupTeams.members")}
-                            </span>
+                            
+                            {/* Team Leader Info */}
+                            {team.teamLeader && (
+                                <div className="flex items-center gap-2 pt-2 border-t border-[var(--border-color)]">
+                                    <img 
+                                        src="/assets/navbar/Avatar.png" 
+                                        alt={team.teamLeader.name} 
+                                        className="w-6 h-6 rounded-full" 
+                                    />
+                                    <div className="flex-1">
+                                        <div className="text-xs text-[var(--sub-text-color)]">Team Leader</div>
+                                        <div className="text-sm font-medium text-[var(--text-color)]">{team.teamLeader.name}</div>
+                                    </div>
+                                    <UserCheck className="text-[var(--accent-color)]" size={16} />
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>
