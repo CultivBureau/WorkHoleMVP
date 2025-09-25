@@ -6,6 +6,7 @@ import StatusCards from "../../../components/dashboard/status-cards";
 import QuickActions from "../../../components/dashboard/quick-actions";
 import BreakTime from "../../../components/dashboard/break-time";
 import LeaveRequest from "../../../components/leave-requests/leave-request";
+import Loading from "../../../components/Loading/Loading";
 import { useGetDashboardQuery } from "../../../services/apis/DashboardApi";
 import { useLang } from "../../../contexts/LangContext";
 
@@ -17,6 +18,11 @@ const Dashboard = () => {
   const { data: dashboardData, isLoading, error, refetch } = useGetDashboardQuery({ 
     month: selectedMonth 
   });
+
+  // Show loading screen while data is being fetched
+  if (isLoading) {
+    return <Loading />;
+  }
 
   return (
     <div

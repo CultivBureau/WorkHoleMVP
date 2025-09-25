@@ -23,6 +23,7 @@ import Card from "../../../components/Time_Tracking_Components/Stats/Card";
 import toast from 'react-hot-toast';
 import { useLang } from "../../../contexts/LangContext";
 import Table from "../../../components/admin/attendance/AttendanceTable/Table";
+import Loading from "../../../components/Loading/Loading";
 
 const AttendanceAdmin = () => {
   const { lang, isRtl } = useLang();
@@ -199,6 +200,12 @@ const cardData = [
   };
 
 
+ 
+  // Show loading screen while data is being fetched
+  const [isLoading, setIsLoading] = useState(false);
+  if (isLoading) {
+    return <Loading />;
+  }
 
   return (
     <div className="w-full h-screen flex flex-col bg-[var(--bg-color)]">

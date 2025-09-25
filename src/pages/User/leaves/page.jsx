@@ -6,10 +6,20 @@ import StatusCards from "../../../components/leave-requests/status-cards";
 import LeaveRequest from "../../../components/leave-requests/leave-request";
 import LeaveSummaryCards from "../../../components/leave-requests/leave-summary-cards";
 import LeaveTable from "../../../components/leave-requests/table";
+import Loading from "../../../components/Loading/Loading";
+import { useGetLeaveStatsQuery } from "../../../services/apis/LeavesApi";
 import { useLang } from "../../../contexts/LangContext";
 
 const Leaves = () => {
   const { isRtl } = useLang();
+  
+  // Check loading state from the main API query used by components
+  const { isLoading } = useGetLeaveStatsQuery();
+
+  // Show loading screen while data is being fetched
+  if (isLoading) {
+    return <Loading />;
+  }
 
   return (
     <div
