@@ -138,6 +138,103 @@
       "comingSoon": "Coming Soon"
     }
   },
+  "adminDashboard": {
+    "cards": {
+      "activeEmployees": "Active Employees",
+      "todayAttendance": "Today Attendance",
+      "leaveRequests": "Leave Requests",
+      "overdueTasks": "Overdue Tasks"
+    },
+    "buttons": {
+      "addNewEmployee": "Add New Employee",
+      "approveRequests": "Approve Requests",
+      "viewAttendance": "View Attendance",
+      "manageRolesPermissions": "Manage Roles, Permissions"
+    },
+    "table": {
+      "attendanceOverview": "Attendance Overview",
+      "search": "Search",
+      "designation": "Designation",
+      "location": "Location",
+      "status": "Status",
+      "all": "All",
+      "allStatus": "All Status",
+      "viewAll": "View All",
+      "employeeName": "Employee Name",
+      "type": "Type",
+      "checkInTime": "Check In Time",
+      "office": "Office",
+      "remote": "Remote",
+      "onTime": "On Time",
+      "late": "Late"
+    },
+    "departments": {
+      "overview": "Departments Overview",
+      "viewAll": "View All",
+      "members": "Members",
+      "presentToday": "Present Today",
+      "absentToday": "Absent Today"
+    },
+    "recentActivity": {
+      "title": "Recent Activity",
+      "today": "Today",
+      "approvedLeaveRequest": "approved a leave request"
+    }
+  },  
+  "adminPerformance": {
+    "cards": {
+      "efficiencyScore": "Efficiency Score",
+      "kpiTrend": "KPI Trend vs Last Month",
+      "kpiAchievements": "KPI Achievements",
+      "pendingKpiApprovals": "Pending KPI Approvals"
+    },
+    "chart": {
+      "departmentKpiOverview": "Department KPI Overview",
+      "averageKpiScore": "Average KPI score per department",
+      "efficiency": "efficiency",
+      "present": "Present",
+      "absent": "Absent",
+      "days": "days",
+      "presenceVsAbsence": "Presence vs absence",
+      "companyAttendanceOverview": "Company Attendance Overview"
+    },
+    "departments": {
+      "development": "Development",
+      "business": "Business",
+      "sales": "Sales",
+      "marketing": "Marketing",
+      "hr": "HR",
+      "finance": "Finance",
+      "support": "Support",
+      "it": "IT",
+      "admin": "Admin",
+      "rnd": "R&D",
+      "logistics": "Logistics",
+      "operations": "Operations"
+    },
+    "periods": {
+      "quarter": "Quarter",
+      "semester": "Semester",
+      "annual": "Annual"
+    },
+    "buttons": {
+      "allDepartment": "All Department",
+      "viewLogs": "View Logs"
+    },
+    "insights": {
+      "keyInsights": "Key Insights",
+      "quickHighlights": "Quick highlights of team and department performance",
+      "bestPerforming": "Best Performing",
+      "needsAttention": "Needs Attention",
+      "highestKpi": "Highest average KPI this period",
+      "belowAverageKpi": "Below average KPI this period"
+    },
+    "stats": {
+      "presenceRate": "Presence Rate",
+      "absenceRate": "Absence Rate"
+    }
+  },
+
   "breakTime": {
     "title": "Break Time",
     "selectReason": "Select Reason",

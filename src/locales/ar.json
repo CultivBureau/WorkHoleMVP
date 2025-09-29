@@ -142,6 +142,59 @@
       "comingSoon": "قريباً"
     }
   },
+"adminPerformance": {
+  "cards": {
+    "efficiencyScore": "نقاط الكفاءة",
+    "kpiTrend": "اتجاه مؤشرات الأداء مقارنة بالشهر الماضي",
+    "kpiAchievements": "إنجازات مؤشرات الأداء",
+    "pendingKpiApprovals": "موافقات مؤشرات الأداء المعلقة"
+  },
+  "chart": {
+    "departmentKpiOverview": "نظرة عامة على مؤشرات أداء الأقسام",
+    "averageKpiScore": "متوسط نقاط مؤشرات الأداء لكل قسم",
+    "efficiency": "كفاءة",
+    "present": "حاضر",
+    "absent": "غائب",
+    "days": "أيام",
+    "presenceVsAbsence": "الحضور مقابل الغياب",
+    "companyAttendanceOverview": "نظرة عامة على حضور الشركة"
+  },
+  "departments": {
+    "development": "التطوير",
+    "business": "الأعمال",
+    "sales": "المبيعات",
+    "marketing": "التسويق",
+    "hr": "الموارد البشرية",
+    "finance": "المالية",
+    "support": "الدعم",
+    "it": "تقنية المعلومات",
+    "admin": "الإدارة",
+    "rnd": "البحث والتطوير",
+    "logistics": "اللوجستيات",
+    "operations": "العمليات"
+  },
+  "periods": {
+    "quarter": "ربع سنوي",
+    "semester": "نصف سنوي",
+    "annual": "سنوي"
+  },
+  "buttons": {
+    "allDepartment": "جميع الأقسام",
+    "viewLogs": "عرض السجلات"
+  },
+  "insights": {
+    "keyInsights": "الرؤى الرئيسية",
+    "quickHighlights": "نقاط سريعة حول أداء الفريق والقسم",
+    "bestPerforming": "الأفضل أداءً",
+    "needsAttention": "يحتاج انتباه",
+    "highestKpi": "أعلى متوسط لمؤشرات الأداء هذه الفترة",
+    "belowAverageKpi": "أقل من متوسط مؤشرات الأداء هذه الفترة"
+  },
+  "stats": {
+    "presenceRate": "معدل الحضور",
+    "absenceRate": "معدل الغياب"
+  }
+},
   "breakTime": {
     "title": "وقت الاستراحة",
     "selectReason": "اختر السبب",
@@ -787,6 +840,49 @@
       "rolesAssignedToActive": "الأدوار المخصصة للمستخدمين النشطين",
       "createdManually": "تم إنشاؤها يدوياً للاحتياجات الخاصة",
       "allUsersInSystem": "جميع المستخدمين في النظام"
+    }
+  },
+  "adminDashboard": {
+    "cards": {
+      "activeEmployees": "الموظفون النشطون",
+      "todayAttendance": "حضور اليوم",
+      "leaveRequests": "طلبات الإجازة",
+      "overdueTasks": "المهام المتأخرة"
+    },
+    "buttons": {
+      "addNewEmployee": "إضافة موظف جديد",
+      "approveRequests": "موافقة على الطلبات",
+      "viewAttendance": "مشاهدة الحضور",
+      "manageRolesPermissions": "إدارة الأدوار والصلاحيات"
+    },
+    "table": {
+      "attendanceOverview": "نظرة عامة على الحضور",
+      "search": "بحث",
+      "designation": "المسمى الوظيفي",
+      "location": "الموقع",
+      "status": "الحالة",
+      "all": "الكل",
+      "allStatus": "جميع الحالات",
+      "viewAll": "عرض الكل",
+      "employeeName": "اسم الموظف",
+      "type": "النوع",
+      "checkInTime": "وقت تسجيل الدخول",
+      "office": "مكتب",
+      "remote": "عن بعد",
+      "onTime": "في الوقت المحدد",
+      "late": "متأخر"
+    },
+    "departments": {
+      "overview": "نظرة عامة على الأقسام",
+      "viewAll": "عرض الكل",
+      "members": "أعضاء",
+      "presentToday": "حاضر اليوم",
+      "absentToday": "غائب اليوم"
+    },
+    "recentActivity": {
+      "title": "النشاط الأخير",
+      "today": "اليوم",
+      "approvedLeaveRequest": "وافق على طلب إجازة"
     }
   }
 }

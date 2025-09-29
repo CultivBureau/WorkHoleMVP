@@ -9,26 +9,34 @@ import CompanyCharts from "../../../components/admin/performance/companyCharts/C
 
 const PerformanceAdmin = () => {
   const { lang, isRtl } = useLang();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  // Sync language from localStorage
+  useEffect(() => {
+    const storedLang = localStorage.getItem("lang") || "en";
+    if (i18n.language !== storedLang) {
+      i18n.changeLanguage(storedLang);
+    }
+  }, [i18n]);
 
   const cardData = [
     {
-      title: "Efficiency Score",
+      title: t("adminPerformance.cards.efficiencyScore", "Efficiency Score"),
       value: "82%",
       icon: <img src="/assets/AdminPerformance/Efficiency.svg" alt="Efficiency Score" />
     },
     {
-      title: "KPI Trend vs Last Month",
+      title: t("adminPerformance.cards.kpiTrend", "KPI Trend vs Last Month"),
       value: "12%",
       icon: <img src="/assets/AdminPerformance/kpi.svg" alt="KPI Trend vs Last Month" />
     },
     {
-      title: "KPI Achievements",
+      title: t("adminPerformance.cards.kpiAchievements", "KPI Achievements"),
       value: "4/6",
       icon: <img src="/assets/AdminPerformance/kpi2.svg" alt="KPI Achievements" />
     },
     {
-      title: "Pending KPI Approvals",
+      title: t("adminPerformance.cards.pendingKpiApprovals", "Pending KPI Approvals"),
       value: "4",
       icon: <img src="/assets/AdminPerformance/kpi3.svg" alt="Pending KPI Approvals" />
     },

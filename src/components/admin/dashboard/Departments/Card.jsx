@@ -1,4 +1,6 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { useLang } from '../../../../contexts/LangContext';
 
 // Circular progress component
 const CircularProgress = ({ percentage }) => {
@@ -54,6 +56,9 @@ const Card = ({
   absentCount = 2, 
   percentage = 94.6 
 }) => {
+  const { t } = useTranslation();
+  const { isRtl } = useLang();
+
   return (
     <div className="w-[97%] h-max pb-2 bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg p-2 shadow-sm mb-3 transition-all duration-300 ease-in-out hover:shadow-md hover:scale-[1.01] hover:border-[var(--accent-color)] cursor-pointer">
       {/* Header Section */}
@@ -63,11 +68,11 @@ const Card = ({
             {departmentName}
           </h3>
           <p className="text-[var(--sub-text-color)] text-start text-[9px] font-medium leading-tight transition-colors duration-200">
-            {memberCount} Members
+            {memberCount} {t("adminDashboard.departments.members", "Members")}
           </p>
         </div>
         <button className="text-[var(--accent-color)] hover:text-[var(--accent-hover)] text-[9px] font-medium hover:underline transition-all duration-200 leading-none px-1.5 py-0.5 rounded hover:bg-[var(--hover-color)] active:scale-95">
-          View All
+          {t("adminDashboard.departments.viewAll", "View All")}
         </button>
       </div>
 
@@ -76,7 +81,7 @@ const Card = ({
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1 transition-transform duration-200 hover:scale-105">
             <span className="text-[var(--sub-text-color)] text-[9px] font-medium leading-none">
-              Present Today
+              {t("adminDashboard.departments.presentToday", "Present Today")}
             </span>
             <span className="text-[var(--text-color)] font-bold text-[10px] leading-none">
               {presentCount}
@@ -84,7 +89,7 @@ const Card = ({
           </div>
           <div className="flex items-center gap-1 transition-transform duration-200 hover:scale-105">
             <span className="text-[var(--sub-text-color)] text-[9px] font-medium leading-none">
-              Absent Today
+              {t("adminDashboard.departments.absentToday", "Absent Today")}
             </span>
             <span className="text-[var(--text-color)] font-bold text-[10px] leading-none">
               {absentCount}

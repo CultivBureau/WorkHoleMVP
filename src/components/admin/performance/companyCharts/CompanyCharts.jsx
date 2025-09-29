@@ -30,18 +30,18 @@ const CompanyCharts = () => {
 
   // Fake data for Present vs Absent for each month for 1 year
   const AttendanceOverviewData = [
-    { month: 'Jan', present: 20, absent: 5 },
-    { month: 'Feb', present: 18, absent: 7 },
-    { month: 'Mar', present: 22, absent: 3 },
-    { month: 'Apr', present: 19, absent: 6 },
-    { month: 'May', present: 21, absent: 4 },
-    { month: 'Jun', present: 20, absent: 5 },
-    { month: 'Jul', present: 23, absent: 2 },
-    { month: 'Aug', present: 18, absent: 7 },
-    { month: 'Sep', present: 20, absent: 5 },
-    { month: 'Oct', present: 22, absent: 3 },
-    { month: 'Nov', present: 19, absent: 6 },
-    { month: 'Dec', present: 21, absent: 4 },
+    { month: t("navbar.months.0", "Jan"), present: 20, absent: 5 },
+    { month: t("navbar.months.1", "Feb"), present: 18, absent: 7 },
+    { month: t("navbar.months.2", "Mar"), present: 22, absent: 3 },
+    { month: t("navbar.months.3", "Apr"), present: 19, absent: 6 },
+    { month: t("navbar.months.4", "May"), present: 21, absent: 4 },
+    { month: t("navbar.months.5", "Jun"), present: 20, absent: 5 },
+    { month: t("navbar.months.6", "Jul"), present: 23, absent: 2 },
+    { month: t("navbar.months.7", "Aug"), present: 18, absent: 7 },
+    { month: t("navbar.months.8", "Sep"), present: 20, absent: 5 },
+    { month: t("navbar.months.9", "Oct"), present: 22, absent: 3 },
+    { month: t("navbar.months.10", "Nov"), present: 19, absent: 6 },
+    { month: t("navbar.months.11", "Dec"), present: 21, absent: 4 },
   ];
 
   // Calculate overall presence and absence rates
@@ -64,7 +64,7 @@ const CompanyCharts = () => {
     labels: AttendanceOverviewData.map(item => item.month),
     datasets: [
       {
-        label: 'Present',
+        label: t("adminPerformance.chart.present", "Present"),
         data: AttendanceOverviewData.map(item => {
           const total = item.present + item.absent;
           return (item.present / total) * 100;
@@ -92,7 +92,7 @@ const CompanyCharts = () => {
         barPercentage: 0.9,
       },
       {
-        label: 'Absent',
+        label: t("adminPerformance.chart.absent", "Absent"),
         data: AttendanceOverviewData.map(item => {
           const total = item.present + item.absent;
           return (item.absent / total) * 100;
@@ -127,10 +127,10 @@ const CompanyCharts = () => {
           label: function(context) {
             const dataIndex = context.dataIndex;
             const monthData = AttendanceOverviewData[dataIndex];
-            if (context.dataset.label === 'Present') {
-              return `Present: ${monthData.present} days (${Math.round(context.parsed.y)}%)`;
+            if (context.dataset.label === t("adminPerformance.chart.present", "Present")) {
+              return `${t("adminPerformance.chart.present", "Present")}: ${monthData.present} ${t("adminPerformance.chart.days", "days")} (${Math.round(context.parsed.y)}%)`;
             } else {
-              return `Absent: ${monthData.absent} days (${Math.round(context.parsed.y)}%)`;
+              return `${t("adminPerformance.chart.absent", "Absent")}: ${monthData.absent} ${t("adminPerformance.chart.days", "days")} (${Math.round(context.parsed.y)}%)`;
             }
           }
         }
@@ -187,10 +187,10 @@ const CompanyCharts = () => {
         <div className='flex flex-col 2xl:flex-row text-start gap-2 sm:gap-3 lg:gap-4'>
           <div className="mb-2 sm:mb-0">
             <p className='text-[10px] sm:text-[11px] lg:text-[13px] text-[var(--sub-text-color)] mb-1'>
-              Presence vs absence
+              {t("adminPerformance.chart.presenceVsAbsence", "Presence vs absence")}
             </p>
             <h2 className='text-[14px] sm:text-[16px] lg:text-[18px] xl:text-[20px] font-semibold text-[var(--text-color)]'>
-              Company Attendance Overview
+              {t("adminPerformance.chart.companyAttendanceOverview", "Company Attendance Overview")}
             </h2>
           </div>
           
@@ -198,11 +198,15 @@ const CompanyCharts = () => {
           <div className='flex items-center flex-row gap-3 sm:gap-4 mb-2 sm:mb-0'>
             <div className='flex items-center gap-2'>
               <div className='w-[6px] h-[6px] sm:w-[8px] sm:h-[8px] lg:w-[10px] lg:h-[10px] rounded-full gradient-bg'></div>
-              <span className='text-[10px] sm:text-[12px] lg:text-[14px] text-[var(--sub-text-color)]'>Present</span>
+              <span className='text-[10px] sm:text-[12px] lg:text-[14px] text-[var(--sub-text-color)]'>
+                {t("adminPerformance.chart.present", "Present")}
+              </span>
             </div>
             <div className='flex items-center gap-2'>
               <div className='w-[6px] h-[6px] sm:w-[8px] sm:h-[8px] lg:w-[10px] lg:h-[10px] rounded-full' style={{ backgroundColor: 'rgba(176, 176, 176, 0.45)' }}></div>
-              <span className='text-[10px] sm:text-[12px] lg:text-[14px] text-[var(--sub-text-color)]'>Absent</span>
+              <span className='text-[10px] sm:text-[12px] lg:text-[14px] text-[var(--sub-text-color)]'>
+                {t("adminPerformance.chart.absent", "Absent")}
+              </span>
             </div>
           </div>
 
@@ -217,7 +221,7 @@ const CompanyCharts = () => {
                   </span>
                 </div>
                 <span className='text-[9px] sm:text-[10px] lg:text-[12px] font-semibold text-[var(--text-color)] whitespace-nowrap'>
-                  Presence Rate
+                  {t("adminPerformance.stats.presenceRate", "Presence Rate")}
                 </span>
               </div>
             </div>
@@ -231,7 +235,7 @@ const CompanyCharts = () => {
                   </span>
                 </div>
                 <span className='text-[9px] sm:text-[10px] lg:text-[12px] font-semibold text-[var(--text-color)] whitespace-nowrap'>
-                  Absence Rate
+                  {t("adminPerformance.stats.absenceRate", "Absence Rate")}
                 </span>
               </div>
             </div>
@@ -243,7 +247,9 @@ const CompanyCharts = () => {
           {/* View Logs Button */}
           <button className='flex items-center gap-2 border border-[var(--border-color)] px-2 sm:px-3 lg:px-4 py-1 sm:py-1.5 lg:py-2 text-[#26C8B9] hover:bg-[var(--hover-color)] rounded-lg transition-colors'>
             <Eye size={12} className='sm:size-[14px] lg:size-[16px]' />
-            <span className='text-[10px] sm:text-[12px] lg:text-[14px] font-medium'>View Logs</span>
+            <span className='text-[10px] sm:text-[12px] lg:text-[14px] font-medium'>
+              {t("adminPerformance.buttons.viewLogs", "View Logs")}
+            </span>
           </button>
         </div>
       </div>

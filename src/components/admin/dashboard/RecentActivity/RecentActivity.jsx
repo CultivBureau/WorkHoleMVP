@@ -1,32 +1,37 @@
 import { MoreHorizontal } from "lucide-react"
+import { useTranslation } from 'react-i18next';
+import { useLang } from '../../../../contexts/LangContext';
 
 const RecentActivity = () => {
+  const { t } = useTranslation();
+  const { isRtl } = useLang();
+  
   const recentActivity = [
     {
       id: 1,
       name: "Adam",
-      title: "approved a leave request",
+      title: t("adminDashboard.recentActivity.approvedLeaveRequest", "approved a leave request"),
       time: "3:45 PM",
       avatar: "/assets/AdminDashboard/avatar.svg",
     },
     {
       id: 2,
       name: "Sara",
-      title: "approved a leave request",
+      title: t("adminDashboard.recentActivity.approvedLeaveRequest", "approved a leave request"),
       time: "3:45 PM",
       avatar: "/assets/AdminDashboard/avatar.svg",
     },
     {
       id: 3,
       name: "Mohamed",
-      title: "approved a leave request",
+      title: t("adminDashboard.recentActivity.approvedLeaveRequest", "approved a leave request"),
       time: "3:45 PM",
       avatar: "/assets/AdminDashboard/avatar.svg",
     },
     {
       id: 4,
       name: "Adam",
-      title: "approved a leave request",
+      title: t("adminDashboard.recentActivity.approvedLeaveRequest", "approved a leave request"),
       time: "3:45 PM",
       avatar: "/assets/AdminDashboard/avatar.svg",
     },
@@ -38,8 +43,12 @@ const RecentActivity = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-4 sm:mb-6">
         <div>
-          <h2 className="text-[12px] sm:text-[14px] font-semibold text-start text-[var(--text-color)] mb-1">Recent Activity</h2>
-          <p className="text-[10px] sm:text-[11px] text-start text-[var(--text-color)]">Today</p>
+          <h2 className="text-[12px] sm:text-[14px] font-semibold text-start text-[var(--text-color)] mb-1">
+            {t("adminDashboard.recentActivity.title", "Recent Activity")}
+          </h2>
+          <p className="text-[10px] sm:text-[11px] text-start text-[var(--text-color)]">
+            {t("adminDashboard.recentActivity.today", "Today")}
+          </p>
         </div>
         <button className="p-1 hover:bg-gray-100 rounded-full transition-colors">
           <MoreHorizontal className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--sub-text-color)]" />

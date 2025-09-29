@@ -22,29 +22,37 @@ import RecentActivity from "../../../components/admin/dashboard/RecentActivity/R
 
 const DashboardAdmin = () => {
   const { lang, isRtl } = useLang();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const navigate = useNavigate();
 
+  // Sync language from localStorage
+  useEffect(() => {
+    const storedLang = localStorage.getItem("lang") || "en";
+    if (i18n.language !== storedLang) {
+      i18n.changeLanguage(storedLang);
+    }
+  }, [i18n]);
+
   const CardData = [
     {
-      title: "Active Employees",
+      title: t("adminDashboard.cards.activeEmployees", "Active Employees"),
       value: 100,
       icon: <img src="/assets/AdminDashboard/Active.svg" alt="employees" />
     },
     {
-      title: "Today Attendance",
+      title: t("adminDashboard.cards.todayAttendance", "Today Attendance"),
       value: 90,
       icon: <img src="/assets/AdminDashboard/today.svg" alt="employees" />
     },
     {
-      title: "Leave Requests",
+      title: t("adminDashboard.cards.leaveRequests", "Leave Requests"),
       value: 2,
       icon: <img src="/assets/AdminDashboard/leavee.svg" alt="employees" />
     },
     {
-      title: "Overdue Tasks",
+      title: t("adminDashboard.cards.overdueTasks", "Overdue Tasks"),
       value: 4,
       icon: <img src="/assets/AdminDashboard/task.svg" alt="employees" />
     }
@@ -83,22 +91,22 @@ const DashboardAdmin = () => {
                 {/* add new employee button */}
                 <button className="w-full sm:w-auto sm:flex-1 sm:min-w-[150px] lg:min-w-[170px] cursor-pointer h-[40px] text-[9px] sm:text-[10px] bg-[var(--bg-color)] border border-[var(--border-color)] font-semibold gradient-text flex justify-center items-center gap-2 text-white rounded-md transition-all duration-200 hover:shadow-md hover:scale-[1.02] hover:border-[var(--accent-color)] active:scale-[0.98] active:shadow-sm">
                   <img src="/assets/AdminDashboard/add.svg" alt="add" className="transition-transform duration-200 group-hover:scale-110 w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="truncate">{isRtl ? "إضافة موظف جديد" : "Add New Employee"}</span>
+                  <span className="truncate">{t("adminDashboard.buttons.addNewEmployee", "Add New Employee")}</span>
                 </button>
                 {/* approve requests button */}
                 <button className="w-full sm:w-auto sm:flex-1 sm:min-w-[150px] lg:min-w-[170px] h-[40px] text-[9px] sm:text-[10px] cursor-pointer bg-[var(--bg-color)] border border-[var(--border-color)] font-semibold gradient-text flex justify-center items-center gap-2 text-white rounded-md transition-all duration-200 hover:shadow-md hover:scale-[1.02] hover:border-[var(--accent-color)] active:scale-[0.98] active:shadow-sm">
                   <img src="/assets/AdminDashboard/approve.svg" alt="approve" className="transition-transform duration-200 group-hover:scale-110 w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="truncate">{isRtl ? "موافقة على الطلبات" : "Approve Requests"}</span>
+                  <span className="truncate">{t("adminDashboard.buttons.approveRequests", "Approve Requests")}</span>
                 </button>
                 {/* view attendance button */}
                 <button className="w-full sm:w-auto sm:flex-1 sm:min-w-[150px] lg:min-w-[170px] h-[40px] text-[9px] sm:text-[10px] cursor-pointer bg-[var(--bg-color)] border border-[var(--border-color)] font-semibold gradient-text flex justify-center items-center gap-2 text-white rounded-md transition-all duration-200 hover:shadow-md hover:scale-[1.02] hover:border-[var(--accent-color)] active:scale-[0.98] active:shadow-sm">
                   <img src="/assets/AdminDashboard/view.svg" alt="view" className="transition-transform duration-200 group-hover:scale-110 w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="truncate">{isRtl ? "مشاهدة الحضور" : "View Attendance"}</span>
+                  <span className="truncate">{t("adminDashboard.buttons.viewAttendance", "View Attendance")}</span>
                 </button>
                 {/* manage roles, permissions button */}
                 <button className="w-full sm:w-auto sm:flex-1 sm:min-w-[150px] lg:min-w-[170px] h-[40px] text-[9px] sm:text-[10px] cursor-pointer bg-[var(--bg-color)] border border-[var(--border-color)] font-semibold gradient-text flex justify-center items-center gap-2 text-white rounded-md transition-all duration-200 hover:shadow-md hover:scale-[1.02] hover:border-[var(--accent-color)] active:scale-[0.98] active:shadow-sm">
                   <img src="/assets/AdminDashboard/manage.svg" alt="manage" className="transition-transform duration-200 group-hover:scale-110 w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="truncate text-center">{isRtl ? "إدارة الأدوار والصلاحيات" : "Manage Roles, Permissions"}</span>
+                  <span className="truncate text-center">{t("adminDashboard.buttons.manageRolesPermissions", "Manage Roles, Permissions")}</span>
                 </button>
               </div>
               

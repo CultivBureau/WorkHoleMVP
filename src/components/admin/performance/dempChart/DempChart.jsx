@@ -1,6 +1,8 @@
 "use client"
 
 import { useEffect, useRef } from "react"
+import { useTranslation } from "react-i18next";
+import { useLang } from "../../../../contexts/LangContext";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -15,35 +17,37 @@ import {
 ChartJS.register(CategoryScale, LinearScale, BarElement, BarController, Title, Tooltip, Legend)
 
 const DempChart = () => {
+  const { t } = useTranslation();
+  const { isRtl } = useLang();
   const chartRef = useRef(null)
   const chartInstance = useRef(null)
 
   const DepartmentData = [
-    { department: "Development", efficiency: 90 },
-    { department: "Business", efficiency: 80 },
-    { department: "Sales", efficiency: 75 },
-    { department: "Marketing", efficiency: 85 },
-    { department: "HR", efficiency: 80 },
-    { department: "Finance", efficiency: 70 },
-    { department: "Support", efficiency: 60 },
-    { department: "IT", efficiency: 75 },
-    { department: "Admin", efficiency: 80 },
-    { department: "R&D", efficiency: 90 },
-    { department: "Logistics", efficiency: 70 },
-    { department: "Operations", efficiency: 80 },
+    { department: t("adminPerformance.departments.development", "Development"), efficiency: 90 },
+    { department: t("adminPerformance.departments.business", "Business"), efficiency: 80 },
+    { department: t("adminPerformance.departments.sales", "Sales"), efficiency: 75 },
+    { department: t("adminPerformance.departments.marketing", "Marketing"), efficiency: 85 },
+    { department: t("adminPerformance.departments.hr", "HR"), efficiency: 80 },
+    { department: t("adminPerformance.departments.finance", "Finance"), efficiency: 70 },
+    { department: t("adminPerformance.departments.support", "Support"), efficiency: 60 },
+    { department: t("adminPerformance.departments.it", "IT"), efficiency: 75 },
+    { department: t("adminPerformance.departments.admin", "Admin"), efficiency: 80 },
+    { department: t("adminPerformance.departments.rnd", "R&D"), efficiency: 90 },
+    { department: t("adminPerformance.departments.logistics", "Logistics"), efficiency: 70 },
+    { department: t("adminPerformance.departments.operations", "Operations"), efficiency: 80 },
   ]
   
   const KeyInsights = [
     {
-      status: "Best Performing",
-      department: "Development",
-      desc: "Highest average KPI this period",
+      status: t("adminPerformance.insights.bestPerforming", "Best Performing"),
+      department: t("adminPerformance.departments.development", "Development"),
+      desc: t("adminPerformance.insights.highestKpi", "Highest average KPI this period"),
       efficiency: "90%",
     },
     { 
-      status: "Needs Attention", 
-      department: "Sales", 
-      desc: "Below average KPI this period", 
+      status: t("adminPerformance.insights.needsAttention", "Needs Attention"), 
+      department: t("adminPerformance.departments.sales", "Sales"), 
+      desc: t("adminPerformance.insights.belowAverageKpi", "Below average KPI this period"), 
       efficiency: "60%" 
     },
   ]
@@ -95,7 +99,7 @@ const DempChart = () => {
             displayColors: false,
             callbacks: {
               title: (context) => context[0].label,
-              label: (context) => `${context.parsed.y}% efficiency`,
+              label: (context) => `${context.parsed.y}% ${t("adminPerformance.chart.efficiency", "efficiency")}`,
             },
           },
         },
@@ -168,7 +172,7 @@ const DempChart = () => {
         chartInstance.current.destroy()
       }
     }
-  }, [])
+  }, [t])
 
   return (
     <div className="w-full h-max pb-3 sm:pb-4 lg:pb-5 flex flex-col xl:flex-row bg-[var(--bg-color)] gap-3 sm:gap-4 lg:gap-6">
@@ -178,19 +182,21 @@ const DempChart = () => {
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2 gap-3 sm:gap-4">
             <div className="flex-1">
               <h2 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-1">
-                Department KPI Overview users
+                {t("adminPerformance.chart.departmentKpiOverview", "Department KPI Overview")}
               </h2>
-              <p className="text-xs sm:text-sm text-gray-500">Average KPI score per department</p>
+              <p className="text-xs sm:text-sm text-gray-500">
+                {t("adminPerformance.chart.averageKpiScore", "Average KPI score per department")}
+              </p>
             </div>
             <div className="flex gap-1 bg-gray-50 rounded-lg p-1 w-full sm:w-auto">
               <button className="flex-1 sm:flex-none px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-600 hover:text-gray-900 transition-colors rounded-md">
-                Quarter
+                {t("adminPerformance.periods.quarter", "Quarter")}
               </button>
               <button className="flex-1 sm:flex-none px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-600 hover:text-gray-900 transition-colors rounded-md">
-                Semester
+                {t("adminPerformance.periods.semester", "Semester")}
               </button>
               <button className="flex-1 sm:flex-none px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-teal-500 text-white rounded-md font-medium">
-                Annual
+                {t("adminPerformance.periods.annual", "Annual")}
               </button>
             </div>
           </div>
@@ -212,7 +218,9 @@ const DempChart = () => {
               alt="" 
               className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5"
             />
-            <span className="text-[11px] sm:text-xs md:text-sm font-medium">All Department</span>
+            <span className="text-[11px] sm:text-xs md:text-sm font-medium">
+              {t("adminPerformance.buttons.allDepartment", "All Department")}
+            </span>
           </button>
         </div>
 
@@ -225,10 +233,10 @@ const DempChart = () => {
               {/* Text Content */}
               <div className="flex-1">
                 <h3 className="text-sm sm:text-[15px] md:text-base lg:text-[17px] font-semibold text-teal-600 mb-1">
-                  Key Insights
+                  {t("adminPerformance.insights.keyInsights", "Key Insights")}
                 </h3>
                 <span className="text-gray-500 text-[9px] sm:text-[10px] md:text-xs leading-tight">
-                  Quick highlights of team and department performance
+                  {t("adminPerformance.insights.quickHighlights", "Quick highlights of team and department performance")}
                 </span>
               </div>
               
@@ -250,7 +258,7 @@ const DempChart = () => {
               {/* Status Button - Enhanced */}
               <button className="w-full h-8 sm:h-9 md:h-10 bg-gray-50 rounded-full flex justify-center items-center gap-2 text-gray-600 hover:bg-gray-100 transition-colors px-3 sm:px-4">
                 <svg className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  {item.status === "Best Performing" ? (
+                  {item.status === t("adminPerformance.insights.bestPerforming", "Best Performing") ? (
                     <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   ) : (
                     <path
