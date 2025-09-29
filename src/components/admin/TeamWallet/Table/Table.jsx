@@ -1,6 +1,9 @@
 import { MoreHorizontal, Eye } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 const TransactionTable = () => {
+  const { t } = useTranslation()
+  
   const data = [
     {
       id: 1,
@@ -66,25 +69,25 @@ const TransactionTable = () => {
           <thead>
             <tr className="border-b border-[var(--border-color)]" style={{ backgroundColor: "var(--table-header-bg, var(--bg-color))" }}>
               <th className="text-left py-4 px-6 font-medium text-sm whitespace-nowrap" style={{ color: "var(--sub-text-color)" }}>
-                Transaction Date
+                {t("adminTeamWallet.table.columns.transactionDate")}
               </th>
               <th className="text-left py-4 px-6 font-medium text-sm whitespace-nowrap" style={{ color: "var(--sub-text-color)" }}>
-                Issued by
+                {t("adminTeamWallet.table.columns.issuedBy")}
               </th>
               <th className="text-left py-4 px-6 font-medium text-sm whitespace-nowrap" style={{ color: "var(--sub-text-color)" }}>
-                Team
+                {t("adminTeamWallet.table.columns.team")}
               </th>
               <th className="text-left py-4 px-6 font-medium text-sm whitespace-nowrap" style={{ color: "var(--sub-text-color)" }}>
-                Employee
+                {t("adminTeamWallet.table.columns.employee")}
               </th>
               <th className="text-left py-4 px-6 font-medium text-sm whitespace-nowrap" style={{ color: "var(--sub-text-color)" }}>
-                Action
+                {t("adminTeamWallet.table.columns.action")}
               </th>
               <th className="text-left py-4 px-6 font-medium text-sm whitespace-nowrap" style={{ color: "var(--sub-text-color)" }}>
-                Amount
+                {t("adminTeamWallet.table.columns.amount")}
               </th>
               <th className="text-left py-4 px-6 font-medium text-sm min-w-[200px]" style={{ color: "var(--sub-text-color)" }}>
-                Reason
+                {t("adminTeamWallet.table.columns.reason")}
               </th>
               <th className="w-20 py-4 px-6"></th>
             </tr>
@@ -126,7 +129,7 @@ const TransactionTable = () => {
                 </td>
                 <td className="py-4 px-6">
                   <span className="inline-block px-3 py-1 text-xs font-medium bg-red-50 text-red-600 rounded-full">
-                    {row.Action}
+                    {t("adminTeamWallet.table.actionTypes.penalty")}
                   </span>
                 </td>
                 <td className="py-4 px-6">
@@ -145,13 +148,13 @@ const TransactionTable = () => {
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[var(--hover-color)] transition-colors duration-150"
-                      title="View Details"
+                      title={t("adminTeamWallet.table.actions.viewDetails")}
                     >
                       <Eye className="w-4 h-4" style={{ color: "var(--sub-text-color)" }} />
                     </button>
                     <button 
                       className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[var(--hover-color)] transition-colors duration-150"
-                      title="More Options"
+                      title={t("adminTeamWallet.table.actions.moreOptions")}
                     >
                       <MoreHorizontal className="w-4 h-4" style={{ color: "var(--sub-text-color)" }} />
                     </button>
@@ -193,13 +196,13 @@ const TransactionTable = () => {
                 <div className="flex items-center gap-2">
                   <button
                     className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[var(--hover-color)] transition-colors"
-                    title="View Details"
+                    title={t("adminTeamWallet.table.actions.viewDetails")}
                   >
                     <Eye className="w-4 h-4" style={{ color: "var(--sub-text-color)" }} />
                   </button>
                   <button 
                     className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[var(--hover-color)] transition-colors"
-                    title="More Options"
+                    title={t("adminTeamWallet.table.actions.moreOptions")}
                   >
                     <MoreHorizontal className="w-4 h-4" style={{ color: "var(--sub-text-color)" }} />
                   </button>
@@ -209,28 +212,28 @@ const TransactionTable = () => {
               {/* Content Grid */}
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
-                  <p className="text-xs font-medium mb-1" style={{ color: "var(--sub-text-color)" }}>Team</p>
+                  <p className="text-xs font-medium mb-1" style={{ color: "var(--sub-text-color)" }}>{t("adminTeamWallet.table.columns.team")}</p>
                   <p className="font-medium" style={{ color: "var(--text-color)" }}>{row.Team}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium mb-1" style={{ color: "var(--sub-text-color)" }}>Employee</p>
+                  <p className="text-xs font-medium mb-1" style={{ color: "var(--sub-text-color)" }}>{t("adminTeamWallet.table.columns.employee")}</p>
                   <p className="font-medium" style={{ color: "var(--text-color)" }}>{row.Employee}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium mb-1" style={{ color: "var(--sub-text-color)" }}>Action</p>
+                  <p className="text-xs font-medium mb-1" style={{ color: "var(--sub-text-color)" }}>{t("adminTeamWallet.table.columns.action")}</p>
                   <span className="inline-block px-2 py-1 text-xs font-medium bg-red-50 text-red-600 rounded-full">
-                    {row.Action}
+                    {t("adminTeamWallet.table.actionTypes.penalty")}
                   </span>
                 </div>
                 <div>
-                  <p className="text-xs font-medium mb-1" style={{ color: "var(--sub-text-color)" }}>Amount</p>
+                  <p className="text-xs font-medium mb-1" style={{ color: "var(--sub-text-color)" }}>{t("adminTeamWallet.table.columns.amount")}</p>
                   <p className="font-semibold" style={{ color: "var(--text-color)" }}>{row.Amount}</p>
                 </div>
               </div>
 
               {/* Reason */}
               <div className="mt-3 pt-3 border-t border-[var(--border-color)]">
-                <p className="text-xs font-medium mb-1" style={{ color: "var(--sub-text-color)" }}>Reason</p>
+                <p className="text-xs font-medium mb-1" style={{ color: "var(--sub-text-color)" }}>{t("adminTeamWallet.table.columns.reason")}</p>
                 <p className="text-sm" style={{ color: "var(--sub-text-color)" }}>{row.Reason}</p>
               </div>
             </div>
@@ -242,11 +245,11 @@ const TransactionTable = () => {
       <div className="px-4 sm:px-6 py-4 border-t border-[var(--border-color)] bg-[var(--bg-color)]">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <p className="text-sm" style={{ color: "var(--sub-text-color)" }}>
-            Showing 1 to 5 of 25 transactions
+            {t("adminTeamWallet.table.pagination.showing", { from: 1, to: 5, total: 25 })}
           </p>
           <div className="flex items-center gap-2">
             <button className="px-3 py-2 text-sm border border-[var(--border-color)] rounded-lg hover:bg-[var(--hover-color)] transition-colors disabled:opacity-50" disabled>
-              Previous
+              {t("adminTeamWallet.table.pagination.previous")}
             </button>
             <div className="flex items-center gap-1">
               <button className="w-8 h-8 text-sm rounded-lg bg-[var(--accent-color)] text-white">1</button>
@@ -254,7 +257,7 @@ const TransactionTable = () => {
               <button className="w-8 h-8 text-sm rounded-lg hover:bg-[var(--hover-color)] transition-colors" style={{ color: "var(--text-color)" }}>3</button>
             </div>
             <button className="px-3 py-2 text-sm border border-[var(--border-color)] rounded-lg hover:bg-[var(--hover-color)] transition-colors" style={{ color: "var(--text-color)" }}>
-              Next
+              {t("adminTeamWallet.table.pagination.next")}
             </button>
           </div>
         </div>

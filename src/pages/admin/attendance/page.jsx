@@ -27,33 +27,38 @@ import Loading from "../../../components/Loading/Loading";
 
 const AttendanceAdmin = () => {
   const { lang, isRtl } = useLang();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
-const cardData = [
-  {
-    title: "Total Employees",
-    value: 120,
+  // Sync language from localStorage
+  useEffect(() => {
+    const storedLang = localStorage.getItem("lang") || "en";
+    if (i18n.language !== storedLang) {
+      i18n.changeLanguage(storedLang);
+    }
+  }, [i18n]);
+
+  const cardData = [
+    {
+      title: t("adminAttendance.cards.totalEmployees", "Total Employees"),
+      value: 120,
       icon: <img src="/assets/AdminAttendance/total.svg" alt="employees" />
     },
     {
-      title: "Present Today",
+      title: t("adminAttendance.cards.presentToday", "Present Today"),
       value: 80,
       icon: <img src="/assets/AdminDashboard/today.svg" alt="attendance" />
     },
     {
-      title: "Absent Today",
+      title: t("adminAttendance.cards.absentToday", "Absent Today"),
       value: 22,
       icon: <img src="/assets/AdminDashboard/leavee.svg" alt="absent" />
     },
     {
-      title: "Late Arrivals",
+      title: t("adminAttendance.cards.lateArrivals", "Late Arrivals"),
       value: 18,
       icon: <img src="/assets/AdminDashboard/task.svg" alt="late" />
     },
-]
-
-
-
+  ]
 
   const getLocationIcon = (location) => {
     return location === 'office' ? 
@@ -199,8 +204,6 @@ const cardData = [
     };
   };
 
-
- 
   // Show loading screen while data is being fetched
   const [isLoading, setIsLoading] = useState(false);
   if (isLoading) {
@@ -230,7 +233,6 @@ const cardData = [
           <div className="w-full h-max">
             <Table />
           </div>
-
 
         </main>
       </div>

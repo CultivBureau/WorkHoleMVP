@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js"
+import { useTranslation } from "react-i18next"
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
@@ -45,9 +46,10 @@ const departmentData = {
 }
 
 const TeamOverView = () => {
+  const { t } = useTranslation()
   const chartRef = useRef(null)
   const chartInstance = useRef(null)
-  const [activeFilter, setActiveFilter] = useState("Annual")
+  const [activeFilter, setActiveFilter] = useState(t("adminTeamWallet.periods.annual"))
   const [hoveredBar, setHoveredBar] = useState(null)
   const [selectedDepartment, setSelectedDepartment] = useState(departments[0]);
   const [showDepartmentDropdown, setShowDepartmentDropdown] = useState(false);
@@ -56,22 +58,22 @@ const TeamOverView = () => {
 
   const KeyInsights = [
     {
-      status: "Best Performing",
+      status: t("adminTeamWallet.insights.bestPerforming"),
       department: "Development",
-      desc: "Highest average KPI this period",
+      desc: t("adminTeamWallet.insights.highestKpi"),
       efficiency: "90%",
     },
     { 
-      status: "Needs Attention", 
+      status: t("adminTeamWallet.insights.needsAttention"), 
       department: "Sales", 
-      desc: "Below average KPI this period", 
+      desc: t("adminTeamWallet.insights.belowAverageKpi"), 
       efficiency: "60%" 
     },
   ]
   
   // Dynamic data structure with different periods
   const chartData = {
-    Monthly: [
+    [t("adminTeamWallet.periods.monthly")]: [
       { name: "UX TEAM", value: 12000 },
       { name: "UI TEAM", value: 6500 },
       { name: "BRANDING TEAM", value: 18000 },
@@ -80,7 +82,7 @@ const TeamOverView = () => {
       { name: "MOTION GRAPHICS", value: 32000 },
       { name: "DESIGN TEAM", value: 19500 },
     ],
-    Quarter: [
+    [t("adminTeamWallet.periods.quarter")]: [
       { name: "UX TEAM", value: 22000 },
       { name: "UI TEAM", value: 7800 },
       { name: "BRANDING TEAM", value: 22000 },
@@ -89,7 +91,7 @@ const TeamOverView = () => {
       { name: "MOTION GRAPHICS", value: 38500 },
       { name: "DESIGN TEAM", value: 23000 },
     ],
-    Annual: [
+    [t("adminTeamWallet.periods.annual")]: [
       { name: "UX TEAM", value: 30000 },
       { name: "UI TEAM", value: 8500 },
       { name: "BRANDING TEAM", value: 25000 },
@@ -101,7 +103,7 @@ const TeamOverView = () => {
   }
 
   // Get current data based on active filter
-  const currentData = chartData[activeFilter] || chartData.Annual
+  const currentData = chartData[activeFilter] || chartData[t("adminTeamWallet.periods.annual")]
   
   // Find the team with highest value for highlighting
   const maxValue = Math.max(...currentData.map(item => item.value))
@@ -213,7 +215,7 @@ const TeamOverView = () => {
                       font-size: 11px;
                       color: #6B7280;
                     ">
-                      Total penalties (${activeFilter})
+                      ${t("adminTeamWallet.chart.totalPenalties")} (${activeFilter})
                     </div>
                   </div>
                 `
@@ -313,9 +315,9 @@ const TeamOverView = () => {
         chartInstance.current.destroy()
       }
     }
-  }, [activeFilter, currentData, maxValue, dynamicMax])
+  }, [activeFilter, currentData, maxValue, dynamicMax, t])
 
-  const filters = ["Monthly", "Quarter", "Annual"]
+  const filters = [t("adminTeamWallet.periods.monthly"), t("adminTeamWallet.periods.quarter"), t("adminTeamWallet.periods.annual")]
 
   return (
     <div className='w-full h-max flex flex-col xl:flex-row bg-gray-50 gap-2 xl:gap-0'>
@@ -327,8 +329,8 @@ const TeamOverView = () => {
             {/* Title and Filter Buttons */}
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4 mb-4">
               <div className="flex-1">
-                <h2 className="text-sm lg:text-[14px] font-bold text-[var(--text-color)] text-start mb-2">Team Penalties Overview</h2>
-                <p className="text-[8px] lg:text-[9px] text-[var(--sub-text-color)] text-start">Shows total penalties for each team in this department</p>
+                <h2 className="text-sm lg:text-[14px] font-bold text-[var(--text-color)] text-start mb-2">{t("adminTeamWallet.chart.teamPenaltiesOverview")}</h2>
+                <p className="text-[8px] lg:text-[9px] text-[var(--sub-text-color)] text-start">{t("adminTeamWallet.chart.description")}</p>
               </div>
               
               {/* Filter Buttons */}
@@ -401,13 +403,13 @@ const TeamOverView = () => {
               disabled
             >
               <img src="/assets/AdminTeamWallet/best.svg" alt="" className="w-4 h-4" />
-              <span className="text-xs font-semibold text-teal-500 flex-1 text-left">Best Compliance Team</span>
+              <span className="text-xs font-semibold text-teal-500 flex-1 text-left">{t("adminTeamWallet.sections.bestComplianceTeam")}</span>
             </button>
             <button
               onClick={() => setShowBestPopup(true)}
               className="text-[10px] text-teal-500 px-1 py-0.5 mt-2 rounded hover:bg-teal-50 border border-teal-100"
             >
-              View All
+              {t("adminTeamWallet.buttons.viewAll")}
             </button>
           </div>
           {/* Show only one team */}
@@ -432,13 +434,13 @@ const TeamOverView = () => {
               disabled
             >
               <img src="/assets/AdminTeamWallet/need.svg" alt="" className="w-4 h-4" />
-              <span className="text-xs font-semibold text-[var(--sub-text-color)] flex-1 text-left">Needs Attention</span>
+              <span className="text-xs font-semibold text-[var(--sub-text-color)] flex-1 text-left">{t("adminTeamWallet.sections.needsAttention")}</span>
             </button>
             <button
               onClick={() => setShowAttentionPopup(true)}
               className="text-[10px] text-red-500 px-1 py-0.5 mt-2 rounded hover:bg-red-50 border border-red-100"
             >
-              View All
+              {t("adminTeamWallet.buttons.viewAll")}
             </button>
           </div>
           {/* Show two teams */}
@@ -462,7 +464,7 @@ const TeamOverView = () => {
           <div className="fixed inset-0 bg-black/20 backdrop-blur-lg bg-opacity-30 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-2">
-                <h3 className="text-xs font-bold text-teal-600">All Best Compliance Teams</h3>
+                <h3 className="text-xs font-bold text-teal-600">{t("adminTeamWallet.popups.allBestComplianceTeams")}</h3>
                 <button onClick={() => setShowBestPopup(false)} className="text-gray-400 hover:text-gray-700 text-lg">&times;</button>
               </div>
               <div className="flex flex-col gap-2">
@@ -487,7 +489,7 @@ const TeamOverView = () => {
           <div className="fixed inset-0 bg-black/20 backdrop-blur-lg bg-opacity-30 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-2">
-                <h3 className="text-xs font-bold text-red-600">All Needs Attention Teams</h3>
+                <h3 className="text-xs font-bold text-red-600">{t("adminTeamWallet.popups.allNeedsAttentionTeams")}</h3>
                 <button onClick={() => setShowAttentionPopup(false)} className="text-gray-400 hover:text-gray-700 text-lg">&times;</button>
               </div>
               <div className="flex flex-col gap-2">

@@ -141,7 +141,50 @@
       "clock": "ساعة",
       "comingSoon": "قريباً"
     }
+  },  
+  "adminAttendance": {
+    "cards": {
+      "totalEmployees": "إجمالي الموظفين",
+      "presentToday": "حاضر اليوم",
+      "absentToday": "غائب اليوم",
+      "lateArrivals": "الوصول المتأخر"
+    },
+    "table": {
+      "sortBy": "ترتيب حسب",
+      "sort": {
+        "newestFirst": "الأحدث أولاً",
+        "oldestFirst": "الأقدم أولاً"
+      },
+      "location": {
+        "title": "الموقع",
+        "all": "الكل",
+        "office": "مكتب",
+        "home": "منزل",
+        "workFromOffice": "العمل من المكتب",
+        "workFromHome": "العمل من المنزل"
+      },
+      "status": {
+        "title": "الحالة",
+        "allStatus": "جميع الحالات",
+        "present": "حاضر",
+        "absent": "غائب",
+        "lateArrival": "تأخر في الحضور"
+      },
+      "dateFrom": "من تاريخ",
+      "dateTo": "إلى تاريخ",
+      "pageOf": "5 من 18 صفحة",
+      "columns": {
+        "employeeName": "اسم الموظفين",
+        "date": "التاريخ",
+        "checkIn": "تسجيل الدخول",
+        "checkOut": "تسجيل الخروج",
+        "workHours": "ساعات العمل",
+        "status": "الحالة",
+        "location": "الموقع"
+      }
+    }
   },
+  
 "adminPerformance": {
   "cards": {
     "efficiencyScore": "نقاط الكفاءة",
@@ -883,6 +926,147 @@
       "title": "النشاط الأخير",
       "today": "اليوم",
       "approvedLeaveRequest": "وافق على طلب إجازة"
+    }
+  },
+  "adminLeaves": {
+    "cards": {
+      "totalLeaveRequests": "إجمالي طلبات الإجازة",
+      "pendingApprovals": "الموافقات المعلقة",
+      "approvedLeaves": "الإجازات المقبولة",
+      "rejectedRequests": "الطلبات المرفوضة"
+    },
+    "table": {
+      "sortBy": "ترتيب حسب",
+      "sort": {
+        "newest": "الأحدث أولاً",
+        "oldest": "الأقدم أولاً"
+      },
+      "leaveType": {
+        "label": "نوع الإجازة",
+        "all": "جميع الإجازات",
+        "annual": "سنوية",
+        "sick": "مرضية",
+        "emergency": "طوارئ",
+        "unpaid": "بدون راتب"
+      },
+      "status": {
+        "label": "الحالة",
+        "all": "جميع الحالات",
+        "pending": "معلقة",
+        "approved": "مقبولة",
+        "rejected": "مرفوضة"
+      },
+      "dateFrom": "من تاريخ",
+      "dateTo": "إلى تاريخ",
+      "pageOf": "{{page}} من {{total}} صفحة",
+      "columns": {
+        "name": "الاسم",
+        "leaveType": "نوع الإجازة",
+        "from": "من",
+        "to": "إلى",
+        "days": "الأيام",
+        "status": "الحالة",
+        "reason": "السبب",
+        "approver": "المعتمد",
+        "action": "الإجراء"
+      }
+    },
+    "popup": {
+      "leaveType": "نوع الإجازة",
+      "from": "من",
+      "to": "إلى",
+      "days": "الأيام",
+      "reason": "السبب",
+      "approve": "موافقة",
+      "reject": "رفض",
+      "comment": "تعليق",
+      "projectManager": "مدير المشروع",
+      "roles": {
+        "employee": "موظف",
+        "teamLead": "قائد الفريق",
+        "hr": "الموارد البشرية"
+      },
+      "actions": {
+        "created": "تم الإنشاء",
+        "viewed": "تم العرض",
+        "approved": "تمت الموافقة",
+        "rejected": "تم الرفض"
+      },
+      "activityLog": {
+        "time": "الوقت",
+        "date": "التاريخ",
+        "actor": "المؤدي",
+        "role": "الدور",
+        "action": "الإجراء"
+      }
+    },
+    "status": {
+      "pending": "معلقة",
+      "approved": "مقبولة",
+      "rejected": "مرفوضة"
+    }
+  },
+  "adminTeamWallet": {
+    "cards": {
+      "totalPenalties": "إجمالي العقوبات",
+      "teamsWithWarnings": "الفرق التي لديها تحذيرات",
+      "highestPenaltyTeam": "الفريق ذو أعلى عقوبة",
+      "resolvedIssues": "المشاكل المحلولة"
+    },
+    "table": {
+      "columns": {
+        "transactionDate": "تاريخ المعاملة",
+        "issuedBy": "صادر من",
+        "team": "الفريق",
+        "employee": "الموظف",
+        "action": "الإجراء",
+        "amount": "المبلغ",
+        "reason": "السبب"
+      },
+      "actionTypes": {
+        "penalty": "عقوبة",
+        "bonus": "مكافأة"
+      },
+      "actions": {
+        "viewDetails": "عرض التفاصيل",
+        "moreOptions": "خيارات أكثر"
+      },
+      "pagination": {
+        "showing": "عرض {{from}} إلى {{to}} من {{total}} معاملة",
+        "previous": "السابق",
+        "next": "التالي"
+      }
+    },
+    "chart": {
+      "teamPenaltiesOverview": "نظرة عامة على عقوبات الفرق",
+      "description": "يعرض إجمالي العقوبات لكل فريق في هذا القسم",
+      "totalPenalties": "إجمالي العقوبات"
+    },
+    "topChart": {
+      "title": "أفضل الفرق بالمكافآت",
+      "description": "يعرض هذا الرسم البياني أفضل الفرق مرتبة حسب إجمالي المكافآت"
+    },
+    "periods": {
+      "monthly": "شهري",
+      "quarter": "ربع سنوي",
+      "annual": "سنوي"
+    },
+    "sections": {
+      "bestComplianceTeam": "أفضل فريق امتثال",
+      "needsAttention": "يحتاج انتباه"
+    },
+    "buttons": {
+      "viewAll": "عرض الكل"
+    },
+    "popups": {
+      "allBestComplianceTeams": "جميع فرق الامتثال الأفضل",
+      "allNeedsAttentionTeams": "جميع الفرق التي تحتاج انتباه"
+    },
+    "insights": {
+      "bestPerforming": "الأفضل أداءً",
+      "needsAttention": "يحتاج انتباه",
+      "highestKpi": "أعلى متوسط لمؤشرات الأداء هذه الفترة",
+      "belowAverageKpi": "أقل من متوسط مؤشرات الأداء هذه الفترة"
     }
   }
 }

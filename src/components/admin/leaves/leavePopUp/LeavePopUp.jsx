@@ -1,5 +1,6 @@
 import React from 'react'
 import { X, Calendar, Briefcase, Mail } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 const LeavePopUp = ({
   name,
@@ -14,6 +15,8 @@ const LeavePopUp = ({
   comment,
   onClose
 }) => {
+  const { t } = useTranslation()
+
   const getStatusColor = () => {
     switch (status) {
       case "Approved":
@@ -33,32 +36,32 @@ const LeavePopUp = ({
       time: "12:30",
       date: "31 Dec 2025",
       actor: "Adam Wael",
-      role: "Employee",
-      action: "Created",
+      role: t("adminLeaves.popup.roles.employee"),
+      action: t("adminLeaves.popup.actions.created"),
       actionColor: "bg-blue-100 text-blue-700",
     },
     {
       time: "12:30",
       date: "31 Dec 2025",
       actor: "Shamy Wael",
-      role: "Team Lead",
-      action: "Viewed",
+      role: t("adminLeaves.popup.roles.teamLead"),
+      action: t("adminLeaves.popup.actions.viewed"),
       actionColor: "bg-gray-100 text-gray-700",
     },
     {
       time: "12:30",
       date: "31 Dec 2025",
       actor: "Shamy Wael",
-      role: "Team Lead",
-      action: "Approved",
+      role: t("adminLeaves.popup.roles.teamLead"),
+      action: t("adminLeaves.popup.actions.approved"),
       actionColor: "bg-green-100 text-green-700",
     },
     {
       time: "12:30",
       date: "31 Dec 2025",
       actor: "Omar Wael",
-      role: "HR",
-      action: "Reject",
+      role: t("adminLeaves.popup.roles.hr"),
+      action: t("adminLeaves.popup.actions.rejected"),
       actionColor: "bg-red-100 text-red-700",
     },
   ]
@@ -83,7 +86,7 @@ const LeavePopUp = ({
               </div>
               <div className="flex items-center gap-2 text-[var(--text-color)] mt-1">
                 <Briefcase className="w-4 h-4" />
-                <span>Project Manager</span>
+                <span>{t("adminLeaves.popup.projectManager")}</span>
               </div>
               <div className="flex items-center gap-2 text-[var(--text-color)] mt-1">
                 <Mail className="w-4 h-4" />
@@ -100,26 +103,26 @@ const LeavePopUp = ({
         </div>
         {/* Leave type and dates */}
         <div className="flex items-center gap-6 px-6 py-2">
-          <span className="text-[var(--text-color)] text-base">Leave type <span className="font-bold text-[var(--text-color)]">{type}</span></span>
+          <span className="text-[var(--text-color)] text-base">{t("adminLeaves.popup.leaveType")} <span className="font-bold text-[var(--text-color)]">{type}</span></span>
           <div className="flex items-center gap-2">
             <Calendar className="w-5 h-5 text-teal-500" />
-            <span className="text-[var(--text-color)] font-medium">From</span>
+            <span className="text-[var(--text-color)] font-medium">{t("adminLeaves.popup.from")}</span>
             <span className="text-[var(--text-color)]">{from}</span>
           </div>
           <div className="flex items-center gap-2">
             <Calendar className="w-5 h-5 text-teal-500" />
-            <span className="text-[var(--text-color)] font-medium">To</span>
+            <span className="text-[var(--text-color)] font-medium">{t("adminLeaves.popup.to")}</span>
             <span className="text-[var(--text-color)]">{to}</span>
           </div>
           <div className="flex items-center gap-2">
             <Calendar className="w-5 h-5 text-teal-500" />
-            <span className="text-[var(--text-color)] font-medium">Days</span>
+            <span className="text-[var(--text-color)] font-medium">{t("adminLeaves.popup.days")}</span>
             <span className="text-[var(--text-color)]">{days}</span>
           </div>
         </div>
         {/* Reason */}
         <div className="px-6 pt-4">
-          <div className="text-[var(--text-color)] font-semibold mb-2">Reason</div>
+          <div className="text-[var(--text-color)] font-semibold mb-2">{t("adminLeaves.popup.reason")}</div>
           <div className="bg-[var(--bg-color)] rounded-xl p-4 text-[var(--text-color)] text-base">
             {reason}
           </div>
@@ -127,18 +130,18 @@ const LeavePopUp = ({
         {/* Approve/Reject buttons */}
         <div className="flex gap-4 px-6 py-4">
           <button className="flex-1 bg-gradient-to-r from-teal-400 to-cyan-400 hover:from-teal-500 hover:to-cyan-500 text-white font-semibold py-2 rounded-lg transition">
-            Approve
+            {t("adminLeaves.popup.approve")}
           </button>
           <button className="flex-1 bg-red-700 hover:bg-red-800 text-white font-semibold py-2 rounded-lg transition">
-            Reject
+            {t("adminLeaves.popup.reject")}
           </button>
         </div>
         {/* Approved By & Comment */}
         <div className="px-6 pb-2">
           <div className="flex items-center gap-2 mb-2">
             <span className="font-bold text-[var(--text-color)]">Shamy</span>
-            <span className="text-[var(--text-color)] text-sm">Team Lead</span>
-            <span className="ml-6 text-[var(--text-color)] font-medium">Comment</span>
+            <span className="text-[var(--text-color)] text-sm">{t("adminLeaves.popup.roles.teamLead")}</span>
+            <span className="ml-6 text-[var(--text-color)] font-medium">{t("adminLeaves.popup.comment")}</span>
             <div className="flex-1">
               <div className="bg-[var(--bg-color)] rounded-xl px-4 py-2 text-[var(--text-color)] text-base">
                 {comment || "Et aliquid nihil fugit sunt e"}
@@ -149,11 +152,11 @@ const LeavePopUp = ({
         {/* Activity Log */}
         <div className="bg-[var(--bg-color)] border-t border-[var(--border-color)] px-6 pt-4 pb-6">
           <div className="grid grid-cols-5 gap-4 pb-2 border-b border-[var(--border-color)] text-sm font-semibold text-[var(--text-color)]">
-            <div>Time</div>
-            <div>Date</div>
-            <div>Actor</div>
-            <div>Role</div>
-            <div>Action</div>
+            <div>{t("adminLeaves.popup.activityLog.time")}</div>
+            <div>{t("adminLeaves.popup.activityLog.date")}</div>
+            <div>{t("adminLeaves.popup.activityLog.actor")}</div>
+            <div>{t("adminLeaves.popup.activityLog.role")}</div>
+            <div>{t("adminLeaves.popup.activityLog.action")}</div>
           </div>
           {activityLog.map((entry, idx) => (
             <div key={idx} className="grid grid-cols-5 gap-4 py-3 border-b border-gray-100 last:border-b-0 items-center">

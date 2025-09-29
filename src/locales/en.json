@@ -181,6 +181,50 @@
       "approvedLeaveRequest": "approved a leave request"
     }
   },  
+
+"adminAttendance": {
+  "cards": {
+    "totalEmployees": "Total Employees",
+    "presentToday": "Present Today",
+    "absentToday": "Absent Today",
+    "lateArrivals": "Late Arrivals"
+  },
+  "table": {
+    "sortBy": "Sort By",
+    "sort": {
+      "newestFirst": "Newest First",
+      "oldestFirst": "Oldest First"
+    },
+    "location": {
+      "title": "Location",
+      "all": "All",
+      "office": "Office",
+      "home": "Home",
+      "workFromOffice": "Work from office",
+      "workFromHome": "Work from home"
+    },
+    "status": {
+      "title": "Status",
+      "allStatus": "All Status",
+      "present": "Present",
+      "absent": "Absent",
+      "lateArrival": "Late arrival"
+    },
+    "dateFrom": "Date from",
+    "dateTo": "Date To",
+    "pageOf": "5 of 18 page",
+    "columns": {
+      "employeeName": "Employees Name",
+      "date": "Date",
+      "checkIn": "Check-in",
+      "checkOut": "Check-out",
+      "workHours": "Work hours",
+      "status": "Status",
+      "location": "Location"
+    }
+  }
+},
+
   "adminPerformance": {
     "cards": {
       "efficiencyScore": "Efficiency Score",
@@ -885,6 +929,147 @@
       "rolesAssignedToActive": "Roles assigned to active users",
       "createdManually": "Created manually for specific needs",
       "allUsersInSystem": "All users in the system"
+    }
+  },
+  "adminLeaves": {
+    "cards": {
+      "totalLeaveRequests": "Total Leave Requests",
+      "pendingApprovals": "Pending Approvals",
+      "approvedLeaves": "Approved Leaves",
+      "rejectedRequests": "Rejected Requests"
+    },
+    "table": {
+      "sortBy": "Sort By",
+      "sort": {
+        "newest": "Newest First",
+        "oldest": "Oldest First"
+      },
+      "leaveType": {
+        "label": "Leave Type",
+        "all": "All Leaves",
+        "annual": "Annual",
+        "sick": "Sick",
+        "emergency": "Emergency",
+        "unpaid": "Unpaid"
+      },
+      "status": {
+        "label": "Status",
+        "all": "All Status",
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "dateFrom": "Date From",
+      "dateTo": "Date To",
+      "pageOf": "{{page}} of {{total}} page",
+      "columns": {
+        "name": "Name",
+        "leaveType": "Leave Type",
+        "from": "From",
+        "to": "To",
+        "days": "Days",
+        "status": "Status",
+        "reason": "Reason",
+        "approver": "Approver",
+        "action": "Action"
+      }
+    },
+    "popup": {
+      "leaveType": "Leave Type",
+      "from": "From",
+      "to": "To",
+      "days": "Days",
+      "reason": "Reason",
+      "approve": "Approve",
+      "reject": "Reject",
+      "comment": "Comment",
+      "projectManager": "Project Manager",
+      "roles": {
+        "employee": "Employee",
+        "teamLead": "Team Lead",
+        "hr": "HR"
+      },
+      "actions": {
+        "created": "Created",
+        "viewed": "Viewed",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "activityLog": {
+        "time": "Time",
+        "date": "Date",
+        "actor": "Actor",
+        "role": "Role",
+        "action": "Action"
+      }
+    },
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    }
+  },
+  "adminTeamWallet": {
+    "cards": {
+      "totalPenalties": "Total Penalties",
+      "teamsWithWarnings": "Teams with Warnings",
+      "highestPenaltyTeam": "Highest Penalty Team",
+      "resolvedIssues": "Resolved Issues"
+    },
+    "table": {
+      "columns": {
+        "transactionDate": "Transaction Date",
+        "issuedBy": "Issued by",
+        "team": "Team",
+        "employee": "Employee",
+        "action": "Action",
+        "amount": "Amount",
+        "reason": "Reason"
+      },
+      "actionTypes": {
+        "penalty": "Penalty",
+        "bonus": "Bonus"
+      },
+      "actions": {
+        "viewDetails": "View Details",
+        "moreOptions": "More Options"
+      },
+      "pagination": {
+        "showing": "Showing {{from}} to {{to}} of {{total}} transactions",
+        "previous": "Previous",
+        "next": "Next"
+      }
+    },
+    "chart": {
+      "teamPenaltiesOverview": "Team Penalties Overview",
+      "description": "Shows total penalties for each team in this department",
+      "totalPenalties": "Total penalties"
+    },
+    "topChart": {
+      "title": "Top Teams with Bonuses",
+      "description": "This chart shows the top teams ranked by total bonuses"
+    },
+    "periods": {
+      "monthly": "Monthly",
+      "quarter": "Quarter",
+      "annual": "Annual"
+    },
+    "sections": {
+      "bestComplianceTeam": "Best Compliance Team",
+      "needsAttention": "Needs Attention"
+    },
+    "buttons": {
+      "viewAll": "View All"
+    },
+    "popups": {
+      "allBestComplianceTeams": "All Best Compliance Teams",
+      "allNeedsAttentionTeams": "All Needs Attention Teams"
+    },
+    "insights": {
+      "bestPerforming": "Best Performing",
+      "needsAttention": "Needs Attention",
+      "highestKpi": "Highest average KPI this period",
+      "belowAverageKpi": "Below average KPI this period"
     }
   }
 }

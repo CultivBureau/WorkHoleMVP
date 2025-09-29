@@ -30,35 +30,30 @@ import Table from "../../../components/admin/leaves/LeavesTable/Table";
 
 const LeavesAdmin = () => {
   const { lang, isRtl } = useLang();
-  const { i18n } = useTranslation();
+  const { t } = useTranslation();
 
-
-const cardData = [
-  {
-    title: "Total Leave Requests",
-    value: 20,
+  const cardData = [
+    {
+      title: t("adminLeaves.cards.totalLeaveRequests"),
+      value: 20,
       icon: <img src="/assets/AdminDashboard/total.svg" alt="employees" />
     },
     {
-      title: "Pending Approvals",
+      title: t("adminLeaves.cards.pendingApprovals"),
       value: 12,
       icon: <img src="/assets/AdminDashboard/leavee.svg" alt="attendance" />
     },
     {
-      title: "Approved Leaves",
+      title: t("adminLeaves.cards.approvedLeaves"),
       value: 4,
       icon: <img src="/assets/AdminDashboard/app.svg" alt="absent" />
     },
     {
-      title: "Rejected Requests",
+      title: t("adminLeaves.cards.rejectedRequests"),
       value: 4,
       icon: <img src="/assets/AdminDashboard/task.svg" alt="late" />
     },
-]
-
-
-
-
+  ]
 
   return (
     <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
@@ -67,7 +62,7 @@ const cardData = [
         <SideBarAdmin />
         {/* Main Content */}
         <main className="flex-1 overflow-auto p-6 bg-[var(--bg-all)]">
-                  {/* Stats Cards - Responsive Grid */}
+          {/* Stats Cards - Responsive Grid */}
           <div className="w-full h-max grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-5">
             {cardData.map((card, index) => (
               <Card
@@ -78,13 +73,11 @@ const cardData = [
               />
             ))}
           </div>
-           <div className="w-full h-max">
+          <div className="w-full h-max">
             <Table />
           </div>
         </main>
       </div>
-
-
     </div>
   );
 };

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import LeavePopUp from "../leavePopUp/LeavePopUp"
 
 // Sample leave request data
@@ -134,7 +135,7 @@ const leaveData = [
 	},
 ]
 
-const getStatusBadge = (status) => {
+const getStatusBadge = (status, t) => {
 	const baseClasses =
 		"px-3 py-1 rounded-full text-xs font-medium inline-block border"
 	switch (status) {
@@ -143,7 +144,7 @@ const getStatusBadge = (status) => {
 				<span
 					className={`${baseClasses} bg-[var(--pending-leave-box-bg)] text-[var(--warning-color)] border-[var(--warning-color)]`}
 				>
-					{status}
+					{t("adminLeaves.status.pending")}
 				</span>
 			)
 		case "Rejected":
@@ -151,7 +152,7 @@ const getStatusBadge = (status) => {
 				<span
 					className={`${baseClasses} bg-[var(--rejected-leave-box-bg)] text-[var(--error-color)] border-[var(--error-color)]`}
 				>
-					{status}
+					{t("adminLeaves.status.rejected")}
 				</span>
 			)
 		case "Approved":
@@ -159,7 +160,7 @@ const getStatusBadge = (status) => {
 				<span
 					className={`${baseClasses} bg-[var(--approved-leave-box-bg)] text-[var(--success-color)] border-[var(--success-color)]`}
 				>
-					{status}
+					{t("adminLeaves.status.approved")}
 				</span>
 			)
 		default:
@@ -174,9 +175,10 @@ const getStatusBadge = (status) => {
 }
 
 const LeavesTable = () => {
-	const [sortBy, setSortBy] = useState("Newest First")
-	const [leaveType, setLeaveType] = useState("All Leave")
-	const [status, setStatus] = useState("All Status")
+	const { t } = useTranslation()
+	const [sortBy, setSortBy] = useState(t("adminLeaves.table.sort.newest"))
+	const [leaveType, setLeaveType] = useState(t("adminLeaves.table.leaveType.all"))
+	const [status, setStatus] = useState(t("adminLeaves.table.status.all"))
 	const [dateFrom, setDateFrom] = useState("00/00/2025")
 	const [dateTo, setDateTo] = useState("00/00/2025")
 	const [selectedLeave, setSelectedLeave] = useState(null)
@@ -209,51 +211,51 @@ const LeavesTable = () => {
 						<div className="flex flex-wrap items-center gap-4">
 							<div className="flex items-center gap-2">
 								<span className="text-[10px] font-medium text-[var(--sub-text-color)]">
-									Sort By
+									{t("adminLeaves.table.sortBy")}
 								</span>
 								<select
 									value={sortBy}
 									onChange={(e) => setSortBy(e.target.value)}
 									className="h-8 px-3 border border-[var(--border-color)] rounded-md text-[10px] bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)]"
 								>
-									<option value="Newest First">Newest First</option>
-									<option value="Oldest First">Oldest First</option>
+									<option value={t("adminLeaves.table.sort.newest")}>{t("adminLeaves.table.sort.newest")}</option>
+									<option value={t("adminLeaves.table.sort.oldest")}>{t("adminLeaves.table.sort.oldest")}</option>
 								</select>
 							</div>
 							<div className="flex items-center gap-2">
 								<span className="text-[10px] font-medium text-[var(--sub-text-color)]">
-									Leave type
+									{t("adminLeaves.table.leaveType.label")}
 								</span>
 								<select
 									value={leaveType}
 									onChange={(e) => setLeaveType(e.target.value)}
 									className="h-8 px-3 border border-[var(--border-color)] rounded-md text-[10px] bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)]"
 								>
-									<option value="All Leave">All Leave</option>
-									<option value="Annual">Annual</option>
-									<option value="Sick">Sick</option>
-									<option value="Emergency">Emergency</option>
-									<option value="Unpaid">Unpaid</option>
+									<option value={t("adminLeaves.table.leaveType.all")}>{t("adminLeaves.table.leaveType.all")}</option>
+									<option value={t("adminLeaves.table.leaveType.annual")}>{t("adminLeaves.table.leaveType.annual")}</option>
+									<option value={t("adminLeaves.table.leaveType.sick")}>{t("adminLeaves.table.leaveType.sick")}</option>
+									<option value={t("adminLeaves.table.leaveType.emergency")}>{t("adminLeaves.table.leaveType.emergency")}</option>
+									<option value={t("adminLeaves.table.leaveType.unpaid")}>{t("adminLeaves.table.leaveType.unpaid")}</option>
 								</select>
 							</div>
 							<div className="flex items-center gap-2">
 								<span className="text-[10px] font-medium text-[var(--sub-text-color)]">
-									Status
+									{t("adminLeaves.table.status.label")}
 								</span>
 								<select
 									value={status}
 									onChange={(e) => setStatus(e.target.value)}
 									className="h-8 px-3 border border-[var(--border-color)] rounded-md text-[10px] bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)]"
 								>
-									<option value="All Status">All Status</option>
-									<option value="Pending">Pending</option>
-									<option value="Rejected">Rejected</option>
-									<option value="Approved">Approved</option>
+									<option value={t("adminLeaves.table.status.all")}>{t("adminLeaves.table.status.all")}</option>
+									<option value={t("adminLeaves.table.status.pending")}>{t("adminLeaves.table.status.pending")}</option>
+									<option value={t("adminLeaves.table.status.rejected")}>{t("adminLeaves.table.status.rejected")}</option>
+									<option value={t("adminLeaves.table.status.approved")}>{t("adminLeaves.table.status.approved")}</option>
 								</select>
 							</div>
 							<div className="flex items-center gap-2">
 								<span className="text-[10px] font-medium text-[var(--sub-text-color)]">
-									Date from
+									{t("adminLeaves.table.dateFrom")}
 								</span>
 								<select
 									value={dateFrom}
@@ -265,7 +267,7 @@ const LeavesTable = () => {
 							</div>
 							<div className="flex items-center gap-2">
 								<span className="text-[10px] font-medium text-[var(--sub-text-color)]">
-									Date To
+									{t("adminLeaves.table.dateTo")}
 								</span>
 								<select
 									value={dateTo}
@@ -279,7 +281,7 @@ const LeavesTable = () => {
 
 						<div className="flex items-center gap-3">
 							<span className="text-[10px] text-[var(--sub-text-color)]">
-								5 of 18 page
+								{t("adminLeaves.table.pageOf", { page: 5, total: 18 })}
 							</span>
 							<div className="flex items-center gap-1">
 								<button className="h-8 w-8 border border-[var(--border-color)] rounded-md bg-[var(--bg-color)] hover:bg-[var(--hover-color)] flex items-center justify-center transition-colors">
@@ -323,17 +325,17 @@ const LeavesTable = () => {
 						<thead className="bg-[var(--table-header-bg)]">
 							<tr>
 								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-									Name
+									{t("adminLeaves.table.columns.name")}
 								</th>
 								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-									Leave type
+									{t("adminLeaves.table.columns.leaveType")}
 								</th>
 								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-									From
+									{t("adminLeaves.table.columns.from")}
 								</th>
 								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
 									<div className="flex items-center gap-1 cursor-pointer">
-										To
+										{t("adminLeaves.table.columns.to")}
 										<svg
 											className="h-3 w-3 text-gray-400"
 											fill="none"
@@ -350,19 +352,19 @@ const LeavesTable = () => {
 									</div>
 								</th>
 								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-									Days
+									{t("adminLeaves.table.columns.days")}
 								</th>
 								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-									Status
+									{t("adminLeaves.table.columns.status")}
 								</th>
 								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-									Reason
+									{t("adminLeaves.table.columns.reason")}
 								</th>
 								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-									Approver
+									{t("adminLeaves.table.columns.approver")}
 								</th>
 								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-									Action
+									{t("adminLeaves.table.columns.action")}
 								</th>
 							</tr>
 						</thead>
@@ -405,7 +407,7 @@ const LeavesTable = () => {
 										{leave.days}
 									</td>
 									<td className="py-4 px-6">
-										{getStatusBadge(leave.status)}
+										{getStatusBadge(leave.status, t)}
 									</td>
 									<td className="py-4 px-6 text-[var(--text-color)] text-sm">
 										{leave.reason}

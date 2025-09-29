@@ -1,13 +1,15 @@
 "use client"
 import { useEffect, useRef, useState } from "react"
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js"
+import { useTranslation } from "react-i18next"
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 const TopTeamChart = () => {
+  const { t } = useTranslation()
   const chartRef = useRef(null)
   const chartInstance = useRef(null)
-  const [activeFilter, setActiveFilter] = useState("Annual")
+  const [activeFilter, setActiveFilter] = useState(t("adminTeamWallet.periods.annual"))
 
   // Sample data matching your teams
   const data = [
@@ -221,9 +223,9 @@ const TopTeamChart = () => {
         chartInstance.current.destroy()
       }
     }
-  }, [activeFilter])
+  }, [activeFilter, t])
 
-  const filters = ["Monthly", "Quarter", "Annual"]
+  const filters = [t("adminTeamWallet.periods.monthly"), t("adminTeamWallet.periods.quarter"), t("adminTeamWallet.periods.annual")]
 
   return (
     <div className="w-full h-[460px] bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col">
@@ -250,8 +252,8 @@ const TopTeamChart = () => {
 
         {/* Title and Description */}
         <div className="text-center">
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Top Teams with Bonuses</h2>
-          <p className="text-sm text-gray-500">This chart shows the top teams ranked by total bonuses</p>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{t("adminTeamWallet.topChart.title")}</h2>
+          <p className="text-sm text-gray-500">{t("adminTeamWallet.topChart.description")}</p>
         </div>
       </div>
 

@@ -10,26 +10,26 @@ import TeamOverView from "../../../components/admin/TeamWallet/TeamOverView/Team
 
 const AdminTeamWallet = () => {
   const { lang, isRtl } = useLang();
-  const { i18n } = useTranslation();
+  const { t } = useTranslation();
 
   const cardData = [
     {
-      title: "Total Penalties",
+      title: t("adminTeamWallet.cards.totalPenalties"),
       value: "$12000",
       icon: <img src="/assets/AdminTeamWallet/money.svg" alt="Efficiency Score" />
     },
     {
-      title: "Teams with Warnings",
+      title: t("adminTeamWallet.cards.teamsWithWarnings"),
       value: "4 Teams",
       icon: <img src="/assets/AdminTeamWallet/warning.svg" alt="KPI Trend vs Last Month" />
     },
     {
-      title: "Highest Penalty Team",
+      title: t("adminTeamWallet.cards.highestPenaltyTeam"),
       value: "$6800",
       icon: <img src="/assets/AdminTeamWallet/team.svg" alt="KPI Achievements" />
     },
     {
-      title: "Resolved Issues",
+      title: t("adminTeamWallet.cards.resolvedIssues"),
       value: "10",
       icon: <img src="/assets/AdminTeamWallet/issue.svg" alt="Pending KPI Approvals" />
     },
