@@ -44,11 +44,15 @@ const TopTeamChart = () => {
       chartInstance.current.destroy()
     }
 
-    const accentColor = "#5CBCC9" // Teal color from image
+    // Get theme-aware colors
+    const getComputedStyle = window.getComputedStyle(document.documentElement)
+    const textColor = getComputedStyle.getPropertyValue('--text-color').trim()
+    const subTextColor = getComputedStyle.getPropertyValue('--sub-text-color').trim()
+    const borderColor = getComputedStyle.getPropertyValue('--border-color').trim()
+    const chartGridColor = getComputedStyle.getPropertyValue('--chart-grid').trim()
+    const accentColor = getComputedStyle.getPropertyValue('--accent-color').trim()
+
     const lightAccentColor = "#B8E6EA" // Light teal for other bars
-    const textColor = "#374151"
-    const subTextColor = "#9CA3AF"
-    const borderColor = "#E5E7EB"
 
     chartInstance.current = new ChartJS(ctx, {
       type: "bar",
@@ -102,7 +106,7 @@ const TopTeamChart = () => {
 
                 const innerHtml = `
                   <div style="
-                    background: #F7FAFC;
+                    background: var(--bg-color);
                     border-radius: 20px;
                     padding: 8px 12px;
                     display: flex;
@@ -111,13 +115,14 @@ const TopTeamChart = () => {
                     font-family: system-ui, -apple-system, sans-serif;
                     font-size: 14px;
                     font-weight: 500;
-                    color: #374151;
-                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                    color: var(--text-color);
+                    box-shadow: var(--shadow-color);
+                    border: 1px solid var(--border-color);
                   ">
                     <div style="
                       width: 16px;
                       height: 16px;
-                      background: #5CBCC9;
+                      background: var(--accent-color);
                       border-radius: 50%;
                       display: flex;
                       align-items: center;
@@ -150,7 +155,7 @@ const TopTeamChart = () => {
               display: false,
             },
             ticks: {
-              color: "#6B7280",
+              color: "#999999",
               font: {
                 size: 11,
                 family: "system-ui, -apple-system, sans-serif",
@@ -171,7 +176,7 @@ const TopTeamChart = () => {
             beginAtZero: true,
             max: 50000,
             grid: {
-              color: "#E5E7EB",
+              color: chartGridColor,
               borderDash: [2, 2],
             },
             ticks: {
@@ -228,21 +233,25 @@ const TopTeamChart = () => {
   const filters = [t("adminTeamWallet.periods.monthly"), t("adminTeamWallet.periods.quarter"), t("adminTeamWallet.periods.annual")]
 
   return (
-    <div className="w-full h-[460px] bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col">
+    <div className="w-full h-[460px] rounded-2xl shadow-sm p-6 flex flex-col" style={{ backgroundColor: "var(--bg-color)", border: "1px solid var(--border-color)" }}>
       {/* Header */}
       <div className="mb-6 flex-shrink-0">
         {/* Filter Buttons */}
         <div className="flex justify-center mb-6">
-          <div className="inline-flex bg-gray-100 rounded-xl p-1">
+          <div className="inline-flex rounded-xl p-1" style={{ backgroundColor: "var(--container-color)" }}>
             {filters.map((filter) => (
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
                 className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
                   activeFilter === filter
-                    ? "bg-[#5CBCC9] text-white shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
+                    ? "text-white shadow-sm"
+                    : "hover:bg-[var(--hover-color)]"
                 }`}
+                style={{
+                  backgroundColor: activeFilter === filter ? "var(--accent-color)" : "transparent",
+                  color: activeFilter === filter ? "white" : "var(--sub-text-color)"
+                }}
               >
                 {filter}
               </button>
@@ -252,8 +261,8 @@ const TopTeamChart = () => {
 
         {/* Title and Description */}
         <div className="text-center">
-          <h2 className="text-xl font-bold text-gray-900 mb-2">{t("adminTeamWallet.topChart.title")}</h2>
-          <p className="text-sm text-gray-500">{t("adminTeamWallet.topChart.description")}</p>
+          <h2 className="text-xl font-bold mb-2" style={{ color: "var(--text-color)" }}>{t("adminTeamWallet.topChart.title")}</h2>
+          <p className="text-sm" style={{ color: "var(--sub-text-color)" }}>{t("adminTeamWallet.topChart.description")}</p>
         </div>
       </div>
 

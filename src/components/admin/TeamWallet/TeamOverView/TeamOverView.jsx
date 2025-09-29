@@ -120,6 +120,13 @@ const TeamOverView = () => {
       chartInstance.current.destroy()
     }
 
+    // Get theme-aware colors
+    const getComputedStyle = window.getComputedStyle(document.documentElement)
+    const textColor = getComputedStyle.getPropertyValue('--text-color').trim()
+    const subTextColor = getComputedStyle.getPropertyValue('--sub-text-color').trim()
+    const borderColor = getComputedStyle.getPropertyValue('--border-color').trim()
+    const chartGridColor = getComputedStyle.getPropertyValue('--chart-grid').trim()
+
     // Single color for all bars
     const barColor = "#D10909"
 
@@ -175,7 +182,7 @@ const TeamOverView = () => {
 
                 const innerHtml = `
                   <div style="
-                    background: rgba(255, 255, 255, 0.98);
+                    background: var(--bg-color);
                     border-radius: 12px;
                     padding: 12px 16px;
                     display: flex;
@@ -183,9 +190,9 @@ const TeamOverView = () => {
                     gap: 4px;
                     font-family: system-ui, -apple-system, sans-serif;
                     font-size: 13px;
-                    color: #374151;
-                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-                    border: 1px solid rgba(209, 9, 9, 0.1);
+                    color: var(--text-color);
+                    box-shadow: var(--shadow-color);
+                    border: 1px solid var(--border-color);
                     backdrop-filter: blur(10px);
                     max-width: 200px;
                   ">
@@ -202,7 +209,7 @@ const TeamOverView = () => {
                         border-radius: 50%;
                         flex-shrink: 0;
                       "></div>
-                      <span style="font-weight: 600; color: #1F2937;">${teamName}</span>
+                      <span style="font-weight: 600; color: var(--text-color);">${teamName}</span>
                     </div>
                     <div style="
                       font-size: 16px;
@@ -213,7 +220,7 @@ const TeamOverView = () => {
                     </div>
                     <div style="
                       font-size: 11px;
-                      color: #6B7280;
+                      color: var(--sub-text-color);
                     ">
                       ${t("adminTeamWallet.chart.totalPenalties")} (${activeFilter})
                     </div>
@@ -240,7 +247,7 @@ const TeamOverView = () => {
               display: false,
             },
             ticks: {
-              color: "#6B7280",
+              color: subTextColor,
               font: {
                 size: 9,
                 family: "system-ui, -apple-system, sans-serif",
@@ -260,13 +267,13 @@ const TeamOverView = () => {
             beginAtZero: true,
             max: dynamicMax,
             grid: {
-              color: "#F3F4F6",
+              color: chartGridColor,
               borderDash: [3, 3],
               drawOnChartArea: true,
               drawTicks: false,
             },
             ticks: {
-              color: "#6B7280",
+              color: subTextColor,
               font: {
                 size: 11,
                 family: "system-ui, -apple-system, sans-serif",
@@ -320,30 +327,34 @@ const TeamOverView = () => {
   const filters = [t("adminTeamWallet.periods.monthly"), t("adminTeamWallet.periods.quarter"), t("adminTeamWallet.periods.annual")]
 
   return (
-    <div className='w-full h-max flex flex-col xl:flex-row bg-gray-50 gap-2 xl:gap-0'>
+    <div className='w-full h-max flex flex-col xl:flex-row gap-2 xl:gap-0' style={{ backgroundColor: "var(--container-color)" }}>
       {/* Chart Section */}
-      <div className='w-full xl:w-[65%] h-full bg-white p-3 sm:p-4 lg:p-5 xl:p-6 rounded-2xl xl:rounded-l-2xl xl:rounded-r-none '>
+      <div className='w-full xl:w-[65%] h-full p-3 sm:p-4 lg:p-5 xl:p-6 rounded-2xl xl:rounded-l-2xl xl:rounded-r-none' style={{ backgroundColor: "var(--bg-color)" }}>
         <div className="w-full h-full">
           {/* Header */}
           <div className="mb-4 lg:mb-6">
             {/* Title and Filter Buttons */}
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4 mb-4">
               <div className="flex-1">
-                <h2 className="text-sm lg:text-[14px] font-bold text-[var(--text-color)] text-start mb-2">{t("adminTeamWallet.chart.teamPenaltiesOverview")}</h2>
-                <p className="text-[8px] lg:text-[9px] text-[var(--sub-text-color)] text-start">{t("adminTeamWallet.chart.description")}</p>
+                <h2 className="text-sm lg:text-[14px] font-bold text-start mb-2" style={{ color: "var(--text-color)" }}>{t("adminTeamWallet.chart.teamPenaltiesOverview")}</h2>
+                <p className="text-[8px] lg:text-[9px] text-start" style={{ color: "var(--sub-text-color)" }}>{t("adminTeamWallet.chart.description")}</p>
               </div>
               
               {/* Filter Buttons */}
-              <div className="inline-flex bg-[var(--container-color)] rounded-xl p-1 shrink-0">
+              <div className="inline-flex rounded-xl p-1 shrink-0" style={{ backgroundColor: "var(--container-color)" }}>
                 {filters.map((filter) => (
                   <button
                     key={filter}
                     onClick={() => setActiveFilter(filter)}
                     className={`px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 ${
                       activeFilter === filter
-                        ? "bg-[#5CBCC9] text-white shadow-sm"
-                        : "text-[var(--sub-text-color)] hover:text-[var(--text-color)] hover:bg-[var(--container-color)]"
+                        ? "text-white shadow-sm"
+                        : "hover:bg-[var(--hover-color)]"
                     }`}
+                    style={{
+                      backgroundColor: activeFilter === filter ? "var(--accent-color)" : "transparent",
+                      color: activeFilter === filter ? "white" : "var(--sub-text-color)"
+                    }}
                   >
                     {filter}
                   </button>
@@ -360,25 +371,30 @@ const TeamOverView = () => {
       </div>
 
       {/* Right Section - Responsive Department Details */}
-      <div className="w-full xl:w-[35%] h-auto xl:h-[452px] pt-3 xl:pt-6 flex flex-col justify-start items-center bg-white p-3 gap-2 rounded-2xl xl:rounded-r-2xl xl:rounded-l-none">
+      <div className="w-full xl:w-[35%] h-auto xl:h-[452px] pt-3 xl:pt-6 flex flex-col justify-start items-center p-3 gap-2 rounded-2xl xl:rounded-r-2xl xl:rounded-l-none" style={{ backgroundColor: "var(--bg-color)" }}>
         {/* Department Dropdown */}
         <div className="relative w-full mb-2">
           <button
             onClick={() => setShowDepartmentDropdown(!showDepartmentDropdown)}
-            className="w-full h-8 sm:h-10 lg:h-8 px-2 lg:px-3 bg-gradient-to-r from-teal-50 to-teal-100 border border-teal-200 rounded-[22px] text-teal-600 flex justify-center items-center gap-2 font-semibold shadow-sm text-xs"
+            className="w-full h-8 sm:h-10 lg:h-8 px-2 lg:px-3 rounded-[22px] flex justify-center items-center gap-2 font-semibold shadow-sm text-xs"
+            style={{ 
+              background: "linear-gradient(135deg, var(--accent-color), var(--accent-hover))",
+              border: "1px solid var(--accent-color)",
+              color: "white"
+            }}
           >
-            <div className="w-4 h-4 bg-teal-500 rounded-full flex items-center justify-center">
+            <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(255,255,255,0.2)" }}>
               <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
               </svg>
             </div>
             <span className="text-xs font-bold flex-1 text-left truncate">{selectedDepartment}</span>
-            <svg className={`w-3 h-3 text-teal-500 transition-transform ${showDepartmentDropdown ? 'rotate-180' : ''}`} fill="currentColor" viewBox="0 0 20 20">
+            <svg className={`w-3 h-3 text-white transition-transform ${showDepartmentDropdown ? 'rotate-180' : ''}`} fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>
           </button>
           {showDepartmentDropdown && (
-            <div className="absolute top-10 left-0 w-full bg-white border border-gray-200 rounded-xl shadow-lg z-10">
+            <div className="absolute top-10 left-0 w-full rounded-xl shadow-lg z-10" style={{ backgroundColor: "var(--bg-color)", border: "1px solid var(--border-color)" }}>
               {departments.map((dept) => (
                 <button
                   key={dept}
@@ -386,7 +402,8 @@ const TeamOverView = () => {
                     setSelectedDepartment(dept)
                     setShowDepartmentDropdown(false)
                   }}
-                  className="w-full px-2 py-2 text-left text-xs text-[var(--sub-text-color)] hover:bg-gray-50 first:rounded-t-xl last:rounded-b-xl transition-colors"
+                  className="w-full px-2 py-2 text-left text-xs hover:bg-[var(--hover-color)] first:rounded-t-xl last:rounded-b-xl transition-colors"
+                  style={{ color: "var(--sub-text-color)" }}
                 >
                   {dept}
                 </button>
@@ -399,28 +416,36 @@ const TeamOverView = () => {
         <div className="flex flex-col gap-2 w-full">
           <div className="flex flex-col items-center gap-1">
             <button
-              className="w-full h-8 sm:h-10 lg:h-[40px] bg-gradient-to-r from-gray-50 to-gray-100 rounded-[22px] flex items-center gap-2 px-2 border border-gray-200 text-xs"
+              className="w-full h-8 sm:h-10 lg:h-[40px] rounded-[22px] flex items-center gap-2 px-2 text-xs"
               disabled
+              style={{ 
+                background: "linear-gradient(135deg, var(--container-color), var(--hover-color))",
+                border: "1px solid var(--border-color)"
+              }}
             >
               <img src="/assets/AdminTeamWallet/best.svg" alt="" className="w-4 h-4" />
-              <span className="text-xs font-semibold text-teal-500 flex-1 text-left">{t("adminTeamWallet.sections.bestComplianceTeam")}</span>
+              <span className="text-xs font-semibold flex-1 text-left" style={{ color: "var(--accent-color)" }}>{t("adminTeamWallet.sections.bestComplianceTeam")}</span>
             </button>
             <button
               onClick={() => setShowBestPopup(true)}
-              className="text-[10px] text-teal-500 px-1 py-0.5 mt-2 rounded hover:bg-teal-50 border border-teal-100"
+              className="text-[10px] px-1 py-0.5 mt-2 rounded hover:bg-[var(--hover-color)] transition-colors"
+              style={{ 
+                color: "var(--accent-color)",
+                border: "1px solid var(--accent-color)"
+              }}
             >
               {t("adminTeamWallet.buttons.viewAll")}
             </button>
           </div>
           {/* Show only one team */}
           <div className="flex flex-col gap-1 mt-1">
-            <div className="w-full bg-white rounded-[22px] p-2 border border-gray-200 flex items-center gap-2">
-              <div className="w-auto p-2 h-8 bg-teal-50 flex justify-center items-center rounded-lg">
-                <span className="text-xs font-bold text-teal-600">{departmentData[selectedDepartment].best[0].amount}</span>
+            <div className="w-full rounded-[22px] p-2 flex items-center gap-2" style={{ backgroundColor: "var(--bg-color)", border: "1px solid var(--border-color)" }}>
+              <div className="w-auto p-2 h-8 flex justify-center items-center rounded-lg" style={{ backgroundColor: "var(--accent-color)" }}>
+                <span className="text-xs font-bold text-white">{departmentData[selectedDepartment].best[0].amount}</span>
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="font-bold text-gray-900 text-xs mb-0.5 truncate">{departmentData[selectedDepartment].best[0].team}</h4>
-                <p className="text-gray-500 text-[9px] line-clamp-2">{departmentData[selectedDepartment].best[0].description}</p>
+                <h4 className="font-bold text-xs mb-0.5 truncate" style={{ color: "var(--text-color)" }}>{departmentData[selectedDepartment].best[0].team}</h4>
+                <p className="text-[9px] line-clamp-2" style={{ color: "var(--sub-text-color)" }}>{departmentData[selectedDepartment].best[0].description}</p>
               </div>
             </div>
           </div>
@@ -430,15 +455,23 @@ const TeamOverView = () => {
         <div className="flex flex-col gap-2 w-full">
           <div className="flex flex-col items-center gap-1">
             <button
-              className="w-full h-8 sm:h-10 lg:h-[40px] bg-gradient-to-r from-gray-50 to-gray-100 rounded-[22px] flex items-center gap-2 px-2 border border-gray-200 text-xs"
+              className="w-full h-8 sm:h-10 lg:h-[40px] rounded-[22px] flex items-center gap-2 px-2 text-xs"
               disabled
+              style={{ 
+                background: "linear-gradient(135deg, var(--container-color), var(--hover-color))",
+                border: "1px solid var(--border-color)"
+              }}
             >
               <img src="/assets/AdminTeamWallet/need.svg" alt="" className="w-4 h-4" />
-              <span className="text-xs font-semibold text-[var(--sub-text-color)] flex-1 text-left">{t("adminTeamWallet.sections.needsAttention")}</span>
+              <span className="text-xs font-semibold flex-1 text-left" style={{ color: "var(--sub-text-color)" }}>{t("adminTeamWallet.sections.needsAttention")}</span>
             </button>
             <button
               onClick={() => setShowAttentionPopup(true)}
-              className="text-[10px] text-red-500 px-1 py-0.5 mt-2 rounded hover:bg-red-50 border border-red-100"
+              className="text-[10px] px-1 py-0.5 mt-2 rounded hover:bg-[var(--hover-color)] transition-colors"
+              style={{ 
+                color: "#ef4444",
+                border: "1px solid #ef4444"
+              }}
             >
               {t("adminTeamWallet.buttons.viewAll")}
             </button>
@@ -446,13 +479,13 @@ const TeamOverView = () => {
           {/* Show two teams */}
           <div className="flex flex-col gap-1 mt-1">
             {departmentData[selectedDepartment].attention.slice(0, 2).map((item, idx) => (
-              <div key={idx} className="w-full bg-white rounded-xl p-2 border border-gray-200 flex items-center gap-2">
-                <div className="w-auto p-2 h-8 bg-red-50 flex justify-center items-center rounded-lg">
-                  <span className="text-xs font-bold text-red-600">{item.amount}</span>
+              <div key={idx} className="w-full rounded-xl p-2 flex items-center gap-2" style={{ backgroundColor: "var(--bg-color)", border: "1px solid var(--border-color)" }}>
+                <div className="w-auto p-2 h-8 flex justify-center items-center rounded-lg" style={{ backgroundColor: "rgba(239, 68, 68, 0.1)" }}>
+                  <span className="text-xs font-bold" style={{ color: "#ef4444" }}>{item.amount}</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-bold text-gray-900 text-xs mb-0.5 truncate">{item.team}</h4>
-                  <p className="text-gray-500 text-[9px] line-clamp-2">{item.description}</p>
+                  <h4 className="font-bold text-xs mb-0.5 truncate" style={{ color: "var(--text-color)" }}>{item.team}</h4>
+                  <p className="text-[9px] line-clamp-2" style={{ color: "var(--sub-text-color)" }}>{item.description}</p>
                 </div>
               </div>
             ))}
@@ -462,20 +495,20 @@ const TeamOverView = () => {
         {/* Popup for Best Compliance Team */}
         {showBestPopup && (
           <div className="fixed inset-0 bg-black/20 backdrop-blur-lg bg-opacity-30 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto">
+            <div className="rounded-2xl shadow-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto animate-popup-scale" style={{ backgroundColor: "var(--bg-color)" }}>
               <div className="flex justify-between items-center mb-2">
-                <h3 className="text-xs font-bold text-teal-600">{t("adminTeamWallet.popups.allBestComplianceTeams")}</h3>
-                <button onClick={() => setShowBestPopup(false)} className="text-gray-400 hover:text-gray-700 text-lg">&times;</button>
+                <h3 className="text-xs font-bold" style={{ color: "var(--accent-color)" }}>{t("adminTeamWallet.popups.allBestComplianceTeams")}</h3>
+                <button onClick={() => setShowBestPopup(false)} className="text-lg hover:opacity-70 transition-opacity" style={{ color: "var(--sub-text-color)" }}>&times;</button>
               </div>
               <div className="flex flex-col gap-2">
                 {departmentData[selectedDepartment].best.map((item, idx) => (
-                  <div key={idx} className="w-full bg-white rounded-xl p-2 border border-gray-200 flex items-center gap-2">
-                    <div className="w-auto p-2 h-8 bg-teal-50 flex justify-center items-center rounded-lg">
-                      <span className="text-xs font-bold text-teal-600">{item.amount}</span>
+                  <div key={idx} className="w-full rounded-xl p-2 flex items-center gap-2" style={{ backgroundColor: "var(--bg-color)", border: "1px solid var(--border-color)" }}>
+                    <div className="w-auto p-2 h-8 flex justify-center items-center rounded-lg" style={{ backgroundColor: "var(--accent-color)" }}>
+                      <span className="text-xs font-bold text-white">{item.amount}</span>
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-bold text-gray-900 text-xs mb-0.5">{item.team}</h4>
-                      <p className="text-gray-500 text-[9px]">{item.description}</p>
+                      <h4 className="font-bold text-xs mb-0.5" style={{ color: "var(--text-color)" }}>{item.team}</h4>
+                      <p className="text-[9px]" style={{ color: "var(--sub-text-color)" }}>{item.description}</p>
                     </div>
                   </div>
                 ))}
@@ -487,20 +520,20 @@ const TeamOverView = () => {
         {/* Popup for Needs Attention */}
         {showAttentionPopup && (
           <div className="fixed inset-0 bg-black/20 backdrop-blur-lg bg-opacity-30 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto">
+            <div className="rounded-2xl shadow-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto animate-popup-scale" style={{ backgroundColor: "var(--bg-color)" }}>
               <div className="flex justify-between items-center mb-2">
-                <h3 className="text-xs font-bold text-red-600">{t("adminTeamWallet.popups.allNeedsAttentionTeams")}</h3>
-                <button onClick={() => setShowAttentionPopup(false)} className="text-gray-400 hover:text-gray-700 text-lg">&times;</button>
+                <h3 className="text-xs font-bold" style={{ color: "#ef4444" }}>{t("adminTeamWallet.popups.allNeedsAttentionTeams")}</h3>
+                <button onClick={() => setShowAttentionPopup(false)} className="text-lg hover:opacity-70 transition-opacity" style={{ color: "var(--sub-text-color)" }}>&times;</button>
               </div>
               <div className="flex flex-col gap-2">
                 {departmentData[selectedDepartment].attention.map((item, idx) => (
-                  <div key={idx} className="w-full bg-white rounded-xl p-2 border border-gray-200 flex items-center gap-2">
-                    <div className="w-auto p-2 h-8 bg-red-50 flex justify-center items-center rounded-lg">
-                      <span className="text-xs font-bold text-red-600">{item.amount}</span>
+                  <div key={idx} className="w-full rounded-xl p-2 flex items-center gap-2" style={{ backgroundColor: "var(--bg-color)", border: "1px solid var(--border-color)" }}>
+                    <div className="w-auto p-2 h-8 flex justify-center items-center rounded-lg" style={{ backgroundColor: "rgba(239, 68, 68, 0.1)" }}>
+                      <span className="text-xs font-bold" style={{ color: "#ef4444" }}>{item.amount}</span>
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-bold text-gray-900 text-xs mb-0.5">{item.team}</h4>
-                      <p className="text-gray-500 text-[9px]">{item.description}</p>
+                      <h4 className="font-bold text-xs mb-0.5" style={{ color: "var(--text-color)" }}>{item.team}</h4>
+                      <p className="text-[9px]" style={{ color: "var(--sub-text-color)" }}>{item.description}</p>
                     </div>
                   </div>
                 ))}
