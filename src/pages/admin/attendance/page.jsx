@@ -591,11 +591,11 @@ const AttendanceAdmin = () => {
           {userLogs.map((att, idx) => {
                               const statusStyle = getStatusColor(att.status);
                               return (
-                                <tr key={att.date + user._id} className="border-b hover:bg-opacity-30 transition-colors duration-200" style={{ borderColor: "var(--border-color)" }}>
+                                <tr key={att.date + user._id} className="border-b hover:bg-opacity-30  transition-colors duration-200" style={{ borderColor: "var(--border-color)" }}>
                                   {/* عمود الموظف - يظهر فقط في أول صف */}
                                   {idx === 0 && (
                                     <td
-                                      className="py-4 px-6 font-medium align-top border-r-2"
+                                      className="py-4 px-6 font-medium align-top border-r-2 "
                                       rowSpan={userLogs.length}
                                       style={{ 
                                         color: "var(--text-color)", 
@@ -604,15 +604,15 @@ const AttendanceAdmin = () => {
                                         backgroundColor: "var(--hover-color)"
                                       }}
                                     >
-                                      <div className="flex items-center gap-3">
+                                      <div className="flex items-center gap-3 text-start">
                                         <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
                                           {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
                                         </div>
                                         <div>
-                                          <div className="font-semibold text-sm">
+                                          <div className="font-semibold text-sm text-start">
                                             {user.firstName} {user.lastName}
                                           </div>
-                                          <div className="text-xs" style={{ color: "var(--sub-text-color)" }}>
+                                          <div className="text-xs text-start" style={{ color: "var(--sub-text-color)" }}>
                                             {user.email}
                                           </div>
                                         </div>
@@ -789,10 +789,10 @@ const AttendanceAdmin = () => {
                                   {attendance.user?.firstName?.charAt(0)}{attendance.user?.lastName?.charAt(0)}
                                 </div>
                                 <div>
-                                  <p className="font-medium" style={{ color: "var(--text-color)" }}>
+                                  <p className="font-medium text-start" style={{ color: "var(--text-color)" }}>
                                     {attendance.user?.firstName} {attendance.user?.lastName}
                                   </p>
-                                  <p className="text-sm" style={{ color: "var(--sub-text-color)" }}>
+                                  <p className="text-sm text-start" style={{ color: "var(--sub-text-color)" }}>
                                     {attendance.user?.email}
                                   </p>
                                 </div>

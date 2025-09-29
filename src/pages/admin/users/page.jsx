@@ -558,10 +558,10 @@ const UsersAdmin = () => {
                                   {user.firstName?.[0]}{user.lastName?.[0]}
                                 </div>
                                 <div>
-                                  <h3 className="font-semibold" style={{ color: "var(--text-color)" }}>
+                                  <h3 className="font-semibold text-start" style={{ color: "var(--text-color)" }}>
                                     {user.firstName} {user.lastName}
                                   </h3>
-                                  <p className="text-sm" style={{ color: "var(--sub-text-color)" }}>
+                                  <p className="text-sm text-start" style={{ color: "var(--sub-text-color)" }}>
                                     ID: {user._id?.slice(-6)}
                                   </p>
                                 </div>
