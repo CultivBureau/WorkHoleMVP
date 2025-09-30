@@ -970,5 +970,45 @@
       "createdManually": "Created manually for specific needs",
       "allUsersInSystem": "All users in the system"
     }
+  },
+  "teamDetails": {
+    "statusCards": {
+      "teamKpiScore": "Team KPI Score",
+      "overallPerformance": "Overall performance score for this team",
+      "tasksProgress": "Tasks Progress",
+      "completedVsAssigned": "Completed vs assigned tasks (This Month)",
+      "averageAttendance": "Average Attendance",
+      "presenceRate": "Presence rate of team members",
+      "topPerformer": "Top Performer",
+      "bestPerforming": "Best performing member in this team"
+    },
+    "centerContent": {
+      "ongoingTasks": "Ongoing Tasks",
+      "viewAll": "View All",
+      "taskStatusOverview": "Task Status Overview",
+      "currentDistribution": "Current distribution of team tasks",
+      "totalTasks": "Total Tasks",
+      "search": "Search...",
+      "dateFrom": "Date from",
+      "employeesName": "Employees Name",
+      "date": "Date",
+      "checkIn": "Check-in",
+      "checkOut": "Check-out",
+      "taskCompletion": "Task Completion",
+      "overYear": "Over Year",
+      "overMonth": "Over Month",
+      "overWeek": "Over Week"
+    },
+    "supervisorOverview": {
+      "title": "Supervisor Overview",
+      "role": "Lead UI/UX Designer",
+      "teamKpi": "Team KPI",
+      "achievement": "Achievement",
+      "approvals": "Approvals &",
+      "reviews": "Reviews",
+      "lastSystem": "Last System",
+      "activity": "Activity",
+      "viewLogs": "View Logs"
+    }
   }
 }

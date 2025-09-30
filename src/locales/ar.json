@@ -969,5 +969,45 @@
       "createdManually": "تم إنشاؤها يدوياً للاحتياجات الخاصة",
       "allUsersInSystem": "جميع المستخدمين في النظام"
     }
+  },
+  "teamDetails": {
+    "statusCards": {
+      "teamKpiScore": "نقاط أداء الفريق",
+      "overallPerformance": "نقاط الأداء الإجمالية لهذا الفريق",
+      "tasksProgress": "تقدم المهام",
+      "completedVsAssigned": "المهام المكتملة مقابل المهام المخصصة (هذا الشهر)",
+      "averageAttendance": "متوسط الحضور",
+      "presenceRate": "معدل حضور أعضاء الفريق",
+      "topPerformer": "أفضل موظف",
+      "bestPerforming": "أفضل عضو أداءً في هذا الفريق"
+    },
+    "centerContent": {
+      "ongoingTasks": "المهام الجارية",
+      "viewAll": "عرض الكل",
+      "taskStatusOverview": "نظرة عامة على حالة المهام",
+      "currentDistribution": "التوزيع الحالي لمهام الفريق",
+      "totalTasks": "إجمالي المهام",
+      "search": "بحث...",
+      "dateFrom": "التاريخ من",
+      "employeesName": "اسم الموظف",
+      "date": "التاريخ",
+      "checkIn": "تسجيل الدخول",
+      "checkOut": "تسجيل الخروج",
+      "taskCompletion": "إنجاز المهام",
+      "overYear": "خلال السنة",
+      "overMonth": "خلال الشهر",
+      "overWeek": "خلال الأسبوع"
+    },
+    "supervisorOverview": {
+      "title": "نظرة عامة على المشرف",
+      "role": "مطور واجهات أمامية رئيسي",
+      "teamKpi": "أداء الفريق",
+      "achievement": "الإنجاز",
+      "approvals": "الموافقات",
+      "reviews": "والمراجعات",
+      "lastSystem": "آخر نشاط",
+      "activity": "في النظام",
+      "viewLogs": "عرض السجلات"
+    }
   }
 }

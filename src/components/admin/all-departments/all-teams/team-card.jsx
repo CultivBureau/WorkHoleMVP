@@ -2,16 +2,17 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight, Users, Edit, Trash2, MoreVertical } from "lucide-react";
+import TeamDetailsPopup from "./team-details/team-details-popup";
 
 export default function TeamCard({ team, onEdit, onDelete }) {
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const isArabic = i18n.language === "ar";
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [showDetailsPopup, setShowDetailsPopup] = useState(false);
 
     const handleViewDetails = () => {
-        // Navigation for viewing team details - you can implement this later
-        console.log("View team details:", team.id);
+        setShowDetailsPopup(true);
     };
 
     const handleEditTeam = (e) => {
@@ -52,7 +53,7 @@ export default function TeamCard({ team, onEdit, onDelete }) {
                             {team.name}
                         </h3>
                         <p className="text-sm text-[var(--sub-text-color)]">
-                            {team.totalMembers} {t("allTeams.teamCard.members")}
+                            {(team.members?.length || 0) + 1} {t("allTeams.teamCard.members")}
                         </p>
                     </div>
                 </div>
@@ -89,7 +90,7 @@ export default function TeamCard({ team, onEdit, onDelete }) {
             
             {/* Member Avatars */}
             <div className={`flex items-center gap-1 mb-4 ${isArabic ? 'flex-row-reverse justify-end' : 'justify-start'}`}>
-                {team.memberAvatars?.slice(0, 3).map((avatar, index) => (
+                {team.memberAvatars?.slice(0, 4).map((avatar, index) => (
                     <img
                         key={index}
                         src={avatar}
@@ -98,10 +99,10 @@ export default function TeamCard({ team, onEdit, onDelete }) {
                         style={{ marginLeft: isArabic ? '0' : index > 0 ? '-8px' : '0', marginRight: isArabic ? index > 0 ? '-8px' : '0' : '0' }}
                     />
                 ))}
-                {team.totalMembers > 3 && (
+                {((team.members?.length || 0) + 1) > 4 && (
                     <div className="w-8 h-8 rounded-full bg-[var(--container-color)] border-2 border-[var(--bg-color)] flex items-center justify-center text-xs font-medium text-[var(--sub-text-color)]"
                          style={{ marginLeft: isArabic ? '0' : '-8px', marginRight: isArabic ? '-8px' : '0' }}>
-                        +{team.totalMembers - 3}
+                        +{((team.members?.length || 0) + 1) - 4}
                     </div>
                 )}
             </div>
@@ -131,7 +132,7 @@ export default function TeamCard({ team, onEdit, onDelete }) {
 
             {/* Team Members List */}
             <div className="space-y-3">
-                {team.members?.slice(0, 5).map((member, index) => (
+                {team.members?.slice(0, 3).map((member, index) => (
                     <div 
                         key={index}
                         className={`flex items-center justify-between p-3 bg-[var(--container-color)] rounded-lg hover:bg-[var(--hover-color)] transition-colors cursor-pointer ${isArabic ? 'flex-row-reverse' : ''}`}
@@ -156,6 +157,13 @@ export default function TeamCard({ team, onEdit, onDelete }) {
                     </div>
                 ))}
             </div>
+
+            {/* Team Details Popup */}
+            <TeamDetailsPopup 
+                isOpen={showDetailsPopup}
+                onClose={() => setShowDetailsPopup(false)}
+                team={team}
+            />
         </div>
     );
 }
