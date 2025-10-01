@@ -222,7 +222,7 @@ const AttendanceAdmin = () => {
           <div className="w-full h-max grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-5">
             {cardData.map((card, index) => (
               <Card
-                key={index}
+                    key={index}
                 header={card.title}
                 rightIcon={card.icon}
                 title={card.value}
@@ -232,7 +232,7 @@ const AttendanceAdmin = () => {
 
           <div className="w-full h-max">
             <Table />
-          </div>
+      </div>
 
         </main>
       </div>
