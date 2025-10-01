@@ -24,7 +24,8 @@
     "time_tracking": "Time Tracking",
     "break_tracking": "Break Tracking",
     "all_attendance": "All Attendance",
-    "all_department": "All Department"
+    "all_departments": "All Departments",
+    "new_department": "New Department"
   },
   "comingSoon": "Coming Soon",
   "navbar": {
@@ -766,6 +767,186 @@
       }
     }
   },
+  "departments": {
+    "newDepartmentForm": {
+      "title": "Create New Department",
+      "breadcrumb": {
+        "allDepartments": "All Departments",
+        "addNewDepartment": "Add New Department"
+      },
+      "steps": {
+        "departmentInfo": "Department Info",
+        "assignSupervisor": "Assign Supervisor",
+        "setupTeams": "Setup Teams",
+        "reviewAndDone": "Review & Done"
+      },
+      "departmentInfo": {
+        "departmentName": "Department Name",
+        "shortName": "Short Name",
+        "description": "Description",
+        "status": "Status",
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "assignSupervisor": {
+        "chooseSupervisor": "Choose Supervisor",
+        "supervisor": "Supervisor",
+        "supervisorManager": "Supervisor Manager"
+      },
+      "setupTeams": {
+        "teamName": "Team Name",
+        "chooseEmployee": "Choose Employee",
+        "description": "Description",
+        "addNewTeam": "Add New Team",
+        "members": "Members"
+      },
+      "review": {
+        "reviewDepartmentDetails": "Review Department Details",
+        "departmentName": "Department Name",
+        "shortName": "Short Name",
+        "description": "Description",
+        "status": "Status",
+        "supervisor": "Supervisor"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "next": "Next",
+        "back": "Back",
+        "add": "Add",
+        "allDepartments": "All Departments"
+      },
+      "success": {
+        "title": "Department Created!",
+        "message": "You have successfully created a new department."
+      }
+    },
+    "editDepartmentForm": {
+      "title": "Edit Department",
+      "breadcrumb": {
+        "allDepartments": "All Departments",
+        "editDepartment": "Edit Department"
+      },
+      "steps": {
+        "departmentInfo": "Department Info",
+        "assignSupervisor": "Assign Supervisor",
+        "setupTeams": "Setup Teams",
+        "reviewAndSave": "Review & Save"
+      },
+      "departmentInfo": {
+        "departmentName": "Department Name",
+        "shortName": "Short Name",
+        "description": "Description",
+        "status": "Status",
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "assignSupervisor": {
+        "chooseSupervisor": "Choose Supervisor",
+        "supervisor": "Supervisor"
+      },
+      "setupTeams": {
+        "teamName": "Team Name",
+        "chooseEmployee": "Choose Employee",
+        "description": "Description",
+        "addNewTeam": "Add New Team",
+        "members": "Members"
+      },
+      "review": {
+        "reviewDepartmentDetails": "Review Department Details",
+        "departmentName": "Department Name",
+        "shortName": "Short Name",
+        "description": "Description",
+        "status": "Status",
+        "supervisor": "Supervisor"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "next": "Next",
+        "back": "Back",
+        "add": "Add",
+        "save": "Save Changes",
+        "allDepartments": "All Departments"
+      },
+      "success": {
+        "title": "Department Updated!",
+        "message": "You have successfully updated the department."
+      }
+    }
+  },
+  "allDepartments": {
+    "statusCards": {
+      "totalDepartments": {
+        "title": "Total Departments",
+        "count": "20",
+        "description": "Number of departments in the company"
+      },
+      "highestDepartment": {
+        "title": "Highest Department",
+        "name": "Design Department",
+        "description": "Most popular department"
+      },
+      "employeesDepartment": {
+        "title": "Employees Department",
+        "count": "120",
+        "description": "Total employees in all departments"
+      },
+      "departmentsIssues": {
+        "title": "Departments Issues",
+        "count": "4",
+        "description": "Departments with high disciplinary reports"
+      }
+    },
+    "search": {
+      "placeholder": "Search departments...",
+      "addNewDepartment": "Add New Department",
+      "editDepartment": "Edit Department"
+    },
+    "departmentCard": {
+      "members": "Members",
+      "teams": "Teams",
+      "viewAll": "View all",
+      "supervisor": "Supervisor",
+      "edit": "Edit"
+    }
+  },
+  "allTeams": {
+    "title": "All Teams",
+    "statusCards": {
+      "totalTeams": {
+        "title": "Total Teams",
+        "count": "15",
+        "description": "Number of teams across departments"
+      },
+      "pendingTasks": {
+        "title": "Pending Tasks",
+        "count": "8",
+        "description": "Tasks awaiting completion"
+      },
+      "attendanceRate": {
+        "title": "Attendance Rate",
+        "count": "95%",
+        "description": "Average team attendance this month"
+      },
+      "kpiPerformance": {
+        "title": "KPI Performance",
+        "count": "87%",
+        "description": "Teams meeting performance targets"
+      }
+    },
+    "search": {
+      "placeholder": "Search teams...",
+      "addNewTeam": "Add New Team"
+    },
+    "teamCard": {
+      "members": "Members",
+      "department": "Department",
+      "lead": "Team Lead",
+      "view": "View Details",
+      "edit": "Edit",
+      "tasks": "Tasks",
+      "performance": "Performance"
+    }
+  },
   "walletCards": {
     "myDeductions": {
       "header": "My Deductions",
@@ -1070,6 +1251,45 @@
       "needsAttention": "Needs Attention",
       "highestKpi": "Highest average KPI this period",
       "belowAverageKpi": "Below average KPI this period"
+    }},
+  "teamDetails": {
+    "statusCards": {
+      "teamKpiScore": "Team KPI Score",
+      "overallPerformance": "Overall performance score for this team",
+      "tasksProgress": "Tasks Progress",
+      "completedVsAssigned": "Completed vs assigned tasks (This Month)",
+      "averageAttendance": "Average Attendance",
+      "presenceRate": "Presence rate of team members",
+      "topPerformer": "Top Performer",
+      "bestPerforming": "Best performing member in this team"
+    },
+    "centerContent": {
+      "ongoingTasks": "Ongoing Tasks",
+      "viewAll": "View All",
+      "taskStatusOverview": "Task Status Overview",
+      "currentDistribution": "Current distribution of team tasks",
+      "totalTasks": "Total Tasks",
+      "search": "Search...",
+      "dateFrom": "Date from",
+      "employeesName": "Employees Name",
+      "date": "Date",
+      "checkIn": "Check-in",
+      "checkOut": "Check-out",
+      "taskCompletion": "Task Completion",
+      "overYear": "Over Year",
+      "overMonth": "Over Month",
+      "overWeek": "Over Week"
+    },
+    "supervisorOverview": {
+      "title": "Supervisor Overview",
+      "role": "Lead UI/UX Designer",
+      "teamKpi": "Team KPI",
+      "achievement": "Achievement",
+      "approvals": "Approvals &",
+      "reviews": "Reviews",
+      "lastSystem": "Last System",
+      "activity": "Activity",
+      "viewLogs": "View Logs"
     }
   }
 }

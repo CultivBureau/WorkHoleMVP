@@ -109,9 +109,16 @@ const mainMenuItems = [
       { key: "projects", Icon: FolderKanban, implemented: false },
     ],
   },
+  { 
+    key: "all_departments",
+     Icon: Building2,
+      implemented: true,
+      children: [
+        { key: "new_department", Icon: Building2, implemented: true },
+      ]
+     },
   { key: "performance", Icon: BarChart3, implemented: true },
   { key: "all_attendance", Icon: CalendarCheck, implemented: true },
-  { key: "all_department", Icon: Building2, implemented: true },
   { key: "leaves", Icon: Calendar, implemented: true },
   { key: "wallet", Icon: Wallet, implemented: true },
   { key: "My_Company", Icon: Building, implemented: true },
@@ -427,6 +434,12 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
       return "Roles_Permissions";
     if (location.pathname.startsWith("/pages/admin/New_Role"))
       return "New_Role";
+    if (location.pathname.startsWith("/pages/admin/all-departments"))
+      return "all_departments";
+    if (location.pathname.startsWith("/pages/admin/new-department"))
+      return "new_department";
+    if (location.pathname.startsWith("/pages/admin/edit-department"))
+      return "all_departments";
     if (location.pathname.startsWith("/pages/admin/leaves"))
       return "leaves";
     return "";
@@ -441,6 +454,9 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
     }
     if (active === "Roles_Permissions" || active === "New_Role") {
       setOpenDropdown("Roles_Permissions");
+    }
+    if (active === "all_departments" || active === "new_department") {
+      setOpenDropdown("all_departments");
     }
   }, [active]);
 
@@ -471,7 +487,8 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
     else if (key === "wallet") navigate("/pages/admin/TeamWallet");
     else if (key === "My_Company") navigate("/pages/admin/dashboard");
     else if (key === "all_attendance") navigate("/pages/admin/attendance");
-    else if (key === "all_department") navigate("/pages/admin/departments");
+    else if (key === "all_departments") navigate("/pages/admin/all-departments");
+    else if (key === "new_department") navigate("/pages/admin/new-department");
     else if (key === "performance") navigate("/pages/admin/Performance");
   };
 

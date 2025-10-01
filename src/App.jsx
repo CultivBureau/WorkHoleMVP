@@ -16,6 +16,10 @@ import Performance from "./pages/User/Performance/page";
 import TeamWallet from "./pages/User/team-wallet/page";
 import AllEmployees from "./pages/admin/all-employees/page";
 import NewEmployee from "./pages/admin/new-employee/page";
+import AllDepartments from "./pages/admin/all-departments/page";
+import NewDepartment from "./pages/admin/new-department/page";
+import EditDepartment from "./pages/admin/edit-department/page";
+import AllTeamsPage from "./pages/admin/all-teams/page";
 import RolesAndPermissions from "./pages/admin/Roles&Permissions/page";
 import NewRole from "./pages/admin/New_Role/page";
 import Profile from "./pages/Profile";
@@ -179,6 +183,38 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <AllEmployees />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/pages/admin/all-departments"
+                    element={
+                      <ProtectedRoute>
+                        <AllDepartments />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/pages/admin/new-department"
+                    element={
+                      <ProtectedRoute>
+                        <NewDepartment />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/pages/admin/edit-department/:id"
+                    element={
+                      <ProtectedRoute>
+                        <EditDepartment />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/pages/admin/all-teams"
+                    element={
+                      <ProtectedRoute>
+                        <AllTeamsPage />
                       </ProtectedRoute>
                     }
                   />
