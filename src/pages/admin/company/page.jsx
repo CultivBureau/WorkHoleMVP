@@ -2,6 +2,7 @@ import NavBarAdmin from "../../../components/admin/NavBarAdmin";
 import SideBarAdmin from "../../../components/admin/SideBarAdmin";
 import StatusCards from "../../../components/admin/company/status-cards";
 import CompanyTable from "../../../components/admin/company/table";
+import CenterContent from "../../../components/admin/company/center-content";
 const Company = () => {
   return (
     <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
@@ -24,6 +25,7 @@ const Company = () => {
             <div className="w-full h-max p-6">
               {/* Status Cards Row */}
               <StatusCards />
+              <CenterContent />
               <CompanyTable />
             </div>
           </div>

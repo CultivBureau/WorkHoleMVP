@@ -280,8 +280,10 @@ const CompanyTable = () => {
                                             borderColor: 'var(--accent-color)',
                                             color: 'var(--text-color)'
                                         }}
+                                        
                                     >
                                         <span>{filter.value}</span>
+                                        
                                         <button
                                             onClick={() => filter.setter("")}
                                             className="w-3 h-3 md:w-4 md:h-4 rounded-full flex items-center justify-center hover:bg-red-100 transition-colors"
@@ -312,7 +314,7 @@ const CompanyTable = () => {
                 style={{
                     backgroundColor: 'var(--bg-color)',
                     borderColor: 'var(--border-color)',
-                    height: '525px',
+                    height: '300px',
                     boxShadow: 'var(--shadow-color)'
                 }}
             >
