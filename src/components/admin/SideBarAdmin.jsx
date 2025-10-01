@@ -114,7 +114,7 @@ const mainMenuItems = [
   { key: "all_department", Icon: Building2, implemented: true },
   { key: "leaves", Icon: Calendar, implemented: true },
   { key: "wallet", Icon: Wallet, implemented: true },
-  { key: "My_Company", Icon: Building, implemented: true },
+  { key: "Company", Icon: Building, implemented: true },
 ];
 
 const settingsItems = [
@@ -427,6 +427,14 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
       return "Roles_Permissions";
     if (location.pathname.startsWith("/pages/admin/New_Role"))
       return "New_Role";
+    if (location.pathname.startsWith("/pages/admin/all-departments"))
+      return "all_departments";
+    if (location.pathname.startsWith("/pages/admin/new-department"))
+      return "new_department";
+    if (location.pathname.startsWith("/pages/admin/edit-department"))
+      return "all_departments";
+    if (location.pathname.startsWith("/pages/admin/company"))
+      return "Company";
     if (location.pathname.startsWith("/pages/admin/leaves"))
       return "leaves";
     return "";
@@ -441,6 +449,12 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
     }
     if (active === "Roles_Permissions" || active === "New_Role") {
       setOpenDropdown("Roles_Permissions");
+    }
+    if (active === "all_departments" || active === "new_department") {
+      setOpenDropdown("all_departments");
+    }
+    if (active === "Company") {
+      setOpenDropdown("Company");
     }
   }, [active]);
 
@@ -468,8 +482,8 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
     else if (key === "Roles_Permissions") navigate("/pages/admin/Roles&Permissions");
     else if (key === "New_Role") navigate("/pages/admin/New_Role");
     else if (key === "leaves") navigate("/pages/admin/leaves");
-    else if (key === "wallet") navigate("/pages/admin/TeamWallet");
-    else if (key === "My_Company") navigate("/pages/admin/dashboard");
+    else if (key === "wallet") navigate("/pages/admin/dashboard");
+    else if (key === "Company") navigate("/pages/admin/company");
     else if (key === "all_attendance") navigate("/pages/admin/attendance");
     else if (key === "all_department") navigate("/pages/admin/departments");
     else if (key === "performance") navigate("/pages/admin/Performance");

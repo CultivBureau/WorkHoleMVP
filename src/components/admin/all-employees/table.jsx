@@ -249,12 +249,25 @@ const EmployeesTable = () => {
 
                     {/* Each filter/select is full width on mobile, 1 col on desktop */}
                     <div className="md:col-span-1 col-span-1 w-full">
-                        <FilterSelect
-                            value={joinDateFilter}
-                            onChange={(e) => setJoinDateFilter(e.target.value)}
-                            options={uniqueJoinDates}
-                            placeholder={t("employees.filters.joinDate")}
-                        />
+                        <div className="relative w-full">
+                            <input
+                                type="date"
+                                value={joinDateFilter}
+                                onChange={(e) => setJoinDateFilter(e.target.value)}
+                                className="w-full border rounded-full px-4 py-2 text-xs font-medium transition-all duration-200 opacity-0 absolute inset-0 cursor-pointer"
+                                style={{
+                                    colorScheme: 'var(--theme)'
+                                }}
+                            />
+                            <div className="w-full border text-center rounded-full px-4 py-2 text-xs font-medium gradient-text transition-all duration-200 pointer-events-none"
+                                style={{
+                                    borderColor: 'var(--border-color)',
+                                    backgroundColor: 'var(--bg-color)',
+                                    color: 'var(--accent-color)'
+                                }}>
+                                {joinDateFilter ? new Date(joinDateFilter).toLocaleDateString() : t("employees.filters.joinDate")}
+                            </div>
+                        </div>
                     </div>
                     <div className="md:col-span-1 col-span-1 w-full">
                         <FilterSelect
