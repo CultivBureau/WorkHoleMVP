@@ -22,7 +22,7 @@ export default function NewEmployeeForm() {
                 <div className="relative mb-4">
                     <div className="w-full h-1 bg-[var(--border-color)] rounded" />
                     <div
-                        className="absolute top-0 left-0 h-1 gradient-bg rounded transition-all duration-300"
+                        className={`absolute top-0 h-1 gradient-bg rounded transition-all duration-300 ${isArabic ? 'right-0' : 'left-0'}`}
                         style={{ width: `${((step + 1) / 4) * 100}%` }}
                     />
                 </div>

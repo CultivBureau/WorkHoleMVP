@@ -24,7 +24,8 @@
     "time_tracking": "تتبع الوقت",
     "break_tracking": "تتبع الاستراحة",
     "all_attendance": "جميع الحضور",
-    "all_department": "جميع الأقسام"
+    "all_departments": "جميع الأقسام",
+    "new_department": "قسم جديد"
   },
   "comingSoon": "قريبًا",
   "navbar": {
@@ -720,6 +721,186 @@
       }
     }
   },
+  "departments": {
+    "newDepartmentForm": {
+      "title": "إنشاء قسم جديد",
+      "breadcrumb": {
+        "allDepartments": "جميع الأقسام",
+        "addNewDepartment": "إضافة قسم جديد"
+      },
+      "steps": {
+        "departmentInfo": "معلومات القسم",
+        "assignSupervisor": "تعيين المشرف",
+        "setupTeams": "إعداد الفرق",
+        "reviewAndDone": "المراجعة والإنهاء"
+      },
+      "departmentInfo": {
+        "departmentName": "اسم القسم",
+        "shortName": "الاسم المختصر",
+        "description": "الوصف",
+        "status": "الحالة",
+        "active": "نشط",
+        "inactive": "غير نشط"
+      },
+      "assignSupervisor": {
+        "chooseSupervisor": "اختر المشرف",
+        "supervisor": "المشرف",
+        "supervisorManager": "مدير المشرف"
+      },
+      "setupTeams": {
+        "teamName": "اسم الفريق",
+        "chooseEmployee": "اختر الموظف",
+        "description": "الوصف",
+        "addNewTeam": "إضافة فريق جديد",
+        "members": "الأعضاء"
+      },
+      "review": {
+        "reviewDepartmentDetails": "مراجعة تفاصيل القسم",
+        "departmentName": "اسم القسم",
+        "shortName": "الاسم المختصر",
+        "description": "الوصف",
+        "status": "الحالة",
+        "supervisor": "المشرف"
+      },
+      "buttons": {
+        "cancel": "إلغاء",
+        "next": "التالي",
+        "back": "رجوع",
+        "add": "إضافة",
+        "allDepartments": "جميع الأقسام"
+      },
+      "success": {
+        "title": "تم إنشاء القسم!",
+        "message": "لقد قمت بإنشاء قسم جديد بنجاح."
+      }
+    },
+    "editDepartmentForm": {
+      "title": "تعديل القسم",
+      "breadcrumb": {
+        "allDepartments": "جميع الأقسام",
+        "editDepartment": "تعديل القسم"
+      },
+      "steps": {
+        "departmentInfo": "معلومات القسم",
+        "assignSupervisor": "تعيين المشرف",
+        "setupTeams": "إعداد الفرق",
+        "reviewAndSave": "المراجعة والحفظ"
+      },
+      "departmentInfo": {
+        "departmentName": "اسم القسم",
+        "shortName": "الاسم المختصر",
+        "description": "الوصف",
+        "status": "الحالة",
+        "active": "نشط",
+        "inactive": "غير نشط"
+      },
+      "assignSupervisor": {
+        "chooseSupervisor": "اختر المشرف",
+        "supervisor": "المشرف"
+      },
+      "setupTeams": {
+        "teamName": "اسم الفريق",
+        "chooseEmployee": "اختر الموظف",
+        "description": "الوصف",
+        "addNewTeam": "إضافة فريق جديد",
+        "members": "الأعضاء"
+      },
+      "review": {
+        "reviewDepartmentDetails": "مراجعة تفاصيل القسم",
+        "departmentName": "اسم القسم",
+        "shortName": "الاسم المختصر",
+        "description": "الوصف",
+        "status": "الحالة",
+        "supervisor": "المشرف"
+      },
+      "buttons": {
+        "cancel": "إلغاء",
+        "next": "التالي",
+        "back": "رجوع",
+        "add": "إضافة",
+        "save": "حفظ التغييرات",
+        "allDepartments": "جميع الأقسام"
+      },
+      "success": {
+        "title": "تم تحديث القسم!",
+        "message": "لقد قمت بتحديث القسم بنجاح."
+      }
+    }
+  },
+  "allDepartments": {
+    "statusCards": {
+      "totalDepartments": {
+        "title": "إجمالي الأقسام",
+        "count": "20",
+        "description": "عدد الأقسام في الشركة"
+      },
+      "highestDepartment": {
+        "title": "أعلى قسم",
+        "name": "قسم التصميم",
+        "description": "القسم الأكثر شعبية"
+      },
+      "employeesDepartment": {
+        "title": "موظفو الأقسام",
+        "count": "120",
+        "description": "إجمالي الموظفين في جميع الأقسام"
+      },
+      "departmentsIssues": {
+        "title": "مشاكل الأقسام",
+        "count": "4",
+        "description": "الأقسام ذات التقارير التأديبية العالية"
+      }
+    },
+    "search": {
+      "placeholder": "البحث في الأقسام...",
+      "addNewDepartment": "إضافة قسم جديد",
+      "editDepartment": "تعديل القسم"
+    },
+    "departmentCard": {
+      "members": "الأعضاء",
+      "teams": "الفرق",
+      "viewAll": "عرض الكل",
+      "supervisor": "المشرف",
+      "edit": "تعديل"
+    }
+  },
+  "allTeams": {
+    "title": "جميع الفرق",
+    "statusCards": {
+      "totalTeams": {
+        "title": "إجمالي الفرق",
+        "count": "15",
+        "description": "عدد الفرق عبر الأقسام"
+      },
+      "pendingTasks": {
+        "title": "المهام المعلقة",
+        "count": "8",
+        "description": "المهام في انتظار الإنجاز"
+      },
+      "attendanceRate": {
+        "title": "معدل الحضور",
+        "count": "95%",
+        "description": "متوسط حضور الفريق هذا الشهر"
+      },
+      "kpiPerformance": {
+        "title": "أداء مؤشرات الأداء",
+        "count": "87%",
+        "description": "الفرق التي تحقق أهداف الأداء"
+      }
+    },
+    "search": {
+      "placeholder": "البحث في الفرق...",
+      "addNewTeam": "إضافة فريق جديد"
+    },
+    "teamCard": {
+      "members": "الأعضاء",
+      "department": "القسم",
+      "lead": "قائد الفريق",
+      "view": "عرض التفاصيل",
+      "edit": "تعديل",
+      "tasks": "المهام",
+      "performance": "الأداء"
+    }
+  },
   "walletCards": {
     "myDeductions": {
       "header": "خصوماتي",
@@ -1067,6 +1248,47 @@
       "needsAttention": "يحتاج انتباه",
       "highestKpi": "أعلى متوسط لمؤشرات الأداء هذه الفترة",
       "belowAverageKpi": "أقل من متوسط مؤشرات الأداء هذه الفترة"
+    }},
+  "teamDetails": {
+    "statusCards": {
+      "teamKpiScore": "نقاط أداء الفريق",
+      "overallPerformance": "نقاط الأداء الإجمالية لهذا الفريق",
+      "tasksProgress": "تقدم المهام",
+      "completedVsAssigned": "المهام المكتملة مقابل المهام المخصصة (هذا الشهر)",
+      "averageAttendance": "متوسط الحضور",
+      "presenceRate": "معدل حضور أعضاء الفريق",
+      "topPerformer": "أفضل موظف",
+      "bestPerforming": "أفضل عضو أداءً في هذا الفريق"
+    },
+    "centerContent": {
+      "ongoingTasks": "المهام الجارية",
+      "viewAll": "عرض الكل",
+      "taskStatusOverview": "نظرة عامة على حالة المهام",
+      "currentDistribution": "التوزيع الحالي لمهام الفريق",
+      "totalTasks": "إجمالي المهام",
+      "search": "بحث...",
+      "dateFrom": "التاريخ من",
+      "employeesName": "اسم الموظف",
+      "date": "التاريخ",
+      "checkIn": "تسجيل الدخول",
+      "checkOut": "تسجيل الخروج",
+      "taskCompletion": "إنجاز المهام",
+      "overYear": "خلال السنة",
+      "overMonth": "خلال الشهر",
+      "overWeek": "خلال الأسبوع"
+    },
+    "supervisorOverview": {
+      "title": "نظرة عامة على المشرف",
+      "role": "مطور واجهات أمامية رئيسي",
+      "teamKpi": "أداء الفريق",
+      "achievement": "الإنجاز",
+      "approvals": "الموافقات",
+      "reviews": "والمراجعات",
+      "lastSystem": "آخر نشاط",
+      "activity": "في النظام",
+      "viewLogs": "عرض السجلات"
     }
   }
+
+  
 }

@@ -109,9 +109,16 @@ const mainMenuItems = [
       { key: "projects", Icon: FolderKanban, implemented: false },
     ],
   },
+  { 
+    key: "all_departments",
+     Icon: Building2,
+      implemented: true,
+      children: [
+        { key: "new_department", Icon: Building2, implemented: true },
+      ]
+     },
   { key: "performance", Icon: BarChart3, implemented: true },
   { key: "all_attendance", Icon: CalendarCheck, implemented: true },
-  { key: "all_department", Icon: Building2, implemented: true },
   { key: "leaves", Icon: Calendar, implemented: true },
   { key: "wallet", Icon: Wallet, implemented: true },
   { key: "Company", Icon: Building, implemented: true },
@@ -485,7 +492,8 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
     else if (key === "wallet") navigate("/pages/admin/dashboard");
     else if (key === "Company") navigate("/pages/admin/company");
     else if (key === "all_attendance") navigate("/pages/admin/attendance");
-    else if (key === "all_department") navigate("/pages/admin/departments");
+    else if (key === "all_departments") navigate("/pages/admin/all-departments");
+    else if (key === "new_department") navigate("/pages/admin/new-department");
     else if (key === "performance") navigate("/pages/admin/Performance");
   };
 
