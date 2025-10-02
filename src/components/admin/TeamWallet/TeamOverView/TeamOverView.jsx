@@ -1,15 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js"
 import { useTranslation } from "react-i18next"
+import { ChevronDown, TrendingUp, AlertTriangle } from 'lucide-react'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
-// Only one departments and departmentData definition!
 const departments = [
   "Design Department",
   "Development Department",
   "Marketing Department"
 ]
+
 const departmentData = {
   "Design Department": {
     best: [
@@ -19,7 +20,7 @@ const departmentData = {
     ],
     attention: [
       { team: "Branding Team", amount: "$8,000", description: "High penalties recorded this month" },
-      { team: "Ui Team", amount: "$7,500", description: "High penalties recorded this month" },
+      { team: "UI Team", amount: "$7,500", description: "High penalties recorded this month" },
       { team: "Motion Graphics", amount: "$12,000", description: "Critical attention required" }
     ]
   },
@@ -49,86 +50,57 @@ const TeamOverView = () => {
   const { t } = useTranslation()
   const chartRef = useRef(null)
   const chartInstance = useRef(null)
-  const [activeFilter, setActiveFilter] = useState(t("adminTeamWallet.periods.annual"))
-  const [hoveredBar, setHoveredBar] = useState(null)
-  const [selectedDepartment, setSelectedDepartment] = useState(departments[0]);
-  const [showDepartmentDropdown, setShowDepartmentDropdown] = useState(false);
-  const [showBestPopup, setShowBestPopup] = useState(false);
-  const [showAttentionPopup, setShowAttentionPopup] = useState(false);
+  const [activeFilter, setActiveFilter] = useState("Annual")
+  const [selectedDepartment, setSelectedDepartment] = useState(departments[0])
+  const [showDepartmentDropdown, setShowDepartmentDropdown] = useState(false)
+  const [showBestPopup, setShowBestPopup] = useState(false)
+  const [showAttentionPopup, setShowAttentionPopup] = useState(false)
 
-  const KeyInsights = [
-    {
-      status: t("adminTeamWallet.insights.bestPerforming"),
-      department: "Development",
-      desc: t("adminTeamWallet.insights.highestKpi"),
-      efficiency: "90%",
-    },
-    { 
-      status: t("adminTeamWallet.insights.needsAttention"), 
-      department: "Sales", 
-      desc: t("adminTeamWallet.insights.belowAverageKpi"), 
-      efficiency: "60%" 
-    },
-  ]
-  
-  // Dynamic data structure with different periods
   const chartData = {
-    [t("adminTeamWallet.periods.monthly")]: [
+    "Monthly": [
       { name: "UX TEAM", value: 12000 },
       { name: "UI TEAM", value: 6500 },
       { name: "BRANDING TEAM", value: 18000 },
       { name: "GRAPHIC TEAM", value: 14500 },
       { name: "DESIGN", value: 3800 },
       { name: "MOTION GRAPHICS", value: 32000 },
-      { name: "DESIGN TEAM", value: 19500 },
+      { name: "DESIGN", value: 19500 },
     ],
-    [t("adminTeamWallet.periods.quarter")]: [
+    "Quarter": [
       { name: "UX TEAM", value: 22000 },
       { name: "UI TEAM", value: 7800 },
       { name: "BRANDING TEAM", value: 22000 },
       { name: "GRAPHIC TEAM", value: 16200 },
       { name: "DESIGN", value: 4500 },
       { name: "MOTION GRAPHICS", value: 38500 },
-      { name: "DESIGN TEAM", value: 23000 },
+      { name: "DESIGN", value: 23000 },
     ],
-    [t("adminTeamWallet.periods.annual")]: [
-      { name: "UX TEAM", value: 30000 },
-      { name: "UI TEAM", value: 8500 },
-      { name: "BRANDING TEAM", value: 25000 },
-      { name: "GRAPHIC TEAM", value: 17500 },
-      { name: "DESIGN", value: 5000 },
-      { name: "MOTION GRAPHICS", value: 45433 },
-      { name: "DESIGN TEAM", value: 25500 },
+    "Annual": [
+      { name: "UX TEAM", value: 16000 },
+      { name: "UI TEAM", value: 8000 },
+      { name: "BRANDING TEAM", value: 26000 },
+      { name: "GRAPHIC TEAM", value: 17000 },
+      { name: "DESIGN", value: 5500 },
+      { name: "MOTION GRAPHICS", value: 33000 },
+      { name: "DESIGN", value: 25500 },
     ]
   }
 
-  // Get current data based on active filter
-  const currentData = chartData[activeFilter] || chartData[t("adminTeamWallet.periods.annual")]
-  
-  // Find the team with highest value for highlighting
+  const currentData = chartData[activeFilter] || chartData["Annual"]
   const maxValue = Math.max(...currentData.map(item => item.value))
-
-  // Calculate dynamic max for Y-axis
   const dynamicMax = Math.ceil(maxValue / 10000) * 10000 + 10000
 
   useEffect(() => {
     const ctx = chartRef.current?.getContext("2d")
     if (!ctx) return
 
-    // Destroy existing chart
     if (chartInstance.current) {
       chartInstance.current.destroy()
     }
 
-    // Get theme-aware colors
     const getComputedStyle = window.getComputedStyle(document.documentElement)
-    const textColor = getComputedStyle.getPropertyValue('--text-color').trim()
     const subTextColor = getComputedStyle.getPropertyValue('--sub-text-color').trim()
-    const borderColor = getComputedStyle.getPropertyValue('--border-color').trim()
     const chartGridColor = getComputedStyle.getPropertyValue('--chart-grid').trim()
-
-    // Single color for all bars
-    const barColor = "#D10909"
 
     chartInstance.current = new ChartJS(ctx, {
       type: "bar",
@@ -137,13 +109,18 @@ const TeamOverView = () => {
         datasets: [
           {
             data: currentData.map((item) => item.value),
-            backgroundColor: barColor, // Single color for all bars
+            backgroundColor: currentData.map((item) => {
+              return item.value === maxValue ? "#EF4444" : "#B91C1C"
+            }),
             borderColor: "transparent",
             borderWidth: 0,
-            borderRadius: 2,
+            borderRadius: {
+              topLeft: 6,
+              topRight: 6,
+            },
             borderSkipped: false,
             barThickness: 10,
-            maxBarThickness: 10,
+            maxBarThickness: 45,
           },
         ],
       },
@@ -151,7 +128,7 @@ const TeamOverView = () => {
         responsive: true,
         maintainAspectRatio: false,
         animation: {
-          duration: 400,
+          duration: 500,
           easing: 'easeOutQuart'
         },
         plugins: {
@@ -178,52 +155,29 @@ const TeamOverView = () => {
               if (tooltip.body) {
                 const dataIndex = tooltip.dataPoints[0].dataIndex
                 const value = currentData[dataIndex].value
-                const teamName = currentData[dataIndex].name
 
                 const innerHtml = `
                   <div style="
-                    background: var(--bg-color);
-                    border-radius: 12px;
-                    padding: 12px 16px;
+                    background: #EF4444;
+                    border-radius: 8px;
+                    padding: 6px 12px;
                     display: flex;
-                    flex-direction: column;
-                    gap: 4px;
+                    align-items: center;
+                    gap: 6px;
                     font-family: system-ui, -apple-system, sans-serif;
-                    font-size: 13px;
-                    color: var(--text-color);
-                    box-shadow: var(--shadow-color);
-                    border: 1px solid var(--border-color);
-                    backdrop-filter: blur(10px);
-                    max-width: 200px;
+                    font-size: 12px;
+                    color: white;
+                    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+                    font-weight: 600;
                   ">
                     <div style="
-                      display: flex;
-                      align-items: center;
-                      gap: 8px;
-                      margin-bottom: 4px;
-                    ">
-                      <div style="
-                        width: 12px;
-                        height: 12px;
-                        background: #D10909;
-                        border-radius: 50%;
-                        flex-shrink: 0;
-                      "></div>
-                      <span style="font-weight: 600; color: var(--text-color);">${teamName}</span>
-                    </div>
-                    <div style="
-                      font-size: 16px;
-                      font-weight: 700;
-                      color: #D10909;
-                    ">
-                      $${value.toLocaleString()}
-                    </div>
-                    <div style="
-                      font-size: 11px;
-                      color: var(--sub-text-color);
-                    ">
-                      ${t("adminTeamWallet.chart.totalPenalties")} (${activeFilter})
-                    </div>
+                      width: 6px;
+                      height: 6px;
+                      background: white;
+                      border-radius: 50%;
+                      flex-shrink: 0;
+                    "></div>
+                    <span>$${value.toLocaleString()}</span>
                   </div>
                 `
 
@@ -233,8 +187,8 @@ const TeamOverView = () => {
               const position = context.chart.canvas.getBoundingClientRect()
               tooltipEl.style.opacity = "1"
               tooltipEl.style.position = "absolute"
-              tooltipEl.style.left = position.left + window.pageXOffset + tooltip.caretX - 100 + "px"
-              tooltipEl.style.top = position.top + window.pageYOffset + tooltip.caretY - 80 + "px"
+              tooltipEl.style.left = position.left + window.pageXOffset + tooltip.caretX - 40 + "px"
+              tooltipEl.style.top = position.top + window.pageYOffset + tooltip.caretY - 40 + "px"
               tooltipEl.style.pointerEvents = "none"
               tooltipEl.style.zIndex = "1000"
               tooltipEl.style.transition = "all 0.2s ease"
@@ -251,13 +205,12 @@ const TeamOverView = () => {
               font: {
                 size: 9,
                 family: "system-ui, -apple-system, sans-serif",
-                weight: "500",
+                weight: "400",
               },
-              maxRotation: 45, // Diagonal labels for responsiveness
+              maxRotation: 45,
               minRotation: 45,
-              padding: 4,
+              padding: 8,
               autoSkip: false,
-              display: true,
             },
             border: {
               display: false,
@@ -268,7 +221,7 @@ const TeamOverView = () => {
             max: dynamicMax,
             grid: {
               color: chartGridColor,
-              borderDash: [3, 3],
+              borderDash: [4, 4],
               drawOnChartArea: true,
               drawTicks: false,
             },
@@ -286,7 +239,7 @@ const TeamOverView = () => {
                 return value
               },
               stepSize: 10000,
-              padding: 12,
+              padding: 10,
             },
             border: {
               display: false,
@@ -296,20 +249,10 @@ const TeamOverView = () => {
         layout: {
           padding: {
             top: 20,
-            right: 20,
-            bottom: 25, // Less bottom padding for less white space
-            left: 20,
+            right: 8,
+            bottom: 40,
+            left: 8,
           },
-        },
-        elements: {
-          bar: {
-            borderRadius: 6,
-            borderSkipped: false,
-          },
-        },
-        interaction: {
-          intersect: false,
-          mode: "index",
         },
         onHover: (event, elements) => {
           event.native.target.style.cursor = elements.length > 0 ? "pointer" : "default"
@@ -322,37 +265,42 @@ const TeamOverView = () => {
         chartInstance.current.destroy()
       }
     }
-  }, [activeFilter, currentData, maxValue, dynamicMax, t])
+  }, [activeFilter, currentData, maxValue, dynamicMax])
 
-  const filters = [t("adminTeamWallet.periods.monthly"), t("adminTeamWallet.periods.quarter"), t("adminTeamWallet.periods.annual")]
+  const filters = ["Monthly", "Quarter", "Annual"]
 
   return (
-    <div className='w-full h-max flex flex-col xl:flex-row gap-2 xl:gap-0' style={{ backgroundColor: "var(--container-color)" }}>
-      {/* Chart Section */}
-      <div className='w-full xl:w-[65%] h-full p-3 sm:p-4 lg:p-5 xl:p-6 rounded-2xl xl:rounded-l-2xl xl:rounded-r-none' style={{ backgroundColor: "var(--bg-color)" }}>
-        <div className="w-full h-full">
+    <div className='w-full h-[450px] rounded-xl p-5' style={{ backgroundColor: "var(--bg-color)", boxShadow: "var(--shadow-sm)" }}>
+      <div className="w-full h-full flex gap-5">
+        {/* Chart Section */}
+        <div className='w-[60%] h-full flex flex-col'>
           {/* Header */}
-          <div className="mb-4 lg:mb-6">
-            {/* Title and Filter Buttons */}
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4 mb-4">
+          <div className="mb-4">
+            <div className="flex justify-between items-start mb-4">
               <div className="flex-1">
-                <h2 className="text-sm lg:text-[14px] font-bold text-start mb-2" style={{ color: "var(--text-color)" }}>{t("adminTeamWallet.chart.teamPenaltiesOverview")}</h2>
-                <p className="text-[8px] lg:text-[9px] text-start" style={{ color: "var(--sub-text-color)" }}>{t("adminTeamWallet.chart.description")}</p>
+                <h2 className="text-[12px] font-bold mb-1" style={{ color: "var(--text-color)" }}>
+                  Team Penalties Overview
+                </h2>
+                <p className="text-[8px]" style={{ color: "var(--sub-text-color)" }}>
+                  Shows total penalties for each team in this department
+                </p>
               </div>
               
               {/* Filter Buttons */}
-              <div className="inline-flex rounded-xl p-1 shrink-0" style={{ backgroundColor: "var(--container-color)" }}>
+              <div className="flex items-center bg-[#F8F8FF] rounded-[20px] ml-1 p-2 gap-1.5">
                 {filters.map((filter) => (
                   <button
                     key={filter}
                     onClick={() => setActiveFilter(filter)}
-                    className={`px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 ${
+                    className={`px-4 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 ${
                       activeFilter === filter
                         ? "text-white shadow-sm"
                         : "hover:bg-[var(--hover-color)]"
                     }`}
                     style={{
-                      backgroundColor: activeFilter === filter ? "var(--accent-color)" : "transparent",
+                      background: activeFilter === filter 
+                        ? "linear-gradient(135deg, #09D1C7 0%, #15919B 100%)" 
+                        : "transparent",
                       color: activeFilter === filter ? "white" : "var(--sub-text-color)"
                     }}
                   >
@@ -364,184 +312,178 @@ const TeamOverView = () => {
           </div>
 
           {/* Chart Container */}
-          <div className="w-full h-[280px] sm:h-[300px] lg:h-[320px] xl:h-[320px] relative">
+          <div className="flex-1 relative min-h-0">
             <canvas ref={chartRef}></canvas>
           </div>
         </div>
-      </div>
 
-      {/* Right Section - Responsive Department Details */}
-      <div className="w-full xl:w-[35%] h-auto xl:h-[452px] pt-3 xl:pt-6 flex flex-col justify-start items-center p-3 gap-2 rounded-2xl xl:rounded-r-2xl xl:rounded-l-none" style={{ backgroundColor: "var(--bg-color)" }}>
-        {/* Department Dropdown */}
-        <div className="relative w-full mb-2">
-          <button
-            onClick={() => setShowDepartmentDropdown(!showDepartmentDropdown)}
-            className="w-full h-8 sm:h-10 lg:h-8 px-2 lg:px-3 rounded-[22px] flex justify-center items-center gap-2 font-semibold shadow-sm text-xs"
-            style={{ 
-              background: "linear-gradient(135deg, var(--accent-color), var(--accent-hover))",
-              border: "1px solid var(--accent-color)",
-              color: "white"
-            }}
-          >
-            <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(255,255,255,0.2)" }}>
-              <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
-              </svg>
-            </div>
-            <span className="text-xs font-bold flex-1 text-left truncate">{selectedDepartment}</span>
-            <svg className={`w-3 h-3 text-white transition-transform ${showDepartmentDropdown ? 'rotate-180' : ''}`} fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
-          </button>
-          {showDepartmentDropdown && (
-            <div className="absolute top-10 left-0 w-full rounded-xl shadow-lg z-10" style={{ backgroundColor: "var(--bg-color)", border: "1px solid var(--border-color)" }}>
-              {departments.map((dept) => (
-                <button
-                  key={dept}
-                  onClick={() => {
-                    setSelectedDepartment(dept)
-                    setShowDepartmentDropdown(false)
-                  }}
-                  className="w-full px-2 py-2 text-left text-xs hover:bg-[var(--hover-color)] first:rounded-t-xl last:rounded-b-xl transition-colors"
-                  style={{ color: "var(--sub-text-color)" }}
-                >
-                  {dept}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Best Compliance Team Section */}
-        <div className="flex flex-col gap-2 w-full">
-          <div className="flex flex-col items-center gap-1">
+        {/* Right Section */}
+        <div className="w-[40%] h-full flex flex-col gap-3">
+          {/* Department Dropdown */}
+          <div className="relative w-full">
             <button
-              className="w-full h-8 sm:h-10 lg:h-[40px] rounded-[22px] flex items-center gap-2 px-2 text-xs"
-              disabled
+              onClick={() => setShowDepartmentDropdown(!showDepartmentDropdown)}
+              className="w-full h-10 px-3 rounded-xl flex justify-between items-center gap-2 font-semibold shadow-sm text-xs transition-all duration-200 hover:shadow-md"
               style={{ 
-                background: "linear-gradient(135deg, var(--container-color), var(--hover-color))",
-                border: "1px solid var(--border-color)"
+                background: "linear-gradient(135deg, #09D1C7 0%, #15919B 100%)",
+                border: "1px solid transparent",
+                color: "white"
               }}
             >
-              <img src="/assets/AdminTeamWallet/best.svg" alt="" className="w-4 h-4" />
-              <span className="text-xs font-semibold flex-1 text-left" style={{ color: "var(--accent-color)" }}>{t("adminTeamWallet.sections.bestComplianceTeam")}</span>
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ backgroundColor: "rgba(255,255,255,0.2)" }}>
+                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                  </svg>
+                </div>
+                <span className="text-xs font-bold">{selectedDepartment}</span>
+              </div>
+              <ChevronDown className={`w-4 h-4 text-white transition-transform ${showDepartmentDropdown ? 'rotate-180' : ''}`} />
             </button>
+            
+            {showDepartmentDropdown && (
+              <div className="absolute top-12 left-0 w-full rounded-lg shadow-lg z-10 overflow-hidden" style={{ backgroundColor: "var(--bg-color)", border: "1px solid var(--border-color)" }}>
+                {departments.map((dept) => (
+                  <button
+                    key={dept}
+                    onClick={() => {
+                      setSelectedDepartment(dept)
+                      setShowDepartmentDropdown(false)
+                    }}
+                    className="w-full px-3 py-2 text-left text-xs hover:bg-[var(--hover-color)] transition-colors"
+                    style={{ color: "var(--text-color)" }}
+                  >
+                    {dept}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Best Compliance Team Section */}
+          <div className="flex flex-col gap-2">
             <button
               onClick={() => setShowBestPopup(true)}
-              className="text-[10px] px-1 py-0.5 mt-2 rounded hover:bg-[var(--hover-color)] transition-colors"
+              className="w-full h-9 rounded-xl flex items-center justify-between gap-2 px-3 text-xs transition-all duration-200 hover:shadow-sm cursor-pointer"
               style={{ 
-                color: "var(--accent-color)",
-                border: "1px solid var(--accent-color)"
-              }}
-            >
-              {t("adminTeamWallet.buttons.viewAll")}
-            </button>
-          </div>
-          {/* Show only one team */}
-          <div className="flex flex-col gap-1 mt-1">
-            <div className="w-full rounded-[22px] p-2 flex items-center gap-2" style={{ backgroundColor: "var(--bg-color)", border: "1px solid var(--border-color)" }}>
-              <div className="w-auto p-2 h-8 flex justify-center items-center rounded-lg" style={{ backgroundColor: "var(--accent-color)" }}>
-                <span className="text-xs font-bold text-white">{departmentData[selectedDepartment].best[0].amount}</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="font-bold text-xs mb-0.5 truncate" style={{ color: "var(--text-color)" }}>{departmentData[selectedDepartment].best[0].team}</h4>
-                <p className="text-[9px] line-clamp-2" style={{ color: "var(--sub-text-color)" }}>{departmentData[selectedDepartment].best[0].description}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Needs Attention Section */}
-        <div className="flex flex-col gap-2 w-full">
-          <div className="flex flex-col items-center gap-1">
-            <button
-              className="w-full h-8 sm:h-10 lg:h-[40px] rounded-[22px] flex items-center gap-2 px-2 text-xs"
-              disabled
-              style={{ 
-                background: "linear-gradient(135deg, var(--container-color), var(--hover-color))",
+                background: "linear-gradient(135deg, var(--hover-color), var(--container-color))",
                 border: "1px solid var(--border-color)"
               }}
             >
-              <img src="/assets/AdminTeamWallet/need.svg" alt="" className="w-4 h-4" />
-              <span className="text-xs font-semibold flex-1 text-left" style={{ color: "var(--sub-text-color)" }}>{t("adminTeamWallet.sections.needsAttention")}</span>
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4" style={{ color: "var(--accent-color)" }} />
+                <span className="text-xs font-semibold" style={{ color: "var(--accent-color)" }}>
+                  Best Compliance Team
+                </span>
+              </div>
+              <ChevronDown className="w-3 h-3" style={{ color: "var(--accent-color)" }} />
             </button>
+
+            {/* Best Team Card */}
+            <div className="w-full rounded-xl p-3 flex items-center gap-3" style={{ backgroundColor: "rgba(9, 209, 199, 0.05)", border: "1px solid var(--border-color)" }}>
+              <div className="px-3 py-1.5 h-auto flex justify-center items-center rounded-lg" style={{ background: "linear-gradient(135deg, #09D1C7 0%, #15919B 100%)" }}>
+                <span className="text-sm font-bold text-white">{departmentData[selectedDepartment].best[0].amount}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-bold text-xs mb-0.5" style={{ color: "var(--text-color)" }}>
+                  {departmentData[selectedDepartment].best[0].team}
+                </h4>
+                <p className="text-[10px] leading-tight" style={{ color: "var(--sub-text-color)" }}>
+                  {departmentData[selectedDepartment].best[0].description}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Needs Attention Section */}
+          <div className="flex flex-col gap-2">
             <button
               onClick={() => setShowAttentionPopup(true)}
-              className="text-[10px] px-1 py-0.5 mt-2 rounded hover:bg-[var(--hover-color)] transition-colors"
+              className="w-full h-9 rounded-xl flex items-center justify-between gap-2 px-3 text-xs transition-all duration-200 hover:shadow-sm cursor-pointer"
               style={{ 
-                color: "#ef4444",
-                border: "1px solid #ef4444"
+                background: "linear-gradient(135deg, var(--hover-color), var(--container-color))",
+                border: "1px solid var(--border-color)"
               }}
             >
-              {t("adminTeamWallet.buttons.viewAll")}
-            </button>
-          </div>
-          {/* Show two teams */}
-          <div className="flex flex-col gap-1 mt-1">
-            {departmentData[selectedDepartment].attention.slice(0, 2).map((item, idx) => (
-              <div key={idx} className="w-full rounded-xl p-2 flex items-center gap-2" style={{ backgroundColor: "var(--bg-color)", border: "1px solid var(--border-color)" }}>
-                <div className="w-auto p-2 h-8 flex justify-center items-center rounded-lg" style={{ backgroundColor: "rgba(239, 68, 68, 0.1)" }}>
-                  <span className="text-xs font-bold" style={{ color: "#ef4444" }}>{item.amount}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-bold text-xs mb-0.5 truncate" style={{ color: "var(--text-color)" }}>{item.team}</h4>
-                  <p className="text-[9px] line-clamp-2" style={{ color: "var(--sub-text-color)" }}>{item.description}</p>
-                </div>
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4" style={{ color: "#6B7280" }} />
+                <span className="text-xs font-semibold" style={{ color: "var(--sub-text-color)" }}>
+                  Needs Attention
+                </span>
               </div>
-            ))}
+              <ChevronDown className="w-3 h-3" style={{ color: "var(--sub-text-color)" }} />
+            </button>
+
+            {/* Attention Team Cards */}
+            <div className="flex flex-col gap-1.5">
+              {departmentData[selectedDepartment].attention.slice(0, 2).map((item, idx) => (
+                <div key={idx} className="w-full rounded-xl p-3 flex items-center gap-3" style={{ backgroundColor: "rgba(239, 68, 68, 0.05)", border: "1px solid var(--border-color)" }}>
+                  <div className="px-3 py-1.5 h-auto flex justify-center items-center rounded-lg" style={{ backgroundColor: "rgba(239, 68, 68, 0.1)" }}>
+                    <span className="text-sm font-bold" style={{ color: "#EF4444" }}>{item.amount}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-bold text-xs mb-0.5" style={{ color: "var(--text-color)" }}>
+                      {item.team}
+                    </h4>
+                    <p className="text-[10px] leading-tight" style={{ color: "var(--sub-text-color)" }}>
+                      {item.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-
-        {/* Popup for Best Compliance Team */}
-        {showBestPopup && (
-          <div className="fixed inset-0 bg-black/20 backdrop-blur-lg bg-opacity-30 flex items-center justify-center z-50 p-4">
-            <div className="rounded-2xl shadow-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto animate-popup-scale" style={{ backgroundColor: "var(--bg-color)" }}>
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="text-xs font-bold" style={{ color: "var(--accent-color)" }}>{t("adminTeamWallet.popups.allBestComplianceTeams")}</h3>
-                <button onClick={() => setShowBestPopup(false)} className="text-lg hover:opacity-70 transition-opacity" style={{ color: "var(--sub-text-color)" }}>&times;</button>
-              </div>
-              <div className="flex flex-col gap-2">
-                {departmentData[selectedDepartment].best.map((item, idx) => (
-                  <div key={idx} className="w-full rounded-xl p-2 flex items-center gap-2" style={{ backgroundColor: "var(--bg-color)", border: "1px solid var(--border-color)" }}>
-                    <div className="w-auto p-2 h-8 flex justify-center items-center rounded-lg" style={{ backgroundColor: "var(--accent-color)" }}>
-                      <span className="text-xs font-bold text-white">{item.amount}</span>
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-bold text-xs mb-0.5" style={{ color: "var(--text-color)" }}>{item.team}</h4>
-                      <p className="text-[9px]" style={{ color: "var(--sub-text-color)" }}>{item.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Popup for Needs Attention */}
-        {showAttentionPopup && (
-          <div className="fixed inset-0 bg-black/20 backdrop-blur-lg bg-opacity-30 flex items-center justify-center z-50 p-4">
-            <div className="rounded-2xl shadow-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto animate-popup-scale" style={{ backgroundColor: "var(--bg-color)" }}>
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="text-xs font-bold" style={{ color: "#ef4444" }}>{t("adminTeamWallet.popups.allNeedsAttentionTeams")}</h3>
-                <button onClick={() => setShowAttentionPopup(false)} className="text-lg hover:opacity-70 transition-opacity" style={{ color: "var(--sub-text-color)" }}>&times;</button>
-              </div>
-              <div className="flex flex-col gap-2">
-                {departmentData[selectedDepartment].attention.map((item, idx) => (
-                  <div key={idx} className="w-full rounded-xl p-2 flex items-center gap-2" style={{ backgroundColor: "var(--bg-color)", border: "1px solid var(--border-color)" }}>
-                    <div className="w-auto p-2 h-8 flex justify-center items-center rounded-lg" style={{ backgroundColor: "rgba(239, 68, 68, 0.1)" }}>
-                      <span className="text-xs font-bold" style={{ color: "#ef4444" }}>{item.amount}</span>
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-bold text-xs mb-0.5" style={{ color: "var(--text-color)" }}>{item.team}</h4>
-                      <p className="text-[9px]" style={{ color: "var(--sub-text-color)" }}>{item.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Popups remain the same */}
+      {showBestPopup && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowBestPopup(false)}>
+          <div className="rounded-xl shadow-2xl p-5 w-full max-w-md max-h-[80vh] overflow-y-auto" style={{ backgroundColor: "var(--bg-color)" }} onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-base font-bold" style={{ color: "var(--accent-color)" }}>All Best Compliance Teams</h3>
+              <button onClick={() => setShowBestPopup(false)} className="text-xl hover:opacity-70 transition-opacity" style={{ color: "var(--sub-text-color)" }}>&times;</button>
+            </div>
+            <div className="flex flex-col gap-2">
+              {departmentData[selectedDepartment].best.map((item, idx) => (
+                <div key={idx} className="w-full rounded-lg p-3 flex items-center gap-3" style={{ backgroundColor: "rgba(9, 209, 199, 0.05)", border: "1px solid var(--border-color)" }}>
+                  <div className="px-3 py-1.5 flex justify-center items-center rounded-lg" style={{ background: "linear-gradient(135deg, #09D1C7 0%, #15919B 100%)" }}>
+                    <span className="text-xs font-bold text-white">{item.amount}</span>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-xs mb-0.5" style={{ color: "var(--text-color)" }}>{item.team}</h4>
+                    <p className="text-[10px]" style={{ color: "var(--sub-text-color)" }}>{item.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAttentionPopup && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowAttentionPopup(false)}>
+          <div className="rounded-xl shadow-2xl p-5 w-full max-w-md max-h-[80vh] overflow-y-auto" style={{ backgroundColor: "var(--bg-color)" }} onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-base font-bold" style={{ color: "#EF4444" }}>All Needs Attention Teams</h3>
+              <button onClick={() => setShowAttentionPopup(false)} className="text-xl hover:opacity-70 transition-opacity" style={{ color: "var(--sub-text-color)" }}>&times;</button>
+            </div>
+            <div className="flex flex-col gap-2">
+              {departmentData[selectedDepartment].attention.map((item, idx) => (
+                <div key={idx} className="w-full rounded-lg p-3 flex items-center gap-3" style={{ backgroundColor: "rgba(239, 68, 68, 0.05)", border: "1px solid var(--border-color)" }}>
+                  <div className="px-3 py-1.5 flex justify-center items-center rounded-lg" style={{ backgroundColor: "rgba(239, 68, 68, 0.1)" }}>
+                    <span className="text-xs font-bold" style={{ color: "#EF4444" }}>{item.amount}</span>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-xs mb-0.5" style={{ color: "var(--text-color)" }}>{item.team}</h4>
+                    <p className="text-[10px]" style={{ color: "var(--sub-text-color)" }}>{item.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
