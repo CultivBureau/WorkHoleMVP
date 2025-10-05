@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, useRef } from "react"
 import { Edit, Trash2, Eye } from "lucide-react"
 import EditRole from "./edit_role"
 import { useTranslation } from "react-i18next"
@@ -131,7 +131,36 @@ const RolesTable = () => {
     const [isEditOpen, setIsEditOpen] = useState(false)
     const [selectedRole, setSelectedRole] = useState(null)
     const [currentPage, setCurrentPage] = useState(1)
-    const itemsPerPage = 6
+    const [itemsPerPage, setItemsPerPage] = useState(7)
+
+    const tableContainerRef = useRef(null)
+
+    // Calculate items per page based on table height
+    useEffect(() => {
+        const calculateItemsPerPage = () => {
+            if (tableContainerRef.current) {
+                const containerHeight = tableContainerRef.current.clientHeight;
+                const headerHeight = 48; // Approximate header height (py-3 = 12px top + 12px bottom + text)
+                const rowHeight = 68; // Approximate row height (py-4 = 16px top + 16px bottom + content)
+
+                const availableHeight = containerHeight - headerHeight;
+                const calculatedRows = Math.floor(availableHeight / rowHeight);
+
+                // Ensure at least 1 row and maximum reasonable amount
+                const rows = Math.max(1, Math.min(calculatedRows, 20));
+                setItemsPerPage(rows);
+            }
+        };
+
+        // Calculate on mount
+        calculateItemsPerPage();
+
+        // Recalculate on window resize
+        window.addEventListener('resize', calculateItemsPerPage);
+
+        // Cleanup
+        return () => window.removeEventListener('resize', calculateItemsPerPage);
+    }, [isEditOpen]); // Recalculate when edit panel opens/closes
 
     // Filter the data based on selected filters
     const filteredData = useMemo(() => {
@@ -192,7 +221,7 @@ const RolesTable = () => {
         }
     }
 
-    // Create empty rows to maintain consistent table height (6 rows total)
+    // Create empty rows to maintain consistent table height
     const emptyRowsNeeded = itemsPerPage - currentPageData.length;
     const emptyRows = Array(emptyRowsNeeded).fill(null);
 
@@ -236,8 +265,8 @@ const RolesTable = () => {
     };
 
     return (
-        <div className="flex flex-col h-full min-h-0" style={{ direction: isArabic ? 'rtl' : 'ltr' }}>
-            {/* Filters and header section - keep this outside the scroll container */}
+        <div className="flex flex-col" style={{ direction: isArabic ? 'rtl' : 'ltr' }}>
+            {/* Filters and header section */}
             <div className="mb-4 flex-shrink-0">
                 <div className="flex bg-[var(--bg-color)] p-4 w-100%] h-max shadow-xl rounded-3xl border border-[var(--border-color)] flex-wrap items-center gap-4 justify-between">
                     <div className="flex flex-wrap items-center gap-4">
@@ -256,7 +285,6 @@ const RolesTable = () => {
                                 <option value="HR">{t('employees.professionalInfo.humanResources')}</option>
                                 <option value="Manager">{t('employees.professionalInfo.manager')}</option>
                                 <option value="Supervisor">{t('profile.teamLead')}</option>
-                                {/* Other options... */}
                             </select>
                         </div>
 
@@ -300,7 +328,6 @@ const RolesTable = () => {
                                 className="h-8 w-8 border border-[var(--border-color)] rounded-md bg-[var(--bg-color)] hover:bg-[var(--hover-color)] flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <svg className="h-4 w-4 text-[var(--sub-text-color)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    {/* Correctly flip the arrows for RTL */}
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isArabic ? "M15 19l-7-7 7-7" : "M15 19l-7-7 7-7"} />
                                 </svg>
                             </button>
@@ -310,7 +337,6 @@ const RolesTable = () => {
                                 className="h-8 w-8 border border-[var(--border-color)] rounded-md bg-[var(--bg-color)] hover:bg-[var(--hover-color)] flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <svg className="h-4 w-4 text-[var(--sub-text-color)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    {/* Correctly flip the arrows for RTL */}
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isArabic ? "M9 5l7 7-7 7" : "M9 5l7 7-7 7"} />
                                 </svg>
                             </button>
@@ -319,117 +345,57 @@ const RolesTable = () => {
                 </div>
             </div>
 
-            {/* Main content area with table and edit panel */}
-            <div className="flex gap-4 h-full min-h-0 flex-1">
-                {/* In Arabic, we'll reverse the order and the width logic */}
-                {isArabic ? (
-                    <>
-                        {/* Edit Role Section - in Arabic comes from the left */}
-                        {isEditOpen && (
-                            <div className="w-[30%] transition-all duration-300 h-full min-h-0">
-                                <EditRole
-                                    isOpen={isEditOpen}
-                                    onClose={() => setIsEditOpen(false)}
-                                    roleData={selectedRole}
-                                    onSave={handleSaveRole}
-                                />
-                            </div>
-                        )}
+            {/* Main content area with table and edit panel - 80vh height */}
+            <div className={`flex gap-4 ${isArabic ? 'flex-row-reverse' : ''}`} style={{ height: '80vh' }}>
+                {/* Table Section */}
+                <div className={`${isEditOpen ? 'w-[75%]' : 'w-full'} transition-all duration-300 h-full flex flex-col overflow-hidden`}>
+                    <div ref={tableContainerRef} className="flex-1 overflow-auto border border-[var(--border-color)] rounded-lg">
+                        <table className="min-w-[800px] w-full">
+                            <thead className="bg-[var(--bg-table-header)] sticky top-0 z-10">
+                                <tr>
+                                    <th className={`py-3 px-4 text-sm font-medium text-[var(--text-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
+                                        {t('roles.table.role')}
+                                    </th>
+                                    <th className={`py-3 px-4 text-sm font-medium text-[var(--text-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
+                                        {t('roles.table.users')}
+                                    </th>
+                                    <th className={`py-3 px-4 text-sm font-medium text-[var(--text-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
+                                        {t('roles.table.actions')}
+                                    </th>
+                                    <th className={`py-3 px-4 text-sm font-medium text-[var(--text-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
+                                        {t('roles.table.lastUpdated')}
+                                    </th>
+                                    <th className={`py-3 px-4 text-sm font-medium text-[var(--text-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
+                                        {t('roles.table.status')}
+                                    </th>
+                                    <th className={`py-3 px-4 text-sm font-medium text-[var(--text-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
+                                        {t('roles.table.actions')}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {renderTableRows()}
+                                {/* Empty rows */}
+                                {emptyRows.map((_, index) => (
+                                    <tr key={`empty-${index}`} className="border-b border-[var(--border-color)] last:border-b-0">
+                                        <td colSpan={6} className="h-[68px]"></td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-                        {/* Table Section */}
-                        <div className={`${isEditOpen ? 'w-[70%]' : 'w-full'} transition-all duration-300 h-full min-h-0 flex flex-col`}>
-                            {/* Table container with horizontal scroll */}
-                            <div className="overflow-x-auto flex-1 border border-[var(--border-color)] rounded-lg">
-                                <table className="min-w-[800px] w-full">
-                                    <thead className="bg-[var(--bg-table-header)]">
-                                        <tr>
-                                            <th className="py-3 px-4 text-sm font-medium text-[var(--text-color)] text-right">
-                                                {t('roles.table.role')}
-                                            </th>
-                                            <th className="py-3 px-4 text-sm font-medium text-[var(--text-color)] text-right">
-                                                {t('roles.table.users')}
-                                            </th>
-                                            <th className="py-3 px-4 text-sm font-medium text-[var(--text-color)] text-right">
-                                                {t('roles.table.actions')}
-                                            </th>
-                                            <th className="py-3 px-4 text-sm font-medium text-[var(--text-color)] text-right">
-                                                {t('roles.table.lastUpdated')}
-                                            </th>
-                                            <th className="py-3 px-4 text-sm font-medium text-[var(--text-color)] text-right">
-                                                {t('roles.table.status')}
-                                            </th>
-                                            <th className="py-3 px-4 text-sm font-medium text-[var(--text-color)] text-right">
-                                                {t('roles.table.actions')}
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {renderTableRows()}
-                                        {/* Empty rows */}
-                                        {emptyRows.map((_, index) => (
-                                            <tr key={`empty-${index}`} className="border-b border-[var(--border-color)] last:border-b-0">
-                                                <td colSpan={6} className="h-[52px]"></td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </>
-                ) : (
-                    <>
-                        {/* Table Section */}
-                        <div className={`${isEditOpen ? 'w-[70%]' : 'w-full'} transition-all duration-300 h-full min-h-0 flex flex-col`}>
-                            {/* Table container with horizontal scroll */}
-                            <div className="overflow-x-auto flex-1 border border-[var(--border-color)] rounded-lg">
-                                <table className="min-w-[800px] w-full">
-                                    <thead className="bg-[var(--bg-table-header)]">
-                                        <tr>
-                                            <th className="py-3 px-4 text-sm font-medium text-[var(--text-color)] text-left">
-                                                {t('roles.table.role')}
-                                            </th>
-                                            <th className="py-3 px-4 text-sm font-medium text-[var(--text-color)] text-left">
-                                                {t('roles.table.users')}
-                                            </th>
-                                            <th className="py-3 px-4 text-sm font-medium text-[var(--text-color)] text-left">
-                                                {t('roles.table.actions')}
-                                            </th>
-                                            <th className="py-3 px-4 text-sm font-medium text-[var(--text-color)] text-left">
-                                                {t('roles.table.lastUpdated')}
-                                            </th>
-                                            <th className="py-3 px-4 text-sm font-medium text-[var(--text-color)] text-left">
-                                                {t('roles.table.status')}
-                                            </th>
-                                            <th className="py-3 px-4 text-sm font-medium text-[var(--text-color)] text-left">
-                                                {t('roles.table.actions')}
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {renderTableRows()}
-                                        {/* Empty rows */}
-                                        {emptyRows.map((_, index) => (
-                                            <tr key={`empty-${index}`} className="border-b border-[var(--border-color)] last:border-b-0">
-                                                <td colSpan={6} className="h-[52px]"></td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        {/* Edit Role Section - in English comes from the right */}
-                        {isEditOpen && (
-                            <div className="w-[30%] transition-all duration-300 h-full min-h-0">
-                                <EditRole
-                                    isOpen={isEditOpen}
-                                    onClose={() => setIsEditOpen(false)}
-                                    roleData={selectedRole}
-                                    onSave={handleSaveRole}
-                                />
-                            </div>
-                        )}
-                    </>
+                {/* Edit Role Section - Matches table height exactly */}
+                {isEditOpen && (
+                    <div className="w-[25%] transition-all duration-300 h-full overflow-hidden">
+                        <EditRole
+                            isOpen={isEditOpen}
+                            onClose={() => setIsEditOpen(false)}
+                            roleData={selectedRole}
+                            onSave={handleSaveRole}
+                        />
+                    </div>
                 )}
             </div>
         </div>
