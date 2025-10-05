@@ -36,6 +36,7 @@ import Error from "./components/Error/Error";
 import { GlobalErrorContext } from "./contexts/GlobalErrorContext";
 import { useTokenRefresh } from './hooks/useTokenRefresh';
 import AdminTeamWallet from "./pages/admin/TeamWallet/page";
+import Company from "./pages/admin/company/page";
 
 function App() {
   useTokenRefresh();
@@ -128,6 +129,7 @@ function App() {
                         </ProtectedRoute>
                       }
                     />
+                    
                     <Route
                       path="/pages/User/profile"
                       element={
@@ -175,6 +177,14 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <NewEmployee />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/pages/admin/company"
+                    element={
+                      <ProtectedRoute>
+                        <Company />
                       </ProtectedRoute>
                     }
                   />
