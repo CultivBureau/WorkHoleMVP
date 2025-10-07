@@ -23,7 +23,7 @@ export default function NewEmployeeForm() {
                     <div className="w-full h-1 bg-[var(--border-color)] rounded" />
                     <div
                         className={`absolute top-0 h-1 gradient-bg rounded transition-all duration-300 ${isArabic ? 'right-0' : 'left-0'}`}
-                        style={{ width: `${((step + 1) / 4) * 100}%` }}
+                        style={{ width: `${((step + 1) / steps.length) * 100}%` }}
                     />
                 </div>
 
@@ -32,20 +32,17 @@ export default function NewEmployeeForm() {
                     {steps.map((stepItem, idx) => {
                         const IconComponent = stepItem.icon;
                         const isActive = idx === step;
+                        const isCompleted = idx < step;
 
                         return (
-                            <div
-                                key={stepItem.label}
-                                className="flex items-center"
-                            >
-                                <IconComponent
-                                    size={16}
-                                    className={`${isArabic ? 'ml-2' : 'mr-2'} ${isActive
-                                        ? 'text-[var(--accent-color)]'
-                                        : 'text-[var(--sub-text-color)]'
-                                        }`}
-                                />
-                                <span className={`text-sm font-medium ${isActive
+                            <div key={stepItem.label} className="flex items-center">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isArabic ? 'ml-2' : 'mr-2'} ${isActive || isCompleted
+                                        ? 'gradient-bg text-white'
+                                        : 'bg-[var(--container-color)] text-[var(--sub-text-color)]'
+                                    }`}>
+                                    <IconComponent size={16} />
+                                </div>
+                                <span className={`text-sm font-medium ${isActive || isCompleted
                                     ? 'gradient-text'
                                     : 'text-[var(--sub-text-color)]'
                                     }`}>

@@ -396,7 +396,7 @@ const RolesTable = () => {
                             onSave={handleSaveRole}
                         />
                     </div>
-                )}
+                    )}
             </div>
         </div>
     );

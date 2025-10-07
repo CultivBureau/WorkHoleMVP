@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronLeft, ChevronRight, Search, LayoutGrid, TableIcon, Plus, Eye, Edit, Trash2 } from "lucide-react";
+import ViewEmployeePopup from "../all-employees/view-employee";
+import EditEmployeePopup from "../all-employees/edit-employee";
 
 const CompanyTable = () => {
     const { t, i18n } = useTranslation();
@@ -14,6 +16,10 @@ const CompanyTable = () => {
     const [statusFilter, setStatusFilter] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [viewMode, setViewMode] = useState("table"); // Default to table view
+    const [selectedEmployee, setSelectedEmployee] = useState(null);
+    const [isViewOpen, setIsViewOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const joinDateInputRef = useRef(null);
 
     const itemsPerPage = 6;
 
@@ -152,6 +158,14 @@ const CompanyTable = () => {
             <button
                 className="p-1 rounded hover:bg-gray-100 transition-colors"
                 title="View"
+                onClick={(e) => { e.stopPropagation(); setSelectedEmployee(employee); setIsViewOpen(true); }}
+            >
+                <Eye className="w-3 h-3 md:w-4 md:h-4" style={{ color: 'var(--sub-text-color)' }} />
+            </button>
+            <button
+                className="p-1 rounded hover:bg-gray-100 transition-colors"
+                title="Edit"
+                onClick={(e) => { e.stopPropagation(); setSelectedEmployee(employee); setIsEditOpen(true); }}
             >
                 <Edit className="w-3 h-3 md:w-4 md:h-4" style={{ color: 'var(--sub-text-color)' }} />
             </button>
@@ -165,6 +179,7 @@ const CompanyTable = () => {
     );
 
     return (
+        <>
         <div className="w-full" dir={isArabic ? "rtl" : "ltr"}>
             {/* Filters and Controls Container */}
             <div
@@ -204,6 +219,7 @@ const CompanyTable = () => {
                     <div className="md:col-span-1 col-span-1 w-full">
                         <div className="relative w-full">
                             <input
+                                ref={joinDateInputRef}
                                 type="date"
                                 value={joinDateFilter}
                                 onChange={(e) => setJoinDateFilter(e.target.value)}
@@ -212,12 +228,25 @@ const CompanyTable = () => {
                                     colorScheme: 'var(--theme)'
                                 }}
                             />
-                            <div className="w-full border text-center rounded-full px-4 py-2 text-xs font-medium gradient-text transition-all duration-200 pointer-events-none"
+                            <div
+                                className="w-full border text-center rounded-full px-4 py-2 text-xs font-medium gradient-text transition-all duration-200"
                                 style={{
                                     borderColor: 'var(--border-color)',
                                     backgroundColor: 'var(--bg-color)',
-                                    color: 'var(--accent-color)'
-                                }}>
+                                    color: 'var(--accent-color)',
+                                    cursor: 'pointer'
+                                }}
+                                onClick={() => {
+                                    if (joinDateInputRef.current) {
+                                        if (typeof joinDateInputRef.current.showPicker === 'function') {
+                                            joinDateInputRef.current.showPicker();
+                                        } else {
+                                            joinDateInputRef.current.focus();
+                                            joinDateInputRef.current.click();
+                                        }
+                                    }
+                                }}
+                            >
                                 {joinDateFilter ? new Date(joinDateFilter).toLocaleDateString() : t("employees.filters.joinDate")}
                             </div>
                         </div>
@@ -458,6 +487,19 @@ const CompanyTable = () => {
                 </div>
             </div>
         </div>
+        {/* Popups */}
+        <ViewEmployeePopup
+            employee={selectedEmployee}
+            isOpen={isViewOpen}
+            onClose={() => setIsViewOpen(false)}
+        />
+        <EditEmployeePopup
+            employee={selectedEmployee}
+            isOpen={isEditOpen}
+            onClose={() => setIsEditOpen(false)}
+            onSave={(updated) => { console.log('Updated employee', updated); }}
+        />
+        </>
     );
 };
 

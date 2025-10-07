@@ -10,7 +10,10 @@ const EmployeeCard = ({
     status = "Active",
     avatar = "https://i.pravatar.cc/150?img=1",
     onCardClick,
-    className = ""
+    className = "",
+    onView,
+    onEdit,
+    onDelete
 }) => {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
@@ -68,22 +71,31 @@ const EmployeeCard = ({
     const handleView = (e) => {
         e.stopPropagation();
         setIsDropdownOpen(false);
+        if (onView) {
+            onView();
+            return;
+        }
         console.log("View employee:", name);
-        // Add your view logic here
     };
 
     const handleEdit = (e) => {
         e.stopPropagation();
         setIsDropdownOpen(false);
+        if (onEdit) {
+            onEdit();
+            return;
+        }
         console.log("Edit employee:", name);
-        // Add your edit logic here
     };
 
     const handleDelete = (e) => {
         e.stopPropagation();
         setIsDropdownOpen(false);
+        if (onDelete) {
+            onDelete();
+            return;
+        }
         console.log("Delete employee:", name);
-        // Add your delete logic here
     };
 
     const toggleDropdown = (e) => {

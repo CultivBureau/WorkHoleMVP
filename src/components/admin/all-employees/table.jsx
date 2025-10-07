@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronLeft, ChevronRight, Search, LayoutGrid, TableIcon, Plus, Eye, Edit, Trash2 } from "lucide-react";
 import EmployeeCard from "./employee-card";
+import ViewEmployeePopup from "./view-employee";
+import EditEmployeePopup from "./edit-employee";
 
 const EmployeesTable = () => {
     const { t, i18n } = useTranslation();
@@ -15,6 +17,10 @@ const EmployeesTable = () => {
     const [statusFilter, setStatusFilter] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [viewMode, setViewMode] = useState("grid"); // "grid" or "table"
+    const [selectedEmployee, setSelectedEmployee] = useState(null);
+    const [isViewOpen, setIsViewOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const joinDateInputRef = useRef(null);
 
     // Responsive items per page based on screen size and view mode
     const getItemsPerPage = () => {
@@ -189,12 +195,14 @@ const EmployeesTable = () => {
             <button
                 className="p-1 rounded hover:bg-gray-100 transition-colors"
                 title={t("employees.actions.view", "View")}
+                onClick={(e) => { e.stopPropagation(); setSelectedEmployee(employee); setIsViewOpen(true); }}
             >
                 <Eye className="w-3 h-3 md:w-4 md:h-4" style={{ color: 'var(--sub-text-color)' }} />
             </button>
             <button
                 className="p-1 rounded hover:bg-gray-100 transition-colors"
                 title={t("employees.actions.edit", "Edit")}
+                onClick={(e) => { e.stopPropagation(); setSelectedEmployee(employee); setIsEditOpen(true); }}
             >
                 <Edit className="w-3 h-3 md:w-4 md:h-4" style={{ color: 'var(--sub-text-color)' }} />
             </button>
@@ -212,6 +220,7 @@ const EmployeesTable = () => {
     };
 
     return (
+        <>
         <div className="w-full" dir={isArabic ? "rtl" : "ltr"}>
             {/* Filters and Controls Container */}
             <div
@@ -251,6 +260,7 @@ const EmployeesTable = () => {
                     <div className="md:col-span-1 col-span-1 w-full">
                         <div className="relative w-full">
                             <input
+                                ref={joinDateInputRef}
                                 type="date"
                                 value={joinDateFilter}
                                 onChange={(e) => setJoinDateFilter(e.target.value)}
@@ -259,12 +269,25 @@ const EmployeesTable = () => {
                                     colorScheme: 'var(--theme)'
                                 }}
                             />
-                            <div className="w-full border text-center rounded-full px-4 py-2 text-xs font-medium gradient-text transition-all duration-200 pointer-events-none"
+                            <div
+                                className="w-full border text-center rounded-full px-4 py-2 text-xs font-medium gradient-text transition-all duration-200"
                                 style={{
                                     borderColor: 'var(--border-color)',
                                     backgroundColor: 'var(--bg-color)',
-                                    color: 'var(--accent-color)'
-                                }}>
+                                    color: 'var(--accent-color)',
+                                    cursor: 'pointer'
+                                }}
+                                onClick={() => {
+                                    if (joinDateInputRef.current) {
+                                        if (typeof joinDateInputRef.current.showPicker === 'function') {
+                                            joinDateInputRef.current.showPicker();
+                                        } else {
+                                            joinDateInputRef.current.focus();
+                                            joinDateInputRef.current.click();
+                                        }
+                                    }
+                                }}
+                            >
                                 {joinDateFilter ? new Date(joinDateFilter).toLocaleDateString() : t("employees.filters.joinDate")}
                             </div>
                         </div>
@@ -426,7 +449,9 @@ const EmployeesTable = () => {
                                             joinDate={employee.joinDate}
                                             status={employee.status}
                                             avatar={employee.avatar}
-                                            onCardClick={() => console.log("Card clicked:", employee.name)}
+                                            onCardClick={() => { setSelectedEmployee(employee); setIsViewOpen(true); }}
+                                            onView={() => { setSelectedEmployee(employee); setIsViewOpen(true); }}
+                                            onEdit={() => { setSelectedEmployee(employee); setIsEditOpen(true); }}
                                             className="h-full"
                                         />
                                     ) : (
@@ -626,6 +651,19 @@ const EmployeesTable = () => {
                 )}
             </div>
         </div>
+        {/* Popups */}
+        <ViewEmployeePopup
+            employee={selectedEmployee}
+            isOpen={isViewOpen}
+            onClose={() => setIsViewOpen(false)}
+        />
+        <EditEmployeePopup
+            employee={selectedEmployee}
+            isOpen={isEditOpen}
+            onClose={() => setIsEditOpen(false)}
+            onSave={(updated) => { console.log('Updated employee', updated); }}
+        />
+        </>
     );
 };
 

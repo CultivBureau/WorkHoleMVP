@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { ChevronRight, Users, Edit, Trash2, MoreVertical } from "lucide-react";
+import { ChevronRight, Edit, Trash2, MoreVertical } from "lucide-react";
+import GroupDepartmentIcon from '/assets/groupDepartments.svg';
 
 export default function DepartmentCard({ department }) {
     const { t, i18n } = useTranslation();
@@ -101,10 +102,10 @@ export default function DepartmentCard({ department }) {
                     </div>
                 </div>
             </div>
-
+            <hr className="border-[var(--border-color)]" />
             {/* Teams Count */}
-            <div className={`flex items-center justify-center mb-4 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                <span className="text-sm font-medium text-[var(--text-color)]">
+            <div className={`flex items-center my-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                <span className="text-sm text-[var(--sub-text-color)]">
                     {department.teams?.length || 0} {t("allDepartments.departmentCard.teams")}
                 </span>
             </div>
@@ -114,15 +115,15 @@ export default function DepartmentCard({ department }) {
                 {department.teams?.slice(0, 4).map((team, index) => (
                     <div
                         key={index}
-                        className={`flex items-center justify-between p-3 bg-[var(--container-color)] rounded-lg hover:bg-[var(--hover-color)] transition-colors cursor-pointer ${isArabic ? 'flex-row-reverse' : ''}`}
+                        className={`flex items-center justify-between p-3 bg-[var(--bg-color)] rounded-lg hover:bg-[var(--hover-color)] transition-colors cursor-pointer ${isArabic ? 'flex-row-reverse' : ''}`}
                         onClick={(e) => {
                             e.stopPropagation();
                             navigate('/pages/admin/all-teams');
                         }}
                     >
                         <div className={`flex items-center gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                            <div className="w-8 h-8 gradient-bg rounded-full flex items-center justify-center">
-                                <Users className="text-white" size={14} />
+                            <div className="w-10 h-10 bg-[var(--menu-active-bg)] rounded-full flex items-center justify-center">
+                                <img src={GroupDepartmentIcon} alt="Group Department" className="w-7 h-7" />
                             </div>
                             <div className={`${isArabic ? 'text-right' : 'text-left'}`}>
                                 <p className="text-sm font-medium text-[var(--text-color)]">

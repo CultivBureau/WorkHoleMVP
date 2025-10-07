@@ -27,11 +27,6 @@ const NewEmployee = () => {
               {/* Title & Breadcrumb */}
               <div className={`mb-8 ${isArabic ? 'text-right' : 'text-left'}`}>
                 <h1 className="text-2xl font-bold text-[var(--text-color)]">{t("employees.newEmployeeForm.title")}</h1>
-                <div className={`mt-2 flex items-center text-[var(--sub-text-color)] font-medium ${isArabic ? 'justify-end flex-row-reverse' : 'justify-start'}`}>
-                  <span>{t("employees.newEmployeeForm.breadcrumb")}</span>
-                  <span className="mx-2">{">"}</span>
-                  <span className="text-[var(--text-color)]">{t("employees.newEmployeeForm.title")}</span>
-                </div>
               </div>
               {/* Status Cards Row */}
               <NewEmployeeForm />

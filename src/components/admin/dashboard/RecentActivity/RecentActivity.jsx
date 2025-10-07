@@ -1,11 +1,10 @@
-import { MoreHorizontal } from "lucide-react"
 import { useTranslation } from 'react-i18next';
 import { useLang } from '../../../../contexts/LangContext';
 
 const RecentActivity = () => {
   const { t } = useTranslation();
   const { isRtl } = useLang();
-  
+
   const recentActivity = [
     {
       id: 1,
@@ -39,7 +38,7 @@ const RecentActivity = () => {
   ]
 
   return (
-    <div className="w-full xl:max-w-md mt-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-3 sm:p-4">
+    <div className="w-full xl:max-w-md mt-2 bg-color rounded-2xl shadow-sm border border-[var(--border-color)] p-3 sm:p-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-4 sm:mb-6">
         <div>
@@ -50,9 +49,6 @@ const RecentActivity = () => {
             {t("adminDashboard.recentActivity.today", "Today")}
           </p>
         </div>
-        <button className="p-1 hover:bg-gray-100 rounded-full transition-colors">
-          <MoreHorizontal className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--sub-text-color)]" />
-        </button>
       </div>
 
       {/* Activity List */}
