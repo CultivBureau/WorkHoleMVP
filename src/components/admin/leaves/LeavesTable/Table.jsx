@@ -1,10 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useTranslation } from "react-i18next"
+import { useLang } from "../../../../contexts/LangContext"
+import { ChevronDown, ChevronUp } from "lucide-react"
 import LeavePopUp from "../leavePopUp/LeavePopUp"
 
-// Sample leave request data
+// Sample leave request data with enhanced fields for sorting
 const leaveData = [
 	{
 		id: 1,
@@ -12,7 +14,9 @@ const leaveData = [
 		avatar: "/assets/AdminDashboard/avatar.svg",
 		type: "Annual",
 		from: "31 Dec 2024",
+		fromSort: new Date("2024-12-31"),
 		to: "10 Jan 2025",
+		toSort: new Date("2025-01-10"),
 		days: 1,
 		status: "Pending",
 		reason: "Travelling to village",
@@ -20,24 +24,28 @@ const leaveData = [
 	},
 	{
 		id: 2,
-		name: "Darlene Robertson",
+		name: "Cody Fisher",
 		avatar: "/assets/AdminDashboard/avatar.svg",
 		type: "Sick",
 		from: "31 Dec 2024",
+		fromSort: new Date("2024-12-31"),
 		to: "31 Dec 2024",
+		toSort: new Date("2024-12-31"),
 		days: 2,
 		status: "Rejected",
 		reason: "Sorry.! I can't approve",
 		approver: "Avinash",
-		comment : "Get well soon!",
+		comment: "Get well soon!",
 	},
 	{
 		id: 3,
-		name: "Darlene Robertson",
+		name: "Savannah Nguyen",
 		avatar: "/assets/AdminDashboard/avatar.svg",
 		type: "Emergency",
 		from: "25 Dec 2024",
+		fromSort: new Date("2024-12-25"),
 		to: "25 Dec 2024",
+		toSort: new Date("2024-12-25"),
 		days: 1,
 		status: "Pending",
 		reason: "Travelling to village",
@@ -45,11 +53,13 @@ const leaveData = [
 	},
 	{
 		id: 4,
-		name: "Darlene Robertson",
+		name: "Marvin McKinney",
 		avatar: "/assets/AdminDashboard/avatar.svg",
 		type: "Unpaid",
 		from: "10 Dec 2024",
+		fromSort: new Date("2024-12-10"),
 		to: "13 Dec 2024",
+		toSort: new Date("2024-12-13"),
 		days: 3,
 		status: "Pending",
 		reason: "Travelling to village",
@@ -57,81 +67,92 @@ const leaveData = [
 	},
 	{
 		id: 5,
-		name: "Darlene Robertson",
+		name: "Jacob Jones",
 		avatar: "/assets/AdminDashboard/avatar.svg",
 		type: "Annual",
 		from: "8 Nov 2024",
+		fromSort: new Date("2024-11-08"),
 		to: "13 Nov 2024",
+		toSort: new Date("2024-11-13"),
 		days: 5,
 		status: "Pending",
 		reason: "Travelling to village",
 		approver: "--------",
-		
 	},
 	{
 		id: 6,
-		name: "Darlene Robertson",
+		name: "Kristin Watson",
 		avatar: "/assets/AdminDashboard/avatar.svg",
 		type: "Annual",
 		from: "8 Nov 2024",
+		fromSort: new Date("2024-11-08"),
 		to: "13 Nov 2024",
+		toSort: new Date("2024-11-13"),
 		days: 5,
 		status: "Approved",
 		reason: "Travelling to village",
 		approver: "Avinash",
-		comment : "Enjoy your vacation!",
+		comment: "Enjoy your vacation!",
 	},
 	{
 		id: 7,
-		name: "Darlene Robertson",
+		name: "Devon Lane",
 		avatar: "/assets/AdminDashboard/avatar.svg",
-		type: "Annual",
-		from: "8 Nov 2024",
-		to: "13 Nov 2024",
-		days: 5,
+		type: "Sick",
+		from: "5 Nov 2024",
+		fromSort: new Date("2024-11-05"),
+		to: "7 Nov 2024",
+		toSort: new Date("2024-11-07"),
+		days: 3,
 		status: "Approved",
-		reason: "Travelling to village",
+		reason: "Medical treatment",
 		approver: "Avinash",
-		comment : "Enjoy your vacation!",
+		comment: "Take care!",
 	},
 	{
 		id: 8,
-		name: "Darlene Robertson",
+		name: "Arlene McCoy",
 		avatar: "/assets/AdminDashboard/avatar.svg",
-		type: "Annual",
-		from: "8 Nov 2024",
-		to: "13 Nov 2024",
-		days: 5,
+		type: "Emergency",
+		from: "1 Nov 2024",
+		fromSort: new Date("2024-11-01"),
+		to: "2 Nov 2024",
+		toSort: new Date("2024-11-02"),
+		days: 2,
 		status: "Approved",
-		reason: "Travelling to village",
+		reason: "Family emergency",
 		approver: "Avinash",
-		comment : "Enjoy your vacation!",
+		comment: "Hope everything is okay",
 	},
 	{
 		id: 9,
-		name: "Darlene Robertson",
+		name: "Eleanor Pena",
 		avatar: "/assets/AdminDashboard/avatar.svg",
 		type: "Annual",
-		from: "8 Nov 2024",
-		to: "13 Nov 2024",
-		days: 5,
+		from: "25 Oct 2024",
+		fromSort: new Date("2024-10-25"),
+		to: "30 Oct 2024",
+		toSort: new Date("2024-10-30"),
+		days: 6,
 		status: "Approved",
-		reason: "Travelling to village",
-		approver: "Avinash",	
-		comment : "Enjoy your vacation!",
+		reason: "Vacation with family",
+		approver: "Avinash",
+		comment: "Have a great time!",
 	},
 	{
 		id: 10,
-		name: "Darlene Robertson",
+		name: "Cameron Williamson",
 		avatar: "/assets/AdminDashboard/avatar.svg",
-		type: "Annual",
-		from: "8 Nov 2024",
-		to: "13 Nov 2024",
-		days: 5,
-		status: "Approved",
-		reason: "Travelling to village",
+		type: "Unpaid",
+		from: "20 Oct 2024",
+		fromSort: new Date("2024-10-20"),
+		to: "22 Oct 2024",
+		toSort: new Date("2024-10-22"),
+		days: 3,
+		status: "Rejected",
+		reason: "Personal reasons",
 		approver: "Avinash",
-		comment : "Enjoy your vacation!",
+		comment: "Cannot approve at this time",
 	},
 ]
 
@@ -144,7 +165,7 @@ const getStatusBadge = (status, t) => {
 				<span
 					className={`${baseClasses} bg-[var(--pending-leave-box-bg)] text-[var(--warning-color)] border-[var(--warning-color)]`}
 				>
-					{t("adminLeaves.status.pending")}
+					{t("adminLeaves.status.pending", "Pending")}
 				</span>
 			)
 		case "Rejected":
@@ -152,7 +173,7 @@ const getStatusBadge = (status, t) => {
 				<span
 					className={`${baseClasses} bg-[var(--rejected-leave-box-bg)] text-[var(--error-color)] border-[var(--error-color)]`}
 				>
-					{t("adminLeaves.status.rejected")}
+					{t("adminLeaves.status.rejected", "Rejected")}
 				</span>
 			)
 		case "Approved":
@@ -160,7 +181,7 @@ const getStatusBadge = (status, t) => {
 				<span
 					className={`${baseClasses} bg-[var(--approved-leave-box-bg)] text-[var(--success-color)] border-[var(--success-color)]`}
 				>
-					{t("adminLeaves.status.approved")}
+					{t("adminLeaves.status.approved", "Approved")}
 				</span>
 			)
 		default:
@@ -176,12 +197,154 @@ const getStatusBadge = (status, t) => {
 
 const LeavesTable = () => {
 	const { t } = useTranslation()
-	const [sortBy, setSortBy] = useState(t("adminLeaves.table.sort.newest"))
-	const [leaveType, setLeaveType] = useState(t("adminLeaves.table.leaveType.all"))
-	const [status, setStatus] = useState(t("adminLeaves.table.status.all"))
-	const [dateFrom, setDateFrom] = useState("00/00/2025")
-	const [dateTo, setDateTo] = useState("00/00/2025")
+	const { isRtl } = useLang()
+
+	// Filter states
+	const [sortBy, setSortBy] = useState("newest")
+	const [leaveTypeFilter, setLeaveTypeFilter] = useState("all")
+	const [statusFilter, setStatusFilter] = useState("all")
+	const [dateFromFilter, setDateFromFilter] = useState("")
+	const [dateToFilter, setDateToFilter] = useState("")
+
+	// Table sorting states
+	const [tableSortColumn, setTableSortColumn] = useState(null)
+	const [tableSortDirection, setTableSortDirection] = useState('asc')
+
+	// Pagination states
+	const [currentPage, setCurrentPage] = useState(1)
+	const itemsPerPage = 10
+
+	// Popup state
 	const [selectedLeave, setSelectedLeave] = useState(null)
+
+	// Handle table column sorting
+	const handleTableSort = (column) => {
+		if (tableSortColumn === column) {
+			setTableSortDirection(tableSortDirection === 'asc' ? 'desc' : 'asc')
+		} else {
+			setTableSortColumn(column)
+			setTableSortDirection('asc')
+		}
+	}
+
+	// Filter and sort data
+	const filteredAndSortedData = useMemo(() => {
+		let filtered = [...leaveData]
+
+		// Apply filters
+		if (statusFilter !== "all") {
+			filtered = filtered.filter(leave => {
+				return leave.status.toLowerCase() === statusFilter.toLowerCase()
+			})
+		}
+
+		if (leaveTypeFilter !== "all") {
+			filtered = filtered.filter(leave => {
+				return leave.type.toLowerCase() === leaveTypeFilter.toLowerCase()
+			})
+		}
+
+		// Apply date range filter (using 'from' date for filtering)
+		if (dateFromFilter || dateToFilter) {
+			filtered = filtered.filter(leave => {
+				const leaveDate = leave.fromSort
+				let isInRange = true
+
+				if (dateFromFilter) {
+					const fromDate = new Date(dateFromFilter)
+					isInRange = isInRange && leaveDate >= fromDate
+				}
+
+				if (dateToFilter) {
+					const toDate = new Date(dateToFilter)
+					// Set to end of day for inclusive comparison
+					toDate.setHours(23, 59, 59, 999)
+					isInRange = isInRange && leaveDate <= toDate
+				}
+
+				return isInRange
+			})
+		}
+
+		// Apply header sort
+		if (sortBy === "newest") {
+			filtered.sort((a, b) => b.fromSort - a.fromSort)
+		} else if (sortBy === "oldest") {
+			filtered.sort((a, b) => a.fromSort - b.fromSort)
+		}
+
+		// Apply table column sort
+		if (tableSortColumn) {
+			filtered.sort((a, b) => {
+				let aVal, bVal
+
+				switch (tableSortColumn) {
+					case 'name':
+						aVal = a.name.toLowerCase()
+						bVal = b.name.toLowerCase()
+						break
+					case 'type':
+						aVal = a.type.toLowerCase()
+						bVal = b.type.toLowerCase()
+						break
+					case 'from':
+						aVal = a.fromSort
+						bVal = b.fromSort
+						break
+					case 'to':
+						aVal = a.toSort
+						bVal = b.toSort
+						break
+					case 'days':
+						aVal = a.days
+						bVal = b.days
+						break
+					case 'status':
+						aVal = a.status.toLowerCase()
+						bVal = b.status.toLowerCase()
+						break
+					case 'reason':
+						aVal = a.reason.toLowerCase()
+						bVal = b.reason.toLowerCase()
+						break
+					case 'approver':
+						aVal = a.approver.toLowerCase()
+						bVal = b.approver.toLowerCase()
+						break
+					default:
+						return 0
+				}
+
+				if (tableSortDirection === 'asc') {
+					return aVal < bVal ? -1 : aVal > bVal ? 1 : 0
+				} else {
+					return aVal > bVal ? -1 : aVal < bVal ? 1 : 0
+				}
+			})
+		}
+
+		return filtered
+	}, [sortBy, leaveTypeFilter, statusFilter, dateFromFilter, dateToFilter, tableSortColumn, tableSortDirection])
+
+	// Pagination
+	const totalPages = Math.ceil(filteredAndSortedData.length / itemsPerPage)
+	const startIndex = (currentPage - 1) * itemsPerPage
+	const endIndex = startIndex + itemsPerPage
+	const currentData = filteredAndSortedData.slice(startIndex, endIndex)
+
+	// Reset current page when filters change
+	useEffect(() => {
+		setCurrentPage(1)
+	}, [sortBy, leaveTypeFilter, statusFilter, dateFromFilter, dateToFilter])
+
+	const getSortIcon = (column) => {
+		if (tableSortColumn !== column) {
+			return <ChevronDown className="h-3 w-3 text-gray-400" />
+		}
+		return tableSortDirection === 'asc'
+			? <ChevronUp className="h-3 w-3 text-[var(--accent-color)]" />
+			: <ChevronDown className="h-3 w-3 text-[var(--accent-color)]" />
+	}
 
 	return (
 		<>
@@ -211,107 +374,120 @@ const LeavesTable = () => {
 						<div className="flex flex-wrap items-center gap-4">
 							<div className="flex items-center gap-2">
 								<span className="text-[10px] font-medium text-[var(--sub-text-color)]">
-									{t("adminLeaves.table.sortBy")}
+									{t("adminLeaves.table.sortBy", "Sort By")}
 								</span>
 								<select
 									value={sortBy}
 									onChange={(e) => setSortBy(e.target.value)}
 									className="h-8 px-3 border border-[var(--border-color)] rounded-md text-[10px] bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)]"
 								>
-									<option value={t("adminLeaves.table.sort.newest")}>{t("adminLeaves.table.sort.newest")}</option>
-									<option value={t("adminLeaves.table.sort.oldest")}>{t("adminLeaves.table.sort.oldest")}</option>
+									<option value="newest">
+										{t("adminLeaves.table.sort.newest", "Newest First")}
+									</option>
+									<option value="oldest">
+										{t("adminLeaves.table.sort.oldest", "Oldest First")}
+									</option>
 								</select>
 							</div>
+
 							<div className="flex items-center gap-2">
 								<span className="text-[10px] font-medium text-[var(--sub-text-color)]">
-									{t("adminLeaves.table.leaveType.label")}
+									{t("adminLeaves.table.leaveType.label", "Leave Type")}
 								</span>
 								<select
-									value={leaveType}
-									onChange={(e) => setLeaveType(e.target.value)}
+									value={leaveTypeFilter}
+									onChange={(e) => setLeaveTypeFilter(e.target.value)}
 									className="h-8 px-3 border border-[var(--border-color)] rounded-md text-[10px] bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)]"
 								>
-									<option value={t("adminLeaves.table.leaveType.all")}>{t("adminLeaves.table.leaveType.all")}</option>
-									<option value={t("adminLeaves.table.leaveType.annual")}>{t("adminLeaves.table.leaveType.annual")}</option>
-									<option value={t("adminLeaves.table.leaveType.sick")}>{t("adminLeaves.table.leaveType.sick")}</option>
-									<option value={t("adminLeaves.table.leaveType.emergency")}>{t("adminLeaves.table.leaveType.emergency")}</option>
-									<option value={t("adminLeaves.table.leaveType.unpaid")}>{t("adminLeaves.table.leaveType.unpaid")}</option>
+									<option value="all">
+										{t("adminLeaves.table.leaveType.all", "All Types")}
+									</option>
+									<option value="annual">
+										{t("adminLeaves.table.leaveType.annual", "Annual")}
+									</option>
+									<option value="sick">
+										{t("adminLeaves.table.leaveType.sick", "Sick")}
+									</option>
+									<option value="emergency">
+										{t("adminLeaves.table.leaveType.emergency", "Emergency")}
+									</option>
+									<option value="unpaid">
+										{t("adminLeaves.table.leaveType.unpaid", "Unpaid")}
+									</option>
 								</select>
 							</div>
+
 							<div className="flex items-center gap-2">
 								<span className="text-[10px] font-medium text-[var(--sub-text-color)]">
-									{t("adminLeaves.table.status.label")}
+									{t("adminLeaves.table.status.label", "Status")}
 								</span>
 								<select
-									value={status}
-									onChange={(e) => setStatus(e.target.value)}
+									value={statusFilter}
+									onChange={(e) => setStatusFilter(e.target.value)}
 									className="h-8 px-3 border border-[var(--border-color)] rounded-md text-[10px] bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)]"
 								>
-									<option value={t("adminLeaves.table.status.all")}>{t("adminLeaves.table.status.all")}</option>
-									<option value={t("adminLeaves.table.status.pending")}>{t("adminLeaves.table.status.pending")}</option>
-									<option value={t("adminLeaves.table.status.rejected")}>{t("adminLeaves.table.status.rejected")}</option>
-									<option value={t("adminLeaves.table.status.approved")}>{t("adminLeaves.table.status.approved")}</option>
+									<option value="all">
+										{t("adminLeaves.table.status.all", "All Status")}
+									</option>
+									<option value="pending">
+										{t("adminLeaves.table.status.pending", "Pending")}
+									</option>
+									<option value="approved">
+										{t("adminLeaves.table.status.approved", "Approved")}
+									</option>
+									<option value="rejected">
+										{t("adminLeaves.table.status.rejected", "Rejected")}
+									</option>
 								</select>
 							</div>
+
 							<div className="flex items-center gap-2">
 								<span className="text-[10px] font-medium text-[var(--sub-text-color)]">
-									{t("adminLeaves.table.dateFrom")}
+									{t("adminLeaves.table.dateFrom", "Date from")}
 								</span>
-								<select
-									value={dateFrom}
-									onChange={(e) => setDateFrom(e.target.value)}
+								<input
+									type="date"
+									value={dateFromFilter}
+									onChange={(e) => setDateFromFilter(e.target.value)}
 									className="h-8 px-3 border border-[var(--border-color)] rounded-md text-[10px] bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)]"
-								>
-									<option value="00/00/2025">00/00/2025</option>
-								</select>
+									placeholder="Select start date"
+								/>
 							</div>
+
 							<div className="flex items-center gap-2">
 								<span className="text-[10px] font-medium text-[var(--sub-text-color)]">
-									{t("adminLeaves.table.dateTo")}
+									{t("adminLeaves.table.dateTo", "Date To")}
 								</span>
-								<select
-									value={dateTo}
-									onChange={(e) => setDateTo(e.target.value)}
+								<input
+									type="date"
+									value={dateToFilter}
+									onChange={(e) => setDateToFilter(e.target.value)}
 									className="h-8 px-3 border border-[var(--border-color)] rounded-md text-[10px] bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)]"
-								>
-									<option value="00/00/2025">00/00/2025</option>
-								</select>
+									placeholder="Select end date"
+									min={dateFromFilter}
+								/>
 							</div>
 						</div>
 
-						<div className="flex items-center gap-3">
-							<span className="text-[10px] text-[var(--sub-text-color)]">
-								{t("adminLeaves.table.pageOf", { page: 5, total: 18 })}
-							</span>
-							<div className="flex items-center gap-1">
-								<button className="h-8 w-8 border border-[var(--border-color)] rounded-md bg-[var(--bg-color)] hover:bg-[var(--hover-color)] flex items-center justify-center transition-colors">
-									<svg
-										className="h-4 w-4 text-[var(--sub-text-color)]"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											strokeLinecap="round"
-											strokeLinejoin="round"
-											strokeWidth={2}
-											d="M15 19l-7-7 7-7"
-										/>
+						<div className={`flex items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+							
+							<div className={`flex items-center gap-1 ${isRtl ? 'flex-row-reverse' : ''}`}>
+								<button
+									onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+									disabled={currentPage === 1}
+									className="h-8 w-8 border border-[var(--border-color)] rounded-md bg-[var(--bg-color)] hover:bg-[var(--hover-color)] flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+								>
+									<svg className="h-4 w-4 text-[var(--sub-text-color)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isRtl ? "M15 19l-7-7 7-7" : "M15 19l-7-7 7-7"} />
 									</svg>
 								</button>
-								<button className="h-8 w-8 border border-[var(--border-color)] rounded-md bg-[var(--bg-color)] hover:bg-[var(--hover-color)] flex items-center justify-center transition-colors">
-									<svg
-										className="h-4 w-4 text-[var(--sub-text-color)]"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											strokeLinecap="round"
-											strokeLinejoin="round"
-											strokeWidth={2}
-											d="M9 5l7 7-7 7"
-										/>
+								<button
+									onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+									disabled={currentPage === totalPages}
+									className="h-8 w-8 border border-[var(--border-color)] rounded-md bg-[var(--bg-color)] hover:bg-[var(--hover-color)] flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+								>
+									<svg className="h-4 w-4 text-[var(--sub-text-color)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isRtl ? "M9 5l7 7-7 7" : "M9 5l7 7-7 7"} />
 									</svg>
 								</button>
 							</div>
@@ -324,52 +500,85 @@ const LeavesTable = () => {
 					<table className="w-full">
 						<thead className="bg-[var(--table-header-bg)]">
 							<tr>
-								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-									{t("adminLeaves.table.columns.name")}
+								<th
+									onClick={() => handleTableSort('name')}
+									className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors"
+								>
+									<div className="flex items-center gap-1">
+										{t("adminLeaves.table.columns.name", "Name")}
+										{getSortIcon('name')}
+									</div>
 								</th>
-								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-									{t("adminLeaves.table.columns.leaveType")}
+								<th
+									onClick={() => handleTableSort('type')}
+									className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors"
+								>
+									<div className="flex items-center gap-1">
+										{t("adminLeaves.table.columns.leaveType", "Leave Type")}
+										{getSortIcon('type')}
+									</div>
 								</th>
-								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-									{t("adminLeaves.table.columns.from")}
+								<th
+									onClick={() => handleTableSort('from')}
+									className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors"
+								>
+									<div className="flex items-center gap-1">
+										{t("adminLeaves.table.columns.from", "From")}
+										{getSortIcon('from')}
+									</div>
 								</th>
-								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-									<div className="flex items-center gap-1 cursor-pointer">
-										{t("adminLeaves.table.columns.to")}
-										<svg
-											className="h-3 w-3 text-gray-400"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												strokeWidth={2}
-												d="M19 9l-7 7-7-7"
-											/>
-										</svg>
+								<th
+									onClick={() => handleTableSort('to')}
+									className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors"
+								>
+									<div className="flex items-center gap-1">
+										{t("adminLeaves.table.columns.to", "To")}
+										{getSortIcon('to')}
+									</div>
+								</th>
+								<th
+									onClick={() => handleTableSort('days')}
+									className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors"
+								>
+									<div className="flex items-center gap-1">
+										{t("adminLeaves.table.columns.days", "Days")}
+										{getSortIcon('days')}
+									</div>
+								</th>
+								<th
+									onClick={() => handleTableSort('status')}
+									className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors"
+								>
+									<div className="flex items-center gap-1">
+										{t("adminLeaves.table.columns.status", "Status")}
+										{getSortIcon('status')}
+									</div>
+								</th>
+								<th
+									onClick={() => handleTableSort('reason')}
+									className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors"
+								>
+									<div className="flex items-center gap-1">
+										{t("adminLeaves.table.columns.reason", "Reason")}
+										{getSortIcon('reason')}
+									</div>
+								</th>
+								<th
+									onClick={() => handleTableSort('approver')}
+									className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors"
+								>
+									<div className="flex items-center gap-1">
+										{t("adminLeaves.table.columns.approver", "Approver")}
+										{getSortIcon('approver')}
 									</div>
 								</th>
 								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-									{t("adminLeaves.table.columns.days")}
-								</th>
-								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-									{t("adminLeaves.table.columns.status")}
-								</th>
-								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-									{t("adminLeaves.table.columns.reason")}
-								</th>
-								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-									{t("adminLeaves.table.columns.approver")}
-								</th>
-								<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
-									{t("adminLeaves.table.columns.action")}
+									{t("adminLeaves.table.columns.action", "Action")}
 								</th>
 							</tr>
 						</thead>
 						<tbody className="bg-[var(--table-bg)]">
-							{leaveData.map((leave, index) => (
+							{currentData.map((leave, index) => (
 								<tr
 									key={leave.id}
 									className="border-b border-[var(--border-color)] hover:bg-[var(--hover-color)] transition-colors"

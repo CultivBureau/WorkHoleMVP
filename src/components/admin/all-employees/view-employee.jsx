@@ -137,27 +137,27 @@ function PersonalInfoView({ employee }) {
             {/* Form Fields - Read Only */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="form-group">
-                    <label className="form-label">{t("employees.newEmployeeForm.personalInfo.firstName")}</label>
-                    <div className="form-input-readonly">{employee.name?.split(' ')[0] || 'N/A'}</div>
+                    <label className="form-label text-[var(--sub-text-color)]">{t("employees.newEmployeeForm.personalInfo.firstName")}</label>
+                    <div className="form-input-readonly ">{employee.name?.split(' ')[0] || 'N/A'}</div>
                 </div>
                 <div className="form-group">
-                    <label className="form-label">{t("employees.newEmployeeForm.personalInfo.lastName")}</label>
+                    <label className="form-label text-[var(--sub-text-color)]">{t("employees.newEmployeeForm.personalInfo.lastName")}</label>
                     <div className="form-input-readonly">{employee.name?.split(' ').slice(1).join(' ') || 'N/A'}</div>
                 </div>
                 <div className="form-group">
-                    <label className="form-label">{t("employees.newEmployeeForm.personalInfo.mobileNumber")}</label>
+                    <label className="form-label text-[var(--sub-text-color)]">{t("employees.newEmployeeForm.personalInfo.mobileNumber")}</label>
                     <div className="form-input-readonly">{employee.mobileNumber || 'N/A'}</div>
                 </div>
                 <div className="form-group">
-                    <label className="form-label">{t("employees.newEmployeeForm.personalInfo.emailAddress")}</label>
+                    <label className="form-label text-[var(--sub-text-color)]">{t("employees.newEmployeeForm.personalInfo.emailAddress")}</label>
                     <div className="form-input-readonly">{employee.email || 'N/A'}</div>
                 </div>
                 <div className="form-group">
-                    <label className="form-label">{t("employees.newEmployeeForm.personalInfo.dateOfBirth")}</label>
+                    <label className="form-label text-[var(--sub-text-color)]">{t("employees.newEmployeeForm.personalInfo.dateOfBirth")}</label>
                     <div className="form-input-readonly">{employee.dateOfBirth || 'N/A'}</div>
                 </div>
                 <div className="form-group">
-                    <label className="form-label">{t("employees.newEmployeeForm.personalInfo.status")}</label>
+                    <label className="form-label text-[var(--sub-text-color)]">{t("employees.newEmployeeForm.personalInfo.status")}</label>
                     <div className="form-input-readonly">
                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${employee.status === "Active" ? 'bg-green-100 text-green-700' :
                                 employee.status === "Inactive" ? 'bg-red-100 text-red-700' :
@@ -168,15 +168,15 @@ function PersonalInfoView({ employee }) {
                     </div>
                 </div>
                 <div className="form-group">
-                    <label className="form-label">{t("employees.newEmployeeForm.personalInfo.gender")}</label>
+                    <label className="form-label text-[var(--sub-text-color)]">{t("employees.newEmployeeForm.personalInfo.gender")}</label>
                     <div className="form-input-readonly">{employee.gender || 'N/A'}</div>
                 </div>
                 <div className="form-group">
-                    <label className="form-label">{t("employees.newEmployeeForm.personalInfo.nationality")}</label>
+                    <label className="form-label text-[var(--sub-text-color)]">{t("employees.newEmployeeForm.personalInfo.nationality")}</label>
                     <div className="form-input-readonly">{employee.nationality || 'N/A'}</div>
                 </div>
                 <div className="form-group md:col-span-2">
-                    <label className="form-label">{t("employees.newEmployeeForm.personalInfo.address")}</label>
+                    <label className="form-label text-[var(--sub-text-color)]">{t("employees.newEmployeeForm.personalInfo.address")}</label>
                     <div className="form-input-readonly">{employee.address || 'N/A'}</div>
                 </div>
             </div>
@@ -193,43 +193,43 @@ function ProfessionalInfoView({ employee }) {
         <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="form-group">
-                    <label className="form-label">{t("employees.newEmployeeForm.professionalInfo.employeeId")}</label>
+                    <label className="form-label text-[var(--sub-text-color)]">{t("employees.newEmployeeForm.professionalInfo.employeeId")}</label>
                     <div className="form-input-readonly">{employee.employeeId || 'N/A'}</div>
                 </div>
                 <div className="form-group">
-                    <label className="form-label">{t("employees.newEmployeeForm.professionalInfo.userName")}</label>
+                    <label className="form-label text-[var(--sub-text-color)]">{t("employees.newEmployeeForm.professionalInfo.userName")}</label>
                     <div className="form-input-readonly">{employee.username || 'N/A'}</div>
                 </div>
                 <div className="form-group">
-                    <label className="form-label">{t("employees.newEmployeeForm.professionalInfo.selectEmployeeRole")}</label>
+                    <label className="form-label text-[var(--sub-text-color)]">{t("employees.newEmployeeForm.professionalInfo.selectEmployeeRole")}</label>
                     <div className="form-input-readonly">{employee.position || 'N/A'}</div>
                 </div>
                 <div className="form-group">
-                    <label className="form-label">{t("employees.newEmployeeForm.personalInfo.emailAddress")}</label>
+                    <label className="form-label text-[var(--sub-text-color)]">{t("employees.newEmployeeForm.personalInfo.emailAddress")}</label>
                     <div className="form-input-readonly">{employee.email || 'N/A'}</div>
                 </div>
                 <div className="form-group">
-                    <label className="form-label">{t("employees.newEmployeeForm.professionalInfo.selectDepartment")}</label>
+                    <label className="form-label text-[var(--sub-text-color)]">{t("employees.newEmployeeForm.professionalInfo.selectDepartment")}</label>
                     <div className="form-input-readonly">{employee.department || 'N/A'}</div>
                 </div>
                 <div className="form-group">
-                    <label className="form-label">{t("employees.newEmployeeForm.professionalInfo.managerSupervisor")}</label>
+                    <label className="form-label text-[var(--sub-text-color)]">{t("employees.newEmployeeForm.professionalInfo.managerSupervisor")}</label>
                     <div className="form-input-readonly">{employee.manager || 'N/A'}</div>
                 </div>
                 <div className="form-group">
-                    <label className="form-label">{t("employees.newEmployeeForm.professionalInfo.selectWorkingDays")}</label>
+                    <label className="form-label text-[var(--sub-text-color)]">{t("employees.newEmployeeForm.professionalInfo.selectWorkingDays")}</label>
                     <div className="form-input-readonly">{employee.workingDays || 'N/A'}</div>
                 </div>
                 <div className="form-group">
-                    <label className="form-label">{t("employees.newEmployeeForm.professionalInfo.selectEmploymentType")}</label>
+                    <label className="form-label text-[var(--sub-text-color)]">{t("employees.newEmployeeForm.professionalInfo.selectEmploymentType")}</label>
                     <div className="form-input-readonly">{employee.employmentType || 'N/A'}</div>
                 </div>
                 <div className="form-group">
-                    <label className="form-label">{t("employees.newEmployeeForm.professionalInfo.selectOfficeLocation")}</label>
+                    <label className="form-label text-[var(--sub-text-color)]">{t("employees.newEmployeeForm.professionalInfo.selectOfficeLocation")}</label>
                     <div className="form-input-readonly">{employee.officeLocation || 'N/A'}</div>
                 </div>
                 <div className="form-group">
-                    <label className="form-label">{t("employees.newEmployeeForm.professionalInfo.selectJoiningDate")}</label>
+                    <label className="form-label text-[var(--sub-text-color)]">{t("employees.newEmployeeForm.professionalInfo.selectJoiningDate")}</label>
                     <div className="form-input-readonly">{employee.joinDate || 'N/A'}</div>
                 </div>
             </div>
@@ -302,19 +302,19 @@ function AccountAccessView({ employee }) {
         <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="form-group">
-                    <label className="form-label">{t("employees.accountAccess.loginCredentials", "Login Credentials")}</label>
+                    <label className="form-label text-[var(--sub-text-color)]">{t("employees.accountAccess.loginCredentials", "Login Credentials")}</label>
                     <div className="form-input-readonly">{employee.username || 'N/A'}</div>
                 </div>
                 <div className="form-group">
-                    <label className="form-label">{t("employees.accountAccess.accessLevel", "Access Level")}</label>
+                    <label className="form-label text-[var(--sub-text-color)]">{t("employees.accountAccess.accessLevel", "Access Level")}</label>
                     <div className="form-input-readonly">{employee.accessLevel || 'Standard User'}</div>
                 </div>
                 <div className="form-group">
-                    <label className="form-label">{t("employees.accountAccess.permissions", "Permissions")}</label>
+                    <label className="form-label text-[var(--sub-text-color)]">{t("employees.accountAccess.permissions", "Permissions")}</label>
                     <div className="form-input-readonly">{employee.permissions || 'Basic Access'}</div>
                 </div>
                 <div className="form-group">
-                    <label className="form-label">{t("employees.accountAccess.lastLogin", "Last Login")}</label>
+                    <label className="form-label text-[var(--sub-text-color)]">{t("employees.accountAccess.lastLogin", "Last Login")}</label>
                     <div className="form-input-readonly">{employee.lastLogin || 'Never'}</div>
                 </div>
             </div>

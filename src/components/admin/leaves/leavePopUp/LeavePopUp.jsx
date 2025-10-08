@@ -129,10 +129,10 @@ const LeavePopUp = ({
         </div>
         {/* Approve/Reject buttons */}
         <div className="flex gap-4 px-6 py-4">
-          <button className="flex-1 bg-gradient-to-r from-teal-400 to-cyan-400 hover:from-teal-500 hover:to-cyan-500 text-white font-semibold py-2 rounded-lg transition">
+          <button className="flex-1 gradient-bg hover:bg-[var(--accent-hover)] text-white font-semibold py-2 rounded-lg ">
             {t("adminLeaves.popup.approve")}
           </button>
-          <button className="flex-1 bg-red-700 hover:bg-red-800 text-white font-semibold py-2 rounded-lg transition">
+          <button className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg transition">
             {t("adminLeaves.popup.reject")}
           </button>
         </div>

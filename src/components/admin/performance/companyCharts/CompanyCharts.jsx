@@ -2,6 +2,7 @@ import React from 'react'
 import { useLang } from '../../../../contexts/LangContext'
 import { useTheme } from '../../../../contexts/ThemeContext'
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -27,6 +28,12 @@ const CompanyCharts = () => {
   const { isRtl } = useLang();
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  // Navigation handler
+  const handleViewLogs = () => {
+    navigate('/pages/admin/attendance');
+  };
 
   // Fake data for Present vs Absent for each month for 1 year
   const AttendanceOverviewData = [
@@ -124,7 +131,7 @@ const CompanyCharts = () => {
         cornerRadius: 8,
         padding: 10,
         callbacks: {
-          label: function(context) {
+          label: function (context) {
             const dataIndex = context.dataIndex;
             const monthData = AttendanceOverviewData[dataIndex];
             if (context.dataset.label === t("adminPerformance.chart.present", "Present")) {
@@ -159,7 +166,7 @@ const CompanyCharts = () => {
           font: {
             size: window.innerWidth < 640 ? 10 : window.innerWidth < 1024 ? 11 : 12,
           },
-          callback: function(value) {
+          callback: function (value) {
             return value + '%';
           },
           stepSize: 25,
@@ -193,7 +200,7 @@ const CompanyCharts = () => {
               {t("adminPerformance.chart.companyAttendanceOverview", "Company Attendance Overview")}
             </h2>
           </div>
-          
+
           {/* Legend */}
           <div className='flex items-center flex-row gap-3 sm:gap-4 mb-2 sm:mb-0'>
             <div className='flex items-center gap-2'>
@@ -242,10 +249,13 @@ const CompanyCharts = () => {
           </div>
         </div>
 
-        {/* Right side - View Logs */}
+        {/* Right side - View Logs with Navigation */}
         <div className='flex flex-col sm:flex-row items-start sm:items-center gap-4'>
           {/* View Logs Button */}
-          <button className='flex items-center gap-2 border border-[var(--border-color)] px-2 sm:px-3 lg:px-4 py-1 sm:py-1.5 lg:py-2 text-[#26C8B9] hover:bg-[var(--hover-color)] rounded-lg transition-colors'>
+          <button
+            onClick={handleViewLogs}
+            className='flex items-center gap-2 border border-[var(--border-color)] px-2 sm:px-3 lg:px-4 py-1 sm:py-1.5 lg:py-2 text-[#26C8B9] hover:bg-[var(--hover-color)] rounded-lg transition-colors cursor-pointer'
+          >
             <Eye size={12} className='sm:size-[14px] lg:size-[16px]' />
             <span className='text-[10px] sm:text-[12px] lg:text-[14px] font-medium'>
               {t("adminPerformance.buttons.viewLogs", "View Logs")}

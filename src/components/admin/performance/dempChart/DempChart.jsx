@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import React, { useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { useLang } from "../../../../contexts/LangContext";
 import {
   Chart as ChartJS,
@@ -19,8 +20,14 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, BarController, Title, T
 const DempChart = () => {
   const { t } = useTranslation();
   const { isRtl } = useLang();
+  const navigate = useNavigate();
   const chartRef = useRef(null)
   const chartInstance = useRef(null)
+
+  // Navigation handler
+  const handleViewAllDepartments = () => {
+    navigate('/pages/admin/all-departments');
+  };
 
   const DepartmentData = [
     { department: t("adminPerformance.departments.development", "Development"), efficiency: 90 },
@@ -36,7 +43,7 @@ const DempChart = () => {
     { department: t("adminPerformance.departments.logistics", "Logistics"), efficiency: 70 },
     { department: t("adminPerformance.departments.operations", "Operations"), efficiency: 80 },
   ]
-  
+
   const KeyInsights = [
     {
       status: t("adminPerformance.insights.bestPerforming", "Best Performing"),
@@ -44,11 +51,11 @@ const DempChart = () => {
       desc: t("adminPerformance.insights.highestKpi", "Highest average KPI this period"),
       efficiency: "90%",
     },
-    { 
-      status: t("adminPerformance.insights.needsAttention", "Needs Attention"), 
-      department: t("adminPerformance.departments.sales", "Sales"), 
-      desc: t("adminPerformance.insights.belowAverageKpi", "Below average KPI this period"), 
-      efficiency: "60%" 
+    {
+      status: t("adminPerformance.insights.needsAttention", "Needs Attention"),
+      department: t("adminPerformance.departments.sales", "Sales"),
+      desc: t("adminPerformance.insights.belowAverageKpi", "Below average KPI this period"),
+      efficiency: "60%"
     },
   ]
 
@@ -208,14 +215,17 @@ const DempChart = () => {
       </div>
 
       {/* Enhanced Key Insights Section */}
-      <div className="w-full xl:w-[30%] h-full flex flex-col justify-start rounded-2xl shadow-lg border border-gray-100 items-center bg-white p-3 sm:p-4 md:p-5 lg:p-6 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-        
-        {/* All Department Button - Enhanced Responsive */}
+      <div className="w-full xl:w-[30%] h-full flex flex-col justify-start rounded-2xl shadow-lg border border-gray-100 items-center bg-[var(--bg-color)] p-3 sm:p-4 md:p-5 lg:p-6 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+
+        {/* All Department Button - Enhanced Responsive with Navigation */}
         <div className="w-full flex justify-center items-center">
-          <button className="w-full h-9 sm:h-10 md:h-11 lg:h-12 px-3 sm:px-4 md:px-5 bg-teal-50 rounded-full text-teal-600 flex justify-center items-center gap-2 sm:gap-3 font-medium hover:bg-teal-100 transition-colors">
-            <img 
-              src="/assets/AdminPerformance/btn.svg" 
-              alt="" 
+          <button
+            onClick={handleViewAllDepartments}
+            className="w-full h-9 sm:h-10 md:h-11 lg:h-12 px-3 sm:px-4 md:px-5 bg-teal-50 rounded-full text-teal-600 flex justify-center items-center gap-2 sm:gap-3 font-medium hover:bg-teal-100 transition-colors cursor-pointer"
+          >
+            <img
+              src="/assets/AdminPerformance/btn.svg"
+              alt=""
               className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5"
             />
             <span className="text-[11px] sm:text-xs md:text-sm font-medium">
@@ -226,7 +236,7 @@ const DempChart = () => {
 
         {/* Key Insights Content - Enhanced Responsive */}
         <div className="w-full flex flex-col justify-start items-start gap-3 sm:gap-4">
-          
+
           {/* Header Section - Enhanced Layout */}
           <div className="w-full">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
@@ -239,12 +249,12 @@ const DempChart = () => {
                   {t("adminPerformance.insights.quickHighlights", "Quick highlights of team and department performance")}
                 </span>
               </div>
-              
+
               {/* Icon - More Responsive */}
               <div className="flex justify-center sm:justify-end items-center mt-2 sm:mt-0">
-                <img 
-                  src="/assets/AdminPerformance/key.svg" 
-                  alt="Insights" 
+                <img
+                  src="/assets/AdminPerformance/key.svg"
+                  alt="Insights"
                   className="w-16 h-14 xs:w-20 xs:h-16 sm:w-12 sm:h-10 md:w-16 md:h-14 lg:w-[85px] lg:h-[75px] xl:w-20 xl:h-18 object-contain"
                 />
               </div>
@@ -254,7 +264,7 @@ const DempChart = () => {
           {/* Insights Cards - Enhanced Responsive */}
           {KeyInsights.map((item, idx) => (
             <div key={idx} className="w-full flex flex-col gap-2 sm:gap-3">
-              
+
               {/* Status Button - Enhanced */}
               <button className="w-full h-8 sm:h-9 md:h-10 bg-gray-50 rounded-full flex justify-center items-center gap-2 text-gray-600 hover:bg-gray-100 transition-colors px-3 sm:px-4">
                 <svg className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -272,15 +282,15 @@ const DempChart = () => {
               </button>
 
               {/* Department Card - Enhanced */}
-              <div className="w-full bg-white rounded-xl p-3 sm:p-4 md:p-5 border border-gray-100 shadow-sm flex items-center gap-2 sm:gap-3 hover:shadow-md transition-shadow">
-                
+              <div className="w-full bg-color rounded-xl p-3 sm:p-4 md:p-5 border border-gray-100 shadow-sm flex items-center gap-2 sm:gap-3 hover:shadow-md transition-shadow">
+
                 {/* Efficiency Badge - Enhanced */}
                 <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-teal-100 rounded-lg flex justify-center items-center flex-shrink-0">
                   <span className="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-teal-600">
                     {item.efficiency}
                   </span>
                 </div>
-                
+
                 {/* Content - Enhanced */}
                 <div className="flex-1 min-w-0">
                   <h4 className="font-semibold text-gray-900 text-xs sm:text-sm md:text-base truncate mb-1">

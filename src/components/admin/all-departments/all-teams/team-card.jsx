@@ -124,10 +124,6 @@ export default function TeamCard({ team, onEdit, onDelete }) {
                         </p>
                     </div>
                 </div>
-
-                <button className={`text-sm text-[var(--accent-color)] hover:text-[var(--accent-hover-color)] transition-colors ${isArabic ? 'text-right' : 'text-left'}`}>
-                    {t("allTeams.teamCard.view", "View All")}
-                </button>
             </div>
 
             {/* Team Members List */}
@@ -135,7 +131,7 @@ export default function TeamCard({ team, onEdit, onDelete }) {
                 {team.members?.slice(0, 3).map((member, index) => (
                     <div
                         key={index}
-                        className={`flex items-center justify-between p-3 bg-[var(--container-color)] rounded-lg hover:bg-[var(--hover-color)] transition-colors cursor-pointer ${isArabic ? 'flex-row-reverse' : ''}`}
+                        className={`flex items-center justify-between p-3 bg-[var(--bg-color)] rounded-lg hover:bg-[var(--hover-color)] transition-colors cursor-pointer ${isArabic ? 'flex-row-reverse' : ''}`}
                     >
                         <div className={`flex items-center gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
                             <img

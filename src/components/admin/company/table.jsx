@@ -468,7 +468,7 @@ const CompanyTable = () => {
                                     color: 'var(--text-color)'
                                 }}
                             >
-                                {isArabic ? <ChevronRight className="w-3 h-3 md:w-4 md:h-4" /> : <ChevronLeft className="w-3 h-3 md:w-4 md:h-4" />}
+                                <ChevronLeft className="w-3 h-3 md:w-4 md:h-4" />
                             </button>
                             <button
                                 onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
@@ -480,7 +480,7 @@ const CompanyTable = () => {
                                     color: 'var(--text-color)'
                                 }}
                             >
-                                {isArabic ? <ChevronLeft className="w-3 h-3 md:w-4 md:h-4" /> : <ChevronRight className="w-3 h-3 md:w-4 md:h-4" />}
+                                <ChevronRight className="w-3 h-3 md:w-4 md:h-4" />
                             </button>
                         </div>
                     </div>
