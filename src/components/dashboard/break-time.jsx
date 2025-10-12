@@ -159,15 +159,15 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                     {t('breakTime.title', 'Break Time')}
                 </h3>
 
-                {/* Controls - flex-col only for 1024px-1250px range */}
-                <div className="flex flex-col lg:flex-col xl:flex-row 2xl:flex-row lg:items-start xl:items-center gap-2 xl:ml-auto">
-                    {/* Select Reason */}
-                    <div className="relative group/select lg:w-full xl:w-48">
+                {/* Controls - Always in same row, each taking 50% width */}
+                <div className="flex flex-row items-center gap-2 xl:ml-auto">
+                    {/* Select Reason - Always 50% width */}
+                    <div className="relative group/select flex-1">
                         <select
                             value={selectedReason}
                             onChange={(e) => setSelectedReason(e.target.value)}
                             disabled={isBreakActive}
-                            className="w-full border-2 rounded-xl font-semibold px-3 sm:px-4 lg:px-3 xl:px-4 py-2 sm:py-2.5 lg:py-2 xl:py-2.5 pr-8 sm:pr-10 lg:pr-8 xl:pr-10 text-xs sm:text-sm lg:text-xs xl:text-sm gradient-text appearance-none backdrop-blur-sm transition-all duration-300 hover:border-opacity-80 focus:ring-2 focus:ring-opacity-20 focus:scale-[1.02]"
+                            className="w-full border-2 rounded-xl font-semibold px-2 sm:px-2 lg:px-2 xl:px-2 py-2 sm:py-2.5 lg:py-2 xl:py-2.5 pr-8 sm:pr-10 lg:pr-8 xl:pr-10 text-xs sm:text-sm lg:text-xs xl:text-sm gradient-text appearance-none backdrop-blur-sm transition-all duration-300 hover:border-opacity-80 focus:ring-2 focus:ring-opacity-20 focus:scale-[1.02] h-[36px] sm:h-[42px] lg:h-[36px] xl:h-[42px]"
                             style={{
                                 borderColor: 'var(--accent-color)',
                                 backgroundColor: 'var(--bg-color)',
@@ -199,10 +199,10 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                         </div>
                     </div>
 
-                    {/* Start Break Button */}
+                    {/* Start Break Button - Always 50% width */}
                     <button
                         onClick={handleStartBreak}
-                        className="w-full xl:w-auto 2xl:w-auto text-white px-3 sm:px-4 lg:px-3 xl:px-4 py-2 sm:py-2.5 lg:py-2 xl:py-2.5 rounded-xl text-xs sm:text-sm lg:text-xs xl:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all duration-300 transform hover:scale-105 hover:shadow-xl active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed group/btn"
+                        className="flex-1 text-white px-3 sm:px-4 lg:px-3 xl:px-4 py-2 sm:py-2.5 lg:py-2 xl:py-2.5 rounded-xl text-xs sm:text-sm lg:text-xs xl:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all duration-300 transform hover:scale-105 hover:shadow-xl active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed group/btn h-[36px] sm:h-[42px] lg:h-[36px] xl:h-[42px]"
                         style={{
                             background: isBreakActive
                                 ? 'linear-gradient(135deg, #ef4444, #dc2626)'
@@ -271,7 +271,7 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                             const centerY = 14;
                             const innerRadius = 7;
                             const outerRadius = 10;
-                            
+
                             const x1 = centerX + innerRadius * Math.cos((angle * Math.PI) / 180);
                             const y1 = centerY + innerRadius * Math.sin((angle * Math.PI) / 180);
                             const x2 = centerX + outerRadius * Math.cos((angle * Math.PI) / 180);
@@ -357,9 +357,9 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                         border: '1px solid rgba(255, 255, 255, 0.1)'
                     }}>
                     <div className="flex flex-col items-center">
-                        <DigitalNumber 
-                            value={timerMinutes} 
-                            size="sm" 
+                        <DigitalNumber
+                            value={timerMinutes}
+                            size="sm"
                             className="text-sm sm:text-base transition-all duration-200"
                             style={{ color: 'var(--text-color)', lineHeight: '1' }}
                         />
@@ -370,9 +370,9 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                     </div>
                     <div className="w-px h-5 sm:h-6 md:h-8 bg-white bg-opacity-20"></div>
                     <div className="flex flex-col items-center">
-                        <DigitalNumber 
-                            value={timerSeconds} 
-                            size="sm" 
+                        <DigitalNumber
+                            value={timerSeconds}
+                            size="sm"
                             className="text-sm sm:text-base transition-all duration-200"
                             style={{ color: 'var(--text-color)', lineHeight: '1' }}
                         />
@@ -388,7 +388,7 @@ const BreakTime = ({ breakDashboard, refetch }) => {
             <div className="w-full h-px mb-2 sm:mb-3 lg:mb-4 bg-gradient-to-r from-transparent via-gray-200 to-transparent"
                 style={{ backgroundColor: 'var(--divider-color)' }}></div>
 
-            {/* Enhanced Break Dashboard Summary - Fully Responsive */}
+            {/* Enhanced Break Dashboard Summary - Show Last 4 Only */}
             <div className="flex-1 flex flex-col min-h-0">
                 <h4 className={`text-xs sm:text-sm font-bold pb-1 sm:pb-2 mb-1 ${i18n.language === 'ar' ? 'text-right' : 'text-left'} transition-all duration-200`}
                     style={{ color: 'var(--text-color)' }}>
@@ -403,9 +403,9 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                         minHeight: 0,
                     }}
                 >
-                    {/* Mobile & Small Tablet: Card view */}
+                    {/* Mobile & Small Tablet: Card view - Show last 4 */}
                     <div className="block md:hidden space-y-1">
-                        {sortedBreaks.map((item, idx) => (
+                        {sortedBreaks.slice(0, 4).map((item, idx) => (
                             <div key={idx} className="bg-gray-50 rounded-lg p-2 space-y-1" style={{ backgroundColor: 'var(--hover-color)' }}>
                                 <div className="flex justify-between items-center">
                                     <span className="text-[9px] sm:text-[10px] font-medium" style={{ color: 'var(--text-color)' }}>
@@ -426,7 +426,7 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                         ))}
                     </div>
 
-                    {/* Desktop: Table view */}
+                    {/* Desktop: Table view - Show last 4 */}
                     <table className="w-full hidden md:table">
                         <thead className="sticky top-0 z-10" style={{ backgroundColor: 'var(--bg-color)' }}>
                             <tr>
@@ -457,7 +457,7 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {sortedBreaks.map((item, idx) => (
+                            {sortedBreaks.slice(0, 4).map((item, idx) => (
                                 <tr key={idx} className="hover:bg-opacity-50 transition-all duration-200 group/row" style={{ backgroundColor: 'transparent' }}>
                                     <td className="py-0.5 sm:py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs font-medium transition-all duration-200 group-hover/row:opacity-80" style={{ color: 'var(--text-color)' }}>
                                         {item.date}

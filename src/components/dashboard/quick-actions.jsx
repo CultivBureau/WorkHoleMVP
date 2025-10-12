@@ -140,7 +140,7 @@ const QuickActions = () => {
 
             {/* Quick Actions Component */}
             <div
-                className={`rounded-xl shadow-lg border p-3 sm:p-4  lg:p-4 xl:p-5 h-full flex flex-col ${isArabic ? "text-right" : "text-left"
+                className={` rounded-2xl shadow-lg border p-3 sm:p-4 md:p-5 lg:p-5 xl:p-6 2xl:p-7 h-full flex flex-col quick-actions-container ${isArabic ? "text-right" : "text-left"
                     }`}
                 style={{
                     background: "var(--bg-color)",
@@ -148,53 +148,66 @@ const QuickActions = () => {
                 }}
                 dir={isArabic ? "rtl" : "ltr"}
             >
-                <h3 className="text-sm sm:text-base lg:text-sm xl:text-lg gradient-text font-semibold mb-1 sm:mb-2">
+                {/* Header */}
+                <h3 className="text-sm sm:text-base md:text-lg lg:text-lg xl:text-xl 2xl:text-2xl gradient-text font-semibold mb-1 sm:mb-2 md:mb-3 lg:mb-3 xl:mb-4">
                     {t("dashboard.quickActions.title")}
                 </h3>
                 <p
-                    className="text-xs sm:text-sm lg:text-xs xl:text-sm mb-3 sm:mb-4"
+                    className="text-xs sm:text-sm md:text-base lg:text-sm xl:text-base 2xl:text-lg mb-3 sm:mb-4 md:mb-5 lg:mb-4 xl:mb-5 2xl:mb-6"
                     style={{ color: "var(--sub-text-color)" }}
                 >
                     {t("dashboard.quickActions.subtitle")}
                 </p>
 
-                {/* Responsive Grid - Optimized for 1025px-1200px */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-3 lg:gap-2 xl:gap-4">
-                    {actions.map((action, idx) => (
-                        <button
-                            key={idx}
-                            type="button"
-                            className={`flex flex-col items-center justify-center rounded-lg p-2 sm:p-3  lg:p-2 xl:p-3 shadow transition hover:shadow-md aspect-square focus:outline-none ${!action.implemented ? 'opacity-60' : 'hover:scale-105'
-                                }`}
-                            style={{
-                                background: "var(--bg-color)",
-                                minWidth: 0,
-                                cursor: "pointer",
-                                transform: 'scale(1)',
-                                transition: 'all 0.2s ease',
-                            }}
-                            onClick={() => handleActionClick(action)}
-                        >
-                            <img
-                                src={action.icon}
-                                alt={action.title}
-                                className="w-8 h-8 sm:w-10 sm:h-10 lg:w-8 lg:h-8 xl:w-10 xl:h-10 mb-1 sm:mb-2"
-                            />
-                            <div
-                                className="text-[9px] sm:text-[10px] lg:text-[9px] xl:text-xs font-semibold mb-0.5 text-center leading-tight"
-                                style={{ color: "var(--text-color)" }}
+                {/* Responsive Grid - 2 columns until 1180px, then 3 cols */}
+                <div className="flex justify-center items-center flex-grow">
+                    <div className="quick-actions-grid grid grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3 gap-2 sm:gap-3 md:gap-4 lg:gap-3 xl:gap-4 2xl:gap-5 auto-rows-fr w-full max-w-full">
+                        {actions.map((action, idx) => (
+                            <button
+                                key={idx}
+                                type="button"
+                                className={`flex flex-col items-center justify-center rounded-lg p-2 sm:p-3 md:p-4 lg:p-3 xl:p-4 2xl:p-5 shadow transition-all duration-200 hover:shadow-md focus:outline-none w-full h-full ${!action.implemented ? 'opacity-60' : 'hover:scale-105'
+                                    }`}
+                                style={{
+                                    background: "var(--bg-color)",
+                                    minWidth: 0,
+                                    cursor: "pointer",
+                                    aspectRatio: "1 / 1",
+                                }}
+                                onClick={() => handleActionClick(action)}
                             >
-                                {action.title}
-                            </div>
-                            <div
-                                className="text-[8px] sm:text-[9px] lg:text-[8px] xl:text-[10px] text-center leading-tight hidden sm:block"
-                                style={{ color: "var(--sub-text-color)" }}
-                            >
-                                {action.subtitle}
-                            </div>
-                        </button>
-                    ))}
+                                {/* Icon - Responsive sizing */}
+                                <img
+                                    src={action.icon}
+                                    alt={action.title}
+                                    className="w-8 h-8 sm:w-12 sm:h-12 md:w-10 md:h-10 lg:w-10 lg:h-10 xl:w-11 xl:h-11 2xl:w-14 2xl:h-14 mb-1 sm:mb-2 md:mb-2 lg:mb-2 xl:mb-2 2xl:mb-3 flex-shrink-0"
+                                />
+                                {/* Title - Fixed height with responsive sizing */}
+                                <div
+                                    className="text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-xs xl:text-xs 2xl:text-sm font-semibold mb-0.5 text-center leading-tight min-h-[24px] sm:min-h-[28px] md:min-h-[32px] lg:min-h-[30px] xl:min-h-[32px] flex items-center justify-center px-1"
+                                    style={{ color: "var(--text-color)" }}
+                                >
+                                    {action.title}
+                                </div>
+                                {/* Subtitle - Fixed height with responsive sizing */}
+                                <div
+                                    className="text-[8px] xs:text-[9px] sm:text-[10px] md:text-[11px] lg:text-[10px] xl:text-[11px] 2xl:text-xs text-center leading-tight hidden sm:flex items-center justify-center min-h-[20px] md:min-h-[24px] lg:min-h-[22px] xl:min-h-[22px] 2xl:min-h-[24px] px-1"
+                                    style={{ color: "var(--sub-text-color)" }}
+                                >
+                                    {action.subtitle}
+                                </div>
+                            </button>
+                        ))}
+                    </div>
                 </div>
+                {/* Custom CSS for 1190px-1279px range to switch to 3 columns */}
+                <style jsx>{`
+                    @media (min-width: 1190px) and (max-width: 1279px) {
+                        .quick-actions-grid {
+                            grid-template-columns: repeat(3, minmax(0, 1fr));
+                        }
+                    }
+                `}</style>
             </div>
         </>
     );
