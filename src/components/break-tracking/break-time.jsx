@@ -13,6 +13,7 @@ import { useBreakUpdate } from "../../contexts/BreakUpdateContext"
 const BreakTime = ({ breakDashboard, refetch }) => {
     const { t, i18n } = useTranslation();
     const { triggerBreakUpdate } = useBreakUpdate()
+    const isArabic = i18n.language === "ar"; // Add this line
 
     // مزامنة اللغة من localStorage
     useEffect(() => {
@@ -143,21 +144,21 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                 boxShadow: '0 10px 30px rgba(0, 0, 0, 0.08), 0 4px 15px rgba(0, 0, 0, 0.05)',
                 border: '1px solid rgba(255, 255, 255, 0.15)'
             }}>
-
-            {/* Header - flex-col until 1300px, then flex-row */}
-            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 xl:gap-3 mb-6">
-                <h3 className="text-xl font-bold gradient-text tracking-tight transition-all duration-200 group-hover:scale-105">
+             {/* Header - flex-col only for 1024px-1250px range */}
+            <div className="flex flex-col lg:flex-col xl:flex-row 2xl:flex-row gap-3 mb-4 sm:mb-6 lg:mb-4 xl:mb-6">
+                <h3 className="text-lg sm:text-xl lg:text-lg xl:text-xl font-bold gradient-text tracking-tight transition-all duration-200 group-hover:scale-105">
                     {t('breakTime.title', 'Break Time')}
                 </h3>
 
-                <div className="flex flex-col xl:flex-row xl:items-center gap-2 xl:gap-3">
-                    {/* Enhanced Select */}
-                    <div className="relative group/select xl:w-48">
+                {/* Controls - Always in same row, each taking 50% width */}
+                <div className="flex flex-row items-center gap-2 xl:ml-auto">
+                    {/* Select Reason - Always 50% width */}
+                    <div className="relative group/select flex-1">
                         <select
                             value={selectedReason}
                             onChange={(e) => setSelectedReason(e.target.value)}
                             disabled={isBreakActive}
-                            className="w-full xl:w-auto xl:pr-[80px] border-2 rounded-xl font-semibold px-4 py-2.5 pr-10 text-xs gradient-text appearance-none backdrop-blur-sm transition-all duration-300 hover:border-opacity-80 focus:ring-2 focus:ring-opacity-20 focus:scale-[1.02]"
+                            className="w-full border-2 rounded-xl font-semibold px-2 sm:px-2 lg:px-2 xl:px-2 py-2 sm:py-2.5 lg:py-2 xl:py-2.5 pr-8 sm:pr-10 lg:pr-8 xl:pr-10 text-xs sm:text-sm lg:text-xs xl:text-sm gradient-text appearance-none backdrop-blur-sm transition-all duration-300 hover:border-opacity-80 focus:ring-2 focus:ring-opacity-20 focus:scale-[1.02] h-[36px] sm:h-[42px] lg:h-[36px] xl:h-[42px]"
                             style={{
                                 borderColor: 'var(--accent-color)',
                                 backgroundColor: 'var(--bg-color)',
@@ -176,8 +177,8 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                                 </option>
                             ))}
                         </select>
-                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none transition-transform duration-300 group-hover/select:scale-110 group-hover/select:rotate-180">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="gradient-text">
+                        <div className="absolute right-2 sm:right-3 lg:right-2 xl:right-3 top-1/2 transform -translate-y-1/2 pointer-events-none transition-transform duration-300 group-hover/select:scale-110 group-hover/select:rotate-180">
+                            <svg width="10" height="10" className="sm:w-3 sm:h-3 lg:w-2.5 lg:h-2.5 xl:w-3 xl:h-3 gradient-text" viewBox="0 0 24 24" fill="none" >
                                 <path d="M6 9l6 6 6-6" stroke="url(#gradient)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                                 <defs>
                                     <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -189,10 +190,10 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                         </div>
                     </div>
 
-                    {/* Enhanced Button */}
+                    {/* Start Break Button - Always 50% width */}
                     <button
                         onClick={handleStartBreak}
-                        className="w-full xl:w-auto text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all duration-300 transform hover:scale-105 hover:shadow-xl active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed group/btn"
+                        className="flex-1 text-white px-3 sm:px-4 lg:px-3 xl:px-4 py-2 sm:py-2.5 lg:py-2 xl:py-2.5 rounded-xl text-xs sm:text-sm lg:text-xs xl:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all duration-300 transform hover:scale-105 hover:shadow-xl active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed group/btn h-[36px] sm:h-[42px] lg:h-[36px] xl:h-[42px]"
                         style={{
                             background: isBreakActive
                                 ? 'linear-gradient(135deg, #ef4444, #dc2626)'
@@ -206,17 +207,18 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                         <img
                             src="/assets/clock.svg"
                             alt={isBreakActive ? t('breakTime.endBreak', 'End Break') : t('breakTime.startBreak', 'Start Break')}
-                            className="w-4 h-4 transition-transform duration-300 group-hover/btn:rotate-12"
+                            className="w-3 h-3 sm:w-4 sm:h-4 lg:w-3 lg:h-3 xl:w-4 xl:h-4 transition-transform duration-300 group-hover/btn:rotate-12"
                         />
-                        {(starting || stopping) ? (
-                            <span className="animate-pulse">Loading...</span>
-                        ) : (
-                            isBreakActive ? t('breakTime.endBreak', 'End Break') : t('breakTime.startBreak', 'Start Break')
-                        )}
+                        <span>
+                            {(starting || stopping) ? (
+                                <span className="animate-pulse">Loading...</span>
+                            ) : (
+                                isBreakActive ? t('breakTime.endBreak', 'End Break') : t('breakTime.startBreak', 'Start Break')
+                            )}
+                        </span>
                     </button>
                 </div>
             </div>
-
             {/* Enhanced Divider */}
             <div className="w-full h-px mb-4 bg-gradient-to-r from-transparent via-gray-300 to-transparent opacity-30"
                 style={{ backgroundColor: 'var(--divider-color)' }}></div>
@@ -338,9 +340,9 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                         border: '1px solid rgba(255, 255, 255, 0.2)'
                     }}>
                     <div className="flex flex-col items-center">
-                        <DigitalNumber 
-                            value={timerMinutes} 
-                            size="lg" 
+                        <DigitalNumber
+                            value={timerMinutes}
+                            size="lg"
                             className="transition-all duration-200 group-hover/timer:scale-110"
                             style={{ color: 'var(--text-color)', lineHeight: '1' }}
                         />
@@ -351,9 +353,9 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                     </div>
                     <div className="w-px h-8 bg-white bg-opacity-30"></div>
                     <div className="flex flex-col items-center">
-                        <DigitalNumber 
-                            value={timerSeconds} 
-                            size="lg" 
+                        <DigitalNumber
+                            value={timerSeconds}
+                            size="lg"
                             className="transition-all duration-200 group-hover/timer:scale-110"
                             style={{ color: 'var(--text-color)', lineHeight: '1' }}
                         />

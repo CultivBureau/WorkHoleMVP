@@ -8,7 +8,7 @@ import toast from "react-hot-toast"
 import { useAttendanceUpdate } from "../../../contexts/AttendanceUpdateContext"
 import { useTimer } from "../../../contexts/TimerContext"
 import moment from "moment-timezone"
-import ErrorComponent from "../../Error/Error"; 
+import ErrorComponent from "../../Error/Error";
 import { GlobalErrorContext } from "../../../contexts/GlobalErrorContext"
 
 const MainContent = () => {
@@ -21,12 +21,12 @@ const MainContent = () => {
   const { triggerUpdate } = useAttendanceUpdate()
   const navigate = useNavigate();
   const { setGlobalError } = useContext(GlobalErrorContext);
-// ...existing imports...
-const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  // ...existing imports...
+  const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
   // Enhanced timer context integration
-  const { 
-    timer, 
-    isRunning, 
+  const {
+    timer,
+    isRunning,
     isPaused,
     hasActiveTimer,
     displayTime,
@@ -155,11 +155,11 @@ const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
         (position) => {
           setIsGettingLocation(false)
           toast.dismiss(loadingToast)
-          
+
           const { latitude, longitude, accuracy } = position.coords
-          
+
           console.log('Location success:', { latitude, longitude, accuracy })
-          
+
           // Success toast with location info
           toast.success(
             isAr ? `تم تحديد الموقع بدقة ${Math.round(accuracy)}م` : `Location found with ${Math.round(accuracy)}m accuracy`,
@@ -182,36 +182,36 @@ const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
         (error) => {
           setIsGettingLocation(false)
           toast.dismiss(loadingToast)
-          
+
           console.error('Location error details:', {
             code: error.code,
             message: error.message,
           })
-          
+
           let errorMessage = isAr ? 'خطأ في تحديد الموقع' : 'Location error'
           let errorIcon = '❌'
-          
+
           switch (error.code) {
             case error.PERMISSION_DENIED:
-              errorMessage = isAr 
-                ? 'تم رفض إذن الموقع. يرجى السماح بالوصول إلى الموقع' 
+              errorMessage = isAr
+                ? 'تم رفض إذن الموقع. يرجى السماح بالوصول إلى الموقع'
                 : 'Location permission denied. Please allow location access'
               errorIcon = '🚫'
               break
             case error.POSITION_UNAVAILABLE:
-              errorMessage = isAr 
-                ? 'الموقع غير متاح. تأكد من اتصال الإنترنت' 
+              errorMessage = isAr
+                ? 'الموقع غير متاح. تأكد من اتصال الإنترنت'
                 : 'Location unavailable. Check your internet connection'
               errorIcon = '📡'
               break
             case error.TIMEOUT:
-              errorMessage = isAr 
-                ? 'انتهت مهلة تحديد الموقع. يرجى المحاولة مرة أخرى' 
+              errorMessage = isAr
+                ? 'انتهت مهلة تحديد الموقع. يرجى المحاولة مرة أخرى'
                 : 'Location request timeout. Please try again'
               errorIcon = '⏰'
               break
           }
-          
+
           reject(new window.Error(errorMessage)); // <-- use JS Error, not React Error
         },
         {
@@ -289,23 +289,23 @@ const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
           },
         })
       })
-      
+
       if (!confirmClockOut) return
     }
 
     try {
       console.log('Starting clock process...')
-      
+
       // احصل على الموقع الحالي
       const location = await getCurrentLocation();
       console.log('Got location:', location)
-      
+
       if (stats.currentStatus === "Clocked In") {
-        await clockOut({ 
-          latitude: location.latitude, 
-          longitude: location.longitude 
+        await clockOut({
+          latitude: location.latitude,
+          longitude: location.longitude
         }).unwrap()
-        
+
         toast.success(
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5" />
@@ -320,12 +320,12 @@ const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
           }
         )
       } else {
-        await clockIn({ 
-          location: "office", 
-          latitude: location.latitude, 
-          longitude: location.longitude 
+        await clockIn({
+          location: "office",
+          latitude: location.latitude,
+          longitude: location.longitude
         }).unwrap()
-        
+
         toast.success(
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5" />
@@ -344,7 +344,7 @@ const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
       refetch()
     } catch (e) {
       console.error('Clock process error:', e)
-      
+
       // إذا فشل تحديد الموقع، اعرض خيارات الموقع
       setShowLocationModal(true)
 
@@ -375,11 +375,11 @@ const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
     try {
       if (stats.currentStatus === "Clocked In") {
-        await clockOut({ 
-          latitude: locationData.latitude, 
-          longitude: locationData.longitude 
+        await clockOut({
+          latitude: locationData.latitude,
+          longitude: locationData.longitude
         }).unwrap()
-        
+
         toast.success(
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5" />
@@ -395,12 +395,12 @@ const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
           }
         )
       } else {
-        await clockIn({ 
-          location: "office", 
-          latitude: locationData.latitude, 
-          longitude: locationData.longitude 
+        await clockIn({
+          location: "office",
+          latitude: locationData.latitude,
+          longitude: locationData.longitude
         }).unwrap()
-        
+
         toast.success(
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5" />
@@ -421,7 +421,7 @@ const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
       setShowLocationModal(false)
     } catch (error) {
       console.error('Clock with location error:', error)
-      
+
       toast.error(
         <div className="flex items-center gap-2">
           <AlertCircle className="w-5 h-5" />
@@ -594,9 +594,8 @@ const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
                 </div>
                 {/* Enhanced Focus Time Card with Timer Context */}
                 <div
-                  className={`w-1/2 h-full rounded-xl sm:rounded-2xl p-2 sm:p-4 flex flex-col justify-center items-center border transition-all duration-300 ${
-                    hasActiveTimer ? 'border-[#09D1C7] shadow-lg' : ''
-                  }`}
+                  className={`w-1/2 h-full rounded-xl sm:rounded-2xl p-2 sm:p-4 flex flex-col justify-center items-center border transition-all duration-300 ${hasActiveTimer ? 'border-[#09D1C7] shadow-lg' : ''
+                    }`}
                   style={{
                     backgroundColor: hasActiveTimer ? "var(--card-bg)" : "var(--card-bg)",
                     borderColor: hasActiveTimer ? "#09D1C7" : "var(--border-color)",
@@ -629,7 +628,7 @@ const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
             <div className="w-full h-max pb-2 pt-2 flex justify-center items-center relative">
               {/* Tooltip - يظهر بس لو المستخدم مش عامل clock in */}
               {!hasCompletedToday && stats.currentStatus === "ClockedOut" && (
-                <div 
+                <div
                   className="absolute -top-8 sm:-top-12 right-2 sm:right-4 bg-gradient-to-r bg-[var(--accent-color)] text-white text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-2 rounded-lg shadow-lg animate-bounce z-10"
                   style={{
                     animation: 'bounce 2s infinite',
@@ -642,12 +641,12 @@ const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
                   </div>
                 </div>
               )}
-              
+
               <button
                 className="w-full text-white cursor-pointer font-medium py-2 sm:py-3 px-4 sm:px-6 rounded-xl sm:rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base"
                 style={{
-                  background: hasCompletedToday 
-                    ? 'linear-gradient(135deg, #6B7280 0%, #9CA3AF 100%)' 
+                  background: hasCompletedToday
+                    ? 'linear-gradient(135deg, #6B7280 0%, #9CA3AF 100%)'
                     : `linear-gradient(135deg, var(--accent-hover) 0%, var(--accent-color) 100%)`,
                   opacity: hasCompletedToday ? 0.7 : 1,
                 }}
@@ -661,15 +660,15 @@ const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
                 ) : (
                   <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
                 )}
-                {hasCompletedToday 
+                {hasCompletedToday
                   ? (isAr ? 'تم تسجيل الحضور اليوم' : 'Completed Today')
-                  : isGettingLocation 
-                  ? (isAr ? 'جاري تحديد الموقع...' : 'Getting location...')
-                  : (isClockingIn || isClockingOut)
-                  ? (isAr ? 'جاري التسجيل...' : 'Processing...')
-                  : stats.currentStatus === "Clocked In"
-                  ? "End Your Day"
-                  : "Start Your Day"}
+                  : isGettingLocation
+                    ? (isAr ? 'جاري تحديد الموقع...' : 'Getting location...')
+                    : (isClockingIn || isClockingOut)
+                      ? (isAr ? 'جاري التسجيل...' : 'Processing...')
+                      : stats.currentStatus === "Clocked In"
+                        ? (isAr ? 'إنهاء اليوم' : 'End Your Day')
+                        : (isAr ? 'بدء اليوم' : 'Start Your Day')}
               </button>
             </div>
           </div>
@@ -739,7 +738,7 @@ const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
           {/* Enhanced Location Selection Modal */}
           {showLocationModal && (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-              <div 
+              <div
                 className="rounded-2xl p-4 sm:p-6 max-w-sm sm:max-w-md w-full shadow-2xl border animate-in slide-in-from-bottom-4 duration-300"
                 style={{
                   backgroundColor: "var(--card-bg)",
@@ -754,18 +753,18 @@ const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
                     {isAr ? 'اختر موقعك' : 'Select Your Location'}
                   </h3>
                 </div>
-                
+
                 <p className="text-xs sm:text-sm mb-4 sm:mb-6" style={{ color: "var(--sub-text-color)" }}>
                   {isAr ? 'فشل في تحديد الموقع تلقائياً. يرجى اختيار موقعك:' : 'Failed to get location automatically. Please select your location:'}
                 </p>
-                
+
                 <div className="space-y-2 sm:space-y-3">
                   {offices.map((office) => (
                     <button
                       key={office._id}
                       onClick={() => handleClockWithLocation({ latitude: office.latitude, longitude: office.longitude, name: office.name })}
                       className="w-full p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 hover:shadow-md hover:scale-[1.02] group"
-                      style={{ 
+                      style={{
                         borderColor: "var(--border-color)",
                         backgroundColor: "var(--bg-color)",
                       }}
@@ -787,12 +786,12 @@ const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
                     </button>
                   ))}
                 </div>
-                
+
                 <div className="flex gap-2 sm:gap-3 mt-4 sm:mt-6">
                   <button
                     onClick={() => setShowLocationModal(false)}
                     className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border rounded-xl font-medium transition-all duration-200 hover:shadow-md text-sm sm:text-base"
-                    style={{ 
+                    style={{
                       borderColor: "var(--border-color)",
                       color: "var(--text-color)",
                     }}

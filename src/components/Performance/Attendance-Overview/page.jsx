@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useLang } from '../../../contexts/LangContext'
 import { useTheme } from '../../../contexts/ThemeContext'
 import { useTranslation } from "react-i18next";
+import { useNavigate } from 'react-router-dom';
 import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -27,6 +28,7 @@ const AttendanceOverview = () => {
   const { isRtl } = useLang();
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   // Fake data for Present vs Absent for each month for 1 year
   const AttendanceOverviewData = [
@@ -64,7 +66,7 @@ const AttendanceOverview = () => {
     labels: AttendanceOverviewData.map(item => item.month),
     datasets: [
       {
-        label: 'Present',
+        label: t('performance.attendanceOverview.present'),
         data: AttendanceOverviewData.map(item => {
           const total = item.present + item.absent;
           return (item.present / total) * 100;
@@ -92,7 +94,7 @@ const AttendanceOverview = () => {
         barPercentage: 0.9,
       },
       {
-        label: 'Absent',
+        label: t('performance.attendanceOverview.absent'),
         data: AttendanceOverviewData.map(item => {
           const total = item.present + item.absent;
           return (item.absent / total) * 100;
@@ -124,13 +126,19 @@ const AttendanceOverview = () => {
         cornerRadius: 8,
         padding: 10,
         callbacks: {
-          label: function(context) {
+          label: function (context) {
             const dataIndex = context.dataIndex;
             const monthData = AttendanceOverviewData[dataIndex];
-            if (context.dataset.label === 'Present') {
-              return `Present: ${monthData.present} days (${Math.round(context.parsed.y)}%)`;
+            if (context.dataset.label === t('performance.attendanceOverview.present')) {
+              return t('performance.attendanceOverview.presentDays', {
+                days: monthData.present,
+                percent: Math.round(context.parsed.y)
+              });
             } else {
-              return `Absent: ${monthData.absent} days (${Math.round(context.parsed.y)}%)`;
+              return t('performance.attendanceOverview.absentDays', {
+                days: monthData.absent,
+                percent: Math.round(context.parsed.y)
+              });
             }
           }
         }
@@ -159,7 +167,7 @@ const AttendanceOverview = () => {
           font: {
             size: 12,
           },
-          callback: function(value) {
+          callback: function (value) {
             return value + '%';
           },
           stepSize: 25,
@@ -179,6 +187,11 @@ const AttendanceOverview = () => {
     },
   };
 
+  // Handle navigation to attendance logs
+  const handleViewLogs = () => {
+    navigate('/pages/User/attendance-logs');
+  };
+
   return (
     <div className='w-full h-auto bg-[var(--bg-color)] border border-[var(--border-color)] rounded-[10px] p-2 sm:p-3 lg:p-4 xl:p-6 shadow-sm'>
       {/* Header Section */}
@@ -187,22 +200,26 @@ const AttendanceOverview = () => {
         <div className='flex flex-col lg:flex-row text-start gap-2 sm:gap-3 lg:gap-4'>
           <div>
             <p className='text-[10px] sm:text-[11px] lg:text-[13px] text-[var(--sub-text-color)] mb-1'>
-              Presence vs absence
+              {t('performance.attendanceOverview.subtitle')}
             </p>
             <h2 className='text-[14px] sm:text-[16px] lg:text-[18px] xl:text-[20px] font-semibold text-[var(--text-color)]'>
-              Attendance Overview
+              {t('performance.attendanceOverview.title')}
             </h2>
           </div>
-          
+
           {/* Legend */}
           <div className='flex lg:items-center flex-row lg:flex-col gap-2'>
             <div className='flex items-center gap-2'>
               <div className='w-[6px] h-[6px] sm:w-[8px] sm:h-[8px] lg:w-[10px] lg:h-[10px] rounded-full gradient-bg'></div>
-              <span className='text-[10px] sm:text-[12px] lg:text-[14px] text-[var(--sub-text-color)]'>Present</span>
+              <span className='text-[10px] sm:text-[12px] lg:text-[14px] text-[var(--sub-text-color)]'>
+                {t('performance.attendanceOverview.present')}
+              </span>
             </div>
             <div className='flex items-center gap-2'>
               <div className='w-[6px] h-[6px] sm:w-[8px] sm:h-[8px] lg:w-[10px] lg:h-[10px] rounded-full' style={{ backgroundColor: 'rgba(176, 176, 176, 0.45)' }}></div>
-              <span className='text-[10px] sm:text-[12px] lg:text-[14px] text-[var(--sub-text-color)]'>Absent</span>
+              <span className='text-[10px] sm:text-[12px] lg:text-[14px] text-[var(--sub-text-color)]'>
+                {t('performance.attendanceOverview.absent')}
+              </span>
             </div>
           </div>
 
@@ -217,7 +234,7 @@ const AttendanceOverview = () => {
                   </span>
                 </div>
                 <span className='text-[9px] sm:text-[10px] lg:text-[12px] font-semibold text-[var(--text-color)] whitespace-nowrap'>
-                  Presence Rate
+                  {t('performance.attendanceOverview.presenceRate')}
                 </span>
               </div>
             </div>
@@ -231,19 +248,24 @@ const AttendanceOverview = () => {
                   </span>
                 </div>
                 <span className='text-[9px] sm:text-[10px] lg:text-[12px] font-semibold text-[var(--text-color)] whitespace-nowrap'>
-                  Absence Rate
+                  {t('performance.attendanceOverview.absenceRate')}
                 </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right side - View Logs */}
-        <div className='flex flex-col sm:flex-row items-start sm:items-center gap-4'>
+        {/* Right side - View Logs Button */}
+        <div className='flex items-center'>
           {/* View Logs Button */}
-          <button className='flex items-center gap-2 border border-[var(--border-color)] px-2 sm:px-3 lg:px-4 py-1 sm:py-1.5 lg:py-2 text-[#26C8B9] hover:bg-[var(--hover-color)] rounded-lg transition-colors'>
+          <button
+            onClick={handleViewLogs}
+            className='flex items-center gap-2 border border-[var(--border-color)] px-2 sm:px-3 lg:px-4 py-1 sm:py-1.5 lg:py-2 text-[#26C8B9] hover:bg-[var(--hover-color)] rounded-lg transition-colors cursor-pointer'
+          >
             <Eye size={12} className='sm:size-[14px] lg:size-[16px]' />
-            <span className='text-[10px] sm:text-[12px] lg:text-[14px] font-medium'>View Logs</span>
+            <span className='text-[10px] sm:text-[12px] lg:text-[14px] font-medium'>
+              {t('performance.attendanceOverview.viewLogs')}
+            </span>
           </button>
         </div>
       </div>

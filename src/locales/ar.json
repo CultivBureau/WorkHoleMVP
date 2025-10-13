@@ -22,6 +22,7 @@
     "darkMode": "الوضع الليلي",
     "lightMode": "الوضع النهاري",
     "time_tracking": "تتبع الوقت",
+    "attendance": "سجلات الحضور",
     "break_tracking": "تتبع الاستراحة",
     "all_attendance": "جميع الحضور",
     "all_departments": "جميع الأقسام",
@@ -1215,40 +1216,97 @@
       }
     }
   },
-   "allDepartments": {
-      "statusCards": {
-        "totalDepartments": {
-          "title": "إجمالي الأقسام",
-          "count": "20",
-          "description": "عدد الأقسام في الشركة"
-        },
-        "highestDepartment": {
-          "title": "أكثر قسم",
-          "name": "قسم التصميم",
-          "description": "القسم الأكثر شعبية"
-        },
-        "employeesDepartment": {
-          "title": "قسم الموظفين",
-          "count": "120",
-          "description": "إجمالي الموظفين في جميع الأقسام"
-        },
-        "departmentsIssues": {
-          "title": "مشاكل الأقسام",
-          "count": "4",
-          "description": "الأقسام التي لديها تقارير انضباطية عالية"
-        }
+  "allDepartments": {
+    "statusCards": {
+      "totalDepartments": {
+        "title": "إجمالي الأقسام",
+        "count": "20",
+        "description": "عدد الأقسام في الشركة"
       },
-      "search": {
-        "placeholder": "ابحث عن الأقسام...",
-        "addNewDepartment": "إضافة قسم جديد",
-        "editDepartment": "تعديل القسم"
+      "highestDepartment": {
+        "title": "أكثر قسم",
+        "name": "قسم التصميم",
+        "description": "القسم الأكثر شعبية"
       },
-      "departmentCard": {
-        "members": "الأعضاء",
-        "teams": "الفرق",
-        "viewAll": "عرض الكل",
-        "supervisor": "المشرف",
-        "edit": "تعديل"
+      "employeesDepartment": {
+        "title": "قسم الموظفين",
+        "count": "120",
+        "description": "إجمالي الموظفين في جميع الأقسام"
+      },
+      "departmentsIssues": {
+        "title": "مشاكل الأقسام",
+        "count": "4",
+        "description": "الأقسام التي لديها تقارير انضباطية عالية"
       }
+    },
+    "search": {
+      "placeholder": "ابحث عن الأقسام...",
+      "addNewDepartment": "إضافة قسم جديد",
+      "editDepartment": "تعديل القسم"
+    },
+    "departmentCard": {
+      "members": "الأعضاء",
+      "teams": "الفرق",
+      "viewAll": "عرض الكل",
+      "supervisor": "المشرف",
+      "edit": "تعديل"
     }
+  },
+  "breakChart": {
+    "title": "استخدام أنواع الاستراحة",
+    "subtitle": "إجمالي الوقت المستغرق حسب نوع الاستراحة",
+    "week": "أسبوع",
+    "month": "شهر",
+    "count": "العدد",
+    "total": "الإجمالي",
+    "totalTypes": "إجمالي الأنواع",
+    "totalTime": "إجمالي الوقت",
+    "mostUsed": "الأكثر استخداماً"
+  },
+  "common": {
+    "loading": "جاري التحميل..."
+  },
+  "performance": {
+    "statusCards": {
+      "myKpiScore": "نقاط مؤشرات الأداء",
+      "tasksCompleted": "المهام المكتملة",
+      "attendanceRate": "معدل الحضور",
+      "hoursLogged": "ساعات العمل المسجلة"
+    },
+    "myKpiBreakdown": {
+      "title": "تفصيل مؤشرات الأداء الخاصة بي",
+      "subtitle": "شاهد كيف يتم توزيع نقاطك عبر المعايير",
+      "totalTasks": "إجمالي المهام",
+      "tasks": "المهام",
+      "teamwork": "العمل الجماعي",
+      "taskOverdue": "المهام المتأخرة",
+      "tasksDescription": "المهام المكتملة بنجاح",
+      "teamworkDescription": "جهود التعاون مع الفريق",
+      "taskOverdueDescription": "المهام غير المكتملة أو المتأخرة"
+    },
+    "attendanceOverview": {
+      "title": "نظرة عامة على الحضور",
+      "subtitle": "الحضور مقابل الغياب",
+      "present": "حاضر",
+      "absent": "غائب",
+      "presenceRate": "معدل الحضور",
+      "absenceRate": "معدل الغياب",
+      "viewLogs": "عرض السجلات",
+      "presentDays": "حاضر: {{days}} أيام ({{percent}}%)",
+      "absentDays": "غائب: {{days}} أيام ({{percent}}%)"
+    },
+    "kpiTrend": {
+      "title": "اتجاه مؤشرات الأداء",
+      "subtitle": "تتبع أداءك مع مرور الوقت",
+      "highestScore": "أعلى نقاط هذه الفترة",
+      "lowestScore": "أقل نقاط هذه الفترة",
+      "changeFromPrevious": "التغيير من الشهر السابق",
+      "vsLastMonth": "مقابل الشهر الماضي"
+    },
+    "periods": {
+      "overWeek": "خلال الأسبوع",
+      "overMonth": "خلال الشهر",
+      "overYear": "خلال السنة"
+    }
+  }
 }

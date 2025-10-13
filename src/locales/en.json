@@ -22,6 +22,7 @@
     "darkMode": "Dark Mode",
     "lightMode": "Light Mode",
     "time_tracking": "Time Tracking",
+    "attendance": "Attendance Logs",
     "break_tracking": "Break Tracking",
     "all_attendance": "All Attendance",
     "all_departments": "All Departments",
@@ -181,51 +182,49 @@
       "today": "Today",
       "approvedLeaveRequest": "approved a leave request"
     }
-  },  
-
-"adminAttendance": {
-  "cards": {
-    "totalEmployees": "Total Employees",
-    "presentToday": "Present Today",
-    "absentToday": "Absent Today",
-    "lateArrivals": "Late Arrivals"
   },
-  "table": {
-    "sortBy": "Sort By",
-    "sort": {
-      "newestFirst": "Newest First",
-      "oldestFirst": "Oldest First"
+  "adminAttendance": {
+    "cards": {
+      "totalEmployees": "Total Employees",
+      "presentToday": "Present Today",
+      "absentToday": "Absent Today",
+      "lateArrivals": "Late Arrivals"
     },
-    "location": {
-      "title": "Location",
-      "all": "All",
-      "office": "Office",
-      "home": "Home",
-      "workFromOffice": "Work from office",
-      "workFromHome": "Work from home"
-    },
-    "status": {
-      "title": "Status",
-      "allStatus": "All Status",
-      "present": "Present",
-      "absent": "Absent",
-      "lateArrival": "Late arrival"
-    },
-    "dateFrom": "Date from",
-    "dateTo": "Date To",
-    "pageOf": "5 of 18 page",
-    "columns": {
-      "employeeName": "Employees Name",
-      "date": "Date",
-      "checkIn": "Check-in",
-      "checkOut": "Check-out",
-      "workHours": "Work hours",
-      "status": "Status",
-      "location": "Location"
+    "table": {
+      "sortBy": "Sort By",
+      "sort": {
+        "newestFirst": "Newest First",
+        "oldestFirst": "Oldest First"
+      },
+      "location": {
+        "title": "Location",
+        "all": "All",
+        "office": "Office",
+        "home": "Home",
+        "workFromOffice": "Work from office",
+        "workFromHome": "Work from home"
+      },
+      "status": {
+        "title": "Status",
+        "allStatus": "All Status",
+        "present": "Present",
+        "absent": "Absent",
+        "lateArrival": "Late arrival"
+      },
+      "dateFrom": "Date from",
+      "dateTo": "Date To",
+      "pageOf": "5 of 18 page",
+      "columns": {
+        "employeeName": "Employees Name",
+        "date": "Date",
+        "checkIn": "Check-in",
+        "checkOut": "Check-out",
+        "workHours": "Work hours",
+        "status": "Status",
+        "location": "Location"
+      }
     }
-  }
-},
-
+  },
   "adminPerformance": {
     "cards": {
       "efficiencyScore": "Efficiency Score",
@@ -279,7 +278,6 @@
       "absenceRate": "Absence Rate"
     }
   },
-
   "breakTime": {
     "title": "Break Time",
     "selectReason": "Select Reason",
@@ -1251,7 +1249,8 @@
       "needsAttention": "Needs Attention",
       "highestKpi": "Highest average KPI this period",
       "belowAverageKpi": "Below average KPI this period"
-    }},
+    }
+  },
   "teamDetails": {
     "statusCards": {
       "teamKpiScore": "Team KPI Score",
@@ -1290,6 +1289,63 @@
       "lastSystem": "Last System",
       "activity": "Activity",
       "viewLogs": "View Logs"
+    }
+  },
+  "breakChart": {
+    "title": "Break Type Usage",
+    "subtitle": "Total time spent by break type",
+    "week": "Week",
+    "month": "Month",
+    "count": "Count",
+    "total": "Total",
+    "totalTypes": "Total Types",
+    "totalTime": "Total Time",
+    "mostUsed": "Most Used"
+  },
+  "common": {
+    "loading": "Loading..."
+  },
+  "performance": {
+    "statusCards": {
+      "myKpiScore": "My KPI Score",
+      "tasksCompleted": "Tasks Completed",
+      "attendanceRate": "Attendance Rate",
+      "hoursLogged": "Hours Logged"
+    },
+    "myKpiBreakdown": {
+      "title": "My KPI Breakdown",
+      "subtitle": "See how your score is distributed across criteria",
+      "totalTasks": "Total Tasks",
+      "tasks": "Tasks",
+      "teamwork": "Teamwork",
+      "taskOverdue": "Task overdue",
+      "tasksDescription": "Successfully completed tasks",
+      "teamworkDescription": "Team collaboration efforts",
+      "taskOverdueDescription": "Incomplete or delayed tasks"
+    },
+    "attendanceOverview": {
+      "title": "Attendance Overview",
+      "subtitle": "Presence vs absence",
+      "present": "Present",
+      "absent": "Absent",
+      "presenceRate": "Presence Rate",
+      "absenceRate": "Absence Rate",
+      "viewLogs": "View Logs",
+      "presentDays": "Present: {{days}} days ({{percent}}%)",
+      "absentDays": "Absent: {{days}} days ({{percent}}%)"
+    },
+    "kpiTrend": {
+      "title": "KPI Trend",
+      "subtitle": "Track your performance over time",
+      "highestScore": "Your highest score this period",
+      "lowestScore": "Lowest score this period",
+      "changeFromPrevious": "Change from previous month",
+      "vsLastMonth": "vs Last Month"
+    },
+    "periods": {
+      "overWeek": "Over Week",
+      "overMonth": "Over Month",
+      "overYear": "Over Year"
     }
   }
 }

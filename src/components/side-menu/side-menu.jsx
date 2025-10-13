@@ -156,7 +156,7 @@ function SideMenuItem({
       <button
         onClick={handleClick}
         className={[
-          "group w-full flex items-center gap-2 rounded-full pl-4 px-2 transition-all duration-200",
+          "group w-full flex items-center gap-2 rounded-full px-2 transition-all duration-200",
           "outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-hover)]",
           isActive
             ? ""
@@ -249,7 +249,7 @@ function SideMenuItem({
                   onClick(child.key);
                 }}
                 className={[
-                  "group w-full flex items-center gap-2 rounded-full pl-4 px-1.5 py-0.5 text-[13px] font-medium transition-all duration-200", // Changed py-1 to py-0.5
+                  "group w-full flex items-center gap-2 rounded-full p-1 text-[13px] font-medium transition-all duration-200", // Changed py-1 to py-0.5
                   isChildActive
                     ? ""
                     : "bg-transparent text-[var(--sub-text-color)] hover:bg-[var(--hover-color)] hover:text-[var(--accent-color)]",
@@ -413,7 +413,7 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
       return "attendance";
     if (location.pathname.startsWith("/pages/User/break-tracking"))
       return "break_tracking";
-    if (location.pathname.startsWith("/pages/User/team-wallet")) // <-- add this line
+    if (location.pathname.startsWith("/pages/User/team-wallet"))
       return "wallet";
     return "";
   };
@@ -455,7 +455,7 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
     } else if (key === "attendance") navigate("/pages/User/attendance-logs");
     else if (key === "break") navigate("/pages/User/break");
     else if (key === "break_tracking") navigate("/pages/User/break-tracking");
-      else if (key === "performance") navigate("/pages/User/Performance"); 
+    else if (key === "performance") navigate("/pages/User/Performance");
 
     else if (key === "wallet") navigate("/pages/User/team-wallet"); // <-- add this line
   };

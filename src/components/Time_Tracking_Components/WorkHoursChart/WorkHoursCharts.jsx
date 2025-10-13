@@ -18,8 +18,8 @@ import {
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 const filterOptions = [
-  { value: "week", label: "Week" },
-  { value: "month", label: "Month" },
+  { value: "week", label: "Week", labelAr: "أسبوع" },
+  { value: "month", label: "Month", labelAr: "شهر" },
 ]
 
 // Use the same bar color for both light and dark mode, but get from CSS variable for live theme update
@@ -153,9 +153,9 @@ const WorkHoursCharts = () => {
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="rounded-full px-4 py-1.5 pr-8 text-xs  font-semibold appearance-none focus:outline-none transition-all duration-200 hover:scale-105" // px-5 py-2 pr-10 text-sm → px-4 py-1.5 pr-8 text-xs
+            className="rounded-full px-4 py-1.5 pr-8 text-xs font-semibold appearance-none focus:outline-none transition-all duration-200 hover:scale-105"
             style={{
-              minWidth: 100, // minWidth: 120 → 100
+              minWidth: 100,
               background: chartColors.chartBarColor,
               color: "#fff",
               border: "none",
@@ -164,7 +164,7 @@ const WorkHoursCharts = () => {
           >
             {(isAr ? [...filterOptions].reverse() : filterOptions).map((option) => (
               <option key={option.value} value={option.value}>
-                {option.label}
+                {isAr ? option.labelAr : option.label}
               </option>
             ))}
           </select>

@@ -239,7 +239,7 @@ const BreakHistoryTable = () => {
               color: 'var(--text-color)'
             }}
           >
-            {isArabic ? <ChevronRight className="w-4 h-4" style={{ color: 'var(--sub-text-color)' }} /> : <ChevronLeft className="w-4 h-4" style={{ color: 'var(--sub-text-color)' }} />}
+            {<ChevronLeft className="w-4 h-4" style={{ color: 'var(--sub-text-color)' }} />}
           </button>
           <button
             onClick={() => setCurrentPage(Math.min(pagination.totalPages || 1, currentPage + 1))}
@@ -249,9 +249,8 @@ const BreakHistoryTable = () => {
               borderColor: 'var(--border-color)',
               backgroundColor: 'var(--bg-color)',
               color: 'var(--text-color)'
-            }}
-          >
-            {isArabic ? <ChevronLeft className="w-4 h-4" style={{ color: 'var(--sub-text-color)' }} /> : <ChevronRight className="w-4 h-4" style={{ color: 'var(--sub-text-color)' }} />}
+            }}>
+            {<ChevronRight className="w-4 h-4" style={{ color: 'var(--sub-text-color)' }} />}
           </button>
         </div>
       </div>

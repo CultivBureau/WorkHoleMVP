@@ -13,7 +13,7 @@ const LeaveRequest = ({ refetch }) => {
 
   // Get user data including holidays
   const { data: user } = useMeQuery()
-  
+
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState({
     leaveType: "annual",
@@ -60,7 +60,7 @@ const LeaveRequest = ({ refetch }) => {
         const day = fromDate.getDay()
         const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
         const dayName = dayNames[day]
-        
+
         // Skip ONLY user holidays (remove static Friday/Saturday check)
         if (!user?.holidays?.includes(dayName)) {
           count++
@@ -77,30 +77,30 @@ const LeaveRequest = ({ refetch }) => {
     const day = selectedDate.getDay()
     const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
     const dayName = dayNames[day]
-    
+
     // Clear previous errors for this field
     setErrors(prev => ({ ...prev, [field]: null }))
-    
+
     // Check ONLY if it's a user holiday (remove static Friday/Saturday check)
     if (user?.holidays?.includes(dayName)) {
       const dayLabels = {
         sunday: isArabic ? "الأحد" : "Sunday",
-        monday: isArabic ? "الاثنين" : "Monday", 
+        monday: isArabic ? "الاثنين" : "Monday",
         tuesday: isArabic ? "الثلاثاء" : "Tuesday",
         wednesday: isArabic ? "الأربعاء" : "Wednesday",
         thursday: isArabic ? "الخميس" : "Thursday",
         friday: isArabic ? "الجمعة" : "Friday",
         saturday: isArabic ? "السبت" : "Saturday"
       }
-      
+
       toast.error(
-        isArabic 
+        isArabic
           ? `${dayLabels[dayName]} يوم إجازة لك. لا يمكنك اختياره.`
           : `${dayLabels[dayName]} is your holiday. You cannot select it.`
       )
       return
     }
-    
+
     setFormData((prev) => {
       const newData = { ...prev, [field]: value }
       if (field === "fromDate" || field === "toDate") {
@@ -116,11 +116,11 @@ const LeaveRequest = ({ refetch }) => {
   // Validation functions
   const validateStep1 = () => {
     const newErrors = {}
-    
+
     if (!formData.leaveType) {
       newErrors.leaveType = t("leaves.validation.leaveTypeRequired", "Please select a leave type")
     }
-    
+
     if (!formData.fromDate) {
       newErrors.fromDate = t("leaves.validation.fromDateRequired", "Please select a start date")
     } else {
@@ -130,7 +130,7 @@ const LeaveRequest = ({ refetch }) => {
         newErrors.fromDate = t("leaves.validation.fromDatePast", "Start date cannot be in the past")
       }
     }
-    
+
     if (!formData.toDate) {
       newErrors.toDate = t("leaves.validation.toDateRequired", "Please select an end date")
     } else if (formData.fromDate) {
@@ -140,18 +140,18 @@ const LeaveRequest = ({ refetch }) => {
         newErrors.toDate = t("leaves.validation.toDateBeforeFrom", "End date cannot be before start date")
       }
     }
-    
+
     if (formData.numberOfDays <= 0) {
       newErrors.numberOfDays = t("leaves.validation.invalidDays", "Please select valid dates")
     }
-    
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
   const validateStep2 = () => {
     const newErrors = {}
-    
+
     if (!formData.reason.trim()) {
       newErrors.reason = t("leaves.validation.reasonRequired", "Please provide a reason for your leave")
     } else if (formData.reason.trim().length < 10) {
@@ -159,20 +159,20 @@ const LeaveRequest = ({ refetch }) => {
     } else if (formData.reason.trim().length > 500) {
       newErrors.reason = t("leaves.validation.reasonTooLong", "Reason cannot exceed 500 characters")
     }
-    
+
     // Validate file if it's sick leave
     if (formData.leaveType === "sick" && formData.attachment) {
       const maxSize = 10 * 1024 * 1024 // 10MB
       if (formData.attachment.size > maxSize) {
         newErrors.attachment = t("leaves.validation.fileTooLarge", "File size cannot exceed 10MB")
       }
-      
+
       const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/jpg', 'image/png']
       if (!allowedTypes.includes(formData.attachment.type)) {
         newErrors.attachment = t("leaves.validation.invalidFileType", "Only PDF, DOC, DOCX, JPG, and PNG files are allowed")
       }
     }
-    
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -201,7 +201,7 @@ const LeaveRequest = ({ refetch }) => {
   const handleSubmit = async () => {
     setIsLoading(true)
     setSubmitError(null)
-    
+
     // Final validation
     if (!validateStep3()) {
       setIsLoading(false)
@@ -216,17 +216,17 @@ const LeaveRequest = ({ refetch }) => {
       endDate: formData.toDate,
       reason: formData.reason.trim(),
     }
-    
+
     try {
       await createLeave({
         data,
         file: formData.attachment || undefined,
       }).unwrap()
-      
+
       toast.success(t("leaves.form.successToast", "Leave request submitted successfully!"))
       setShowSuccess(true)
       if (refetch) refetch()
-      
+
       // Clear form after success
       setTimeout(() => {
         setCurrentStep(1)
@@ -246,10 +246,10 @@ const LeaveRequest = ({ refetch }) => {
     } catch (err) {
       console.error("Error submitting leave request:", err)
       setSubmitError(err)
-      
+
       // Handle different types of errors
       let errorMessage = t("leaves.form.errorToast", "Failed to submit leave request. Please try again.")
-      
+
       if (err?.data?.message) {
         errorMessage = err.data.message
       } else if (err?.message) {
@@ -261,7 +261,7 @@ const LeaveRequest = ({ refetch }) => {
       } else if (err?.status === 500) {
         errorMessage = t("leaves.form.serverError", "Server error. Please try again later")
       }
-      
+
       toast.error(errorMessage)
     } finally {
       setIsLoading(false)
@@ -270,7 +270,7 @@ const LeaveRequest = ({ refetch }) => {
 
   const handleNext = () => {
     let isValid = false
-    
+
     switch (currentStep) {
       case 1:
         isValid = validateStep1()
@@ -284,7 +284,7 @@ const LeaveRequest = ({ refetch }) => {
       default:
         isValid = false
     }
-    
+
     if (isValid) {
       setCurrentStep(currentStep + 1)
       // Clear errors when moving to next step
@@ -307,27 +307,27 @@ const LeaveRequest = ({ refetch }) => {
     if (file) {
       // Clear previous attachment errors
       setErrors(prev => ({ ...prev, attachment: null }))
-      
+
       // Validate file size
       const maxSize = 10 * 1024 * 1024 // 10MB
       if (file.size > maxSize) {
-        setErrors(prev => ({ 
-          ...prev, 
-          attachment: t("leaves.validation.fileTooLarge", "File size cannot exceed 10MB") 
+        setErrors(prev => ({
+          ...prev,
+          attachment: t("leaves.validation.fileTooLarge", "File size cannot exceed 10MB")
         }))
         return
       }
-      
+
       // Validate file type
       const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/jpg', 'image/png']
       if (!allowedTypes.includes(file.type)) {
-        setErrors(prev => ({ 
-          ...prev, 
-          attachment: t("leaves.validation.invalidFileType", "Only PDF, DOC, DOCX, JPG, and PNG files are allowed") 
+        setErrors(prev => ({
+          ...prev,
+          attachment: t("leaves.validation.invalidFileType", "Only PDF, DOC, DOCX, JPG, and PNG files are allowed")
         }))
         return
       }
-      
+
       setFormData((prev) => ({ ...prev, attachment: file }))
     }
   }
@@ -403,7 +403,7 @@ const LeaveRequest = ({ refetch }) => {
         ))}
       </div>
       {renderError("leaveType")}
-      
+
       <div className="space-y-2">
         <div className="text-center">
           <label className="block font-medium text-xs mb-2" style={{ color: "var(--sub-text-color)" }}>
@@ -420,9 +420,8 @@ const LeaveRequest = ({ refetch }) => {
               min={today}
               value={formData.fromDate}
               onChange={(e) => handleDateChange("fromDate", e.target.value)}
-              className={`w-full p-1.5 text-xs border rounded-md focus:outline-none focus:ring-1 transition-colors ${
-                errors.fromDate ? 'border-red-500' : ''
-              }`}
+              className={`w-full p-1.5 text-xs border rounded-md focus:outline-none focus:ring-1 transition-colors ${errors.fromDate ? 'border-red-500' : ''
+                }`}
               style={{
                 borderColor: errors.fromDate ? "var(--error-color)" : "var(--border-color)",
                 backgroundColor: "var(--bg-color)",
@@ -440,9 +439,8 @@ const LeaveRequest = ({ refetch }) => {
               min={formData.fromDate || today}
               value={formData.toDate}
               onChange={(e) => handleDateChange("toDate", e.target.value)}
-              className={`w-full p-1.5 text-xs border rounded-md focus:outline-none focus:ring-1 transition-colors ${
-                errors.toDate ? 'border-red-500' : ''
-              }`}
+              className={`w-full p-1.5 text-xs border rounded-md focus:outline-none focus:ring-1 transition-colors ${errors.toDate ? 'border-red-500' : ''
+                }`}
               style={{
                 borderColor: errors.toDate ? "var(--error-color)" : "var(--border-color)",
                 backgroundColor: "var(--bg-color)",
@@ -456,12 +454,11 @@ const LeaveRequest = ({ refetch }) => {
               {t("leaves.form.numberOfDays")}
             </label>
             <div
-              className={`w-full p-1.5 rounded-md text-center font-semibold text-xs ${
-                errors.numberOfDays ? 'border border-red-500' : ''
-              }`}
-              style={{ 
-                backgroundColor: errors.numberOfDays ? "var(--error-color)" : "var(--container-color)", 
-                color: errors.numberOfDays ? "white" : "var(--text-color)" 
+              className={`w-full p-1.5 rounded-md text-center font-semibold text-xs ${errors.numberOfDays ? 'border border-red-500' : ''
+                }`}
+              style={{
+                backgroundColor: errors.numberOfDays ? "var(--error-color)" : "var(--container-color)",
+                color: errors.numberOfDays ? "white" : "var(--text-color)"
               }}
             >
               {formData.numberOfDays} {t("leaves.form.days", "day")}
@@ -484,9 +481,8 @@ const LeaveRequest = ({ refetch }) => {
           }}
           placeholder={t("leaves.form.reasonPlaceholder")}
           rows={2}
-          className={`w-full h-full p-2 text-xs border rounded-lg focus:outline-none focus:ring-1 resize-none transition-colors ${
-            errors.reason ? 'border-red-500' : ''
-          }`}
+          className={`w-full h-full p-2 text-xs border rounded-lg focus:outline-none focus:ring-1 resize-none transition-colors ${errors.reason ? 'border-red-500' : ''
+            }`}
           style={{
             borderColor: errors.reason ? "var(--error-color)" : "var(--border-color)",
             backgroundColor: "var(--bg-color)",
@@ -494,16 +490,9 @@ const LeaveRequest = ({ refetch }) => {
           }}
         />
         {renderError("reason")}
-        <div className="flex justify-between items-center mt-1">
-          <span className="text-xs" style={{ color: "var(--sub-text-color)" }}>
-            {formData.reason.length}/500 {t("leaves.form.characters", "characters")}
-          </span>
-          {formData.reason.length >= 10 && formData.reason.length <= 500 && (
-            <CheckCircle className="w-3 h-3" style={{ color: "var(--success-color)" }} />
-          )}
-        </div>
+       
       </div>
-      
+
       {/* Show upload section only for sick leave */}
       {formData.leaveType === "sick" && (
         <div className="flex-shrink-0">
@@ -525,9 +514,8 @@ const LeaveRequest = ({ refetch }) => {
             )}
           </div>
           {formData.attachment ? (
-            <div className={`flex items-center gap-2 p-2 rounded-lg border ${
-              errors.attachment ? 'border-red-500' : ''
-            }`} style={{ backgroundColor: "var(--container-color)" }}>
+            <div className={`flex items-center gap-2 p-2 rounded-lg border ${errors.attachment ? 'border-red-500' : ''
+              }`} style={{ backgroundColor: "var(--container-color)" }}>
               <div
                 className="w-8 h-8 rounded flex items-center justify-center flex-shrink-0"
                 style={{ backgroundColor: "var(--accent-color)" }}
@@ -550,9 +538,8 @@ const LeaveRequest = ({ refetch }) => {
           ) : (
             <div className="flex items-center gap-4">
               <div
-                className={`w-30 h-20 p-1 flex-shrink-0 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-80 transition-opacity ${
-                  errors.attachment ? 'border-red-500' : ''
-                }`}
+                className={`w-25 h-20 p-1 flex-shrink-0 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-80 transition-opacity ${errors.attachment ? 'border-red-500' : ''
+                  }`}
                 style={{ borderColor: errors.attachment ? "var(--error-color)" : "var(--accent-color)" }}
                 onClick={() => document.getElementById("file-upload").click()}
               >
@@ -563,13 +550,13 @@ const LeaveRequest = ({ refetch }) => {
                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                   onChange={handleFileUpload}
                 />
-                <Upload className="w-4 h-4 mb-1" style={{ color: "var(--sub-text-color)" }} />
+                <Upload className="w-3 h-3 mb-1" style={{ color: "var(--sub-text-color)" }} />
                 <span className="text-xs font-medium" style={{ color: "var(--sub-text-color)" }}>
                   {t("leaves.form.upload")}
                 </span>
                 <button
                   onClick={() => document.getElementById("file-upload").click()}
-                  className="px-4 py-1 mt-0.5 text-white rounded-md font-medium hover:opacity-90 transition-opacity text-xs gradient-bg"
+                  className="px-3 py-0.5 mt-0.5 text-white rounded-md font-medium hover:opacity-90 transition-opacity text-xs gradient-bg"
                 >
                   {t("leaves.form.browse")}
                 </button>
@@ -602,7 +589,7 @@ const LeaveRequest = ({ refetch }) => {
           </div>
         </div>
       )}
-      
+
       <div className="space-y-1.5">
         <div className="flex items-center gap-2 text-xs">
           <span className="font-medium" style={{ color: "var(--text-color)" }}>

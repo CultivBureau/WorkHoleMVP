@@ -4,10 +4,10 @@ import { useTheme } from '../../../contexts/ThemeContext'
 import { useTranslation } from "react-i18next";
 import { Doughnut } from 'react-chartjs-2';
 import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
+    Chart as ChartJS,
+    ArcElement,
+    Tooltip,
+    Legend,
 } from 'chart.js';
 import { ChevronDown } from 'lucide-react';
 
@@ -17,29 +17,35 @@ const KpiBreakdown = () => {
     const { isRtl } = useLang();
     const { theme } = useTheme();
     const { t } = useTranslation();
-    const [selectedPeriod, setSelectedPeriod] = useState('Over Year');
+    const [selectedPeriod, setSelectedPeriod] = useState('overYear');
+
+    const periodOptions = [
+        { value: 'overWeek', label: t('performance.periods.overWeek') },
+        { value: 'overMonth', label: t('performance.periods.overMonth') },
+        { value: 'overYear', label: t('performance.periods.overYear') }
+    ];
 
     const data = [
         {
             id: 1,
-            title: isRtl ? 'المهام' : 'Tasks',
+            title: t('performance.myKpiBreakdown.tasks'),
             percentage: 70,
             color: '#15919B',
-            description: isRtl ? 'المهام المكتملة بنجاح' : 'Successfully completed tasks'
+            description: t('performance.myKpiBreakdown.tasksDescription')
         },
         {
             id: 2,
-            title: isRtl ? 'العمل الجماعي' : 'Teamwork',
+            title: t('performance.myKpiBreakdown.teamwork'),
             percentage: 15,
             color: '#81F5EE',
-            description: isRtl ? 'التعاون مع الفريق' : 'Team collaboration efforts'
+            description: t('performance.myKpiBreakdown.teamworkDescription')
         },
         {
             id: 3,
-            title: isRtl ? 'المهام المتأخرة' : 'Task overdue',
+            title: t('performance.myKpiBreakdown.taskOverdue'),
             percentage: 15,
             color: '#D4D4D4',
-            description: isRtl ? 'المهام غير المكتملة' : 'Incomplete or delayed tasks'
+            description: t('performance.myKpiBreakdown.taskOverdueDescription')
         }
     ];
 
@@ -75,14 +81,10 @@ const KpiBreakdown = () => {
                 cornerRadius: 8,
                 padding: 10,
                 position: 'average',
-                yAlign: 'center',    // <-- aligns tooltip vertically to the bar
-                xAlign: 'center', 
                 yAlign: 'bottom',
-  
+                xAlign: 'center',
             }
         },
-
-
     };
 
     const totalTasks = 120;
@@ -93,17 +95,33 @@ const KpiBreakdown = () => {
             <div className='w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-3'>
                 <div className='flex-1 text-start'>
                     <h1 className='text-[11px] sm:text-[12px] lg:text-[14px] font-semibold text-[var(--text-color)] mb-1'>
-                        My KPI Breakdown
+                        {t('performance.myKpiBreakdown.title')}
                     </h1>
                     <p className='text-[8px] sm:text-[9px] lg:text-[10px] text-[var(--sub-text-color)] font-normal'>
-                        See how your score is distributed across criteria
+                        {t('performance.myKpiBreakdown.subtitle')}
                     </p>
                 </div>
-                <div className='flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-2 border border-[var(--border-color)] rounded-lg cursor-pointer hover:bg-[var(--hover-color)] transition-colors self-start sm:self-auto'>
-                    <span className='text-[9px] sm:text-[10px] lg:text-[12px] text-[var(--sub-text-color)] whitespace-nowrap'>
-                        Over Year
-                    </span>
-                    <ChevronDown size={10} className='sm:size-[12px] lg:size-[14px] text-[var(--sub-text-color)]' />
+
+                {/* Period Selector */}
+                <div className='relative self-start sm:self-auto'>
+                    <select
+                        value={selectedPeriod}
+                        onChange={(e) => setSelectedPeriod(e.target.value)}
+                        className={`appearance-none border border-[var(--border-color)] rounded-lg px-2 sm:px-3 py-1 sm:py-2 text-[9px] sm:text-[10px] lg:text-[12px] text-[var(--sub-text-color)] bg-[var(--bg-color)] hover:bg-[var(--hover-color)] transition-colors cursor-pointer ${isRtl ? 'pl-6 pr-2' : 'pr-6 pl-2'
+                            }`}
+                        style={{ direction: isRtl ? 'rtl' : 'ltr' }}
+                    >
+                        {periodOptions.map(option => (
+                            <option key={option.value} value={option.value}>
+                                {option.label}
+                            </option>
+                        ))}
+                    </select>
+                    <ChevronDown
+                        size={10}
+                        className={`sm:size-[12px] lg:size-[14px] text-[var(--sub-text-color)] absolute top-1/2 transform -translate-y-1/2 pointer-events-none ${isRtl ? 'left-2' : 'right-2'
+                            }`}
+                    />
                 </div>
             </div>
 
@@ -118,7 +136,7 @@ const KpiBreakdown = () => {
                                 {totalTasks}
                             </div>
                             <div className='text-[7px] sm:text-[8px] lg:text-[9px] xl:text-[10px] text-[var(--sub-text-color)] font-normal z-0'>
-                                Total Tasks
+                                {t('performance.myKpiBreakdown.totalTasks')}
                             </div>
                         </div>
                     </div>
@@ -131,8 +149,8 @@ const KpiBreakdown = () => {
                     <div key={item.id} className='flex items-center justify-between px-1 sm:px-2'>
                         <div className='flex items-center gap-1 sm:gap-2 lg:gap-3'>
                             {/* Color indicator */}
-                            <div 
-                                className='w-[6px] h-[6px] sm:w-[8px] sm:h-[8px] lg:w-[10px] lg:h-[10px] rounded-full flex-shrink-0' 
+                            <div
+                                className='w-[6px] h-[6px] sm:w-[8px] sm:h-[8px] lg:w-[10px] lg:h-[10px] rounded-full flex-shrink-0'
                                 style={{ backgroundColor: item.color }}
                             />
                             {/* Title */}

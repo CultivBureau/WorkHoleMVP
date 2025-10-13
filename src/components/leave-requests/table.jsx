@@ -17,12 +17,12 @@ const LeaveTable = () => {
   const itemsPerPage = 6;
 
   // Fetch leaves from API with polling for auto-refresh
-  const { 
-    data, 
-    isLoading, 
-    error, 
+  const {
+    data,
+    isLoading,
+    error,
     refetch,
-    isFetching 
+    isFetching
   } = useGetMyLeavesQuery(
     { page: currentPage, limit: itemsPerPage },
     {
@@ -47,7 +47,7 @@ const LeaveTable = () => {
     };
 
     window.addEventListener('storage', handleStorageChange);
-    
+
     // Also listen for custom events
     const handleCustomRefresh = () => {
       refetch();
@@ -174,6 +174,13 @@ const LeaveTable = () => {
     </div>
   );
 
+  // Add this helper function at the top of your component
+  const truncateText = (text, maxLength = 30) => {
+    if (!text) return "-";
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + "...";
+  };
+
   // Enhanced empty state component
   const renderEmptyState = () => {
     const hasFilters = leaveType !== "all" || status !== "all" || dateFrom || dateTo;
@@ -198,8 +205,8 @@ const LeaveTable = () => {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-6">
         <div className="mb-4">
-          <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" 
-               style={{ backgroundColor: 'var(--container-color)' }}>
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+            style={{ backgroundColor: 'var(--container-color)' }}>
             {hasFilters ? (
               <FileX className="w-8 h-8" style={{ color: 'var(--sub-text-color)' }} />
             ) : (
@@ -207,15 +214,15 @@ const LeaveTable = () => {
             )}
           </div>
         </div>
-        
+
         <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-color)' }}>
           {hasFilters ? noResultsTitle : noDataTitle}
         </h3>
-        
+
         <p className="text-sm text-center mb-6 max-w-md" style={{ color: 'var(--sub-text-color)' }}>
           {hasFilters ? noResultsDesc : noDataDesc}
         </p>
-        
+
         {hasFilters && (
           <button
             onClick={() => {
@@ -247,8 +254,8 @@ const LeaveTable = () => {
   // Error state component
   const renderErrorState = () => (
     <div className="flex flex-col items-center justify-center py-16 px-6">
-      <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" 
-           style={{ backgroundColor: 'var(--error-color)', opacity: 0.1 }}>
+      <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+        style={{ backgroundColor: 'var(--error-color)', opacity: 0.1 }}>
         <FileX className="w-8 h-8" style={{ color: 'var(--error-color)' }} />
       </div>
       <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-color)' }}>
@@ -333,7 +340,7 @@ const LeaveTable = () => {
             <div className="text-sm font-medium" style={{ color: 'var(--sub-text-color)' }}>
               {isLoading ? "..." : `${currentPageData.length} ${t("leaves.table.of")} ${filteredData.length} ${t("leaves.table.entries")}`}
             </div>
-            
+
             {/* Refresh button */}
             <button
               onClick={handleManualRefresh}
@@ -432,9 +439,26 @@ const LeaveTable = () => {
                   <td className={`px-6 py-4 ${isArabic ? 'text-right' : 'text-left'}`}>
                     {getStatusBadge(record.status)}
                   </td>
-                  <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
+                  <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'} max-w-xs`}
                     style={{ color: 'var(--table-text)' }}>
-                    {record.reason}
+                    <div className="relative group cursor-help">
+                      <span className="block truncate">
+                        {truncateText(record.reason, 35)}
+                      </span>
+                      {/* Tooltip for full text on hover - only show if text is truncated */}
+                      {record.reason && record.reason.length > 35 && (
+                        <div className={`absolute z-20 invisible group-hover:visible bg-black text-white text-xs rounded-lg py-2 px-3 shadow-lg whitespace-normal max-w-sm transition-opacity duration-200 ${isArabic ? 'right-0 -top-16' : 'left-0 -top-16'
+                          }`}>
+                          <div className="font-medium mb-1 text-gray-300">
+                            {t("leaves.table.fullReason", "Full Reason")}:
+                          </div>
+                          {record.reason}
+                          {/* Arrow pointer */}
+                          <div className={`absolute top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black ${isArabic ? 'right-4' : 'left-4'
+                            }`}></div>
+                        </div>
+                      )}
+                    </div>
                   </td>
                   <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
                     style={{ color: 'var(--table-text)' }}>
