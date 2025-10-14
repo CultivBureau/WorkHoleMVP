@@ -17,9 +17,9 @@ const CenterContent = () => {
     const { t, i18n } = useTranslation();
     const direction = i18n.language === "ar" ? "rtl" : "ltr";
     const textAlign = i18n.language === "ar" ? "text-right" : "text-left";
-   
 
-    
+
+
     // State for screen width and responsive layout
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
 
@@ -482,7 +482,7 @@ const CenterContent = () => {
 
             {/* Team */}
             <div
-                className={`${getTeamSectionSpan()} rounded-xl p-3 border h-72`}
+                className={`${getTeamSectionSpan()} rounded-xl p-3 border h-72 flex flex-col`}
                 style={{
                     backgroundColor: 'var(--bg-color)',
                     borderColor: 'var(--border-color)'
@@ -490,37 +490,44 @@ const CenterContent = () => {
             >
                 <div className="flex justify-between items-center mb-3">
                     <h3
-                        className={`text-xs font-semibold ${textAlign}`}
+                        className={`text-sm font-semibold ${textAlign}`}
                         style={{ color: 'var(--text-color)' }}
                     >
                         {t("walletCharts.team.header")}
                     </h3>
-                    <span
-                        className={`text-xs cursor-pointer ${textAlign}`}
-                        style={{ color: 'var(--primary-color)' }}
-                    >
-                        {t("walletCharts.team.viewAll")} (5)
-                    </span>
                 </div>
-                {/* Team members list */}
-                <div className="space-y-2">
+
+                {/* Team members list - Scrollable */}
+                <div className="flex-1 overflow-y-auto space-y-2 pr-2" style={{
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: 'var(--border-color) transparent'
+                }}>
                     {[1, 2, 3, 4].map((_, index) => (
-                        <div key={index} className="flex items-center justify-between">
-                            <div className="flex items-center">
+                        <div
+                            key={index}
+                            className="flex items-center justify-between p-2 rounded-lg hover:bg-opacity-50 transition-all cursor-pointer"
+                            style={{
+                                backgroundColor: 'transparent',
+                                ':hover': { backgroundColor: 'var(--container-color)' }
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--container-color)'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
                                 <img
                                     src={`https://i.pravatar.cc/40?img=${index + 1}`}
                                     alt={t("profile.profile")}
-                                    className="w-7 h-7 rounded-full mr-2"
+                                    className="w-8 h-8 rounded-full flex-shrink-0"
                                 />
-                                <div>
+                                <div className="min-w-0 flex-1">
                                     <p
-                                        className={`text-xs font-semibold ${textAlign}`}
+                                        className={`text-xs font-semibold ${textAlign} truncate`}
                                         style={{ color: 'var(--text-color)' }}
                                     >
-                                        {t("navbar.profileName")}
+                                        {t("navbar.profileName")} {index + 1}
                                     </p>
                                     <p
-                                        className={`text-xs ${textAlign}`}
+                                        className={`text-xs ${textAlign} truncate`}
                                         style={{ color: 'var(--sub-text-color)' }}
                                     >
                                         {t("navbar.role")}
@@ -528,7 +535,7 @@ const CenterContent = () => {
                                 </div>
                             </div>
                             <svg
-                                className="w-3 h-3"
+                                className="w-4 h-4 flex-shrink-0"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"

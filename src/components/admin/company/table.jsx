@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronLeft, ChevronRight, Search, LayoutGrid, TableIcon, Plus, Eye, Edit, Trash2 } from "lucide-react";
-import ViewEmployeePopup from "../all-employees/view-employee";
 import EditEmployeePopup from "../all-employees/edit-employee";
 
 const CompanyTable = () => {
@@ -17,7 +16,6 @@ const CompanyTable = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [viewMode, setViewMode] = useState("table"); // Default to table view
     const [selectedEmployee, setSelectedEmployee] = useState(null);
-    const [isViewOpen, setIsViewOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const joinDateInputRef = useRef(null);
 
@@ -152,13 +150,23 @@ const CompanyTable = () => {
         </div>
     );
 
+    const handleViewEmployee = (employee) => {
+        // Navigate to profile page with employee data
+        navigate("/pages/User/profile", { 
+            state: { 
+                employeeData: employee,
+                isAdminView: true 
+            } 
+        });
+    };
+
     // Action buttons for table
     const ActionButtons = ({ employee }) => (
         <div className="flex items-center gap-1 md:gap-2">
             <button
                 className="p-1 rounded hover:bg-gray-100 transition-colors"
                 title="View"
-                onClick={(e) => { e.stopPropagation(); setSelectedEmployee(employee); setIsViewOpen(true); }}
+                onClick={(e) => { e.stopPropagation(); handleViewEmployee(employee); }}
             >
                 <Eye className="w-3 h-3 md:w-4 md:h-4" style={{ color: 'var(--sub-text-color)' }} />
             </button>
@@ -488,11 +496,6 @@ const CompanyTable = () => {
             </div>
         </div>
         {/* Popups */}
-        <ViewEmployeePopup
-            employee={selectedEmployee}
-            isOpen={isViewOpen}
-            onClose={() => setIsViewOpen(false)}
-        />
         <EditEmployeePopup
             employee={selectedEmployee}
             isOpen={isEditOpen}

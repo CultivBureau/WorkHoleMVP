@@ -141,10 +141,6 @@ const LeaveRequest = ({ refetch }) => {
       }
     }
 
-    if (formData.numberOfDays <= 0) {
-      newErrors.numberOfDays = t("leaves.validation.invalidDays", "Please select valid dates")
-    }
-
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -457,8 +453,8 @@ const LeaveRequest = ({ refetch }) => {
               className={`w-full p-1.5 rounded-md text-center font-semibold text-xs ${errors.numberOfDays ? 'border border-red-500' : ''
                 }`}
               style={{
-                backgroundColor: errors.numberOfDays ? "var(--error-color)" : "var(--container-color)",
-                color: errors.numberOfDays ? "white" : "var(--text-color)"
+                backgroundColor: "var(--container-color)",
+                color: "var(--text-color)"
               }}
             >
               {formData.numberOfDays} {t("leaves.form.days", "day")}
@@ -471,103 +467,139 @@ const LeaveRequest = ({ refetch }) => {
   )
 
   const renderStep2 = () => (
-    <div className="flex flex-col h-full">
-      <div className="flex-1">
-        <textarea
-          value={formData.reason}
-          onChange={(e) => {
-            setFormData((prev) => ({ ...prev, reason: e.target.value }))
-            setErrors(prev => ({ ...prev, reason: null }))
-          }}
-          placeholder={t("leaves.form.reasonPlaceholder")}
-          rows={2}
-          className={`w-full h-full p-2 text-xs border rounded-lg focus:outline-none focus:ring-1 resize-none transition-colors ${errors.reason ? 'border-red-500' : ''
-            }`}
-          style={{
-            borderColor: errors.reason ? "var(--error-color)" : "var(--border-color)",
-            backgroundColor: "var(--bg-color)",
-            color: "var(--text-color)",
-          }}
-        />
+    <div className="flex flex-col h-full gap-3">
+      {/* Reason Section */}
+      <div className="flex-1 flex flex-col">
+        <label className="text-xs font-medium mb-1.5" style={{ color: "var(--text-color)" }}>
+          {t("leaves.form.reasonLabel", "Reason for Leave")} <span style={{ color: "var(--error-color)" }}>*</span>
+        </label>
+        <div className="flex-1 relative">
+          <textarea
+            value={formData.reason}
+            onChange={(e) => {
+              setFormData((prev) => ({ ...prev, reason: e.target.value }))
+              setErrors(prev => ({ ...prev, reason: null }))
+            }}
+            placeholder={t("leaves.form.reasonPlaceholder")}
+            rows={2}
+            className={`w-full h-full p-2.5 text-xs border rounded-lg focus:outline-none focus:ring-2 resize-none transition-all ${errors.reason ? 'border-red-500 focus:ring-red-200' : 'focus:ring-opacity-20'
+              }`}
+            style={{
+              borderColor: errors.reason ? "var(--error-color)" : "var(--border-color)",
+              backgroundColor: "var(--bg-color)",
+              color: "var(--text-color)",
+              focusRingColor: "var(--accent-color)",
+            }}
+          />
+          {/* Character Counter */}
+          {formData.reason && (
+            <div className={`absolute bottom-2 ${isArabic ? 'left-2' : 'right-2'} flex items-center gap-1.5`}>
+              {formData.reason.length >= 10 && formData.reason.length <= 500 && (
+                <CheckCircle className={`w-3 h-3 ${isArabic ? 'ml-1' : 'mr-1'}`} style={{ color: "var(--success-color)" }} />
+              )}
+              <span
+                className="text-xs font-medium px-1.5 py-0.5 rounded"
+                style={{
+                  color: formData.reason.length > 500 ? "var(--error-color)" :
+                    formData.reason.length >= 10 ? "var(--success-color)" : "var(--sub-text-color)",
+                  backgroundColor: "var(--container-color)"
+                }}
+              >
+                {formData.reason.length}/500
+              </span>
+            </div>
+          )}
+        </div>
         {renderError("reason")}
-       
       </div>
 
       {/* Show upload section only for sick leave */}
       {formData.leaveType === "sick" && (
-        <div className="flex-shrink-0">
-          <div className="flex items-center justify-between mb-1">
-            <p className="text-xs" style={{ color: "var(--sub-text-color)" }}>
-              {t("leaves.form.attachment")} <span className="text-red-500">*</span>
-            </p>
+        <div className="flex-shrink-0 space-y-2">
+          <div className={`flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}>
+            <label className="text-xs font-medium" style={{ color: "var(--text-color)" }}>
+              {t("leaves.form.attachment", "Medical Document")} <span style={{ color: "var(--error-color)" }}>*</span>
+            </label>
             {formData.attachment && (
               <button
                 onClick={() => {
                   setFormData((prev) => ({ ...prev, attachment: null }))
                   setErrors(prev => ({ ...prev, attachment: null }))
                 }}
-                className="text-xs hover:opacity-70 transition-opacity"
+                className="text-xs font-medium hover:opacity-70 transition-opacity flex items-center gap-1"
                 style={{ color: "var(--error-color)" }}
               >
-                {t("leaves.form.remove", "Remove")}
+                <span>×</span> {t("leaves.form.remove", "Remove")}
               </button>
             )}
           </div>
+
           {formData.attachment ? (
-            <div className={`flex items-center gap-2 p-2 rounded-lg border ${errors.attachment ? 'border-red-500' : ''
-              }`} style={{ backgroundColor: "var(--container-color)" }}>
+            <div
+              className={`flex items-center gap-3 p-3 rounded-lg border transition-all hover:shadow-sm ${errors.attachment ? 'border-red-500' : ''
+                }`}
+              style={{
+                backgroundColor: "var(--container-color)",
+                borderColor: errors.attachment ? "var(--error-color)" : "var(--border-color)"
+              }}
+            >
               <div
-                className="w-8 h-8 rounded flex items-center justify-center flex-shrink-0"
+                className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
                 style={{ backgroundColor: "var(--accent-color)" }}
               >
-                <span className="text-xs"><File className="w-4 h-4" /></span>
+                <File className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <p
-                  className="font-medium text-xs break-all"
-                  style={{ color: "var(--text-color)" }}
-                >
+                <p className="font-semibold text-xs truncate" style={{ color: "var(--text-color)" }}>
                   {formData.attachment.name}
                 </p>
-                <p className="text-xs" style={{ color: "var(--sub-text-color)" }}>
-                  {(formData.attachment.size / (1024 * 1024)).toFixed(1)}MB
+                <p className="text-xs mt-0.5" style={{ color: "var(--sub-text-color)" }}>
+                  {(formData.attachment.size / (1024 * 1024)).toFixed(2)} MB
                 </p>
               </div>
-              <CheckCircle className="w-4 h-4" style={{ color: "var(--success-color)" }} />
+              <CheckCircle className="w-5 h-5 flex-shrink-0" style={{ color: "var(--success-color)" }} />
             </div>
           ) : (
-            <div className="flex items-center gap-4">
-              <div
-                className={`w-25 h-20 p-1 flex-shrink-0 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-80 transition-opacity ${errors.attachment ? 'border-red-500' : ''
-                  }`}
-                style={{ borderColor: errors.attachment ? "var(--error-color)" : "var(--accent-color)" }}
-                onClick={() => document.getElementById("file-upload").click()}
-              >
-                <input
-                  id="file-upload"
-                  type="file"
-                  className="hidden"
-                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                  onChange={handleFileUpload}
-                />
-                <Upload className="w-3 h-3 mb-1" style={{ color: "var(--sub-text-color)" }} />
-                <span className="text-xs font-medium" style={{ color: "var(--sub-text-color)" }}>
-                  {t("leaves.form.upload")}
-                </span>
-                <button
-                  onClick={() => document.getElementById("file-upload").click()}
-                  className="px-3 py-0.5 mt-0.5 text-white rounded-md font-medium hover:opacity-90 transition-opacity text-xs gradient-bg"
+            <div
+              className={`relative border-2 border-dashed rounded-lg p-4 transition-all hover:border-opacity-80 cursor-pointer group ${errors.attachment ? 'border-red-500' : ''
+                }`}
+              style={{
+                borderColor: errors.attachment ? "var(--error-color)" : "var(--accent-color)",
+                backgroundColor: "var(--container-color)"
+              }}
+              onClick={() => document.getElementById("file-upload").click()}
+            >
+              <input
+                id="file-upload"
+                type="file"
+                className="hidden"
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                onChange={handleFileUpload}
+              />
+              <div className={`flex items-center gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                <div
+                  className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform"
+                  style={{ backgroundColor: "var(--accent-color)" }}
                 >
-                  {t("leaves.form.browse")}
+                  <Upload className="w-6 h-6 text-white" />
+                </div>
+                <div className={`flex-1 ${isArabic ? 'text-right' : 'text-left'}`}>
+                  <p className="font-semibold text-xs mb-0.5" style={{ color: "var(--text-color)" }}>
+                    {t("leaves.form.uploadImageOrDocument", "Upload Medical Document")}
+                  </p>
+                  <p className="text-xs" style={{ color: "var(--sub-text-color)" }}>
+                    {t("leaves.form.supportedFormats", "PDF, DOC, JPG up to 10MB")}
+                  </p>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    document.getElementById("file-upload").click()
+                  }}
+                  className="px-4 py-1.5 text-white rounded-lg font-medium hover:opacity-90 transition-all text-xs gradient-bg shadow-sm hover:shadow"
+                >
+                  {t("leaves.form.browse", "Browse")}
                 </button>
-              </div>
-              <div className="flex-1 text-left">
-                <p className="font-medium mb-1 text-xs" style={{ color: "var(--text-color)" }}>
-                  {t("leaves.form.uploadImageOrDocument", "Upload Image or Document")}
-                </p>
-                <p className="text-xs mb-2" style={{ color: "var(--sub-text-color)" }}>
-                  {t("leaves.form.supportedFormats", "PDF, DOC, JPG up to 10MB")}
-                </p>
               </div>
             </div>
           )}
@@ -591,48 +623,50 @@ const LeaveRequest = ({ refetch }) => {
       )}
 
       <div className="space-y-1.5">
-        <div className="flex items-center gap-2 text-xs">
-          <span className="font-medium" style={{ color: "var(--text-color)" }}>
-            Type:
-          </span>
-          <span style={{ color: "var(--sub-text-color)" }}>
-            {leaveTypes.find((type) => type.value === formData.leaveType)?.label}
-          </span>
-        </div>
-        <div className="flex items-center gap-2 text-xs">
-          <span className="font-medium" style={{ color: "var(--text-color)" }}>
-            Days:
-          </span>
-          <span style={{ color: "var(--sub-text-color)" }}>{formData.numberOfDays}</span>
-        </div>
-        <div className="flex items-center gap-2 text-xs">
-          <span className="font-medium" style={{ color: "var(--text-color)" }}>
-            Dates:
-          </span>
-          <span style={{ color: "var(--sub-text-color)" }}>
-            {formData.fromDate &&
-              formData.toDate &&
-              `${new Date(formData.fromDate).toLocaleDateString()} – ${new Date(formData.toDate).toLocaleDateString()}`}
-          </span>
-        </div>
-        <div className="flex items-start gap-2 text-xs">
-          <span className="font-medium" style={{ color: "var(--text-color)" }}>
-            Reason:
-          </span>
-          <span
-            style={{
-              color: "var(--sub-text-color)",
-              display: "inline-block",
-              maxWidth: 180,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              verticalAlign: "bottom",
-            }}
-            title={formData.reason}
-          >
-            {formData.reason}
-          </span>
+        <div className="container-color p-3 rounded-lg" style={{ backgroundColor: "var(--container-color)" }}>
+          <div className="flex items-center gap-2 text-xs">
+            <span className="font-medium" style={{ color: "var(--text-color)" }}>
+              Type:
+            </span>
+            <span style={{ color: "var(--sub-text-color)" }}>
+              {leaveTypes.find((type) => type.value === formData.leaveType)?.label}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            <span className="font-medium" style={{ color: "var(--text-color)" }}>
+              Days:
+            </span>
+            <span style={{ color: "var(--sub-text-color)" }}>{formData.numberOfDays}</span>
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            <span className="font-medium" style={{ color: "var(--text-color)" }}>
+              Dates:
+            </span>
+            <span style={{ color: "var(--sub-text-color)" }}>
+              {formData.fromDate &&
+                formData.toDate &&
+                `${new Date(formData.fromDate).toLocaleDateString()} – ${new Date(formData.toDate).toLocaleDateString()}`}
+            </span>
+          </div>
+          <div className="flex items-start gap-2 text-xs">
+            <span className="font-medium" style={{ color: "var(--text-color)" }}>
+              Reason:
+            </span>
+            <span
+              style={{
+                color: "var(--sub-text-color)",
+                display: "inline-block",
+                maxWidth: 180,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                verticalAlign: "bottom",
+              }}
+              title={formData.reason}
+            >
+              {formData.reason}
+            </span>
+          </div>
         </div>
         {formData.attachment && (
           <div className="flex items-center gap-2 p-2 rounded-lg" style={{ backgroundColor: "var(--container-color)" }}>
@@ -658,12 +692,12 @@ const LeaveRequest = ({ refetch }) => {
 
   const renderSuccess = () => (
     <div className="absolute inset-0 flex items-center justify-center">
-      <div className="w-full h-full gradient-bg rounded-xl p-4 text-white flex flex-col items-center justify-center">
+      <div className="w-full h-full bg-all rounded-xl p-4 text-white flex flex-col items-center justify-center">
         <div className="flex items-center justify-center mb-3">
           <img src="/assets/done.svg" alt="Success" width="32" height="48" />
         </div>
-        <h3 className="text-sm font-semibold mb-1">Your request has been sent</h3>
-        <p className="text-xs text-center">to your manager for approval</p>
+        <h3 className="text-sm gradient-text font-semibold mb-1">Your request has been sent</h3>
+        <p className="text-xs gradient-text text-center">to your manager for approval</p>
       </div>
     </div>
   )
@@ -744,7 +778,7 @@ const LeaveRequest = ({ refetch }) => {
             <button
               onClick={handleNext}
               disabled={isSubmitting || isLoading}
-              className="px-2 sm:px-3 lg:px-2 xl:px-3 2xl:px-3 py-1 gradient-bg text-white rounded-md font-medium hover:opacity-90 transition-opacity disabled:opacity-70 disabled:cursor-not-allowed text-[10px] sm:text-xs lg:text-[10px] xl:text-xs 2xl:text-xs flex items-center gap-1 sm:gap-2 lg:gap-1 xl:gap-2 2xl:gap-2"
+              className="px-2 sm:px-3 lg:px-2 xl:px-3 2xl:px-3 py-1 gradient-bg opacity-100 text-white rounded-md font-medium hover:opacity-90 transition-opacity disabled:opacity-70 disabled:cursor-not-allowed text-[10px] sm:text-xs lg:text-[10px] xl:text-xs 2xl:text-xs flex items-center gap-1 sm:gap-2 lg:gap-1 xl:gap-2 2xl:gap-2"
             >
               {(isSubmitting || isLoading) && currentStep === 3 && (
                 <Loader2 className="w-2.5 h-2.5 sm:w-3 sm:h-3 lg:w-2.5 lg:h-2.5 xl:w-3 xl:h-3 2xl:w-3 2xl:h-3 animate-spin" />

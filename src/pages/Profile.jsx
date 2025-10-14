@@ -10,10 +10,17 @@ import Table from "../components/profile/sections/Table"
 import DocumentsSection from "../components/profile/sections/DocumentsSection"
 import AccountAccessSection from "../components/profile/sections/AccountAccessSection"
 import { useTranslation } from "react-i18next"
+import { useLocation } from "react-router-dom"
 
 const Profile = () => {
   const { isRtl } = useLang()
   const { t } = useTranslation()
+  const location = useLocation()
+  
+  // Check if we're viewing an employee from admin panel
+  const isAdminView = location.state?.isAdminView || false
+  const employeeData = location.state?.employeeData || null
+  
   const {
     userData,
     fieldLabels,
@@ -24,6 +31,45 @@ const Profile = () => {
     renderContent
   } = useProfile(isRtl)
 
+  // Use employee data if available, otherwise use default user data
+  const displayData = employeeData ? {
+    firstName: employeeData.name?.split(' ')[0] || 'N/A',
+    lastName: employeeData.name?.split(' ').slice(1).join(' ') || 'N/A',
+    email: employeeData.email || 'N/A',
+    avatar: employeeData.avatar || 'https://ui-avatars.com/api/?name=Employee&background=15919B&color=fff&size=80',
+    professionalInfo: {
+      designation: employeeData.position || 'N/A',
+      department: employeeData.department || 'N/A',
+      employeeId: employeeData.employeeId || 'N/A',
+      joinDate: employeeData.joinDate || 'N/A'
+    },
+    personalInfo: {
+      firstName: employeeData.name?.split(' ')[0] || 'N/A',
+      lastName: employeeData.name?.split(' ').slice(1).join(' ') || 'N/A',
+      email: employeeData.email || 'N/A',
+      mobileNumber: employeeData.mobileNumber || 'N/A',
+      dateOfBirth: employeeData.dateOfBirth || 'N/A',
+      gender: employeeData.gender || 'N/A',
+      nationality: employeeData.nationality || 'N/A',
+      address: employeeData.address || 'N/A',
+      status: employeeData.status || 'N/A'
+    },
+    documents: {
+      proofOfIdentity: employeeData.proofOfIdentity || null,
+      employmentContract: employeeData.employmentContract || null,
+      certificates: employeeData.certificates || null,
+      socialInsurance: employeeData.socialInsurance || null
+    },
+    accountAccess: {
+      username: employeeData.username || 'N/A',
+      accessLevel: employeeData.accessLevel || 'Standard User',
+      permissions: employeeData.permissions || 'Basic Access',
+      lastLogin: employeeData.lastLogin || 'Never'
+    },
+    teamLeader: userData.teamLeader,
+    teamLeaderAvatar: userData.teamLeaderAvatar
+  } : userData
+
   const content = renderContent()
 
   // Handle back navigation
@@ -32,8 +78,13 @@ const Profile = () => {
     if (activeSection !== 'profile') {
       setActiveSection('profile')
     } else {
-      // If we're in profile section, go back to dashboard or previous page
-      window.history.back()
+      // If we're viewing from admin panel, go back to employees list
+      if (isAdminView) {
+        window.history.back()
+      } else {
+        // If we're in profile section, go back to dashboard or previous page
+        window.history.back()
+      }
     }
   }
 
@@ -45,21 +96,21 @@ const Profile = () => {
           <div className="mt-4 sm:mt-6 lg:mt-8">
             {activeTab === "personal" && (
               <DataReview 
-                data={userData.personalInfo} 
+                data={displayData.personalInfo} 
                 fieldLabels={fieldLabels.personal} 
               />
             )}
             {activeTab === "professional" && (
               <DataReview 
-                data={userData.professionalInfo} 
+                data={displayData.professionalInfo} 
                 fieldLabels={fieldLabels.professional} 
               />
             )}
             {activeTab === "documents" && (
-              <DocumentsSection documents={userData.documents} />
+              <DocumentsSection documents={displayData.documents} />
             )}
             {activeTab === "account" && (
-              <AccountAccessSection accountAccess={userData.accountAccess} />
+              <AccountAccessSection accountAccess={displayData.accountAccess} />
             )}
           </div>
         </>
@@ -121,13 +172,14 @@ const Profile = () => {
           }}
         >
           <HeaderSection
-            firstName={userData.firstName}
-            lastName={userData.lastName}
-            email={userData.email}
-            role={userData.professionalInfo.designation}
-            avatar={userData.avatar}
-            teamLeader={userData.teamLeader}
-            teamLeaderAvatar={userData.teamLeaderAvatar}
+            firstName={displayData.firstName}
+            lastName={displayData.lastName}
+            email={displayData.email}
+            role={displayData.professionalInfo.designation}
+            avatar={displayData.avatar}
+            teamLeader={displayData.teamLeader}
+            teamLeaderAvatar={displayData.teamLeaderAvatar}
+            isAdminView={isAdminView}
           />
         </div>
 

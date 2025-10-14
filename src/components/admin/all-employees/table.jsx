@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronLeft, ChevronRight, Search, LayoutGrid, TableIcon, Plus, Eye, Edit, Trash2 } from "lucide-react";
 import EmployeeCard from "./employee-card";
-import ViewEmployeePopup from "./view-employee";
 import EditEmployeePopup from "./edit-employee";
 
 const EmployeesTable = () => {
@@ -18,7 +17,6 @@ const EmployeesTable = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [viewMode, setViewMode] = useState("grid"); // "grid" or "table"
     const [selectedEmployee, setSelectedEmployee] = useState(null);
-    const [isViewOpen, setIsViewOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const joinDateInputRef = useRef(null);
 
@@ -195,7 +193,7 @@ const EmployeesTable = () => {
             <button
                 className="p-1 rounded hover:bg-gray-100 transition-colors"
                 title={t("employees.actions.view", "View")}
-                onClick={(e) => { e.stopPropagation(); setSelectedEmployee(employee); setIsViewOpen(true); }}
+                onClick={(e) => { e.stopPropagation(); handleViewEmployee(employee); }}
             >
                 <Eye className="w-3 h-3 md:w-4 md:h-4" style={{ color: 'var(--sub-text-color)' }} />
             </button>
@@ -217,6 +215,16 @@ const EmployeesTable = () => {
 
     const handleAddNewEmployee = () => {
         navigate("/pages/admin/new-employee");
+    };
+
+    const handleViewEmployee = (employee) => {
+        // Navigate to profile page with employee data
+        navigate("/pages/User/profile", { 
+            state: { 
+                employeeData: employee,
+                isAdminView: true 
+            } 
+        });
     };
 
     return (
@@ -449,8 +457,8 @@ const EmployeesTable = () => {
                                             joinDate={employee.joinDate}
                                             status={employee.status}
                                             avatar={employee.avatar}
-                                            onCardClick={() => { setSelectedEmployee(employee); setIsViewOpen(true); }}
-                                            onView={() => { setSelectedEmployee(employee); setIsViewOpen(true); }}
+                                            onCardClick={() => handleViewEmployee(employee)}
+                                            onView={() => handleViewEmployee(employee)}
                                             onEdit={() => { setSelectedEmployee(employee); setIsEditOpen(true); }}
                                             className="h-full"
                                         />
@@ -652,11 +660,6 @@ const EmployeesTable = () => {
             </div>
         </div>
         {/* Popups */}
-        <ViewEmployeePopup
-            employee={selectedEmployee}
-            isOpen={isViewOpen}
-            onClose={() => setIsViewOpen(false)}
-        />
         <EditEmployeePopup
             employee={selectedEmployee}
             isOpen={isEditOpen}

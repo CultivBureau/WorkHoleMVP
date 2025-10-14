@@ -3,7 +3,7 @@
 import { Mail, Briefcase, Pencil } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
-const HeaderSection = ({ firstName, lastName, email, role, avatar, teamLeader, teamLeaderAvatar }) => {
+const HeaderSection = ({ firstName, lastName, email, role, avatar, teamLeader, teamLeaderAvatar, isAdminView = false }) => {
   const { t } = useTranslation()
 
   return (
@@ -67,15 +67,17 @@ const HeaderSection = ({ firstName, lastName, email, role, avatar, teamLeader, t
           </div>
         </div>
 
-        {/* Right side - Edit Button */}
-        <button
-          className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 rounded-lg text-white text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200 hover:opacity-90 w-full sm:w-auto justify-center sm:justify-start"
-          style={{ backgroundColor: "#4DB8AC" }}
-        >
-          <Pencil className="w-4 h-4" />
-          <span className="hidden sm:inline">{t("profile.editProfile")}</span>
-          <span className="sm:hidden">{t("profile.editProfile")}</span>
-        </button>
+        {/* Right side - Edit Button (only show if not in admin view) */}
+        {!isAdminView && (
+          <button
+            className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 rounded-lg text-white text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200 hover:opacity-90 w-full sm:w-auto justify-center sm:justify-start"
+            style={{ backgroundColor: "#4DB8AC" }}
+          >
+            <Pencil className="w-4 h-4" />
+            <span className="hidden sm:inline">{t("profile.editProfile")}</span>
+            <span className="sm:hidden">{t("profile.editProfile")}</span>
+          </button>
+        )}
       </div>
 
       {/* Bottom border */}

@@ -341,7 +341,7 @@ const LeaveTable = () => {
               {isLoading ? "..." : `${currentPageData.length} ${t("leaves.table.of")} ${filteredData.length} ${t("leaves.table.entries")}`}
             </div>
 
-            {/* Refresh button */}
+            {/* Refresh button
             <button
               onClick={handleManualRefresh}
               disabled={isRefreshing || isLoading}
@@ -354,7 +354,7 @@ const LeaveTable = () => {
               title={t("leaves.table.refresh", "Refresh data")}
             >
               <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} style={{ color: 'var(--sub-text-color)' }} />
-            </button>
+            </button> */}
           </div>
         </div>
       </div>
