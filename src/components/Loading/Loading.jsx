@@ -2,8 +2,8 @@ import React from 'react'
 
 const Loading = () => {
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center z-50">
-      {/* Background Pattern */}
+    <div className="fixed inset-0 bg-[var(--bg-color)] flex items-center justify-center z-50">
+      {/* Background Pattern */} 
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(9,209,199,0.05)_0%,transparent_50%)]"></div>
       
       {/* Main Loading Container */}
@@ -73,7 +73,7 @@ const Loading = () => {
       </div>
 
       {/* Custom CSS for additional animations */}
-      <style jsx>{`
+      <style>{`
         @keyframes progress {
           0% { width: 0%; }
           50% { width: 60%; }

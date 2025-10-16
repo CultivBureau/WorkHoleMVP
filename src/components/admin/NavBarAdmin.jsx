@@ -28,7 +28,7 @@ const NavBarAdmin = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
   // جلب بيانات المستخدم من /me
   const { data: user, isLoading: userLoading } = useMeQuery();
   const [logout] = useLogoutMutation();
-  
+
   // Clock in/out functionality
   const { data: dashboardData, refetch: refetchDashboard } = useGetDashboardQuery({});
   const [clockIn, { isLoading: isClockingIn }] = useClockInMutation();
@@ -307,6 +307,9 @@ const NavBarAdmin = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
 
   const { time, date } = formatDateTime();
 
+  // Check if user has completed attendance today
+  const hasCompletedToday = dashboardData?.todayAttendance?.clockIn && dashboardData?.todayAttendance?.clockOut;
+
   // Dynamic greeting based on time
   const getGreeting = () => {
     const hour = currentTime.getHours();
@@ -344,76 +347,43 @@ const NavBarAdmin = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
           </h1>
         </div>
 
-        {/* Center Section - Language Selector + Clock Button */}
-        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-          {/* Language Selector */}
-          <div ref={langRef} className="relative">
-            <button
-              onClick={() => setLangOpen((v) => !v)}
-              className="flex items-center gap-1 px-1.5 sm:px-2 py-1 rounded-lg transition-all duration-200 border"
-              style={{
-                borderColor: "var(--border-color)",
-                backgroundColor: "var(--bg-color)",
-                color: "var(--text-color)",
-              }}
-            >
-              <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5" style={{ color: "var(--sub-text-color)" }} />
-              <span className="text-[10px] sm:text-xs font-semibold">
-                {lang === "ar" ? "ع" : "EN"}
-              </span>
-            </button>
-            {langOpen && (
-              <div
-                className={`absolute top-full mt-1 ${isRtl ? "left-0" : "right-0"} w-24 sm:w-28 border shadow-xl rounded-lg overflow-hidden z-50`}
-                style={{
-                  backgroundColor: "var(--bg-color)",
-                  borderColor: "var(--border-color)",
-                }}
-              >
-                <button
-                  onClick={() => handleLangChange("en")}
-                  className="w-full text-left px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs transition-colors"
-                  style={{
-                    color: "var(--text-color)",
-                    backgroundColor: lang === "en" ? "var(--hover-color)" : "transparent",
-                    fontWeight: lang === "en" ? "bold" : "medium",
-                  }}
-                >
-                  English
-                </button>
-                <button
-                  onClick={() => handleLangChange("ar")}
-                  className="w-full text-left px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs transition-colors"
-                  style={{
-                    color: "var(--text-color)",
-                    backgroundColor: lang === "ar" ? "var(--hover-color)" : "transparent",
-                    fontWeight: lang === "ar" ? "bold" : "medium",
-                  }}
-                >
-                  العربية
-                </button>
-              </div>
-            )}
-          </div>
-
+        {/* Center Section - Clock Button */}
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           {/* Clock In/Out Button */}
           <button
             onClick={handleClockInOut}
-            disabled={isClockingIn || isClockingOut || isGettingLocation}
-            className="flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg transition-all duration-200 border text-[10px] sm:text-xs font-semibold"
+            disabled={isClockingIn || isClockingOut || isGettingLocation || hasCompletedToday}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-200 border text-xs font-semibold min-w-[80px] justify-center"
             style={{
-              borderColor: dashboardData?.currentStatus === "Clocked In" ? "#EF4444" : "var(--accent-color)",
-              backgroundColor: dashboardData?.currentStatus === "Clocked In" ? "#FEF2F2" : "var(--accent-color)",
-              color: dashboardData?.currentStatus === "Clocked In" ? "#EF4444" : "#fff",
+              borderColor: hasCompletedToday
+                ? "#9CA3AF"
+                : dashboardData?.currentStatus === "Clocked In"
+                  ? "#EF4444"
+                  : "var(--accent-color)",
+              backgroundColor: hasCompletedToday
+                ? "#F3F4F6"
+                : dashboardData?.currentStatus === "Clocked In"
+                  ? "#FEF2F2"
+                  : "var(--accent-color)",
+              color: hasCompletedToday
+                ? "#9CA3AF"
+                : dashboardData?.currentStatus === "Clocked In"
+                  ? "#EF4444"
+                  : "#fff",
+              cursor: hasCompletedToday ? "not-allowed" : "pointer",
             }}
           >
             {(isClockingIn || isClockingOut || isGettingLocation) ? (
-              <Loader2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-spin" />
+              <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
-              <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+              <Clock className="w-4 h-4" />
             )}
-            <span className="hidden sm:inline">
-              {dashboardData?.currentStatus === "Clocked In" ? (lang === "ar" ? "خروج" : "Out") : (lang === "ar" ? "دخول" : "In")}
+            <span className="text-xs">
+              {hasCompletedToday
+                ? (lang === "ar" ? "مكتمل" : "Done")
+                : dashboardData?.currentStatus === "Clocked In"
+                  ? (lang === "ar" ? "خروج" : "Out")
+                  : (lang === "ar" ? "دخول" : "In")}
             </span>
           </button>
         </div>
@@ -422,136 +392,136 @@ const NavBarAdmin = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
         <div className="flex items-center flex-shrink-0">
           {/* Profile Icon + Dropdown */}
           <div className="relative" ref={mobileProfileRef}>
-          <button
-            onClick={() => setMobileProfileOpen((v) => !v)}
-            className="w-10 h-10 rounded-full overflow-hidden ring-2 transition-all duration-200 cursor-pointer hover:ring-4"
-            style={{ borderColor: "var(--border-color)" }}
-          >
-            <img
-              src={
-                user?.profileImage
-                  ? `${import.meta.env.VITE_API_URL}${user.profileImage}`
-                  : AvatarIcon
-              }
-              alt="Avatar"
-              className="w-full h-full rounded-full object-cover shadow-md"
-              style={{
-                border: "3px solid var(--bg-color)",
-              }}
-            />
-          </button>
-
-          {/* Mobile Profile Dropdown */}
-          {mobileProfileOpen && (
-            <div
-              className="fixed left-1/2 top-16 z-[9999] w-56 rounded-2xl shadow-2xl border overflow-hidden"
-              style={{
-                backgroundColor: "var(--bg-color)",
-                borderColor: "var(--border-color)",
-                minWidth: 220,
-                transform: "translateX(-20%)",
-              }}
+            <button
+              onClick={() => setMobileProfileOpen((v) => !v)}
+              className="w-10 h-10 rounded-full overflow-hidden ring-2 transition-all duration-200 cursor-pointer hover:ring-4"
+              style={{ borderColor: "var(--border-color)" }}
             >
-              {/* Header Section */}
-              <div
-                className="px-4 py-3 border-b"
+              <img
+                src={
+                  user?.profileImage
+                    ? `${import.meta.env.VITE_API_URL}${user.profileImage}`
+                    : AvatarIcon
+                }
+                alt="Avatar"
+                className="w-full h-full rounded-full object-cover shadow-md"
                 style={{
-                  backgroundColor: "var(--hover-color)",
+                  border: "3px solid var(--bg-color)",
+                }}
+              />
+            </button>
+
+            {/* Mobile Profile Dropdown */}
+            {mobileProfileOpen && (
+              <div
+                className="fixed left-1/2 top-16 z-[9999] w-56 rounded-2xl shadow-2xl border overflow-hidden"
+                style={{
+                  backgroundColor: "var(--bg-color)",
                   borderColor: "var(--border-color)",
+                  minWidth: 220,
+                  transform: "translateX(-20%)",
                 }}
               >
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <img
-                      src={
-                        user?.profileImage
-                          ? `${import.meta.env.VITE_API_URL}${user.profileImage}`
-                          : AvatarIcon
-                      }
-                      alt="Avatar"
-                      className="w-10 h-10 rounded-full object-cover shadow-md"
-                      style={{
-                        border: "3px solid var(--bg-color)",
-                      }}
-                    />
-                    <div
-                      className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2"
-                      style={{
-                        backgroundColor: "var(--success-color)",
-                        borderColor: "var(--bg-color)",
-                      }}
-                    ></div>
-                  </div>
-                  <div className="flex-1">
-                    <h3
-                      className="font-bold text-sm leading-tight"
-                      style={{ color: "var(--text-color)" }}
-                    >
-                      {userLoading ? "..." : user?.firstName + " " + user?.lastName}
-                    </h3>
-                    <p
-                      className="text-xs"
-                      style={{ color: "var(--sub-text-color)" }}
-                    >
-                      {userLoading ? "..." : user?.role}
-                    </p>
+                {/* Header Section */}
+                <div
+                  className="px-4 py-3 border-b"
+                  style={{
+                    backgroundColor: "var(--hover-color)",
+                    borderColor: "var(--border-color)",
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <img
+                        src={
+                          user?.profileImage
+                            ? `${import.meta.env.VITE_API_URL}${user.profileImage}`
+                            : AvatarIcon
+                        }
+                        alt="Avatar"
+                        className="w-10 h-10 rounded-full object-cover shadow-md"
+                        style={{
+                          border: "3px solid var(--bg-color)",
+                        }}
+                      />
+                      <div
+                        className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2"
+                        style={{
+                          backgroundColor: "var(--success-color)",
+                          borderColor: "var(--bg-color)",
+                        }}
+                      ></div>
+                    </div>
+                    <div className="flex-1">
+                      <h3
+                        className="font-bold text-sm leading-tight"
+                        style={{ color: "var(--text-color)" }}
+                      >
+                        {userLoading ? "..." : user?.firstName + " " + user?.lastName}
+                      </h3>
+                      <p
+                        className="text-xs"
+                        style={{ color: "var(--sub-text-color)" }}
+                      >
+                        {userLoading ? "..." : user?.role}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Menu Items */}
-              <div className="py-1">
-                <button
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-all duration-200 group"
-                  style={{
-                    color: "var(--text-color)",
-                    backgroundColor: "transparent",
-                  }}
-                  onClick={() => {
-                    setMobileProfileOpen(false);
-                    navigate("/pages/User/profile");
-                  }}
-                >
-                  <User
-                    className="w-5 h-5"
-                    style={{ color: "var(--accent-color)" }}
-                  />
-                  <span className="font-semibold text-sm">
-                    {t("navbar.profile")}
-                  </span>
-                </button>
-
-                <div
-                  className="mx-4 my-1 border-t"
-                  style={{ borderColor: "var(--border-color)" }}
-                ></div>
-
-                <button
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-all duration-200 group"
-                  style={{
-                    backgroundColor: "transparent",
-                    color: "var(--error-color)",
-                  }}
-                  onClick={async () => {
-                    setMobileProfileOpen(false);
-                    await handleLogout();
-                  }}
-                >
-                  <LogOut
-                    className="w-5 h-5"
-                    style={{ color: "var(--error-color)" }}
-                  />
-                  <span
-                    className="font-semibold text-sm"
-                    style={{ color: "var(--error-color)" }}
+                {/* Menu Items */}
+                <div className="py-1">
+                  <button
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-all duration-200 group"
+                    style={{
+                      color: "var(--text-color)",
+                      backgroundColor: "transparent",
+                    }}
+                    onClick={() => {
+                      setMobileProfileOpen(false);
+                      navigate("/pages/User/profile");
+                    }}
                   >
-                    {t("navbar.logout")}
-                  </span>
-                </button>
+                    <User
+                      className="w-5 h-5"
+                      style={{ color: "var(--accent-color)" }}
+                    />
+                    <span className="font-semibold text-sm">
+                      {t("navbar.profile")}
+                    </span>
+                  </button>
+
+                  <div
+                    className="mx-4 my-1 border-t"
+                    style={{ borderColor: "var(--border-color)" }}
+                  ></div>
+
+                  <button
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-all duration-200 group"
+                    style={{
+                      backgroundColor: "transparent",
+                      color: "var(--error-color)",
+                    }}
+                    onClick={async () => {
+                      setMobileProfileOpen(false);
+                      await handleLogout();
+                    }}
+                  >
+                    <LogOut
+                      className="w-5 h-5"
+                      style={{ color: "var(--error-color)" }}
+                    />
+                    <span
+                      className="font-semibold text-sm"
+                      style={{ color: "var(--error-color)" }}
+                    >
+                      {t("navbar.logout")}
+                    </span>
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -655,12 +625,25 @@ const NavBarAdmin = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
           {/* Clock In/Out Button */}
           <button
             onClick={handleClockInOut}
-            disabled={isClockingIn || isClockingOut || isGettingLocation}
+            disabled={isClockingIn || isClockingOut || isGettingLocation || hasCompletedToday}
             className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl transition-all duration-200 border font-semibold text-sm"
             style={{
-              borderColor: dashboardData?.currentStatus === "Clocked In" ? "#EF4444" : "var(--accent-color)",
-              backgroundColor: dashboardData?.currentStatus === "Clocked In" ? "#FEF2F2" : "var(--accent-color)",
-              color: dashboardData?.currentStatus === "Clocked In" ? "#EF4444" : "#fff",
+              borderColor: hasCompletedToday
+                ? "#9CA3AF"
+                : dashboardData?.currentStatus === "Clocked In"
+                  ? "#EF4444"
+                  : "var(--accent-color)",
+              backgroundColor: hasCompletedToday
+                ? "#F3F4F6"
+                : dashboardData?.currentStatus === "Clocked In"
+                  ? "#FEF2F2"
+                  : "var(--accent-color)",
+              color: hasCompletedToday
+                ? "#9CA3AF"
+                : dashboardData?.currentStatus === "Clocked In"
+                  ? "#EF4444"
+                  : "#fff",
+              cursor: hasCompletedToday ? "not-allowed" : "pointer",
             }}
           >
             {(isClockingIn || isClockingOut || isGettingLocation) ? (
@@ -669,7 +652,11 @@ const NavBarAdmin = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
               <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
             )}
             <span>
-              {dashboardData?.currentStatus === "Clocked In" ? (lang === "ar" ? "تسجيل خروج" : "Clock Out") : (lang === "ar" ? "تسجيل دخول" : "Clock In")}
+              {hasCompletedToday
+                ? (lang === "ar" ? "مكتمل اليوم" : "Completed Today")
+                : dashboardData?.currentStatus === "Clocked In"
+                  ? (lang === "ar" ? "تسجيل خروج" : "Clock Out")
+                  : (lang === "ar" ? "تسجيل دخول" : "Clock In")}
             </span>
           </button>
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useLang } from "../../contexts/LangContext";
 import {
   LayoutDashboard,
   Users,
@@ -15,6 +16,7 @@ import {
   RefreshCw,
   Bot,
   Moon,
+  Globe,
   ChevronLeft,
   ChevronDown,
   ListChecks,
@@ -109,14 +111,14 @@ const mainMenuItems = [
       { key: "projects", Icon: FolderKanban, implemented: false },
     ],
   },
-  { 
+  {
     key: "all_departments",
-     Icon: Building2,
-      implemented: true,
-      children: [
-        { key: "new_department", Icon: Building2, implemented: true },
-      ]
-     },
+    Icon: Building2,
+    implemented: true,
+    children: [
+      { key: "new_department", Icon: Building2, implemented: true },
+    ]
+  },
   { key: "performance", Icon: BarChart3, implemented: true },
   { key: "all_attendance", Icon: CalendarCheck, implemented: true },
   { key: "leaves", Icon: Calendar, implemented: true },
@@ -176,17 +178,17 @@ function SideMenuItem({
       <button
         onClick={handleClick}
         className={[
-          "group w-full flex items-center gap-2 rounded-full pl-4 px-2 py-1.5 transition-all duration-200",
+          "group w-full flex items-center gap-2 rounded-full px-2 transition-all duration-200",
           "outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-hover)]",
           shouldHighlight
             ? ""
             : "bg-transparent hover:bg-[var(--hover-color)]",
-          collapsed ? "justify-center " : "justify-start",
+          collapsed ? "justify-center py-1" : "justify-start py-1.5",
           !isImplemented ? "opacity-60" : "",
         ].join(" ")}
         style={{
           backgroundColor: shouldHighlight ? "var(--menu-active-bg)" : "transparent",
-          height: "44px",
+          height: collapsed ? "36px" : "40px",
           fontSize: collapsed ? 0 : "14px",
           direction: isArabic ? "rtl" : "ltr",
         }}
@@ -194,7 +196,7 @@ function SideMenuItem({
         <item.Icon
           className={[
             "shrink-0 transition-colors",
-            collapsed ? "w-6 h-6" : "w-4 h-4",
+            collapsed ? "w-4 h-4" : "w-4 h-4",
             shouldHighlight
               ? ""
               : isImplemented
@@ -269,7 +271,7 @@ function SideMenuItem({
                   onClick(child.key);
                 }}
                 className={[
-                  "group w-full flex items-center gap-2 rounded-full pl-4 px-1.5 py-1 text-[13px] font-medium transition-all duration-200",
+                  "group w-full flex items-center gap-2 rounded-full p-1 text-[13px] font-medium transition-all duration-200",
                   isChildActive
                     ? ""
                     : "bg-transparent text-[var(--sub-text-color)] hover:bg-[var(--hover-color)] hover:text-[var(--accent-color)]",
@@ -277,7 +279,7 @@ function SideMenuItem({
                 ].join(" ")}
                 style={{
                   backgroundColor: isChildActive ? "var(--menu-active-bg)" : "transparent",
-                  height: "44px",
+                  height: "36px",
                   fontSize: "14px",
                   direction: isArabic ? "rtl" : "ltr",
                 }}
@@ -320,6 +322,71 @@ function SideMenuItem({
         </div>
       )}
     </>
+  );
+}
+
+function LanguageToggle({ lang, onToggle, collapsed, t, isArabic }) {
+  if (collapsed) {
+    return (
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-center rounded-full p-2 transition-all duration-200 border"
+        style={{
+          backgroundColor: "var(--bg-color)",
+          borderColor: "var(--border-color)",
+        }}
+      >
+        <Globe className="w-5 h-5" style={{ color: "var(--accent-color)" }} />
+      </button>
+    );
+  }
+  return (
+    <div
+      className="w-full flex items-center justify-between rounded-2xl px-2 py-2 shadow-sm border"
+      style={{
+        backgroundColor: "var(--bg-color)",
+        borderColor: "var(--border-color)",
+        direction: isArabic ? "rtl" : "ltr",
+      }}
+    >
+      <span
+        className="text-sm font-medium"
+        style={{ color: "var(--text-color)" }}
+      >
+        {lang === "ar" ? t("aside.arabic") : t("aside.english")}
+      </span>
+      <button
+        onClick={onToggle}
+        role="switch"
+        aria-checked={lang === "ar"}
+        className="relative inline-flex items-center justify-start rounded-full shadow-sm border transition-all duration-200"
+        style={{
+          width: 42,
+          height: 22,
+          background: "var(--toggle-bg)",
+          borderColor: "var(--toggle-border)",
+          paddingLeft: 3,
+          paddingRight: 3,
+        }}
+      >
+        <div className="absolute left-1 top-1/2 -translate-y-1/2 text-[var(--accent-color)]">
+          <Globe className="w-3 h-3" />
+        </div>
+        <div
+          className="absolute top-1/2 -translate-y-1/2 transition-all duration-200 ease-out rounded-full shadow-md"
+          style={{
+            left: lang === "ar" ? 20 : 3,
+            width: 12,
+            height: 12,
+            background:
+              "linear-gradient(135deg, var(--knob-gradient-start) 0%, var(--knob-gradient-end) 100%)",
+          }}
+        >
+          <div className="absolute top-0.5 left-0.5 w-1 h-1 bg-white/40 rounded-full"></div>
+          <div className="absolute bottom-0.5 right-0.5 w-1 h-1 bg-white/20 rounded-full"></div>
+        </div>
+      </button>
+    </div>
   );
 }
 
@@ -384,6 +451,7 @@ function ThemeToggle({ theme, onToggle, collapsed, t, isArabic }) {
 
 export default function SideMenu({ isMobileOpen, onMobileClose }) {
   const { t, i18n } = useTranslation();
+  const { lang, setLang } = useLang();
   const [collapsed, setCollapsed] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [toastVisible, setToastVisible] = useState(false);
@@ -682,8 +750,20 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
         </nav>
       </div>
 
-      {/* Bottom Theme Toggle */}
-      <div className="shrink-0 pt-3 mb-2">
+      {/* Bottom Language & Theme Toggle */}
+      <div className="shrink-0 pt-3 mb-2 space-y-2">
+        <div className="block sm:hidden">
+          <LanguageToggle
+            lang={lang}
+            onToggle={() => {
+              const newLang = lang === "ar" ? "en" : "ar";
+              setLang(newLang);
+            }}
+            collapsed={collapsed && !isMobile}
+            t={t}
+            isArabic={isArabic}
+          />
+        </div>
         <ThemeToggle
           theme={theme}
           onToggle={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}

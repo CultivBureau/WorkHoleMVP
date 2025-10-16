@@ -201,7 +201,7 @@ const QuickActions = () => {
                     </div>
                 </div>
                 {/* Custom CSS for 1190px-1279px range to switch to 3 columns */}
-                <style jsx>{`
+                <style>{`
                     @media (min-width: 1190px) and (max-width: 1279px) {
                         .quick-actions-grid {
                             grid-template-columns: repeat(3, minmax(0, 1fr));

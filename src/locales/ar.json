@@ -21,6 +21,8 @@
     "help": "مساعدة",
     "darkMode": "الوضع الليلي",
     "lightMode": "الوضع النهاري",
+    "arabic": "العربية",
+    "english": "الإنجليزية",
     "time_tracking": "تتبع الوقت",
     "attendance": "سجلات الحضور",
     "break_tracking": "تتبع الاستراحة",

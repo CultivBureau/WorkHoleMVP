@@ -68,7 +68,7 @@ const Login = () => {
   return (
     <div className="min-h-screen h-screen flex overflow-hidden">
       {/* Left Panel - hidden on mobile */}
-      <div className="hidden lg:flex flex-1 bg-white items-center justify-center relative overflow-hidden">
+      <div className="hidden lg:flex flex-1 bg-[var(--bg-color)] items-center justify-center relative overflow-hidden">
         <img
           src="/assets/back.png"
           alt="Login dashboard mockup"
@@ -77,7 +77,7 @@ const Login = () => {
       </div>
 
       {/* Right Panel */}
-      <div className="w-full lg:flex-1 bg-white lg:border-l border-gray-200 lg:rounded-l-3xl lg:shadow-2xl lg:shadow-gray-500 flex items-center justify-center relative">
+      <div className="w-full lg:flex-1 bg-[var(--bg-color)] lg:border-l border-[var(--border-color)] lg:rounded-l-3xl lg:shadow-2xl lg:shadow-gray-500 flex items-center justify-center relative">
         {/* Language Toggle */}
         <div className={`absolute top-4 z-10 ${isRtl ? "left-4" : "right-4"}`}>
           <button

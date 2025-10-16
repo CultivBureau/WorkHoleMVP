@@ -21,6 +21,8 @@
     "help": "Help",
     "darkMode": "Dark Mode",
     "lightMode": "Light Mode",
+    "arabic": "Arabic",
+    "english": "English",
     "time_tracking": "Time Tracking",
     "attendance": "Attendance Logs",
     "break_tracking": "Break Tracking",
