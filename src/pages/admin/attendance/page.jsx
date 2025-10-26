@@ -170,6 +170,110 @@ const AttendanceAdmin = () => {
     }
   ];
 
+  // Export function to CSV/Excel
+  const handleExportToCSV = () => {
+    let csvContent = "";
+    let filename = "";
+
+    if (dateFilter === "today") {
+      // Export today's data
+      const headers = isRtl 
+        ? "اسم الموظف,البريد الإلكتروني,وقت الحضور,وقت الانصراف,ساعات العمل,الموقع,الحالة\n"
+        : "Employee Name,Email,Clock In,Clock Out,Work Hours,Location,Status\n";
+      
+      csvContent = headers;
+      
+      filteredData.forEach(attendance => {
+        const name = `${attendance.user?.firstName || ''} ${attendance.user?.lastName || ''}`;
+        const email = attendance.user?.email || '';
+        const clockIn = getDynamicClockIn(attendance);
+        const clockOut = getDynamicClockOut(attendance);
+        const workHours = getDynamicWorkHours(attendance);
+        const location = attendance.location === 'office' ? (isRtl ? 'المكتب' : 'Office') : (isRtl ? 'من المنزل' : 'Remote');
+        const status = attendance.status === 'present' ? (isRtl ? 'حاضر' : 'Present') :
+                       attendance.status === 'late' ? (isRtl ? 'متأخر' : 'Late') :
+                       (isRtl ? 'غائب' : 'Absent');
+        
+        csvContent += `${name},${email},${clockIn},${clockOut},${workHours},${location},${status}\n`;
+      });
+      
+      filename = `attendance-today-${new Date().toISOString().split('T')[0]}.csv`;
+    } 
+    else if (dateFilter === "lastWeek") {
+      // Export last week's data
+      const headers = isRtl 
+        ? "اسم الموظف,البريد الإلكتروني,اليوم,التاريخ,وقت الحضور,وقت الانصراف,ساعات العمل,الموقع,الحالة\n"
+        : "Employee Name,Email,Day,Date,Clock In,Clock Out,Work Hours,Location,Status\n";
+      
+      csvContent = headers;
+      
+      uniqueUsers.forEach(user => {
+        const userLogs = attendanceData
+          ?.filter(a => a.user?._id === user._id && a.status !== "holiday")
+          .sort((a, b) => a.date.localeCompare(b.date));
+        
+        if (!userLogs || userLogs.length === 0) return;
+        
+        userLogs.forEach(att => {
+          const name = `${user.firstName || ''} ${user.lastName || ''}`;
+          const email = user.email || '';
+          const day = att.day || '';
+          const date = att.date || '';
+          const clockIn = att.clockIn || '';
+          const clockOut = att.clockOut || '';
+          const workHours = att.workHours || '';
+          const location = att.location === 'office' ? (isRtl ? 'المكتب' : 'Office') : (isRtl ? 'من المنزل' : 'Remote');
+          const status = att.status === 'present' ? (isRtl ? 'حاضر' : 'Present') :
+                         att.status === 'late' ? (isRtl ? 'متأخر' : 'Late') :
+                         (isRtl ? 'غائب' : 'Absent');
+          
+          csvContent += `${name},${email},${day},${date},${clockIn},${clockOut},${workHours},${location},${status}\n`;
+        });
+      });
+      
+      filename = `attendance-last-week-${new Date().toISOString().split('T')[0]}.csv`;
+    }
+    else if (dateFilter === "lastMonth") {
+      // Export last month's aggregated data
+      const headers = isRtl 
+        ? "اسم الموظف,البريد الإلكتروني,حاضر,غائب,متأخر,متوسط وقت الحضور,من المكتب,من المنزل\n"
+        : "Employee Name,Email,Present,Absent,Late,Avg Clock In,Office,Home\n";
+      
+      csvContent = headers;
+      
+      attendanceData?.forEach(row => {
+        const name = `${row.user?.firstName || ''} ${row.user?.lastName || ''}`;
+        const email = row.user?.email || '';
+        const present = row.present || 0;
+        const absent = row.absent || 0;
+        const late = row.late || 0;
+        const avgClockIn = row.avgClockIn || 'N/A';
+        const office = row.office || 0;
+        const home = row.home || 0;
+        
+        csvContent += `${name},${email},${present},${absent},${late},${avgClockIn},${office},${home}\n`;
+      });
+      
+      filename = `attendance-last-month-summary-${new Date().toISOString().split('T')[0]}.csv`;
+    } else {
+      toast.error(isRtl ? 'تتم عملية التصدير فقط لليوم والأسبوع الماضي والشهر الماضي' : 'Export is only available for today, last week, and last month');
+      return;
+    }
+
+    // Create a blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.success(isRtl ? 'تم تصدير البيانات بنجاح' : 'Data exported successfully');
+  };
+
   // Handle card click
   const handleCardClick = (cardType) => {
     if (activeCard === cardType) {
@@ -366,7 +470,21 @@ const AttendanceAdmin = () => {
                 </p>
               </div>
 
-
+              {/* Export Button */}
+              {(dateFilter === "today" || dateFilter === "lastWeek" || dateFilter === "lastMonth") && (
+                <button
+                  onClick={handleExportToCSV}
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 transform active:scale-95"
+                  style={{
+                    background: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
+                    color: "white",
+                    boxShadow: "0 4px 12px rgba(16, 185, 129, 0.3)"
+                  }}
+                >
+                  <Download size={20} />
+                  <span>{isRtl ? "تصدير البيانات" : "Export Data"}</span>
+                </button>
+              )}
             </div>
 
             {/* Stats Cards */}
