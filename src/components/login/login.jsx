@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useLoginMutation } from "../../services/apis/AuthApi";
+import { useGetUserCompaniesByEmailMutation } from "../../services/apis/CompanyApi";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
@@ -13,7 +14,8 @@ import {
   ArrowLeft,
   Globe,
   CheckCircle,
-  Loader2
+  Loader2,
+  Building2
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -21,27 +23,70 @@ const Login = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [login, { isLoading }] = useLoginMutation();
+  const [getUserCompanies, { isLoading: isLoadingCompanies }] = useGetUserCompaniesByEmailMutation();
+  
+  const [step, setStep] = useState(1); // 1 = email step, 2 = company/password step
+  const [email, setEmail] = useState("");
+  const [companies, setCompanies] = useState([]);
+  const [selectedCompany, setSelectedCompany] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    companyId: "",
   });
 
   const isRtl = i18n.language === 'ar';
 
+  // Step 1: Handle email submission to fetch companies
+  const handleEmailSubmit = async (e) => {
+    e.preventDefault();
+    if (!email) {
+      toast.error(t('login.enterEmail') || 'Please enter your email');
+      return;
+    }
+
+    try {
+      const result = await getUserCompanies(email).unwrap();
+      const fetchedCompanies = result.value || [];
+      
+      if (fetchedCompanies.length === 0) {
+        toast.error(t('login.noCompanies') || 'No companies found for this email');
+        return;
+      }
+
+      setCompanies(fetchedCompanies);
+      setStep(2); // Move to company/password step
+    } catch (err) {
+      const errorMessage = err?.data?.errorMessage || err?.data?.message || err?.message || 'Failed to fetch companies';
+      toast.error(errorMessage);
+    }
+  };
+
+  // Step 2: Handle final login submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const res = await login(formData).unwrap();
-      toast.success(t('login.loginSuccess'));
+    if (!selectedCompany || !formData.password) {
+      toast.error(t('login.fillAllFields') || 'Please fill all fields');
+      return;
+    }
 
-      // Redirect based on user role
-      if (res.user?.role === "admin") {
-        navigate("/pages/admin/dashboard");
-      } else {
-        navigate("/pages/User/dashboard");
-      }
+    try {
+      const loginPayload = {
+        email: email,
+        password: formData.password,
+        companyId: selectedCompany.companyId,
+      };
+
+      const res = await login(loginPayload).unwrap();
+      toast.success(t('login.loginSuccess') || 'Login successful!');
+
+      // Handle new API response structure
+      const userData = res.value || res;
+      
+      // For now, navigate to user dashboard
+      navigate("/pages/User/dashboard");
 
       // Auto refresh the app after successful login
       setTimeout(() => {
@@ -49,7 +94,8 @@ const Login = () => {
       }, 100);
 
     } catch (err) {
-      toast.error(err?.data?.message || t('login.loginFailed'));
+      const errorMessage = err?.data?.errorMessage || err?.data?.message || err?.message || t('login.loginFailed');
+      toast.error(errorMessage);
     }
   };
 
@@ -58,6 +104,13 @@ const Login = () => {
       ...formData,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const handleBackToEmail = () => {
+    setStep(1);
+    setSelectedCompany(null);
+    setCompanies([]);
+    setFormData({ ...formData, password: "" });
   };
 
   const toggleLanguage = () => {
@@ -109,94 +162,157 @@ const Login = () => {
             />
           </div>
 
-          {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email Field */}
-            <div className="space-y-2">
-              <label
-                htmlFor="email"
-                className={`text-gray-600 block text-sm ${isRtl ? "text-right" : "text-left"}`}
-              >
-                {t('login.emailAddress')}
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                placeholder={t('login.enterEmail')}
-                className={`w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all ${isRtl ? "text-right" : "text-left"}`}
-                dir={isRtl ? "rtl" : "ltr"}
-              />
-            </div>
-
-            {/* Password Field */}
-            <div className="space-y-2">
-              <div className="relative">
+          {/* Login Form - Step 1: Email */}
+          {step === 1 ? (
+            <form onSubmit={handleEmailSubmit} className="space-y-6">
+              {/* Email Field */}
+              <div className="space-y-2">
                 <label
-                  htmlFor="password"
+                  htmlFor="email"
                   className={`text-gray-600 block text-sm ${isRtl ? "text-right" : "text-left"}`}
                 >
-                  {t('login.password')}
+                  {t('login.emailAddress')}
                 </label>
                 <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
+                  type="email"
+                  name="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
-                  placeholder={t('login.enterPassword')}
-                  className={`w-full px-4 py-3 pr-12 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all ${isRtl ? "text-right pr-12 pl-4" : "text-left pl-4 pr-12"}`}
+                  placeholder={t('login.enterEmail')}
+                  className={`w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all ${isRtl ? "text-right" : "text-left"}`}
                   dir={isRtl ? "rtl" : "ltr"}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className={`absolute ${isRtl ? "left-3" : "right-3"} top-[38px] text-gray-400 hover:text-gray-600`}
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
               </div>
-            </div>
 
-            {/* Remember Me & Forgot Password */}
-            <div className={`flex items-center justify-between ${isRtl ? "flex-row-reverse" : ""}`}>
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 text-teal-500 border-gray-300 rounded focus:ring-teal-500"
-                />
-                <span className={`text-sm text-gray-600 ${isRtl ? "mr-2" : "ml-2"}`}>
-                  {t('login.rememberMe')}
-                </span>
-              </label>
-              <Link
-                to="/forget-password"
-                className="text-sm gradient-text font-semibold hover:text-teal-600 hover:underline"
+              {/* Submit Button for Step 1 */}
+              <button
+                type="submit"
+                disabled={isLoadingCompanies || !email}
+                className="w-full gradient-bg text-white py-3 px-4 rounded-lg text-sm font-medium hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {t('login.forgotPassword')}
-              </Link>
-            </div>
+                {isLoadingCompanies ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>{t('login.loading') || 'Loading...'}</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center gap-2">
+                    <span>{t('login.continue') || 'Continue'}</span>
+                    <ArrowRight className="w-5 h-5" />
+                  </div>
+                )}
+              </button>
+            </form>
+          ) : (
+            /* Login Form - Step 2: Company Selection & Password */
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Back Button */}
+              <button
+                type="button"
+                onClick={handleBackToEmail}
+                className={`flex items-center gap-2 text-sm text-gray-600 hover:text-teal-600 transition-colors mb-2 ${isRtl ? "ml-auto" : ""}`}
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>{t('login.backToEmail') || 'Back to email'}</span>
+              </button>
 
-            {/* Login Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full gradient-bg text-white py-3 px-4 rounded-lg text-sm font-medium hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? (
-                <div className="flex items-center justify-center gap-2">
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>{t('login.signingIn')}</span>
+              {/* Company Selection */}
+              <div className="space-y-2">
+                <label
+                  htmlFor="company"
+                  className={`text-gray-600 block text-sm ${isRtl ? "text-right" : "text-left"}`}
+                >
+                  {t('login.selectCompany') || 'Select Company'}
+                </label>
+                <div className="space-y-2">
+                  {companies.map((company) => (
+                    <button
+                      key={company.companyId}
+                      type="button"
+                      onClick={() => setSelectedCompany(company)}
+                      className={`w-full px-4 py-3 border rounded-lg text-sm transition-all text-left ${
+                        selectedCompany?.companyId === company.companyId
+                          ? 'border-teal-500 bg-teal-50 text-teal-700'
+                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Building2 className="w-5 h-5" />
+                        <span className="font-medium">{company.companyName}</span>
+                      </div>
+                    </button>
+                  ))}
                 </div>
-              ) : (
-                t('login.signIn')
-              )}
-            </button>
-          </form>
+              </div>
+
+              {/* Password Field */}
+              <div className="space-y-2">
+                <div className="relative">
+                  <label
+                    htmlFor="password"
+                    className={`text-gray-600 block text-sm ${isRtl ? "text-right" : "text-left"}`}
+                  >
+                    {t('login.password')}
+                  </label>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                    placeholder={t('login.enterPassword')}
+                    className={`w-full px-4 py-3 pr-12 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all ${isRtl ? "text-right pr-12 pl-4" : "text-left pl-4 pr-12"}`}
+                    dir={isRtl ? "rtl" : "ltr"}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className={`absolute ${isRtl ? "left-3" : "right-3"} top-[38px] text-gray-400 hover:text-gray-600`}
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Remember Me & Forgot Password */}
+              <div className={`flex items-center justify-between ${isRtl ? "flex-row-reverse" : ""}`}>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-4 h-4 text-teal-500 border-gray-300 rounded focus:ring-teal-500"
+                  />
+                  <span className={`text-sm text-gray-600 ${isRtl ? "mr-2" : "ml-2"}`}>
+                    {t('login.rememberMe')}
+                  </span>
+                </label>
+                <Link
+                  to="/forget-password"
+                  className="text-sm gradient-text font-semibold hover:text-teal-600 hover:underline"
+                >
+                  {t('login.forgotPassword')}
+                </Link>
+              </div>
+
+              {/* Login Button */}
+              <button
+                type="submit"
+                disabled={isLoading || !selectedCompany || !formData.password}
+                className="w-full gradient-bg text-white py-3 px-4 rounded-lg text-sm font-medium hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>{t('login.signingIn')}</span>
+                  </div>
+                ) : (
+                  t('login.signIn')
+                )}
+              </button>
+            </form>
+          )}
         </div>
       </div>
     </div>

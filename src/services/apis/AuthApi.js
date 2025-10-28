@@ -1,6 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "./baseQuery";
-import { setAuthTokens, removeAuthToken } from "../../utils/page";
+import { setAuthToken, removeAuthToken, setToken } from "../../utils/page";
 
 export const authApi = createApi({
   reducerPath: "authApi",
@@ -8,25 +8,39 @@ export const authApi = createApi({
   endpoints: (builder) => ({
     login: builder.mutation({
       query: (body) => ({
-        url: "/auth/login",
+        url: "/api/v1/Authentication/login",
         method: "POST",
         body,
       }),
       async onQueryStarted(arg, { queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          if (data.access_token && data.refresh_token) {
-            setAuthTokens(data.access_token, data.refresh_token);
+          // Handle new API response structure with 'value' wrapper
+          if (data.value?.token) {
+            setToken(data.value.token);
+          } else if (data.token) {
+            setToken(data.token);
           }
         } catch {}
       },
     }),
     register: builder.mutation({
       query: (body) => ({
-        url: "/auth/register",
+        url: "/api/v1/Authentication/register",
         method: "POST",
         body,
       }),
+      async onQueryStarted(arg, { queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          // Handle new API response structure with 'value' wrapper
+          if (data.value?.token) {
+            setToken(data.value.token);
+          } else if (data.token) {
+            setToken(data.token);
+          }
+        } catch {}
+      },
     }),
     me: builder.query({
       query: () => ({

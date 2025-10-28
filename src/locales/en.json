@@ -647,7 +647,15 @@
     "signingIn": "Signing In...",
     "loginSuccess": "Login successful",
     "loginFailed": "Login failed",
-    "secureLogin": "🔒 Your data is secured with end-to-end encryption"
+    "secureLogin": "🔒 Your data is secured with end-to-end encryption",
+    "companyId": "Company ID",
+    "enterCompanyId": "Enter Company ID",
+    "loading": "Loading...",
+    "continue": "Continue",
+    "backToEmail": "Back to email",
+    "selectCompany": "Select Company",
+    "fillAllFields": "Please fill all fields",
+    "noCompanies": "No companies found for this email"
   },
   "employees": {
     "totalEmployees": "Total Employees",

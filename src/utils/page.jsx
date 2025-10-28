@@ -7,6 +7,11 @@ export const setAuthTokens = (accessToken, refreshToken) => {
   Cookies.set("refresh_token", refreshToken, { expires: 20 }); // 20 days for refresh token
 };
 
+// Set single token (for new API structure)
+export const setToken = (token) => {
+  Cookies.set("access_token", token, { expires: 2 }); // 2 days
+};
+
 // Set only access token
 export const setAuthToken = (token) => {
   Cookies.set("access_token", token, { expires: 2 }); // 2 days

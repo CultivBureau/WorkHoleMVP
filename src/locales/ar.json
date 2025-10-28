@@ -603,7 +603,15 @@
     "signingIn": "جاري تسجيل الدخول...",
     "loginSuccess": "تم تسجيل الدخول بنجاح",
     "loginFailed": "فشل تسجيل الدخول",
-    "secureLogin": "🔒 بياناتك محمية بالتشفير الشامل"
+    "secureLogin": "🔒 بياناتك محمية بالتشفير الشامل",
+    "companyId": "معرّف الشركة",
+    "enterCompanyId": "أدخل معرّف الشركة",
+    "loading": "جاري التحميل...",
+    "continue": "متابعة",
+    "backToEmail": "العودة إلى البريد الإلكتروني",
+    "selectCompany": "اختر الشركة",
+    "fillAllFields": "يرجى ملء جميع الحقول",
+    "noCompanies": "لم يتم العثور على شركات لهذا البريد الإلكتروني"
   },
   "employees": {
     "totalEmployees": "إجمالي الموظفين",
