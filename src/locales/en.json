@@ -655,7 +655,10 @@
     "backToEmail": "Back to email",
     "selectCompany": "Select Company",
     "fillAllFields": "Please fill all fields",
-    "noCompanies": "No companies found for this email"
+    "noCompanies": "No companies found for this email",
+    "chooseCompany": "Choose a company",
+    "companyAvailable": "company available",
+    "companiesAvailable": "companies available"
   },
   "employees": {
     "totalEmployees": "Total Employees",

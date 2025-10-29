@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { 
-  useStartTimerMutation,
-  useGetCurrentTimerQuery,
-  usePauseTimerMutation,
-  useResumeTimerMutation,
-  useCompleteTimerMutation,
-  useCancelTimerMutation,
-} from "../services/apis/TimerApi";
+
+// Mock timer API functions for static mode
+const useGetCurrentTimerQuery = () => ({ data: null, refetch: () => ({ data: null }) });
+const useStartTimerMutation = () => [async () => ({ data: { timer: { id: 'static-1', startTime: new Date(), tag: '', duration: 25 } } })];
+const usePauseTimerMutation = () => [async () => ({ data: {} })];
+const useResumeTimerMutation = () => [async () => ({ data: {} })];
+const useCompleteTimerMutation = () => [async () => ({ data: {} })];
+const useCancelTimerMutation = () => [async () => ({ data: {} })];
 
 const TimerContext = createContext();
 
@@ -44,19 +44,21 @@ export function TimerProvider({ children }) {
   // Only fetch backend timer when we have an active timer locally
   const shouldFetchBackend = localTimer.status !== 'idle' || localTimer.id;
   
-  // Backend API hooks - only fetch when needed
-  const { data: backendTimer, refetch: refetchBackend } = useGetCurrentTimerQuery(undefined, {
-    skip: !shouldFetchBackend, // Skip if no active timer
-    pollingInterval: shouldFetchBackend ? 60000 : 0, // Poll every 60 seconds only when needed
-    refetchOnFocus: false, // Disable refetch on focus to reduce requests
-    refetchOnReconnect: true,
-  });
+  // Static mode - no backend API calls
+  const { data: backendTimer = null, refetch: refetchBackend = () => ({ data: null }) } = { data: null, refetch: () => ({ data: null }) };
 
-  const [startTimerMutation, { isLoading: isStarting }] = useStartTimerMutation();
-  const [pauseTimerMutation, { isLoading: isPausing }] = usePauseTimerMutation();
-  const [resumeTimerMutation, { isLoading: isResuming }] = useResumeTimerMutation();
-  const [completeTimerMutation, { isLoading: isCompleting }] = useCompleteTimerMutation();
-  const [cancelTimerMutation, { isLoading: isCancelling }] = useCancelTimerMutation();
+  const [startTimerMutation] = useStartTimerMutation();
+  const [pauseTimerMutation] = usePauseTimerMutation();
+  const [resumeTimerMutation] = useResumeTimerMutation();
+  const [completeTimerMutation] = useCompleteTimerMutation();
+  const [cancelTimerMutation] = useCancelTimerMutation();
+  
+  // Static loading states
+  const isStarting = false;
+  const isPausing = false;
+  const isResuming = false;
+  const isCompleting = false;
+  const isCancelling = false;
 
   // Save local timer state to localStorage
   useEffect(() => {

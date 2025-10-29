@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { useForgetPasswordMutation } from "../../services/apis/AuthApi";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, ArrowLeft, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";

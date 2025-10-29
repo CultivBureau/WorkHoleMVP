@@ -13,27 +13,74 @@ import {
   AlertCircle,
 } from "lucide-react";
 import AvatarIcon from "../../../public/assets/navbar/Avatar.png";
-import { useMeQuery, useLogoutMutation } from "../../services/apis/AuthApi";
-import { useGetDashboardQuery, useClockInMutation, useClockOutMutation } from "../../services/apis/AtteandanceApi";
-import { removeAuthToken } from "../../utils/page";
+import { removeAuthToken, getAuthToken } from "../../utils/page";
 import { useLang } from "../../contexts/LangContext";
-import { useAttendanceUpdate } from "../../contexts/AttendanceUpdateContext";
+import { useMeQuery } from "../../services/apis/AuthApi";
 import toast from "react-hot-toast";
+
+// Static dashboard data
+const staticDashboardData = {
+  currentStatus: "Clocked In",
+  todayAttendance: {
+    clockIn: "09:00 AM",
+    clockOut: null,
+    workedHours: "4h 30m",
+    status: "Present"
+  }
+};
 
 const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { lang, setLang, isRtl } = useLang();
 
-  // جلب بيانات المستخدم من /me
-  const { data: user, isLoading: userLoading } = useMeQuery();
-  const [logout] = useLogoutMutation();
+  // Check if user is authenticated before making API calls
+  const isAuthenticated = !!getAuthToken();
+  
+  // Fetch user data from /me endpoint
+  const { data: meResponse, isLoading: userLoading, error: userError } = useMeQuery(undefined, {
+    skip: !isAuthenticated, // Skip API call if not authenticated
+  });
 
-  // Clock in/out functionality
-  const { data: dashboardData, refetch: refetchDashboard } = useGetDashboardQuery({});
-  const [clockIn, { isLoading: isClockingIn }] = useClockInMutation();
-  const [clockOut, { isLoading: isClockingOut }] = useClockOutMutation();
-  const { triggerUpdate } = useAttendanceUpdate();
+  // Extract user data from API response (value wrapper)
+  const userData = meResponse?.value || null;
+  const user = userData ? {
+    id: userData.id,
+    firstName: userData.firstName || "",
+    lastName: userData.lastName || "",
+    userName: userData.userName || "",
+    email: userData.email || "",
+    jobTitle: userData.jobTitle || "",
+    role: userData.roles?.[0] || userData.jobTitle || "Employee", // Use first role or jobTitle
+    roles: userData.roles || [],
+    profileImage: null, // API response doesn't include profileImage
+  } : (isAuthenticated ? {
+    firstName: "Loading...",
+    lastName: "",
+    role: "",
+    profileImage: null
+  } : {
+    firstName: "Guest",
+    lastName: "",
+    role: "",
+    profileImage: null
+  });
+
+  // Logout function - just remove token locally
+  const logout = async () => {
+    // No API call needed, just remove token locally
+    removeAuthToken();
+  };
+
+  // Clock in/out functionality - use static data
+  const dashboardData = isAuthenticated ? staticDashboardData : null;
+  const refetchDashboard = () => {}; // Empty function for compatibility
+  const isClockingIn = false;
+  const isClockingOut = false;
+  
+  // Mock clock in/out handlers
+  const clockIn = async () => ({ data: {} });
+  const clockOut = async () => ({ data: {} });
 
   const [langOpen, setLangOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -79,7 +126,6 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
   // زرار تسجيل الخروج
   const handleLogout = async () => {
     await logout();
-    removeAuthToken();
     navigate("/");
   };
 
@@ -188,7 +234,7 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
         await clockOut({
           latitude: location.latitude,
           longitude: location.longitude
-        }).unwrap();
+        });
 
         toast.success(
           <div className="flex items-center gap-2">
@@ -208,7 +254,7 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
           location: "office",
           latitude: location.latitude,
           longitude: location.longitude
-        }).unwrap();
+        });
 
         toast.success(
           <div className="flex items-center gap-2">
@@ -224,8 +270,8 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
           }
         );
       }
-      triggerUpdate();
-      refetchDashboard(); // Refetch dashboard data to update UI immediately
+      // Static data - no update needed
+      refetchDashboard(); // Empty function for compatibility
     } catch (error) {
       console.error('Clock process error:', error);
       toast.error(

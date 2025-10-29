@@ -1,42 +1,52 @@
 import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Login from "./components/login/login";
-import Dashboard from "./pages/User/dashboard/page";
-import Leaves from "./pages/User/leaves/page";
-import TimeTracking from "./pages/User/time_tracking/page";
-import AttendanceLogs from "./pages/User/attendance-logs/page";
-import BreakTracking from "./pages/User/break-tracking/page";
-import DashboardAdmin from "./pages/admin/dashboard/page";
-import AttendanceAdmin from "./pages/admin/attendance/page";
-import PerformanceAdmin from "./pages/admin/Performance/page";
-import BreakAdmin from "./pages/admin/break/page";
-import LeavesAdmin from "./pages/admin/leaves/page";
-import UsersAdmin from "./pages/admin/users/page";
-import Performance from "./pages/User/Performance/page";
-import TeamWallet from "./pages/User/team-wallet/page";
-import AllEmployees from "./pages/admin/all-employees/page";
-import NewEmployee from "./pages/admin/new-employee/page";
-import AllDepartments from "./pages/admin/all-departments/page";
-import NewDepartment from "./pages/admin/new-department/page";
-import EditDepartment from "./pages/admin/edit-department/page";
-import AllTeamsPage from "./pages/admin/all-teams/page";
-import RolesAndPermissions from "./pages/admin/Roles&Permissions/page";
-import NewRole from "./pages/admin/New_Role/page";
-import Profile from "./pages/Profile";
-import ForgetPassword from "./components/forget-password/ForgetPassword";
-import ResetPassword from "./components/reset-password/resetPassword";
+import React, { useContext, Suspense, lazy } from "react";
 import ProtectedRoute from "./contexts/ProtectedRoute";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { LangProvider } from "./contexts/LangContext";
 import { AttendanceUpdateProvider } from "./contexts/AttendanceUpdateContext";
 import { BreakUpdateProvider } from "./contexts/BreakUpdateContext";
 import { TimerProvider } from "./contexts/TimerContext";
-import React, { useContext } from "react";
 import Error from "./components/Error/Error";
 import { GlobalErrorContext } from "./contexts/GlobalErrorContext";
 import { useTokenRefresh } from './hooks/useTokenRefresh';
-import AdminTeamWallet from "./pages/admin/TeamWallet/page";
-import Company from "./pages/admin/company/page";
+import Loading from "./components/Loading/Loading";
+
+// Keep Login eagerly loaded for fast initial render
+import Login from "./components/login/login";
+
+// Lazy load all other pages for better performance
+// User Pages
+const Dashboard = lazy(() => import("./pages/User/dashboard/page"));
+const Leaves = lazy(() => import("./pages/User/leaves/page"));
+const TimeTracking = lazy(() => import("./pages/User/time_tracking/page"));
+const AttendanceLogs = lazy(() => import("./pages/User/attendance-logs/page"));
+const BreakTracking = lazy(() => import("./pages/User/break-tracking/page"));
+const Performance = lazy(() => import("./pages/User/Performance/page"));
+const TeamWallet = lazy(() => import("./pages/User/team-wallet/page"));
+const Profile = lazy(() => import("./pages/Profile"));
+
+// Auth Pages
+const ForgetPassword = lazy(() => import("./components/forget-password/ForgetPassword"));
+const ResetPassword = lazy(() => import("./components/reset-password/resetPassword"));
+
+// Admin Pages
+const DashboardAdmin = lazy(() => import("./pages/admin/dashboard/page"));
+const AttendanceAdmin = lazy(() => import("./pages/admin/attendance/page"));
+const PerformanceAdmin = lazy(() => import("./pages/admin/Performance/page"));
+const BreakAdmin = lazy(() => import("./pages/admin/break/page"));
+const LeavesAdmin = lazy(() => import("./pages/admin/leaves/page"));
+const UsersAdmin = lazy(() => import("./pages/admin/users/page"));
+const AllEmployees = lazy(() => import("./pages/admin/all-employees/page"));
+const NewEmployee = lazy(() => import("./pages/admin/new-employee/page"));
+const AllDepartments = lazy(() => import("./pages/admin/all-departments/page"));
+const NewDepartment = lazy(() => import("./pages/admin/new-department/page"));
+const EditDepartment = lazy(() => import("./pages/admin/edit-department/page"));
+const AllTeamsPage = lazy(() => import("./pages/admin/all-teams/page"));
+const RolesAndPermissions = lazy(() => import("./pages/admin/Roles&Permissions/page"));
+const NewRole = lazy(() => import("./pages/admin/New_Role/page"));
+const AdminTeamWallet = lazy(() => import("./pages/admin/TeamWallet/page"));
+const Company = lazy(() => import("./pages/admin/company/page"));
 
 function App() {
   useTokenRefresh();
@@ -68,16 +78,29 @@ function App() {
                     <Route path="/" element={<Login />} />
                     <Route
                       path="/forget-password"
-                      element={<ForgetPassword />}
+                      element={
+                        <Suspense fallback={<Loading />}>
+                          <ForgetPassword />
+                        </Suspense>
+                      }
                     />
-                    <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route 
+                      path="/reset-password" 
+                      element={
+                        <Suspense fallback={<Loading />}>
+                          <ResetPassword />
+                        </Suspense>
+                      } 
+                    />
 
-                    {/* Protected User Routes */}
+                    {/* Protected User Routes - Lazy Loaded */}
                     <Route
                       path="/pages/User/dashboard"
                       element={
                         <ProtectedRoute>
-                          <Dashboard />
+                          <Suspense fallback={<Loading />}>
+                            <Dashboard />
+                          </Suspense>
                         </ProtectedRoute>
                       }
                     />
@@ -85,7 +108,9 @@ function App() {
                       path="/pages/User/leaves"
                       element={
                         <ProtectedRoute>
-                          <Leaves />
+                          <Suspense fallback={<Loading />}>
+                            <Leaves />
+                          </Suspense>
                         </ProtectedRoute>
                       }
                     />
@@ -93,7 +118,9 @@ function App() {
                       path="/pages/User/Performance"
                       element={
                         <ProtectedRoute>
-                          <Performance />
+                          <Suspense fallback={<Loading />}>
+                            <Performance />
+                          </Suspense>
                         </ProtectedRoute>
                       }
                     />
@@ -101,7 +128,9 @@ function App() {
                       path="/pages/User/team-wallet"
                       element={
                         <ProtectedRoute>
-                          <TeamWallet />
+                          <Suspense fallback={<Loading />}>
+                            <TeamWallet />
+                          </Suspense>
                         </ProtectedRoute>
                       }
                     />
@@ -109,7 +138,9 @@ function App() {
                       path="/pages/User/time_tracking"
                       element={
                         <ProtectedRoute>
-                          <TimeTracking />
+                          <Suspense fallback={<Loading />}>
+                            <TimeTracking />
+                          </Suspense>
                         </ProtectedRoute>
                       }
                     />
@@ -117,7 +148,9 @@ function App() {
                       path="/pages/User/attendance-logs"
                       element={
                         <ProtectedRoute>
-                          <AttendanceLogs />
+                          <Suspense fallback={<Loading />}>
+                            <AttendanceLogs />
+                          </Suspense>
                         </ProtectedRoute>
                       }
                     />
@@ -125,26 +158,31 @@ function App() {
                       path="/pages/User/break-tracking"
                       element={
                         <ProtectedRoute>
-                          <BreakTracking />
+                          <Suspense fallback={<Loading />}>
+                            <BreakTracking />
+                          </Suspense>
                         </ProtectedRoute>
                       }
                     />
-                    
                     <Route
                       path="/pages/User/profile"
                       element={
                         <ProtectedRoute>
-                          <Profile />
+                          <Suspense fallback={<Loading />}>
+                            <Profile />
+                          </Suspense>
                         </ProtectedRoute>
                       }
                     />
 
-                  {/* Protected Admin Routes */}
+                  {/* Protected Admin Routes - Lazy Loaded */}
                   <Route
                     path="/pages/admin/dashboard"
                     element={
                       <ProtectedRoute>
-                        <DashboardAdmin />
+                        <Suspense fallback={<Loading />}>
+                          <DashboardAdmin />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />
@@ -152,7 +190,9 @@ function App() {
                     path="/pages/admin/attendance"
                     element={
                       <ProtectedRoute>
-                        <AttendanceAdmin />
+                        <Suspense fallback={<Loading />}>
+                          <AttendanceAdmin />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />
@@ -160,7 +200,9 @@ function App() {
                     path="/pages/admin/break"
                     element={
                       <ProtectedRoute>
-                        <BreakAdmin />
+                        <Suspense fallback={<Loading />}>
+                          <BreakAdmin />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />
@@ -168,7 +210,19 @@ function App() {
                     path="/pages/admin/leaves"
                     element={
                       <ProtectedRoute>
-                        <LeavesAdmin />
+                        <Suspense fallback={<Loading />}>
+                          <LeavesAdmin />
+                        </Suspense>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/pages/admin/users"
+                    element={
+                      <ProtectedRoute>
+                        <Suspense fallback={<Loading />}>
+                          <UsersAdmin />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />
@@ -176,7 +230,9 @@ function App() {
                     path="/pages/admin/new-employee"
                     element={
                       <ProtectedRoute>
-                        <NewEmployee />
+                        <Suspense fallback={<Loading />}>
+                          <NewEmployee />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />
@@ -184,7 +240,9 @@ function App() {
                     path="/pages/admin/company"
                     element={
                       <ProtectedRoute>
-                        <Company />
+                        <Suspense fallback={<Loading />}>
+                          <Company />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />
@@ -192,7 +250,9 @@ function App() {
                     path="/pages/admin/all-employees"
                     element={
                       <ProtectedRoute>
-                        <AllEmployees />
+                        <Suspense fallback={<Loading />}>
+                          <AllEmployees />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />
@@ -200,7 +260,9 @@ function App() {
                     path="/pages/admin/all-departments"
                     element={
                       <ProtectedRoute>
-                        <AllDepartments />
+                        <Suspense fallback={<Loading />}>
+                          <AllDepartments />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />
@@ -208,7 +270,9 @@ function App() {
                     path="/pages/admin/new-department"
                     element={
                       <ProtectedRoute>
-                        <NewDepartment />
+                        <Suspense fallback={<Loading />}>
+                          <NewDepartment />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />
@@ -216,7 +280,9 @@ function App() {
                     path="/pages/admin/edit-department/:id"
                     element={
                       <ProtectedRoute>
-                        <EditDepartment />
+                        <Suspense fallback={<Loading />}>
+                          <EditDepartment />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />
@@ -224,7 +290,9 @@ function App() {
                     path="/pages/admin/all-teams"
                     element={
                       <ProtectedRoute>
-                        <AllTeamsPage />
+                        <Suspense fallback={<Loading />}>
+                          <AllTeamsPage />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />
@@ -232,7 +300,9 @@ function App() {
                     path="/pages/admin/Roles&Permissions"
                     element={
                       <ProtectedRoute>
-                        <RolesAndPermissions />
+                        <Suspense fallback={<Loading />}>
+                          <RolesAndPermissions />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />
@@ -240,7 +310,9 @@ function App() {
                     path="/pages/admin/New_Role"
                     element={
                       <ProtectedRoute>
-                        <NewRole />
+                        <Suspense fallback={<Loading />}>
+                          <NewRole />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />
@@ -248,7 +320,9 @@ function App() {
                     path="/pages/admin/Performance"
                     element={
                       <ProtectedRoute>
-                        <PerformanceAdmin />
+                        <Suspense fallback={<Loading />}>
+                          <PerformanceAdmin />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />
@@ -256,7 +330,9 @@ function App() {
                     path="/pages/admin/TeamWallet"
                     element={
                       <ProtectedRoute>
-                        <AdminTeamWallet />
+                        <Suspense fallback={<Loading />}>
+                          <AdminTeamWallet />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />

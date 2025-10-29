@@ -1,17 +1,22 @@
 import { useState, useEffect } from "react"
 import { Eye } from "lucide-react"
 import { useTranslation } from "react-i18next"
-import { useGetTimerLogsQuery } from "../../../services/apis/TimerApi"
+// Static timer logs data
+const staticTimerLogs = [
+  { id: 1, tag: "Development", duration: 120, startTime: "2024-01-15T09:00:00", endTime: "2024-01-15T11:00:00", status: "completed" },
+  { id: 2, tag: "Meeting", duration: 60, startTime: "2024-01-15T14:00:00", endTime: "2024-01-15T15:00:00", status: "completed" },
+  { id: 3, tag: "Code Review", duration: 90, startTime: "2024-01-14T10:00:00", endTime: "2024-01-14T11:30:00", status: "completed" },
+  { id: 4, tag: "Testing", duration: 45, startTime: "2024-01-14T13:00:00", endTime: "2024-01-14T13:45:00", status: "completed" }
+];
 
 export function TimeFocusLogs({ refreshTrigger }) {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   
-  // Only refetch when refreshTrigger actually changes, not on every render
-  const { data: logs = [], isLoading, refetch } = useGetTimerLogsQuery(undefined, {
-    refetchOnMountOrArgChange: false,
-    refetchOnWindowFocus: false,
-  })
+  // Use static data instead of API call
+  const logs = staticTimerLogs;
+  const isLoading = false;
+  const refetch = () => {}; // Empty function for compatibility
   
   const [showModal, setShowModal] = useState(false)
   const [lastRefreshTrigger, setLastRefreshTrigger] = useState(refreshTrigger)

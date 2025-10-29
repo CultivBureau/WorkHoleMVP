@@ -2,18 +2,17 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import CustomPopup from '../ui/custom-popup';
 import DigitalNumber from '../ui/DigitalNumber';
-import {
-    useGetBreakTypesQuery,
-    useStartBreakMutation,
-    useStopBreakMutation,
-    useGetBreakDashboardQuery,
-} from "../../services/apis/BreakApi";
-import { useBreakUpdate } from "../../contexts/BreakUpdateContext"
+// Static break types data
+const staticBreakTypes = [
+  { name: "Lunch", duration: 45 },
+  { name: "Coffee", duration: 15 },
+  { name: "Personal", duration: 10 },
+  { name: "Prayer", duration: 10 }
+];
 
 const BreakTime = ({ breakDashboard, refetch }) => {
     const { t, i18n } = useTranslation();
-    const { triggerBreakUpdate } = useBreakUpdate()
-    const isArabic = i18n.language === "ar"; // Add this line
+    const isArabic = i18n.language === "ar";
 
     // مزامنة اللغة من localStorage
     useEffect(() => {
@@ -22,11 +21,16 @@ const BreakTime = ({ breakDashboard, refetch }) => {
         document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
     }, [i18n]);
 
-    // API hooks
-    const { data: breakTypes = [] } = useGetBreakTypesQuery();
-    const [startBreak, { isLoading: starting }] = useStartBreakMutation();
-    const [stopBreak, { isLoading: stopping }] = useStopBreakMutation();
-    const { data: breakDashboardData, refetch: refetchDashboard } = useGetBreakDashboardQuery();
+    // Use static data instead of API hooks
+    const breakTypes = staticBreakTypes;
+    const starting = false;
+    const stopping = false;
+    const breakDashboardData = breakDashboard || {};
+    const refetchDashboard = () => {};
+    
+    // Mock mutation handlers - disabled for static data
+    const startBreak = async () => ({ data: {} });
+    const stopBreak = async () => ({ data: {} });
 
     // UI state
     const [time, setTime] = useState(new Date());
@@ -91,24 +95,22 @@ const BreakTime = ({ breakDashboard, refetch }) => {
         }
         if (!isBreakActive) {
             try {
-                await startBreak(selectedReason).unwrap();
+                await startBreak(selectedReason);
                 setIsBreakActive(true);
                 setBreakStartTime(new Date());
                 setBreakDuration(0);
-                triggerBreakUpdate() // بعد بدء البريك
-                if (refetch) refetch(); // هنا التحديث بعد بدء البريك
+                if (refetch) refetch(); // Json static data - no update needed
             } catch (err) {
                 setShowPopup(true);
             }
         } else {
             try {
-                await stopBreak().unwrap();
+                await stopBreak();
                 setIsBreakActive(false);
                 setBreakStartTime(null);
                 setBreakDuration(0);
                 setSelectedReason("");
-                triggerBreakUpdate() // بعد إنهاء البريك
-                if (refetch) refetch(); // هنا التحديث بعد إنهاء البريك
+                if (refetch) refetch(); // Static data - no update needed
             } catch (err) {
                 setShowPopup(true);
             }

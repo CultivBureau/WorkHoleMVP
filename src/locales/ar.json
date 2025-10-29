@@ -611,7 +611,10 @@
     "backToEmail": "العودة إلى البريد الإلكتروني",
     "selectCompany": "اختر الشركة",
     "fillAllFields": "يرجى ملء جميع الحقول",
-    "noCompanies": "لم يتم العثور على شركات لهذا البريد الإلكتروني"
+    "noCompanies": "لم يتم العثور على شركات لهذا البريد الإلكتروني",
+    "chooseCompany": "اختر شركة",
+    "companyAvailable": "شركة متاحة",
+    "companiesAvailable": "شركات متاحة"
   },
   "employees": {
     "totalEmployees": "إجمالي الموظفين",

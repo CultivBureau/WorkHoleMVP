@@ -1,51 +1,40 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import SideMenu from "../../../components/side-menu/side-menu";
 import NavBar from "../../../components/NavBar/navbar";
 import StatusCards from "../../../components/break-tracking/status-cards";
 import BreakTime from "../../../components/break-tracking/break-time";
 import BreakTypeChart from "../../../components/break-tracking/chart";
 import BreakHistoryTable from "../../../components/break-tracking/table";
-import Loading from "../../../components/Loading/Loading";
-import { useGetBreakDashboardQuery } from "../../../services/apis/BreakApi";
 import { useLang } from "../../../contexts/LangContext";
+
+// Static break dashboard data
+const staticBreakDashboard = {
+  todaysBreakTime: "1h 15m",
+  mostUsedBreak: "Lunch",
+  avgBreakPerDay: "1h 30m",
+  breaksOverLimit: 2,
+  breakTypes: [
+    { type: "Lunch", count: 15, duration: "45m" },
+    { type: "Coffee", count: 10, duration: "15m" },
+    { type: "Personal", count: 5, duration: "10m" },
+    { type: "Other", count: 3, duration: "5m" }
+  ],
+  breakHistory: [
+    { id: 1, date: "2024-01-15", startTime: "12:00 PM", endTime: "12:45 PM", duration: "45m", reason: "Lunch", status: "Completed" },
+    { id: 2, date: "2024-01-15", startTime: "03:00 PM", endTime: "03:15 PM", duration: "15m", reason: "Coffee", status: "Completed" },
+    { id: 3, date: "2024-01-14", startTime: "12:30 PM", endTime: "01:15 PM", duration: "45m", reason: "Lunch", status: "Completed" },
+    { id: 4, date: "2024-01-14", startTime: "02:30 PM", endTime: "02:40 PM", duration: "10m", reason: "Personal", status: "Completed" }
+  ]
+};
 
 const BreakTrackingPage = () => {
   const { isRtl } = useLang();
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const { data: breakDashboard, isLoading, error, refetch } = useGetBreakDashboardQuery();
-
-  // Track initial load to ensure loading screen shows
-  useEffect(() => {
-    if (breakDashboard || error) {
-      setIsInitialLoad(false);
-    }
-  }, [breakDashboard, error]);
-
-  // Show loading screen while data is being fetched or during initial load
-  if (isLoading || isInitialLoad) {
-    return <Loading />;
-  }
-
-  // Show error state if there's an error
-  if (error) {
-    return (
-      <div className="w-full h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-red-600 mb-2">Error Loading Data</h2>
-          <p className="text-gray-600 mb-4">There was an error loading the break tracking data.</p>
-          <button 
-            onClick={() => {
-              setIsInitialLoad(true);
-              refetch();
-            }} 
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
+  
+  // Use static data instead of API call
+  const breakDashboard = staticBreakDashboard;
+  const isLoading = false;
+  const error = null;
+  const refetch = () => {}; // Empty function for compatibility
 
   return (
     <div

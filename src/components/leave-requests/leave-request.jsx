@@ -3,16 +3,22 @@
 import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Upload, File, Loader2, AlertCircle, CheckCircle } from "lucide-react"
-import { useCreateLeaveMutation } from "../../services/apis/LeavesApi"
 import { toast } from "react-hot-toast"
-import { useMeQuery } from "../../services/apis/AuthApi"
+
+// Static user data
+const staticUser = {
+  id: "user-1",
+  firstName: "John",
+  lastName: "Doe",
+  holidays: []
+};
 
 const LeaveRequest = ({ refetch }) => {
   const { t, i18n } = useTranslation()
   const isArabic = i18n.language === "ar"
 
-  // Get user data including holidays
-  const { data: user } = useMeQuery()
+  // Use static user data
+  const user = staticUser;
 
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState({
@@ -28,8 +34,9 @@ const LeaveRequest = ({ refetch }) => {
   const [isLoading, setIsLoading] = useState(false)
   const [submitError, setSubmitError] = useState(null)
 
-  // RTK Query mutation
-  const [createLeave, { isLoading: isSubmitting }] = useCreateLeaveMutation()
+  // Mock mutation - disabled for static data
+  const createLeave = async () => ({ data: {} });
+  const isSubmitting = false;
 
   const leaveTypes = [
     { value: "annual", label: t("leaves.types.annual") },

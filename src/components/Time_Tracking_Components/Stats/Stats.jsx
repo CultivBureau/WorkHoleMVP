@@ -5,15 +5,25 @@ import BreakIcon from "../../../../public/assets/time_tracking/break-icon.svg";
 import OvertimeIcon from "../../../../public/assets/time_tracking/overtime.svg";
 import { useTranslation } from "react-i18next";
 import TimerCard from "./TimerCard";
-import { useGetDashboardQuery } from "../../../services/apis/AtteandanceApi";
+// Static stats data
+const staticStatsData = {
+  thisWeek: "42h 15m",
+  breaksTaken: "5h 30m",
+  totalOvertime: "2h 45m",
+  currentStatus: "Clocked In",
+  clockInTime: new Date().toISOString(),
+  dailyShift: "4h 30m",
+};
 
 const Stats = () => {
   const { t } = useTranslation();
-  const { data } = useGetDashboardQuery({});
+  
+  // Use static data instead of API call
+  const data = staticStatsData;
   const [activeWorkSeconds, setActiveWorkSeconds] = useState(0);
   const timerRef = useRef(null);
 
-  // fallback لو البيانات مش موجودة
+  // Static stats data
   const stats = data || {
     thisWeek: "0h 0m",
     breaksTaken: "0h 0m",

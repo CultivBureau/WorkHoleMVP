@@ -44,45 +44,9 @@ export const authApi = createApi({
     }),
     me: builder.query({
       query: () => ({
-        url: "/auth/me",
+        url: "/api/v1/Authentication/me",
         method: "GET",
       }),
-    }),
-    forgetPassword: builder.mutation({
-      query: (body) => ({
-        url: "/auth/forget-password",
-        method: "POST",
-        body,
-      }),
-    }),
-    resetPassword: builder.mutation({
-      query: (body) => ({
-        url: "/auth/reset-password",
-        method: "POST",
-        body,
-      }),
-    }),
-    logout: builder.mutation({
-      query: () => ({
-        url: "/auth/logout",
-        method: "POST",
-      }),
-      async onQueryStarted(arg, { queryFulfilled }) {
-        try {
-          await queryFulfilled;
-        } finally {
-          removeAuthToken();
-        }
-      },
-    }),
-    updateProfile: builder.mutation({
-      query: (body) => ({
-        url: "/auth/update-profile",
-        method: "PUT",
-        body,
-        formData: true,
-      }),
-      invalidatesTags: ["Me"],
     }),
   }),
 });
@@ -91,8 +55,4 @@ export const {
   useLoginMutation,
   useRegisterMutation,
   useMeQuery,
-  useForgetPasswordMutation,
-  useResetPasswordMutation,
-  useLogoutMutation,
-  useUpdateProfileMutation,
 } = authApi;

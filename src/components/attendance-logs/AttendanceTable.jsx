@@ -3,14 +3,24 @@
 import { useState, useMemo, useEffect } from "react"
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
 import { useTranslation } from "react-i18next"
-import { useGetStatsQuery, useClockInMutation, useClockOutMutation } from "../../services/apis/AtteandanceApi"
-import { useAttendanceUpdate } from "../../contexts/AttendanceUpdateContext"
+// Static attendance stats data
+const staticAttendanceData = {
+  attendanceLogs: [
+    { date: "2024-01-15", day: "Monday", checkInTime: "09:00", checkOutTime: "17:30", workHours: "8h 30m", status: "present", location: "office", officeName: "Main Office" },
+    { date: "2024-01-14", day: "Sunday", checkInTime: "09:15", checkOutTime: "17:00", workHours: "7h 45m", status: "late", location: "office", officeName: "Main Office" },
+    { date: "2024-01-13", day: "Saturday", checkInTime: "08:45", checkOutTime: "17:15", workHours: "8h 30m", status: "present", location: "home", officeName: "Remote" },
+    { date: "2024-01-12", day: "Friday", checkInTime: null, checkOutTime: null, workHours: "0h", status: "absent", location: null, officeName: null },
+    { date: "2024-01-11", day: "Thursday", checkInTime: "09:05", checkOutTime: "17:20", workHours: "8h 15m", status: "present", location: "office", officeName: "Main Office" },
+    { date: "2024-01-10", day: "Wednesday", checkInTime: "08:50", checkOutTime: "17:00", workHours: "8h 10m", status: "present", location: "office", officeName: "Main Office" },
+    { date: "2024-01-09", day: "Tuesday", checkInTime: "09:20", checkOutTime: "17:10", workHours: "7h 50m", status: "late", location: "office", officeName: "Main Office" },
+    { date: "2024-01-08", day: "Monday", checkInTime: "09:00", checkOutTime: "17:30", workHours: "8h 30m", status: "present", location: "office", officeName: "Main Office" }
+  ],
+  pagination: { page: 1, limit: 8, total: 20, totalPages: 3 }
+};
 
 const AttendanceTable = () => {
 	const { t, i18n } = useTranslation()
 	const isArabic = i18n.language === "ar"
-
-	const { lastUpdate } = useAttendanceUpdate()
 
 	const [sortBy, setSortBy] = useState("newest")
 	const [location, setLocation] = useState("all")
@@ -20,10 +30,11 @@ const AttendanceTable = () => {
 	const [currentPage, setCurrentPage] = useState(1)
 	const pageSize = 8
 
-	// Fetch attendance logs from API (pagination is backend)
-	const { data, isLoading, refetch } = useGetStatsQuery(
-  { page: currentPage, limit: pageSize }
-)
+	// Use static data instead of API call
+	const data = staticAttendanceData;
+	const isLoading = false;
+	const refetch = () => {}; // Empty function for compatibility
+	
 	const attendanceLogs = data?.attendanceLogs || []
 	const pagination = data?.pagination || { page: 1, limit: pageSize, total: 0, totalPages: 1 }
 
@@ -168,22 +179,14 @@ const AttendanceTable = () => {
 		});
 	}
 
-	const [clockIn] = useClockInMutation()
-	const [clockOut] = useClockOutMutation()
-
+	// Clock in/out handlers - disabled for static data
 	const handleClockIn = async (body) => {
-		await clockIn(body)
-		refetch() // يعيد جلب البيانات تلقائي بعد clock in
+		// Static data - no action needed
 	}
 
 	const handleClockOut = async (body) => {
-		await clockOut(body)
-		refetch() // يعيد جلب البيانات تلقائي بعد clock out
+		// Static data - no action needed
 	}
-
-	useEffect(() => {
-		refetch()
-	}, [lastUpdate])
 
 	return (
 		<div

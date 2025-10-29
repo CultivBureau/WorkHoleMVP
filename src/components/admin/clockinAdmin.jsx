@@ -1,25 +1,54 @@
 import React, { useEffect, useRef, useState, useContext } from "react"
 import { Clock, ClipboardList, Coffee, BarChart3, MapPin, Loader2, AlertCircle, CheckCircle2, Timer } from "lucide-react"
 import { useTranslation } from "react-i18next"
-import { useGetDashboardQuery, useClockInMutation, useClockOutMutation } from "../../services/apis/AtteandanceApi"
-import { useGetWeeklyFocusTimeQuery } from "../../services/apis/TimerApi"
 import { useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
-import { useAttendanceUpdate } from "../../contexts/AttendanceUpdateContext"
 import { useTimer } from "../../contexts/TimerContext"
 import { GlobalErrorContext } from "../../contexts/GlobalErrorContext"
 import ErrorComponent from "../Error/Error"
 
 const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
+// Static dashboard data
+const staticDashboardData = {
+  dailyShift: "4h 30m",
+  thisWeek: "42h 15m",
+  breaksTaken: "5h 30m",
+  breaksCount: 8,
+  totalOvertime: "2h 45m",
+  currentStatus: "Clocked In",
+  activeWorkTime: "4h 30m",
+  todayProgress: "4h 30m / 8h",
+  efficiency: 85,
+  completedShift: 56,
+  remainingTime: "3h 30m",
+  mostProductiveDay: { day: "Wednesday", time: "8h 30m" },
+  clockInTime: new Date().toISOString()
+};
+
+// Static focus time data
+const staticFocusTimeData = {
+  total: "32h",
+  average: "4h 34m",
+  days: 7
+};
+
 const MainContent = () => {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
-  const { data, isLoading, error, refetch } = useGetDashboardQuery({})
-  const { data: focusTimeData } = useGetWeeklyFocusTimeQuery()
-  const [clockIn, { isLoading: isClockingIn }] = useClockInMutation()
-  const [clockOut, { isLoading: isClockingOut }] = useClockOutMutation()
-  const { triggerUpdate } = useAttendanceUpdate()
+  
+  // Use static data instead of API calls
+  const data = staticDashboardData;
+  const isLoading = false;
+  const error = null;
+  const refetch = () => {};
+  const focusTimeData = staticFocusTimeData;
+  const isClockingIn = false;
+  const isClockingOut = false;
+  
+  // Mock clock in/out handlers
+  const clockIn = async () => ({ data: {} });
+  const clockOut = async () => ({ data: {} });
   const navigate = useNavigate();
   const { setGlobalError } = useContext(GlobalErrorContext);
 
@@ -290,7 +319,7 @@ const MainContent = () => {
         await clockOut({ 
           latitude: location.latitude, 
           longitude: location.longitude 
-        }).unwrap()
+        })
         
         toast.success(
           <div className="flex items-center gap-2">
@@ -310,7 +339,7 @@ const MainContent = () => {
           location: "office", 
           latitude: location.latitude, 
           longitude: location.longitude 
-        }).unwrap()
+        })
         
         toast.success(
           <div className="flex items-center gap-2">
@@ -326,8 +355,8 @@ const MainContent = () => {
           }
         )
       }
-      triggerUpdate()
-      refetch()
+      // Static data - no update needed
+      refetch() // Empty function for compatibility
     } catch (e) {
       console.error('Clock process error:', e)
       
@@ -353,7 +382,7 @@ const MainContent = () => {
         await clockOut({ 
           latitude: locationData.latitude, 
           longitude: locationData.longitude 
-        }).unwrap()
+        })
         
         toast.success(
           <div className="flex items-center gap-2">
@@ -374,7 +403,7 @@ const MainContent = () => {
           location: "office", 
           latitude: locationData.latitude, 
           longitude: locationData.longitude 
-        }).unwrap()
+        })
         
         toast.success(
           <div className="flex items-center gap-2">
@@ -391,8 +420,8 @@ const MainContent = () => {
           }
         )
       }
-      triggerUpdate()
-      refetch()
+      // Static data - no update needed
+      refetch() // Empty function for compatibility
       setShowLocationModal(false)
     } catch (error) {
       console.error('Clock with location error:', error)

@@ -1,15 +1,25 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { useGetLeaveStatsQuery } from "../../services/apis/LeavesApi";
+
+// Static leave stats data
+const staticLeaveStats = {
+  statusCounts: {
+    rejectedLeaves: 2,
+    pendingLeaves: 3,
+    approvedLeaves: 18
+  },
+  availableLeaves: 15
+};
 
 const CompactLeaveSummaryCards = () => {
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === "ar";
 
-  // Fetch leave stats from API
-  const { data: stats, isLoading } = useGetLeaveStatsQuery();
-
-  // Fallbacks if stats not loaded yet
+  // Use static data instead of API call
+  const stats = staticLeaveStats;
+  const isLoading = false;
+  
+  // Static values
   const statusCounts = stats?.statusCounts || {};
   const availableLeaves = stats?.availableLeaves ?? 0;
 

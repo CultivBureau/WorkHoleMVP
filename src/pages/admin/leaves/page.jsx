@@ -20,10 +20,7 @@ import {
   MessageSquare,
   Paperclip,
 } from "lucide-react";
-import { 
-  useGetAllLeavesQuery,
-  useAdminActionMutation 
-} from "../../../services/apis/LeavesApi";
+
 import { useLang } from "../../../contexts/LangContext";
 import Card from "../../../components/Time_Tracking_Components/Stats/Card";
 import Table from "../../../components/admin/leaves/LeavesTable/Table";

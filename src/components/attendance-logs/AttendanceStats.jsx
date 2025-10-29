@@ -1,18 +1,26 @@
 import { TrendingUp, TrendingDown } from "lucide-react"
 import Card from "../Time_Tracking_Components/Stats/Card"
 import { useTranslation } from "react-i18next"
-import { useGetStatsQuery } from "../../services/apis/AtteandanceApi"
+
+// Static attendance stats data
+const staticStats = {
+  totalDaysPresent: 22,
+  totalDaysAbsent: 1,
+  lateArrivals: 2,
+  avgClockIn: "09:05 AM"
+};
 
 const AttendanceStats = () => {
   const { t } = useTranslation()
 
-  // Fetch stats from API
-  const { data: stats, isLoading } = useGetStatsQuery({ page: 1, limit: 8 })
+  // Use static data instead of API call
+  const stats = staticStats;
+  const isLoading = false;
 
   const statsData = [
     {
       header: t("attendanceStats.totalDaysPresent"),
-      title: isLoading ? "..." : (stats?.totalDaysPresent ?? 0),
+      title: stats?.totalDaysPresent ?? 0,
       subTitle: t("attendanceStats.hoursWorked"),
       rightIcon: <img src="/assets/attendance_logs/logs.svg" alt="present" className="w-8 h-8" />,
       trend: {
@@ -23,7 +31,7 @@ const AttendanceStats = () => {
     },
     {
       header: t("attendanceStats.totalDaysAbsent"),
-      title: isLoading ? "..." : (stats?.totalDaysAbsent ?? 0),
+      title: stats?.totalDaysAbsent ?? 0,
       subTitle: t("attendanceStats.breakToday"),
       rightIcon: <img src="/assets/attendance_logs/absent.svg" alt="absent" className="w-8 h-8" />,
       trend: {
@@ -34,7 +42,7 @@ const AttendanceStats = () => {
     },
     {
       header: t("attendanceStats.lateArrivals"),
-      title: isLoading ? "..." : (stats?.lateArrivals ?? 0),
+      title: stats?.lateArrivals ?? 0,
       subTitle: t("attendanceStats.lateThisMonth"),
       rightIcon: <img src="/assets/attendance_logs/late.svg" alt="late" className="w-8 h-8" />,
       trend: {
@@ -45,7 +53,7 @@ const AttendanceStats = () => {
     },
     {
       header: t("attendanceStats.averageClockIn"),
-      title: isLoading ? "..." : (stats?.avgClockIn ?? "--"),
+      title: stats?.avgClockIn ?? "--",
       subTitle: t("attendanceStats.basedOnMonth"),
       rightIcon: <img src="/assets/attendance_logs/avg.svg" alt="average" className="w-8 h-8" />,
       trend: {

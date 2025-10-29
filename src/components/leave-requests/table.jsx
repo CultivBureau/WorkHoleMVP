@@ -1,7 +1,15 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronDown, ChevronLeft, ChevronRight, Eye, Edit, RefreshCw, FileX, Calendar } from "lucide-react";
-import { useGetMyLeavesQuery } from "../../services/apis/LeavesApi";
+// Static leaves data
+const staticLeavesData = {
+  leaves: [
+    { id: 1, leaveType: "annual", fromDate: "2024-01-10", toDate: "2024-01-15", numberOfDays: 5, reason: "Vacation", status: "approved", createdAt: "2024-01-05" },
+    { id: 2, leaveType: "sick", fromDate: "2024-01-18", toDate: "2024-01-18", numberOfDays: 1, reason: "Medical appointment", status: "pending", createdAt: "2024-01-12" },
+    { id: 3, leaveType: "emergency", fromDate: "2024-01-20", toDate: "2024-01-20", numberOfDays: 1, reason: "Family emergency", status: "rejected", createdAt: "2024-01-15" }
+  ],
+  pagination: { page: 1, limit: 6, total: 3, totalPages: 1 }
+};
 
 const LeaveTable = () => {
   const { t, i18n } = useTranslation();
@@ -16,24 +24,12 @@ const LeaveTable = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const itemsPerPage = 6;
 
-  // Fetch leaves from API with polling for auto-refresh
-  const {
-    data,
-    isLoading,
-    error,
-    refetch,
-    isFetching
-  } = useGetMyLeavesQuery(
-    { page: currentPage, limit: itemsPerPage },
-    {
-      // Auto-refresh every 30 seconds
-      pollingInterval: 30000,
-      // Refetch on window focus
-      refetchOnFocus: true,
-      // Refetch on reconnect
-      refetchOnReconnect: true,
-    }
-  );
+  // Use static data instead of API call
+  const data = staticLeavesData;
+  const isLoading = false;
+  const error = null;
+  const refetch = () => {}; // Empty function for compatibility
+  const isFetching = false;
 
   const leaves = data?.leaves || [];
   const pagination = data?.pagination || { page: 1, limit: itemsPerPage, total: 0, totalPages: 1 };

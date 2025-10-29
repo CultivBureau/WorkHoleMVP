@@ -15,7 +15,9 @@ import {
   Globe,
   CheckCircle,
   Loader2,
-  Building2
+  Building2,
+  ChevronDown,
+  Check
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -29,6 +31,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [companies, setCompanies] = useState([]);
   const [selectedCompany, setSelectedCompany] = useState(null);
+  const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [formData, setFormData] = useState({
@@ -38,6 +41,12 @@ const Login = () => {
   });
 
   const isRtl = i18n.language === 'ar';
+
+  // Set document direction on mount and when language changes
+  React.useEffect(() => {
+    document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
+    document.documentElement.lang = i18n.language;
+  }, [isRtl, i18n.language]);
 
   // Step 1: Handle email submission to fetch companies
   const handleEmailSubmit = async (e) => {
@@ -82,11 +91,19 @@ const Login = () => {
       const res = await login(loginPayload).unwrap();
       toast.success(t('login.loginSuccess') || 'Login successful!');
 
-      // Handle new API response structure
+      // Handle new API response structure with 'value' wrapper
       const userData = res.value || res;
       
-      // For now, navigate to user dashboard
-      navigate("/pages/User/dashboard");
+      // Check if user is admin and navigate accordingly
+      const isAdmin = userData?.isAdmin || false;
+      
+      if (isAdmin) {
+        // Navigate to admin dashboard
+        navigate("/pages/admin/dashboard");
+      } else {
+        // Navigate to user dashboard
+        navigate("/pages/User/dashboard");
+      }
 
       // Auto refresh the app after successful login
       setTimeout(() => {
@@ -111,12 +128,34 @@ const Login = () => {
     setSelectedCompany(null);
     setCompanies([]);
     setFormData({ ...formData, password: "" });
+    setShowCompanyDropdown(false);
   };
 
   const toggleLanguage = () => {
     const newLang = i18n.language === 'en' ? 'ar' : 'en';
     i18n.changeLanguage(newLang);
+    // Update document direction for RTL support
+    document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = newLang;
   };
+
+  const handleCompanySelect = (company) => {
+    setSelectedCompany(company);
+    setShowCompanyDropdown(false);
+  };
+
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showCompanyDropdown && !event.target.closest('.company-dropdown')) {
+        setShowCompanyDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showCompanyDropdown]);
 
   return (
     <div className="min-h-screen h-screen flex overflow-hidden">
@@ -194,56 +233,91 @@ const Login = () => {
                 {isLoadingCompanies ? (
                   <div className="flex items-center justify-center gap-2">
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>{t('login.loading') || 'Loading...'}</span>
+                    <span>{t('login.loading')}</span>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center gap-2">
-                    <span>{t('login.continue') || 'Continue'}</span>
-                    <ArrowRight className="w-5 h-5" />
+                  <div className={`flex items-center justify-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                    <span>{t('login.continue')}</span>
+                    {isRtl ? <ArrowLeft className="w-5 h-5" /> : <ArrowRight className="w-5 h-5" />}
                   </div>
                 )}
               </button>
             </form>
           ) : (
-            /* Login Form - Step 2: Company Selection & Password */
+            /* Login Form - Step 2: Company Dropdown & Password */
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Back Button */}
               <button
                 type="button"
                 onClick={handleBackToEmail}
-                className={`flex items-center gap-2 text-sm text-gray-600 hover:text-teal-600 transition-colors mb-2 ${isRtl ? "ml-auto" : ""}`}
+                className={`flex items-center gap-2 text-sm text-gray-600 hover:text-teal-600 transition-colors mb-2 ${isRtl ? "ml-auto flex-row-reverse" : ""}`}
               >
-                <ArrowLeft className="w-4 h-4" />
-                <span>{t('login.backToEmail') || 'Back to email'}</span>
+                {isRtl ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
+                <span>{t('login.backToEmail')}</span>
               </button>
 
-              {/* Company Selection */}
+              {/* Company Dropdown */}
               <div className="space-y-2">
                 <label
                   htmlFor="company"
                   className={`text-gray-600 block text-sm ${isRtl ? "text-right" : "text-left"}`}
                 >
-                  {t('login.selectCompany') || 'Select Company'}
+                  {t('login.selectCompany')}
                 </label>
-                <div className="space-y-2">
-                  {companies.map((company) => (
-                    <button
-                      key={company.companyId}
-                      type="button"
-                      onClick={() => setSelectedCompany(company)}
-                      className={`w-full px-4 py-3 border rounded-lg text-sm transition-all text-left ${
-                        selectedCompany?.companyId === company.companyId
-                          ? 'border-teal-500 bg-teal-50 text-teal-700'
-                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                      }`}
+                <div className="relative company-dropdown">
+                  <button
+                    type="button"
+                    onClick={() => setShowCompanyDropdown(!showCompanyDropdown)}
+                    className={`w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all flex items-center justify-between ${
+                      selectedCompany ? 'text-gray-900' : 'text-gray-400'
+                    } ${isRtl ? "text-right flex-row-reverse" : "text-left"}`}
+                    dir={isRtl ? "rtl" : "ltr"}
+                  >
+                    <div className={`flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                      <Building2 className="w-5 h-5" />
+                      <span>
+                        {selectedCompany?.companyName || t('login.chooseCompany')}
+                      </span>
+                    </div>
+                    <ChevronDown className={`w-5 h-5 transition-transform ${showCompanyDropdown ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {showCompanyDropdown && (
+                    <div 
+                      className={`absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto ${isRtl ? 'right-0' : 'left-0'}`}
+                      dir={isRtl ? "rtl" : "ltr"}
                     >
-                      <div className="flex items-center gap-2">
-                        <Building2 className="w-5 h-5" />
-                        <span className="font-medium">{company.companyName}</span>
-                      </div>
-                    </button>
-                  ))}
+                      {companies.map((company) => (
+                        <button
+                          key={company.companyId}
+                          type="button"
+                          onClick={() => handleCompanySelect(company)}
+                          className={`w-full px-4 py-3 text-sm transition-all flex items-center justify-between hover:bg-gray-50 ${
+                            selectedCompany?.companyId === company.companyId
+                              ? 'bg-teal-50 text-teal-700'
+                              : 'text-gray-900'
+                          } ${isRtl ? "text-right flex-row-reverse" : "text-left"}`}
+                        >
+                          <div className={`flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                            <Building2 className="w-5 h-5" />
+                            <span className="font-medium">{company.companyName}</span>
+                          </div>
+                          {selectedCompany?.companyId === company.companyId && (
+                            <Check className="w-5 h-5 text-teal-600" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
+                
+                {/* Show count of companies */}
+                {companies.length > 0 && (
+                  <p className={`text-xs text-gray-500 ${isRtl ? "text-right" : "text-left"}`}>
+                    {companies.length} {companies.length === 1 ? t('login.companyAvailable') : t('login.companiesAvailable')}
+                  </p>
+                )}
               </div>
 
               {/* Password Field */}

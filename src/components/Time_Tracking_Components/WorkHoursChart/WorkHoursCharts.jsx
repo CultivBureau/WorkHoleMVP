@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { ChevronDown } from "lucide-react"
 import { useTranslation } from "react-i18next"
-import { useGetDashboardQuery } from "../../../services/apis/AtteandanceApi"
 import { Bar } from "react-chartjs-2"
 import {
   Chart as ChartJS,
@@ -14,6 +13,17 @@ import {
   Tooltip,
   Legend,
 } from "chart.js"
+
+// Static work hours chart data
+const staticWorkHoursChart = [
+  { label: "Mon", hours: 8 },
+  { label: "Tue", hours: 7.5 },
+  { label: "Wed", hours: 8.5 },
+  { label: "Thu", hours: 8 },
+  { label: "Fri", hours: 7 },
+  { label: "Sat", hours: 6 },
+  { label: "Sun", hours: 0 }
+];
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
@@ -34,7 +44,10 @@ const WorkHoursCharts = () => {
 
   // Filter state for week/month
   const [filter, setFilter] = useState("week")
-  const { data, isLoading } = useGetDashboardQuery({ filter })
+  
+  // Use static data instead of API call
+  const data = { workHoursChart: staticWorkHoursChart };
+  const isLoading = false;
 
   // Theme reactivity: update chart colors when theme changes
   const [chartColors, setChartColors] = useState({

@@ -3,20 +3,12 @@ import SideMenu from "../../../components/side-menu/side-menu";
 import NavBar from "../../../components/NavBar/navbar";
 import AttendanceStates from "../../../components/attendance-logs/AttendanceStats";
 import AttendanceTable from "../../../components/attendance-logs/AttendanceTable";
-import Loading from "../../../components/Loading/Loading";
-import { useGetStatsQuery } from "../../../services/apis/AtteandanceApi";
 import { useLang } from "../../../contexts/LangContext";
 
 const AttendanceLogs = () => {
     const { isRtl } = useLang();
     
-    // Check loading state from the main API query used by components
-    const { isLoading } = useGetStatsQuery({ page: 1, limit: 8 });
-
-    // Show loading screen while data is being fetched
-    if (isLoading) {
-        return <Loading />;
-    }
+    // Static data - components will handle their own static data if needed
 
     return (
         <div

@@ -1,7 +1,17 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronDown } from "lucide-react";
-import { useGetBreakDashboardQuery } from "../../services/apis/BreakApi";
+
+// Static break dashboard data
+const staticBreakDashboard = {
+  breakTypeUsage: [
+    { type: "Lunch", total: "45 min", count: 15 },
+    { type: "Coffee", total: "30 min", count: 10 },
+    { type: "Personal", total: "15 min", count: 5 },
+    { type: "Prayer", total: "10 min", count: 3 },
+    { type: "Toilet", total: "8 min", count: 2 }
+  ]
+};
 
 // Types translation keys
 const breakTypeKeys = {
@@ -19,9 +29,12 @@ const unifiedColor = "#75C8CF";
 const BreakTypeChart = () => {
   const { t, i18n } = useTranslation();
   const [filter, setFilter] = useState("week");
-  const { data: dashboard, isLoading } = useGetBreakDashboardQuery({ filter });
+  
+  // Use static data instead of API call
+  const dashboard = staticBreakDashboard;
+  const isLoading = false;
 
-  // Dynamic breakTypeUsage from backend
+  // Static breakTypeUsage data
   const breakData = dashboard?.breakTypeUsage || [];
   const timeValues = breakData.map(b => parseInt(b.total.replace(" min", "")) || 0);
   const maxTime = Math.max(...timeValues, 10);

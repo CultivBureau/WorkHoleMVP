@@ -1,28 +1,53 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import SideMenu from "../../../components/side-menu/side-menu";
 import NavBar from "../../../components/NavBar/navbar";
 import ActivityHeatmap from "../../../components/dashboard/activity-heatmap";
 import StatusCards from "../../../components/dashboard/status-cards";
 import QuickActions from "../../../components/dashboard/quick-actions";
 import BreakTime from "../../../components/dashboard/break-time";
-import LeaveRequest from "../../../components/leave-requests/leave-request";
-import Loading from "../../../components/Loading/Loading";
-import { useGetDashboardQuery } from "../../../services/apis/DashboardApi";
 import { useLang } from "../../../contexts/LangContext";
+
+// Static dashboard data
+const staticDashboardData = {
+  currentStatus: "Clocked In",
+  todayAttendance: {
+    clockIn: "09:00 AM",
+    clockOut: null,
+    workedHours: "4h 30m",
+    status: "Present"
+  },
+  weeklyStats: {
+    workedDays: 5,
+    totalHours: "42h 15m",
+    averageHours: "8h 27m"
+  },
+  monthlyStats: {
+    present: 22,
+    absent: 1,
+    late: 2,
+    earlyLeave: 1
+  },
+  activityHeatmap: Array.from({ length: 30 }, (_, i) => ({
+    date: new Date(2024, new Date().getMonth(), i + 1).toISOString().split('T')[0],
+    value: Math.floor(Math.random() * 8) + 1
+  })),
+  quickActions: [
+    { id: 1, name: "Clock In", icon: "clock_in" },
+    { id: 2, name: "My Tasks", icon: "task" },
+    { id: 3, name: "Leave Request", icon: "leave" },
+    { id: 4, name: "KPIs", icon: "kpis" }
+  ]
+};
 
 const Dashboard = () => {
   const { lang, isRtl } = useLang();
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
 
-  // Fetch dashboard data with month parameter - RTK Query will handle caching
-  const { data: dashboardData, isLoading, error, refetch } = useGetDashboardQuery({ 
-    month: selectedMonth 
-  });
-
-  // Show loading screen while data is being fetched
-  if (isLoading) {
-    return <Loading />;
-  }
+  // Use static data instead of API call
+  const dashboardData = staticDashboardData;
+  const isLoading = false;
+  const error = null;
+  const refetch = () => {}; // Empty function for compatibility
 
   return (
     <div

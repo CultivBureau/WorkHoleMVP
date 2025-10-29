@@ -1,8 +1,20 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
-import { useGetBreakStatsQuery } from "../../services/apis/BreakApi";
-import { useBreakUpdate } from "../../contexts/BreakUpdateContext"
+// Static break stats data
+const staticBreakStats = {
+  breaks: [
+    { id: 1, date: "2024-01-15", breakType: "Lunch", duration: "45 min", startTime: "2024-01-15T12:00:00", endTime: "2024-01-15T12:45:00", exceeded: false },
+    { id: 2, date: "2024-01-15", breakType: "Coffee", duration: "15 min", startTime: "2024-01-15T15:00:00", endTime: "2024-01-15T15:15:00", exceeded: false },
+    { id: 3, date: "2024-01-14", breakType: "Lunch", duration: "45 min", startTime: "2024-01-14T12:30:00", endTime: "2024-01-14T13:15:00", exceeded: false },
+    { id: 4, date: "2024-01-14", breakType: "Personal", duration: "35 min", startTime: "2024-01-14T14:30:00", endTime: "2024-01-14T15:05:00", exceeded: true }
+  ],
+  pagination: { page: 1, limit: 4, total: 10, totalPages: 3 },
+  availableFilters: { 
+    dates: ["2024-01-15", "2024-01-14", "2024-01-13"],
+    types: ["Lunch", "Coffee", "Personal", "Prayer"]
+  }
+};
 
 const BreakHistoryTable = () => {
   const { t, i18n } = useTranslation();
@@ -12,15 +24,10 @@ const BreakHistoryTable = () => {
   const [selectedType, setSelectedType] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { lastBreakUpdate } = useBreakUpdate()
-  // Fetch data from API with filters
-  const { data: statsData, isLoading, refetch } = useGetBreakStatsQuery(
-    { page: currentPage, limit: 4, sortBy, date: selectedDate, type: selectedType }
-  )
-
-  useEffect(() => {
-    refetch()
-  }, [lastBreakUpdate])
+  // Use static data instead of API call
+  const statsData = staticBreakStats;
+  const isLoading = false;
+  const refetch = () => {}; // Empty function for compatibility
 
   const breaks = statsData?.breaks || [];
   const pagination = statsData?.pagination || { page: 1, limit: 4, total: 0, totalPages: 1 };

@@ -3,20 +3,12 @@ import SideMenu from "../../../components/side-menu/side-menu";
 import NavBar from "../../../components/NavBar/navbar";
 import Stats from "../../../components/Time_Tracking_Components/Stats/Stats";
 import MainSection from "../../../components/Time_Tracking_Components/MainSection/MainSection";
-import Loading from "../../../components/Loading/Loading";
-import { useGetDashboardQuery } from "../../../services/apis/AtteandanceApi";
 import { useLang } from "../../../contexts/LangContext";
 
 const TimeTracking = () => {
   const { isRtl } = useLang();
   
-  // Check loading state from the main API query used by components
-  const { isLoading } = useGetDashboardQuery({});
-
-  // Show loading screen while data is being fetched
-  if (isLoading) {
-    return <Loading />;
-  }
+  // Static data - components will handle their own static data if needed
 
   return (
     <div

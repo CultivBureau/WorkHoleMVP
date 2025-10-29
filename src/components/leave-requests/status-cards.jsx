@@ -1,16 +1,26 @@
 import { TrendingUp, TrendingDown } from "lucide-react";
 import Card from "../Time_Tracking_Components/Stats/Card";
 import { useTranslation } from "react-i18next";
-import { useGetLeaveStatsQuery } from "../../services/apis/LeavesApi";
+
+// Static leave stats data
+const staticLeaveStats = {
+  leaveTypeCounts: {
+    annualLeaves: 15,
+    sickLeaves: 10,
+    emergencyLeaves: 5,
+    unpaidLeaves: 0
+  }
+};
 
 const LeaveStatusCards = () => {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
 
-    // Fetch leave stats from API
-    const { data: stats, isLoading } = useGetLeaveStatsQuery();
-
-    // Fallback to 0 if stats not loaded yet
+    // Use static data instead of API call
+    const stats = staticLeaveStats;
+    const isLoading = false;
+    
+    // Static leave type counts
     const leaveTypeCounts = stats?.leaveTypeCounts || {};
 
     const statusCardsData = [
@@ -28,7 +38,7 @@ const LeaveStatusCards = () => {
         },
         {
             header: t("leaves.statusCards.sickLeave"),
-            title: isLoading ? "..." : (leaveTypeCounts.sickLeaves ?? 0),
+            title: leaveTypeCounts.sickLeaves ?? 0,
             subTitle: t("leaves.statusCards.daysLeft"),
             rightIcon: (
                 <img
@@ -40,7 +50,7 @@ const LeaveStatusCards = () => {
         },
         {
             header: t("leaves.statusCards.emergencyLeave"),
-            title: isLoading ? "..." : (leaveTypeCounts.emergencyLeaves ?? 0),
+            title: leaveTypeCounts.emergencyLeaves ?? 0,
             subTitle: t("leaves.statusCards.daysLeft"),
             rightIcon: (
                 <img
@@ -52,7 +62,7 @@ const LeaveStatusCards = () => {
         },
         {
             header: t("leaves.statusCards.unpaidLeave"),
-            title: isLoading ? "..." : (leaveTypeCounts.unpaidLeaves ?? 0),
+            title: leaveTypeCounts.unpaidLeaves ?? 0,
             subTitle: t("leaves.statusCards.daysLeft"),
             rightIcon: (
                 <img

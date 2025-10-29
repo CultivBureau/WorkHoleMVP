@@ -3,25 +3,33 @@ import { ChartColumn } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import CustomPopup from '../ui/custom-popup';
 import DigitalNumber from '../ui/DigitalNumber';
-import {
-    useGetBreakTypesQuery,
-    useStartBreakMutation,
-    useStopBreakMutation,
-    useGetBreakDashboardQuery,
-    useGetBreakStatsQuery,
-} from "../../services/apis/BreakApi";
 import { useNavigate } from "react-router-dom";
+
+// Static break types data
+const staticBreakTypes = [
+  { name: "Lunch", duration: 45 },
+  { name: "Coffee", duration: 15 },
+  { name: "Personal", duration: 10 },
+  { name: "Prayer", duration: 10 }
+];
 
 const BreakTime = ({ breakDashboard, refetch }) => {
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
 
-    // API hooks
-    const { data: breakTypes = [], isLoading: typesLoading } = useGetBreakTypesQuery();
-    const [startBreak, { isLoading: starting }] = useStartBreakMutation();
-    const [stopBreak, { isLoading: stopping }] = useStopBreakMutation();
-    const { data: breakDashboardData, refetch: refetchDashboard } = useGetBreakDashboardQuery();
-    const { data: breakStats, refetch: refetchStats } = useGetBreakStatsQuery({ page: 1, limit: 10 });
+    // Use static data instead of API hooks
+    const breakTypes = staticBreakTypes;
+    const typesLoading = false;
+    const starting = false;
+    const stopping = false;
+    const breakDashboardData = breakDashboard || {};
+    const breakStats = { data: [] };
+    
+    // Mock mutation handlers - disabled for static data
+    const startBreak = async () => ({ data: {} });
+    const stopBreak = async () => ({ data: {} });
+    const refetchDashboard = () => {};
+    const refetchStats = () => {};
 
     // UI state
     const [time, setTime] = useState(new Date());
