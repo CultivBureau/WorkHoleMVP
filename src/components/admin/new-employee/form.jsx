@@ -1,11 +1,31 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { User, Briefcase, FileText, Shield, Camera, Upload, Check } from "lucide-react";
+import { getUserInfo } from "../../../utils/page";
 
 export default function NewEmployeeForm() {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
     const [step, setStep] = useState(0);
+
+    // Initialize employee data, pre-filling companyId from decoded token
+    const userInfo = getUserInfo();
+    const [employeeData, setEmployeeData] = useState({
+        userName: "",
+        email: "",
+        password: "",
+        phoneNumber: "",
+        firstName: "",
+        lastName: "",
+        jobTitle: "",
+        hireDate: "",
+        companyId: userInfo?.companyId || "",
+        role: "",
+    });
+
+    const handleFieldChange = (name, value) => {
+        setEmployeeData(prev => ({ ...prev, [name]: value }));
+    };
 
     const steps = [
         { label: t("employees.newEmployeeForm.steps.personalInfo"), icon: User },
@@ -56,8 +76,21 @@ export default function NewEmployeeForm() {
 
             {/* Step Content */}
             <div className="mt-8">
-                {step === 0 && <PersonalInfoStep onNext={() => setStep(1)} />}
-                {step === 1 && <ProfessionalInfoStep onNext={() => setStep(2)} onBack={() => setStep(0)} />}
+                {step === 0 && (
+                    <PersonalInfoStep
+                        data={employeeData}
+                        onChange={handleFieldChange}
+                        onNext={() => setStep(1)}
+                    />
+                )}
+                {step === 1 && (
+                    <ProfessionalInfoStep
+                        data={employeeData}
+                        onChange={handleFieldChange}
+                        onNext={() => setStep(2)}
+                        onBack={() => setStep(0)}
+                    />
+                )}
                 {step === 2 && <DocumentsStep onNext={() => setStep(3)} onBack={() => setStep(1)} />}
                 {step === 3 && <DoneStep onBack={() => setStep(2)} />}
             </div>
@@ -66,9 +99,47 @@ export default function NewEmployeeForm() {
 }
 
 // Step 1: Personal Information
-function PersonalInfoStep({ onNext }) {
+function PersonalInfoStep({ onNext, onChange, data }) {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
+    const [errors, setErrors] = useState({});
+
+    const getLabel = (key) => {
+        const map = {
+            userName: t("employees.newEmployeeForm.professionalInfo.userName") || "Username",
+            email: t("employees.newEmployeeForm.personalInfo.emailAddress") || "Email",
+            password: "Password",
+            phoneNumber: t("employees.newEmployeeForm.personalInfo.mobileNumber") || "Mobile number",
+            firstName: t("employees.newEmployeeForm.personalInfo.firstName") || "First name",
+            lastName: t("employees.newEmployeeForm.personalInfo.lastName") || "Last name",
+            jobTitle: "Job Title",
+        };
+        return map[key] || key;
+    };
+
+    const validate = () => {
+        const newErrors = {};
+        if (!data.userName?.trim()) newErrors.userName = `${getLabel('userName')} ${t('common.isRequired') || 'is required'}`;
+        if (!data.email?.trim()) newErrors.email = `${getLabel('email')} ${t('common.isRequired') || 'is required'}`;
+        else {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(data.email)) newErrors.email = `${getLabel('email')} ${t('common.invalidEmail') || 'is invalid'}`;
+        }
+        if (!data.password?.trim()) newErrors.password = `${getLabel('password')} ${t('common.isRequired') || 'is required'}`;
+        if (!data.phoneNumber?.trim()) newErrors.phoneNumber = `${getLabel('phoneNumber')} ${t('common.isRequired') || 'is required'}`;
+        if (!data.firstName?.trim()) newErrors.firstName = `${getLabel('firstName')} ${t('common.isRequired') || 'is required'}`;
+        if (!data.lastName?.trim()) newErrors.lastName = `${getLabel('lastName')} ${t('common.isRequired') || 'is required'}`;
+        if (!data.jobTitle?.trim()) newErrors.jobTitle = `${getLabel('jobTitle')} ${t('common.isRequired') || 'is required'}`;
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleNext = () => {
+        if (validate()) onNext();
+    };
+
+    const errorClass = "border-red-500 focus:ring-red-500";
+    const helpTextClass = `text-xs mt-1 ${isArabic ? 'text-right' : 'text-left'} text-red-600`;
 
     return (
         <div className="space-y-6">
@@ -81,66 +152,97 @@ function PersonalInfoStep({ onNext }) {
 
             {/* Form Fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input
-                    className="form-input"
-                    placeholder={t("employees.newEmployeeForm.personalInfo.firstName")}
-                    type="text"
-                />
-                <input
-                    className="form-input"
-                    placeholder={t("employees.newEmployeeForm.personalInfo.lastName")}
-                    type="text"
-                />
-                <input
-                    className="form-input"
-                    placeholder={t("employees.newEmployeeForm.personalInfo.mobileNumber")}
-                    type="tel"
-                />
-                <input
-                    className="form-input"
-                    placeholder={t("employees.newEmployeeForm.personalInfo.emailAddress")}
-                    type="email"
-                />
-                <input
-                    className="form-input"
-                    placeholder={t("employees.newEmployeeForm.personalInfo.dateOfBirth")}
-                    type="date"
-                />
-                <select className="form-input">
-                    <option value="">{t("employees.newEmployeeForm.personalInfo.status")}</option>
-                    <option value="active">{t("employees.newEmployeeForm.personalInfo.active")}</option>
-                    <option value="inactive">{t("employees.newEmployeeForm.personalInfo.inactive")}</option>
-                </select>
-                <select className="form-input">
-                    <option value="">{t("employees.newEmployeeForm.personalInfo.gender")}</option>
-                    <option value="male">{t("employees.newEmployeeForm.personalInfo.male")}</option>
-                    <option value="female">{t("employees.newEmployeeForm.personalInfo.female")}</option>
-                    <option value="other">{t("employees.newEmployeeForm.personalInfo.other")}</option>
-                </select>
-                <select className="form-input">
-                    <option value="">{t("employees.newEmployeeForm.personalInfo.nationality")}</option>
-                    <option value="us">{t("employees.newEmployeeForm.personalInfo.unitedStates")}</option>
-                    <option value="uk">{t("employees.newEmployeeForm.personalInfo.unitedKingdom")}</option>
-                    <option value="ca">{t("employees.newEmployeeForm.personalInfo.canada")}</option>
-                </select>
-                <input
-                    className="form-input md:col-span-2"
-                    placeholder={t("employees.newEmployeeForm.personalInfo.address")}
-                    type="text"
-                />
+                <div>
+                    <input
+                        className={`form-input ${errors.userName ? errorClass : ''}`}
+                        placeholder={t("employees.newEmployeeForm.professionalInfo.userName")}
+                        type="text"
+                        value={data.userName}
+                        onChange={e => onChange('userName', e.target.value)}
+                        aria-invalid={!!errors.userName}
+                    />
+                    {errors.userName && <p className={helpTextClass}>{errors.userName}</p>}
+                </div>
+                <div>
+                    <input
+                        className={`form-input ${errors.email ? errorClass : ''}`}
+                        placeholder={t("employees.newEmployeeForm.personalInfo.emailAddress")}
+                        type="email"
+                        value={data.email}
+                        onChange={e => onChange('email', e.target.value)}
+                        aria-invalid={!!errors.email}
+                    />
+                    {errors.email && <p className={helpTextClass}>{errors.email}</p>}
+                </div>
+                <div>
+                    <input
+                        className={`form-input ${errors.password ? errorClass : ''}`}
+                        placeholder="Password"
+                        type="password"
+                        value={data.password}
+                        onChange={e => onChange('password', e.target.value)}
+                        aria-invalid={!!errors.password}
+                    />
+                    {errors.password && <p className={helpTextClass}>{errors.password}</p>}
+                </div>
+                <div>
+                    <input
+                        className={`form-input ${errors.phoneNumber ? errorClass : ''}`}
+                        placeholder={t("employees.newEmployeeForm.personalInfo.mobileNumber")}
+                        type="tel"
+                        value={data.phoneNumber}
+                        onChange={e => onChange('phoneNumber', e.target.value)}
+                        aria-invalid={!!errors.phoneNumber}
+                    />
+                    {errors.phoneNumber && <p className={helpTextClass}>{errors.phoneNumber}</p>}
+                </div>
+                <div>
+                    <input
+                        className={`form-input ${errors.firstName ? errorClass : ''}`}
+                        placeholder={t("employees.newEmployeeForm.personalInfo.firstName")}
+                        type="text"
+                        value={data.firstName}
+                        onChange={e => onChange('firstName', e.target.value)}
+                        aria-invalid={!!errors.firstName}
+                    />
+                    {errors.firstName && <p className={helpTextClass}>{errors.firstName}</p>}
+                </div>
+                <div>
+                    <input
+                        className={`form-input ${errors.lastName ? errorClass : ''}`}
+                        placeholder={t("employees.newEmployeeForm.personalInfo.lastName")}
+                        type="text"
+                        value={data.lastName}
+                        onChange={e => onChange('lastName', e.target.value)}
+                        aria-invalid={!!errors.lastName}
+                    />
+                    {errors.lastName && <p className={helpTextClass}>{errors.lastName}</p>}
+                </div>
+                <div className="md:col-span-2">
+                    <input
+                        className={`form-input ${errors.jobTitle ? errorClass : ''}`}
+                        placeholder="Job Title"
+                        type="text"
+                        value={data.jobTitle}
+                        onChange={e => onChange('jobTitle', e.target.value)}
+                        aria-invalid={!!errors.jobTitle}
+                    />
+                    {errors.jobTitle && <p className={helpTextClass}>{errors.jobTitle}</p>}
+                </div>
+                {/* companyId is derived from token and saved in state; not shown as input */}
             </div>
 
             {/* Action Buttons */}
             <div className={`flex ${isArabic ? 'justify-start' : 'justify-end'} gap-3 pt-6`}>
                 <button type="button" className="btn-secondary">{t("employees.newEmployeeForm.buttons.cancel")}</button>
-                <button type="button" className="btn-primary" onClick={onNext}>{t("employees.newEmployeeForm.buttons.next")}</button>
+                <button type="button" className="btn-primary" onClick={handleNext}>{t("employees.newEmployeeForm.buttons.next")}</button>
             </div>
         </div>
     );
 }
 
 // Step 2: Professional Information
-function ProfessionalInfoStep({ onNext, onBack }) {
+function ProfessionalInfoStep({ onNext, onBack, onChange, data }) {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
 
@@ -159,8 +261,14 @@ function ProfessionalInfoStep({ onNext, onBack }) {
                     className="form-input"
                     placeholder={t("employees.newEmployeeForm.professionalInfo.userName")}
                     type="text"
+                    value={data.userName}
+                    onChange={e => onChange('userName', e.target.value)}
                 />
-                <select className="form-input">
+                <select
+                    className="form-input"
+                    value={data.role}
+                    onChange={e => onChange('role', e.target.value)}
+                >
                     <option value="">{t("employees.newEmployeeForm.professionalInfo.selectEmployeeRole")}</option>
                     <option value="manager">{t("employees.newEmployeeForm.professionalInfo.manager")}</option>
                     <option value="developer">{t("employees.newEmployeeForm.professionalInfo.developer")}</option>
@@ -170,6 +278,8 @@ function ProfessionalInfoStep({ onNext, onBack }) {
                     className="form-input"
                     placeholder={t("employees.newEmployeeForm.personalInfo.emailAddress")}
                     type="email"
+                    value={data.email}
+                    onChange={e => onChange('email', e.target.value)}
                 />
                 <select className="form-input">
                     <option value="">{t("employees.newEmployeeForm.professionalInfo.selectDepartment")}</option>
@@ -179,8 +289,10 @@ function ProfessionalInfoStep({ onNext, onBack }) {
                 </select>
                 <input
                     className="form-input"
-                    placeholder={t("employees.newEmployeeForm.professionalInfo.managerSupervisor")}
+                    placeholder="Job Title"
                     type="text"
+                    value={data.jobTitle}
+                    onChange={e => onChange('jobTitle', e.target.value)}
                 />
                 <select className="form-input">
                     <option value="">{t("employees.newEmployeeForm.professionalInfo.selectWorkingDays")}</option>
@@ -202,6 +314,8 @@ function ProfessionalInfoStep({ onNext, onBack }) {
                     className="form-input"
                     placeholder={t("employees.newEmployeeForm.professionalInfo.selectJoiningDate")}
                     type="date"
+                    value={data.hireDate}
+                    onChange={e => onChange('hireDate', e.target.value)}
                 />
             </div>
 
