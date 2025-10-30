@@ -76,3 +76,18 @@ export const isTokenExpiringSoon = (token, minutes = 5) => {
     return true;
   }
 };
+
+// Get decoded user info from cookies
+export const getUserInfo = () => {
+  try {
+    const userInfo = Cookies.get("user_info");
+    return userInfo ? JSON.parse(userInfo) : null;
+  } catch {
+    return null;
+  }
+};
+
+// Remove user info from cookies
+export const removeUserInfo = () => {
+  Cookies.remove("user_info");
+};

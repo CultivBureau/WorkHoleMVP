@@ -20,6 +20,8 @@ import {
   Check
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+import Cookies from "js-cookie";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -93,18 +95,34 @@ const Login = () => {
 
       // Handle new API response structure with 'value' wrapper
       const userData = res.value || res;
-      
-      // Check if user is admin and navigate accordingly
-      const isAdmin = userData?.isAdmin || false;
-      
-      if (isAdmin) {
-        // Navigate to admin dashboard
-        navigate("/pages/admin/dashboard");
-      } else {
-        // Navigate to user dashboard
-        navigate("/pages/User/dashboard");
-      }
 
+      // Get token from userData (handle both possible API structures)
+      const token = userData?.token || userData?.value?.token;
+      if (token) {
+        // Save access token (existing logic still handled in AuthApi)
+        // Decode token to extract user info and roles
+        const decoded = jwtDecode(token);
+        // Save decoded user info in cookies
+        Cookies.set('user_info', JSON.stringify(decoded), { expires: 2 });
+        // Check for roles in MS identity claim
+        const msRoleKey = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
+        let roles = decoded[msRoleKey] || [];
+        const rolesArray = Array.isArray(roles) ? roles : [roles];
+        const isAdmin = rolesArray.some(r => typeof r === 'string' && r.toLowerCase() === 'admin');
+        if (isAdmin) {
+          navigate("/pages/admin/dashboard");
+        } else {
+          navigate("/pages/User/dashboard");
+        }
+      } else {
+        // fallback to old logic if no token found
+        const isAdmin = userData?.isAdmin || false;
+        if (isAdmin) {
+          navigate("/pages/admin/dashboard");
+        } else {
+          navigate("/pages/User/dashboard");
+        }
+      }
       // Auto refresh the app after successful login
       setTimeout(() => {
         window.location.reload();
