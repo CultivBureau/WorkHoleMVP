@@ -733,6 +733,8 @@
         "userName": "User Name",
         "selectEmployeeRole": "Select Employee Role",
         "selectDepartment": "Select Department",
+        "selectTeam": "Select Team",
+        "selectShift": "Select Shift",
         "managerSupervisor": "Enter Manager / Supervisor",
         "selectWorkingDays": "Select Working Days",
         "selectEmploymentType": "Select Employment Type",
@@ -775,6 +777,22 @@
       "success": {
         "title": "Employee Added!",
         "message": "You have successfully added a new employee."
+      },
+      "validation": {
+        "isRequired": "is required",
+        "usernameLettersOnly": "Username must contain only letters (A-Z)",
+        "invalidEmail": "Please enter a valid email address",
+        "passwordMinLength": "Password must be at least 8 characters long",
+        "passwordUppercase": "Password must contain at least one uppercase letter",
+        "passwordLowercase": "Password must contain at least one lowercase letter",
+        "passwordSpecialChar": "Password must contain at least one special character",
+        "validUsername": "Valid username",
+        "validEmail": "Valid email",
+        "strongPassword": "Strong password",
+        "validPhone": "Valid phone number",
+        "validFirstName": "Valid first name",
+        "validLastName": "Valid last name",
+        "validJobTitle": "Valid job title"
       }
     }
   },

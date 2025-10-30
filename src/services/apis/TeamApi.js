@@ -25,9 +25,27 @@ export const teamApi = createApi({
       }),
       invalidatesTags: ["Teams"],
     }),
+
+    // Assign user to a team
+    assignUserToTeam: builder.mutation({
+      query: ({ teamId, userId }) => ({
+        url: `/api/v1/Team/AddUserToTeam/${teamId}/users`,
+        method: "POST",
+        body: { userId, teamId },
+      }),
+      invalidatesTags: ["Teams"],
+    }),
+
+    // Get teams for a department
+    getTeamsByDepartment: builder.query({
+      query: (departmentId) => ({
+        url: `/api/v1/Team/GetByDepartment/department/${departmentId}`,
+        method: "GET",
+      }),
+    }),
   }),
   tagTypes: ["Teams"],
 });
 
-export const { useGetAllTeamsQuery, useCreateTeamMutation } = teamApi;
+export const { useGetAllTeamsQuery, useCreateTeamMutation, useAssignUserToTeamMutation, useGetTeamsByDepartmentQuery } = teamApi;
 

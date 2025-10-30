@@ -689,6 +689,8 @@
         "userName": "اسم المستخدم",
         "selectEmployeeRole": "اختر دور الموظف",
         "selectDepartment": "اختر القسم",
+        "selectTeam": "اختر الفريق",
+        "selectShift": "اختر الوردية",
         "managerSupervisor": "أدخل المدير / المشرف",
         "selectWorkingDays": "اختر أيام العمل",
         "selectEmploymentType": "اختر نوع التوظيف",
@@ -731,6 +733,22 @@
       "success": {
         "title": "تم إضافة الموظف!",
         "message": "لقد قمت بإضافة موظف جديد بنجاح."
+      },
+      "validation": {
+        "isRequired": "مطلوب",
+        "usernameLettersOnly": "اسم المستخدم يجب أن يحتوي على حروف فقط (A-Z)",
+        "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
+        "passwordMinLength": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+        "passwordUppercase": "كلمة المرور يجب أن تحتوي على حرف كبير واحد على الأقل",
+        "passwordLowercase": "كلمة المرور يجب أن تحتوي على حرف صغير واحد على الأقل",
+        "passwordSpecialChar": "كلمة المرور يجب أن تحتوي على رمز خاص واحد على الأقل",
+        "validUsername": "اسم مستخدم صحيح",
+        "validEmail": "بريد إلكتروني صحيح",
+        "strongPassword": "كلمة مرور قوية",
+        "validPhone": "رقم هاتف صحيح",
+        "validFirstName": "اسم أول صحيح",
+        "validLastName": "اسم عائلة صحيح",
+        "validJobTitle": "مسمى وظيفي صحيح"
       }
     }
   },
