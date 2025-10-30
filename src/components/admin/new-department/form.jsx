@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Building2, Users, UserCheck, Eye, ChevronDown, X, Plus, Check } from "lucide-react";
 import { useGetAllRolesQuery, useGetRoleUsersQuery } from "../../../services/apis/RoleApi";
-import { useCreateDepartmentMutation } from "../../../services/apis/DepartmentApi";
+import { useCreateDepartmentMutation, useAssignSupervisorMutation } from "../../../services/apis/DepartmentApi";
 import { useCreateTeamMutation } from "../../../services/apis/TeamApi";
 
 export default function NewDepartmentForm() {
@@ -435,6 +435,7 @@ function ReviewStep({ onBack, departmentInfo, supervisor, teams }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isCompleted, setIsCompleted] = useState(false);
     const [createDepartment] = useCreateDepartmentMutation();
+    const [assignSupervisor] = useAssignSupervisorMutation();
     const [createTeam] = useCreateTeamMutation();
 
     const departmentData = departmentInfo || { departmentName: '', description: '' };
@@ -443,10 +444,11 @@ function ReviewStep({ onBack, departmentInfo, supervisor, teams }) {
         try {
             setIsSubmitting(true);
             // Create department
+            const supervisorId = supervisor?.id || supervisor?.userId || supervisor?.userID || supervisor?.UserId;
             const payload = {
                 name: departmentData.departmentName,
                 description: departmentData.description,
-                supervisorId: supervisor?.id,
+                supervisorId: supervisorId,
             };
             const depRes = await createDepartment(payload).unwrap();
             const createdDepartment = depRes?.value || depRes;
@@ -458,11 +460,16 @@ function ReviewStep({ onBack, departmentInfo, supervisor, teams }) {
                     const teamPayload = {
                         name: team.name,
                         description: team.description,
-                        teamLeadId: team.teamLeader?.id,
+                        teamLeadId: team.teamLeader?.id || team.teamLeader?.userId || team.teamLeader?.userID || team.teamLeader?.UserId,
                         departmentId,
                     };
                     try { await createTeam(teamPayload).unwrap(); } catch {}
                 }
+            }
+
+            // Fallback: if backend didn't set supervisor, assign explicitly
+            if (departmentId && supervisorId) {
+                try { await assignSupervisor({ id: departmentId, userId: supervisorId }).unwrap(); } catch {}
             }
 
             setIsSubmitting(false);

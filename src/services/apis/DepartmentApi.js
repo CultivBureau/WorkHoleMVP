@@ -67,7 +67,7 @@ export const departmentApi = createApi({
     // Get department supervisor
     getDepartmentSupervisor: builder.query({
       query: (id) => ({
-        url: `/api/Department/${id}/supervisor`,
+        url: `/api/v1/Department/GetSupervisor/${id}`,
         method: "GET",
       }),
     }),

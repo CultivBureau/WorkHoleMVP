@@ -3,12 +3,15 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight, Edit, Trash2, MoreVertical } from "lucide-react";
 import GroupDepartmentIcon from '/assets/groupDepartments.svg';
+import { useGetDepartmentSupervisorQuery } from "../../../services/apis/DepartmentApi";
 
 export default function DepartmentCard({ department }) {
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const isArabic = i18n.language === "ar";
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const { data: supervisorResp, isLoading: isSupervisorLoading } = useGetDepartmentSupervisorQuery(department.id, { skip: !department?.id });
+    const supervisor = supervisorResp?.value || supervisorResp?.data || supervisorResp || null;
 
     const handleEditDepartment = (e) => {
         e.stopPropagation(); // Prevent card click
@@ -48,6 +51,19 @@ export default function DepartmentCard({ department }) {
                         <p className="text-sm text-[var(--sub-text-color)]">
                             {department.totalMembers} {t("allDepartments.departmentCard.members")}
                         </p>
+                        {/* Supervisor */}
+                        <div className="mt-1 text-xs text-[var(--sub-text-color)]">
+                            <span className="mr-1">Supervisor:</span>
+                            {isSupervisorLoading ? (
+                                <span>Loading...</span>
+                            ) : supervisor ? (
+                                <span className="text-[var(--text-color)] font-medium">
+                                    {supervisor.name || `${supervisor.firstName || ''} ${supervisor.lastName || ''}`.trim() || supervisor.email || '-'}
+                                </span>
+                            ) : (
+                                <span className="text-[var(--sub-text-color)]">None</span>
+                            )}
+                        </div>
                     </div>
                 </div>
 
