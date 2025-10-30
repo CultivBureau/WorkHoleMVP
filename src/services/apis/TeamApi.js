@@ -15,8 +15,19 @@ export const teamApi = createApi({
         },
       }),
     }),
+
+    // Create a new team
+    createTeam: builder.mutation({
+      query: (body) => ({
+        url: "/api/v1/Team/Create",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Teams"],
+    }),
   }),
+  tagTypes: ["Teams"],
 });
 
-export const { useGetAllTeamsQuery } = teamApi;
+export const { useGetAllTeamsQuery, useCreateTeamMutation } = teamApi;
 

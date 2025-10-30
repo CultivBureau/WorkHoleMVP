@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Search, Plus } from "lucide-react";
 import DepartmentCard from "./department-card";
+import { useGetAllDepartmentsQuery } from "../../../services/apis/DepartmentApi";
 
 export default function AllDepartments() {
     const { t, i18n } = useTranslation();
@@ -13,82 +14,28 @@ export default function AllDepartments() {
     const handleAddNewDepartment = () => {
         navigate('/pages/admin/new-department');
     };
+    // API: load departments
+    const { data, isLoading, isError, refetch } = useGetAllDepartmentsQuery({ pageNumber: 1, pageSize: 20 });
+    const departmentsFromApi = useMemo(() => {
+        const items = data?.value || data?.data || data?.items || data || [];
+        return Array.isArray(items) ? items : [];
+    }, [data]);
 
+    // Map to card-safe structure (fallbacks for legacy UI fields)
+    const mapped = useMemo(() => (
+        departmentsFromApi.map((d) => ({
+            id: d.id,
+            name: d.name,
+            description: d.description,
+            totalMembers: d.totalMembers || 0,
+            memberAvatars: [],
+            teams: [],
+        }))
+    ), [departmentsFromApi]);
 
-
-    // Mock departments data
-    const departmentsData = [
-        {
-            id: 1,
-            name: "Design Department",
-            totalMembers: 15,
-            memberAvatars: [
-                "/assets/navbar/Avatar.png",
-                "/assets/navbar/Avatar.png",
-                "/assets/navbar/Avatar.png"
-            ],
-            teams: [
-                { name: "UX Team", description: "User Experience", memberCount: 5 },
-                { name: "UI Team", description: "User Interface", memberCount: 4 },
-                { name: "Graphic Design", description: "Visual Design", memberCount: 3 },
-                { name: "UX Writing", description: "Content Design", memberCount: 3 }
-            ]
-        },
-        {
-            id: 2,
-            name: "Sales Department",
-            totalMembers: 18,
-            memberAvatars: [
-                "/assets/navbar/Avatar.png",
-                "/assets/navbar/Avatar.png",
-                "/assets/navbar/Avatar.png"
-            ],
-            teams: [
-                { name: "Inside Sales", description: "Internal Sales Team", memberCount: 6 },
-                { name: "Field Sales", description: "External Sales Representatives", memberCount: 5 },
-                { name: "Sales Support", description: "Sales Operations & Support", memberCount: 4 },
-                { name: "Business Development", description: "New Business Opportunities", memberCount: 3 }
-            ]
-        },
-        {
-            id: 3,
-            name: "Project Manager Department",
-            totalMembers: 12,
-            memberAvatars: [
-                "/assets/navbar/Avatar.png",
-                "/assets/navbar/Avatar.png",
-                "/assets/navbar/Avatar.png"
-            ],
-            teams: [
-                { name: "Agile Team", description: "Scrum & Agile Management", memberCount: 4 },
-                { name: "Waterfall Team", description: "Traditional Project Management", memberCount: 4 },
-                { name: "PMO Team", description: "Project Management Office", memberCount: 4 }
-            ]
-        },
-        {
-            id: 4,
-            name: "Marketing Department",
-            totalMembers: 14,
-            memberAvatars: [
-                "/assets/navbar/Avatar.png",
-                "/assets/navbar/Avatar.png",
-                "/assets/navbar/Avatar.png"
-            ],
-            teams: [
-                { name: "Digital Marketing", description: "Online Marketing & SEO", memberCount: 6 },
-                { name: "Content Marketing", description: "Content Creation & Strategy", memberCount: 4 },
-                { name: "Brand Marketing", description: "Brand Management & PR", memberCount: 4 }
-            ]
-        }
-    ];
-
-    // Filter departments based on search term
-    const filteredDepartments = departmentsData.filter(department =>
-        department.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        department.teams.some(team => 
-            team.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            team.description.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+    const filteredDepartments = mapped.filter(department =>
+        department.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        department.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -133,7 +80,20 @@ export default function AllDepartments() {
 
             {/* Departments Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {filteredDepartments.length > 0 ? (
+                {isLoading ? (
+                    <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+                        <div className="w-16 h-16 bg-[var(--container-color)] rounded-full flex items-center justify-center mb-4" />
+                        <h3 className="text-lg font-medium text-[var(--text-color)] mb-2">Loading...</h3>
+                    </div>
+                ) : isError ? (
+                    <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+                        <div className="w-16 h-16 bg-[var(--container-color)] rounded-full flex items-center justify-center mb-4">
+                            <Search className="text-[var(--sub-text-color)]" size={24} />
+                        </div>
+                        <h3 className="text-lg font-medium text-[var(--text-color)] mb-2">Failed to load departments</h3>
+                        <button onClick={() => refetch()} className="btn-secondary">Retry</button>
+                    </div>
+                ) : filteredDepartments.length > 0 ? (
                     filteredDepartments.map((department) => (
                         <DepartmentCard key={department.id} department={department} />
                     ))
@@ -158,7 +118,7 @@ export default function AllDepartments() {
             {/* Results Summary */}
             {searchTerm && filteredDepartments.length > 0 && (
                 <div className={`text-sm text-[var(--sub-text-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
-                    Showing {filteredDepartments.length} of {departmentsData.length} departments
+                    Showing {filteredDepartments.length} departments
                 </div>
             )}
         </div>

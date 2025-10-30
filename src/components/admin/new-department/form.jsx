@@ -1,11 +1,17 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Building2, Users, UserCheck, Eye, ChevronDown, X, Plus, Check } from "lucide-react";
+import { useGetAllRolesQuery, useGetRoleUsersQuery } from "../../../services/apis/RoleApi";
+import { useCreateDepartmentMutation } from "../../../services/apis/DepartmentApi";
+import { useCreateTeamMutation } from "../../../services/apis/TeamApi";
 
 export default function NewDepartmentForm() {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
     const [step, setStep] = useState(0);
+    const [departmentInfo, setDepartmentInfo] = useState({ departmentName: '', description: '' });
+    const [supervisor, setSupervisor] = useState(null);
+    const [teams, setTeams] = useState([]);
 
     const steps = [
         { label: t("departments.newDepartmentForm.steps.departmentInfo"), icon: Building2 },
@@ -69,10 +75,37 @@ export default function NewDepartmentForm() {
 
                 {/* Step Content */}
                 <div className="mt-8">
-                    {step === 0 && <DepartmentInfoStep onNext={() => setStep(1)} />}
-                    {step === 1 && <AssignSupervisorStep onNext={() => setStep(2)} onBack={() => setStep(0)} />}
-                    {step === 2 && <SetupTeamsStep onNext={() => setStep(3)} onBack={() => setStep(1)} />}
-                    {step === 3 && <ReviewStep onBack={() => setStep(2)} />}
+                    {step === 0 && (
+                        <DepartmentInfoStep
+                            value={departmentInfo}
+                            onChange={setDepartmentInfo}
+                            onNext={() => setStep(1)}
+                        />
+                    )}
+                    {step === 1 && (
+                        <AssignSupervisorStep
+                            selectedUser={supervisor}
+                            setSelectedUser={setSupervisor}
+                            onNext={() => setStep(2)}
+                            onBack={() => setStep(0)}
+                        />
+                    )}
+                    {step === 2 && (
+                        <SetupTeamsStep
+                            teams={teams}
+                            setTeams={setTeams}
+                            onNext={() => setStep(3)}
+                            onBack={() => setStep(1)}
+                        />
+                    )}
+                    {step === 3 && (
+                        <ReviewStep
+                            departmentInfo={departmentInfo}
+                            supervisor={supervisor}
+                            teams={teams}
+                            onBack={() => setStep(2)}
+                        />
+                    )}
                 </div>
             </div>
         </div>
@@ -80,15 +113,10 @@ export default function NewDepartmentForm() {
 }
 
 // Step 1: Department Information
-function DepartmentInfoStep({ onNext }) {
+function DepartmentInfoStep({ onNext, value, onChange }) {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
-    const [formData, setFormData] = useState({
-        departmentName: '',
-        shortName: '',
-        description: '',
-        status: ''
-    });
+    const [formData, setFormData] = useState(value || { departmentName: '', description: '' });
 
     const handleInputChange = (field, value) => {
         setFormData(prev => ({
@@ -96,6 +124,12 @@ function DepartmentInfoStep({ onNext }) {
             [field]: value
         }));
     };
+
+    // propagate up when formData changes
+    React.useEffect(() => {
+        onChange && onChange(formData);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [formData]);
 
     return (
         <div className="space-y-6">
@@ -108,13 +142,7 @@ function DepartmentInfoStep({ onNext }) {
                     value={formData.departmentName}
                     onChange={(e) => handleInputChange('departmentName', e.target.value)}
                 />
-                <input
-                    className="form-input"
-                    placeholder={t("departments.newDepartmentForm.departmentInfo.shortName")}
-                    type="text"
-                    value={formData.shortName}
-                    onChange={(e) => handleInputChange('shortName', e.target.value)}
-                />
+                {/* shortName removed per API schema */}
                 <textarea
                     className="form-input md:col-span-1"
                     placeholder={t("departments.newDepartmentForm.departmentInfo.description")}
@@ -122,18 +150,7 @@ function DepartmentInfoStep({ onNext }) {
                     value={formData.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
                 />
-                <div className="relative">
-                    <select
-                        className="form-input appearance-none cursor-pointer pr-10"
-                        value={formData.status}
-                        onChange={(e) => handleInputChange('status', e.target.value)}
-
-                    >
-                        <option value="">{t("departments.newDepartmentForm.departmentInfo.status")}</option>
-                        <option value="active">{t("departments.newDepartmentForm.departmentInfo.active")}</option>
-                        <option value="inactive">{t("departments.newDepartmentForm.departmentInfo.inactive")}</option>
-                    </select>
-                </div>
+                {/* status field removed per request */}
             </div>
 
             {/* Action Buttons */}
@@ -146,157 +163,97 @@ function DepartmentInfoStep({ onNext }) {
 }
 
 // Step 2: Assign Supervisor
-function AssignSupervisorStep({ onNext, onBack }) {
+function AssignSupervisorStep({ onNext, onBack, selectedUser, setSelectedUser }) {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
-    const [selectedSupervisors, setSelectedSupervisors] = useState([]);
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isRoleOpen, setIsRoleOpen] = useState(false);
+    const [isUserOpen, setIsUserOpen] = useState(false);
+    const [selectedRole, setSelectedRole] = useState(null);
+    // selectedUser managed by parent
 
-    // Mock supervisor data
-    const supervisors = [
-        { id: 1, name: "Leslie Alexander", role: "Senior Manager", avatar: "/assets/navbar/Avatar.png" },
-        { id: 2, name: "John Doe", role: "Team Lead", avatar: "/assets/navbar/Avatar.png" },
-        { id: 3, name: "Jane Smith", role: "Department Head", avatar: "/assets/navbar/Avatar.png" },
-        { id: 4, name: "Mike Johnson", role: "Senior Manager", avatar: "/assets/navbar/Avatar.png" }
-    ];
+    const { data: rolesData, isLoading: isLoadingRoles, isError: isErrorRoles, refetch: refetchRoles } = useGetAllRolesQuery({ pageNumber: 1, pageSize: 50 });
+    const { data: roleUsersData, isLoading: isLoadingUsers, isError: isErrorUsers, refetch: refetchUsers } = useGetRoleUsersQuery(
+        selectedRole ? { id: selectedRole.id, pageNumber: 1, pageSize: 50 } : { id: "", pageNumber: 1, pageSize: 50 },
+        { skip: !selectedRole }
+    );
 
-    const toggleSupervisor = (supervisor) => {
-        setSelectedSupervisors(prev => {
-            const isSelected = prev.find(s => s.id === supervisor.id);
-            if (isSelected) {
-                return prev.filter(s => s.id !== supervisor.id);
-            } else {
-                return [...prev, supervisor];
-            }
-        });
-    };
+    const roles = Array.isArray(rolesData?.value) ? rolesData.value : (Array.isArray(rolesData?.data) ? rolesData.data : (Array.isArray(rolesData?.items) ? rolesData.items : (Array.isArray(rolesData) ? rolesData : [])));
+    const users = Array.isArray(roleUsersData?.value) ? roleUsersData.value : (Array.isArray(roleUsersData?.data) ? roleUsersData.data : (Array.isArray(roleUsersData?.items) ? roleUsersData.items : (Array.isArray(roleUsersData) ? roleUsersData : [])));
 
     return (
         <div className="space-y-6">
-            {/* Dropdown for selecting supervisors */}
+            {/* Role selection */}
             <div className="relative">
-                <div
-                    className="form-input cursor-pointer flex items-center justify-between"
-                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                >
-                    <span className="text-[var(--sub-text-color)]">
-                        {t("departments.newDepartmentForm.assignSupervisor.chooseSupervisor")}
-                    </span>
-                    <ChevronDown
-                        className={`text-[var(--sub-text-color)] transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
-                        size={16}
-                    />
+                <div className="form-input cursor-pointer flex items-center justify-between" onClick={() => setIsRoleOpen(!isRoleOpen)}>
+                    <span className="text-[var(--sub-text-color)]">{selectedRole ? selectedRole.name : t("departments.newDepartmentForm.assignSupervisor.chooseRole")}</span>
+                    <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isRoleOpen ? 'rotate-180' : ''}`} size={16} />
                 </div>
-
-                {isDropdownOpen && (
+                {isRoleOpen && (
                     <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                        {supervisors.map(supervisor => (
-                            <div
-                                key={supervisor.id}
-                                className="p-3 hover:bg-[var(--hover-color)] cursor-pointer flex items-center justify-between"
-                                onClick={() => toggleSupervisor(supervisor)}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <img src={supervisor.avatar} alt={supervisor.name} className="w-8 h-8 rounded-full" />
-                                    <div>
-                                        <div className="text-[var(--text-color)] font-medium">{supervisor.name}</div>
-                                        <div className="text-[var(--sub-text-color)] text-sm">{supervisor.role}</div>
-                                    </div>
-                                </div>
-                                <div className={`w-5 h-5 rounded border-2 ${selectedSupervisors.find(s => s.id === supervisor.id)
-                                    ? 'bg-[var(--accent-color)] border-[var(--accent-color)]'
-                                    : 'border-[var(--border-color)]'
-                                    } flex items-center justify-center`}>
-                                    {selectedSupervisors.find(s => s.id === supervisor.id) && (
-                                        <Check className="text-white" size={12} />
-                                    )}
-                                </div>
+                        {isLoadingRoles && <div className="p-3 text-[var(--sub-text-color)]">Loading roles...</div>}
+                        {isErrorRoles && (
+                            <div className="p-3 text-[var(--sub-text-color)] flex items-center justify-between">
+                                <span>Failed to load roles</span>
+                                <button className="btn-secondary" onClick={(e) => { e.stopPropagation(); refetchRoles(); }}>Retry</button>
+                            </div>
+                        )}
+                        {roles.map((role) => (
+                            <div key={role.id} className="p-3 hover:bg-[var(--hover-color)] cursor-pointer" onClick={() => { setSelectedRole(role); setIsRoleOpen(false); setSelectedUser(null); }}>
+                                <div className="text-sm text-[var(--text-color)]">{role.name}</div>
                             </div>
                         ))}
+                        {roles.length === 0 && !isLoadingRoles && !isErrorRoles && (
+                            <div className="p-3 text-[var(--sub-text-color)]">No roles found</div>
+                        )}
                     </div>
                 )}
             </div>
 
-            {/* Selected Supervisors */}
-            {selectedSupervisors.length > 0 && (
-                <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-[var(--text-color)]">
-                        {t("departments.newDepartmentForm.assignSupervisor.supervisor")}
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {selectedSupervisors.map(supervisor => (
-                            <div key={supervisor.id} className="flex items-center justify-between p-4 bg-[var(--container-color)] rounded-lg border border-[var(--border-color)]">
-                                <div className="flex items-center gap-3">
-                                    <img src={supervisor.avatar} alt={supervisor.name} className="w-10 h-10 rounded-full" />
-                                    <div>
-                                        <div className="text-[var(--text-color)] font-medium">{supervisor.name}</div>
-                                        <div className="text-[var(--sub-text-color)] text-sm">{supervisor.role}</div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <button className="p-1 hover:bg-[var(--hover-color)] rounded">
-                                        <UserCheck className="text-[var(--sub-text-color)]" size={16} />
-                                    </button>
-                                    <button
-                                        className="p-1 hover:bg-[var(--hover-color)] rounded"
-                                        onClick={() => toggleSupervisor(supervisor)}
-                                    >
-                                        <X className="text-[var(--sub-text-color)]" size={16} />
-                                    </button>
-                                </div>
+            {/* User selection */}
+            <div className="relative">
+                <div className="form-input cursor-pointer flex items-center justify-between" onClick={() => selectedRole && setIsUserOpen(!isUserOpen)}>
+                    <span className="text-[var(--sub-text-color)]">{selectedUser ? (selectedUser.name || `${selectedUser.firstName || ''} ${selectedUser.lastName || ''}`.trim()) : t("departments.newDepartmentForm.assignSupervisor.chooseSupervisor")}</span>
+                    <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isUserOpen ? 'rotate-180' : ''}`} size={16} />
+                </div>
+                {isUserOpen && (
+                    <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {!selectedRole && <div className="p-3 text-[var(--sub-text-color)]">Select a role first</div>}
+                        {selectedRole && isLoadingUsers && <div className="p-3 text-[var(--sub-text-color)]">Loading users...</div>}
+                        {selectedRole && isErrorUsers && (
+                            <div className="p-3 text-[var(--sub-text-color)] flex items-center justify-between">
+                                <span>Failed to load users</span>
+                                <button className="btn-secondary" onClick={(e) => { e.stopPropagation(); refetchUsers(); }}>Retry</button>
+                            </div>
+                        )}
+                        {selectedRole && users.map((u) => (
+                            <div key={u.id} className="p-3 hover:bg-[var(--hover-color)] cursor-pointer" onClick={() => { setSelectedUser(u); setIsUserOpen(false); }}>
+                                <div className="text-sm text-[var(--text-color)]">{u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim()}</div>
+                                <div className="text-xs text-[var(--sub-text-color)]">{u.email || u.username}</div>
                             </div>
                         ))}
+                        {selectedRole && users.length === 0 && !isLoadingUsers && !isErrorUsers && (
+                            <div className="p-3 text-[var(--sub-text-color)]">No users found for this role</div>
+                        )}
                     </div>
-                </div>
-            )}
+                )}
+            </div>
 
             {/* Action Buttons */}
             <div className={`flex ${isArabic ? 'justify-start' : 'justify-end'} gap-3 pt-6`}>
                 <button type="button" className="btn-secondary" onClick={onBack}>{t("departments.newDepartmentForm.buttons.back")}</button>
-                <button type="button" className="btn-primary" onClick={onNext}>{t("departments.newDepartmentForm.buttons.next")}</button>
+                <button type="button" className="btn-primary" onClick={onNext} disabled={!selectedUser}>{t("departments.newDepartmentForm.buttons.next")}</button>
             </div>
         </div>
     );
 }
 
 // Step 3: Setup Teams
-function SetupTeamsStep({ onNext, onBack }) {
+function SetupTeamsStep({ onNext, onBack, teams, setTeams }) {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
-    const [teams, setTeams] = useState([
-        { id: 1, name: "UX Team", description: "User Experience", members: 5, teamLeader: { name: "Leslie Alexander", role: "Senior Manager" } },
-        { id: 2, name: "UI Team", description: "User Interface", members: 5, teamLeader: { name: "John Doe", role: "Team Lead" } }
-    ]);
     const [showAddTeam, setShowAddTeam] = useState(false);
-    const [newTeam, setNewTeam] = useState({ name: '', description: '', selectedEmployees: [], teamLeader: null });
-    const [isEmployeeDropdownOpen, setIsEmployeeDropdownOpen] = useState(false);
+    const [newTeam, setNewTeam] = useState({ name: '', description: '', teamLeader: null, role: null });
     const [isLeaderDropdownOpen, setIsLeaderDropdownOpen] = useState(false);
-
-    // Mock employee data
-    const employees = [
-        { id: 1, name: "Alice Johnson", role: "UX Designer", avatar: "/assets/navbar/Avatar.png" },
-        { id: 2, name: "Bob Smith", role: "UI Designer", avatar: "/assets/navbar/Avatar.png" },
-        { id: 3, name: "Carol Davis", role: "UX Researcher", avatar: "/assets/navbar/Avatar.png" },
-        { id: 4, name: "David Wilson", role: "Product Designer", avatar: "/assets/navbar/Avatar.png" },
-        { id: 5, name: "Emily Chen", role: "Senior Designer", avatar: "/assets/navbar/Avatar.png" },
-        { id: 6, name: "Frank Miller", role: "Design Lead", avatar: "/assets/navbar/Avatar.png" }
-    ];
-
-    // Team leaders can be selected from employees or could be a separate list
-    const teamLeaders = employees.filter(emp =>
-        emp.role.includes("Lead") ||
-        emp.role.includes("Senior") ||
-        emp.role.includes("Manager")
-    );
-
-    const toggleEmployee = (employee) => {
-        setNewTeam(prev => ({
-            ...prev,
-            selectedEmployees: prev.selectedEmployees.find(e => e.id === employee.id)
-                ? prev.selectedEmployees.filter(e => e.id !== employee.id)
-                : [...prev.selectedEmployees, employee]
-        }));
-    };
 
     const selectTeamLeader = (leader) => {
         setNewTeam(prev => ({
@@ -312,10 +269,9 @@ function SetupTeamsStep({ onNext, onBack }) {
                 id: Date.now(),
                 name: newTeam.name,
                 description: newTeam.description,
-                members: newTeam.selectedEmployees.length,
                 teamLeader: newTeam.teamLeader
             }]);
-            setNewTeam({ name: '', description: '', selectedEmployees: [], teamLeader: null });
+            setNewTeam({ name: '', description: '', teamLeader: null, role: null });
             setShowAddTeam(false);
         }
     };
@@ -334,122 +290,51 @@ function SetupTeamsStep({ onNext, onBack }) {
                             onChange={(e) => setNewTeam(prev => ({ ...prev, name: e.target.value }))}
                         />
 
-                        {/* Team Leader Dropdown */}
+                    {/* Team Leader Selection: Role then User */}
+                    <div className="grid grid-cols-1 gap-4">
                         <div className="relative">
                             <div
                                 className="form-input cursor-pointer flex items-center justify-between"
                                 onClick={() => setIsLeaderDropdownOpen(!isLeaderDropdownOpen)}
                             >
-                                {newTeam.teamLeader ? (
-                                    <div className="flex items-center gap-3">
-                                        <img
-                                            src={newTeam.teamLeader.avatar}
-                                            alt={newTeam.teamLeader.name}
-                                            className="w-6 h-6 rounded-full"
-                                        />
-                                        <div>
-                                            <div className="text-[var(--text-color)] font-medium text-sm">
-                                                {newTeam.teamLeader.name}
-                                            </div>
-                                            <div className="text-[var(--sub-text-color)] text-xs">
-                                                {newTeam.teamLeader.role}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <span className="text-[var(--sub-text-color)]">
-                                        Choose Team Leader
-                                    </span>
-                                )}
-                                <ChevronDown
-                                    className={`text-[var(--sub-text-color)] transition-transform ${isLeaderDropdownOpen ? 'rotate-180' : ''}`}
-                                    size={16}
-                                />
+                                <span className="text-[var(--sub-text-color)]">{newTeam.role ? newTeam.role.name : t("departments.newDepartmentForm.assignSupervisor.chooseRole")}</span>
+                                <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isLeaderDropdownOpen ? 'rotate-180' : ''}`} size={16} />
                             </div>
-
                             {isLeaderDropdownOpen && (
                                 <div className="absolute top-full left-0 right-0 z-20 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                                    {teamLeaders.map(leader => (
-                                        <div
-                                            key={leader.id}
-                                            className="p-3 hover:bg-[var(--hover-color)] cursor-pointer flex items-center justify-between"
-                                            onClick={() => selectTeamLeader(leader)}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <img src={leader.avatar} alt={leader.name} className="w-8 h-8 rounded-full" />
-                                                <div>
-                                                    <div className="text-[var(--text-color)] font-medium">{leader.name}</div>
-                                                    <div className="text-[var(--sub-text-color)] text-sm">{leader.role}</div>
-                                                </div>
-                                            </div>
-                                            <div className={`w-5 h-5 rounded border-2 ${newTeam.teamLeader?.id === leader.id
-                                                ? 'bg-[var(--accent-color)] border-[var(--accent-color)]'
-                                                : 'border-[var(--border-color)]'
-                                                } flex items-center justify-center`}>
-                                                {newTeam.teamLeader?.id === leader.id && (
-                                                    <Check className="text-white" size={12} />
-                                                )}
-                                            </div>
+                                    {/* roles list from API (reusing roles from hooks in file) */}
+                                    {(Array.isArray(roles) ? roles : []).map(role => (
+                                        <div key={role.id} className="p-3 hover:bg-[var(--hover-color)] cursor-pointer" onClick={() => { setNewTeam(prev => ({ ...prev, role, teamLeader: null })); setIsLeaderDropdownOpen(false); }}>
+                                            <div className="text-sm text-[var(--text-color)]">{role.name}</div>
                                         </div>
                                     ))}
+                                    {(!roles || roles.length === 0) && <div className="p-3 text-[var(--sub-text-color)]">No roles found</div>}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Users for selected role */}
+                        <div className="relative">
+                            <div
+                                className="form-input cursor-pointer flex items-center justify-between"
+                                onClick={() => newTeam.role && setIsLeaderDropdownOpen(!isLeaderDropdownOpen)}
+                            >
+                                <span className="text-[var(--sub-text-color)]">{newTeam.teamLeader ? (newTeam.teamLeader.name || `${newTeam.teamLeader.firstName || ''} ${newTeam.teamLeader.lastName || ''}`.trim()) : t("departments.newDepartmentForm.assignSupervisor.chooseSupervisor")}</span>
+                                <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isLeaderDropdownOpen ? 'rotate-180' : ''}`} size={16} />
+                            </div>
+                            {isLeaderDropdownOpen && newTeam.role && (
+                                <div className="absolute top-full left-0 right-0 z-20 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                    {(Array.isArray(users) ? users : []).map(u => (
+                                        <div key={u.id} className="p-3 hover:bg-[var(--hover-color)] cursor-pointer" onClick={() => selectTeamLeader(u)}>
+                                            <div className="text-sm text-[var(--text-color)]">{u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim()}</div>
+                                            <div className="text-xs text-[var(--sub-text-color)]">{u.email || u.username}</div>
+                                        </div>
+                                    ))}
+                                    {(!users || users.length === 0) && <div className="p-3 text-[var(--sub-text-color)]">No users found</div>}
                                 </div>
                             )}
                         </div>
                     </div>
-
-                    {/* Team Members - Full Width */}
-                    <div className="relative">
-                        <div
-                            className="form-input cursor-pointer flex items-center justify-between"
-                            onClick={() => setIsEmployeeDropdownOpen(!isEmployeeDropdownOpen)}
-                        >
-                            <span className="text-[var(--sub-text-color)]">
-                                {newTeam.selectedEmployees.length > 0
-                                    ? `${newTeam.selectedEmployees.length} selected`
-                                    : t("departments.newDepartmentForm.setupTeams.chooseEmployee")
-                                }
-                            </span>
-                            <div className="flex items-center gap-2">
-                                {newTeam.selectedEmployees.slice(0, 3).map(emp => (
-                                    <img key={emp.id} src={emp.avatar} alt={emp.name} className="w-6 h-6 rounded-full" />
-                                ))}
-                                {newTeam.selectedEmployees.length > 3 && (
-                                    <span className="text-xs text-[var(--sub-text-color)]">+{newTeam.selectedEmployees.length - 3}</span>
-                                )}
-                                <ChevronDown
-                                    className={`text-[var(--sub-text-color)] transition-transform ${isEmployeeDropdownOpen ? 'rotate-180' : ''}`}
-                                    size={16}
-                                />
-                            </div>
-                        </div>
-
-                        {isEmployeeDropdownOpen && (
-                            <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                                {employees.map(employee => (
-                                    <div
-                                        key={employee.id}
-                                        className="p-3 hover:bg-[var(--hover-color)] cursor-pointer flex items-center justify-between"
-                                        onClick={() => toggleEmployee(employee)}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <img src={employee.avatar} alt={employee.name} className="w-8 h-8 rounded-full" />
-                                            <div>
-                                                <div className="text-[var(--text-color)] font-medium">{employee.name}</div>
-                                                <div className="text-[var(--sub-text-color)] text-sm">{employee.role}</div>
-                                            </div>
-                                        </div>
-                                        <div className={`w-5 h-5 rounded border-2 ${newTeam.selectedEmployees.find(e => e.id === employee.id)
-                                            ? 'bg-[var(--accent-color)] border-[var(--accent-color)]'
-                                            : 'border-[var(--border-color)]'
-                                            } flex items-center justify-center`}>
-                                            {newTeam.selectedEmployees.find(e => e.id === employee.id) && (
-                                                <Check className="text-white" size={12} />
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
                     </div>
 
                     {/* Team Description - Full Width */}
@@ -508,7 +393,7 @@ function SetupTeamsStep({ onNext, onBack }) {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2 text-[var(--sub-text-color)]">
-                                        <span className="text-sm">{team.members} {t("departments.newDepartmentForm.setupTeams.members")}</span>
+                                        <span className="text-sm">{t("departments.newDepartmentForm.setupTeams.membersCount", { count: 0 })}</span>
                                         <ChevronDown size={16} />
                                     </div>
                                 </div>
@@ -523,7 +408,7 @@ function SetupTeamsStep({ onNext, onBack }) {
                                         />
                                         <div className="flex-1">
                                             <div className="text-xs text-[var(--sub-text-color)]">Team Leader</div>
-                                            <div className="text-sm font-medium text-[var(--text-color)]">{team.teamLeader.name}</div>
+                                            <div className="text-sm font-medium text-[var(--text-color)]">{(team.teamLeader?.name || `${team.teamLeader?.firstName || ''} ${team.teamLeader?.lastName || ''}`.trim())}</div>
                                         </div>
                                         <UserCheck className="text-[var(--accent-color)]" size={16} />
                                     </div>
@@ -544,36 +429,47 @@ function SetupTeamsStep({ onNext, onBack }) {
 }
 
 // Step 4: Review & Done
-function ReviewStep({ onBack }) {
+function ReviewStep({ onBack, departmentInfo, supervisor, teams }) {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isCompleted, setIsCompleted] = useState(false);
+    const [createDepartment] = useCreateDepartmentMutation();
+    const [createTeam] = useCreateTeamMutation();
 
-    // Mock data for review
-    const departmentData = {
-        departmentName: "Design Department",
-        shortName: "Des",
-        description: "Handles all creative design tasks",
-        status: "Active"
-    };
-
-    const supervisors = [
-        { name: "Leslie Alexander", role: "Senior Manager" },
-        { name: "John Doe", role: "Team Lead" }
-    ];
-
-    const teams = [
-        { name: "UX Team", description: "User Experience", members: 5, teamLeader: { name: "Leslie Alexander", role: "Senior Manager" } },
-        { name: "UI Team", description: "User Interface", members: 3, teamLeader: { name: "John Doe", role: "Team Lead" } }
-    ];
+    const departmentData = departmentInfo || { departmentName: '', description: '' };
 
     const handleSubmit = async () => {
-        setIsSubmitting(true);
-        setTimeout(() => {
+        try {
+            setIsSubmitting(true);
+            // Create department
+            const payload = {
+                name: departmentData.departmentName,
+                description: departmentData.description,
+                supervisorId: supervisor?.id,
+            };
+            const depRes = await createDepartment(payload).unwrap();
+            const createdDepartment = depRes?.value || depRes;
+            const departmentId = createdDepartment?.id;
+
+            // Create teams (optional)
+            if (departmentId && Array.isArray(teams) && teams.length > 0) {
+                for (const team of teams) {
+                    const teamPayload = {
+                        name: team.name,
+                        description: team.description,
+                        teamLeadId: team.teamLeader?.id,
+                        departmentId,
+                    };
+                    try { await createTeam(teamPayload).unwrap(); } catch {}
+                }
+            }
+
             setIsSubmitting(false);
             setIsCompleted(true);
-        }, 2000);
+        } catch (e) {
+            setIsSubmitting(false);
+        }
     };
 
     if (isCompleted) {
@@ -610,18 +506,8 @@ function ReviewStep({ onBack }) {
                         </span>
                         <div className="text-[var(--text-color)] font-medium">{departmentData.departmentName}</div>
                     </div>
-                    <div>
-                        <span className="text-[var(--sub-text-color)] text-sm">
-                            {t("departments.newDepartmentForm.review.shortName")}:
-                        </span>
-                        <div className="text-[var(--text-color)] font-medium">{departmentData.shortName}</div>
-                    </div>
-                    <div>
-                        <span className="text-[var(--sub-text-color)] text-sm">
-                            {t("departments.newDepartmentForm.review.status")}:
-                        </span>
-                        <div className="text-[var(--text-color)] font-medium">{departmentData.status}</div>
-                    </div>
+                    
+                    
                     <div>
                         <span className="text-[var(--sub-text-color)] text-sm">
                             {t("departments.newDepartmentForm.review.description")}:
@@ -631,21 +517,23 @@ function ReviewStep({ onBack }) {
                 </div>
             </div>
 
-            {/* Supervisors */}
+            {/* Supervisor */}
             <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-[var(--text-color)]">
                     {t("departments.newDepartmentForm.review.supervisor")}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {supervisors.map((supervisor, index) => (
-                        <div key={index} className="flex items-center gap-3 p-4 bg-[var(--container-color)] rounded-lg border border-[var(--border-color)]">
-                            <img src="/assets/navbar/Avatar.png" alt={supervisor.name} className="w-10 h-10 rounded-full" />
+                    {supervisor ? (
+                        <div className="flex items-center gap-3 p-4 bg-[var(--container-color)] rounded-lg border border-[var(--border-color)]">
+                            <img src="/assets/navbar/Avatar.png" alt={supervisor.name || supervisor.email} className="w-10 h-10 rounded-full" />
                             <div>
-                                <div className="text-[var(--text-color)] font-medium">{supervisor.name}</div>
-                                <div className="text-[var(--sub-text-color)] text-sm">{supervisor.role}</div>
+                                <div className="text-[var(--text-color)] font-medium">{supervisor.name || `${supervisor.firstName || ''} ${supervisor.lastName || ''}`.trim()}</div>
+                                <div className="text-[var(--sub-text-color)] text-sm">{supervisor.email || supervisor.username}</div>
                             </div>
                         </div>
-                    ))}
+                    ) : (
+                        <div className="text-[var(--sub-text-color)]">No supervisor selected</div>
+                    )}
                 </div>
             </div>
 
@@ -665,9 +553,7 @@ function ReviewStep({ onBack }) {
                                         <div className="text-[var(--sub-text-color)] text-sm">{team.description}</div>
                                     </div>
                                 </div>
-                                <span className="text-[var(--sub-text-color)] text-sm">
-                                    {team.members} {t("departments.newDepartmentForm.setupTeams.members")}
-                                </span>
+                                <span className="text-[var(--sub-text-color)] text-sm">{t("departments.newDepartmentForm.setupTeams.membersCount", { count: 0 })}</span>
                             </div>
 
                             {/* Team Leader Info */}
@@ -675,12 +561,12 @@ function ReviewStep({ onBack }) {
                                 <div className="flex items-center gap-2 pt-2 border-t border-[var(--border-color)]">
                                     <img
                                         src="/assets/navbar/Avatar.png"
-                                        alt={team.teamLeader.name}
+                                        alt={(team.teamLeader?.name || `${team.teamLeader?.firstName || ''} ${team.teamLeader?.lastName || ''}`.trim())}
                                         className="w-6 h-6 rounded-full"
                                     />
                                     <div className="flex-1">
                                         <div className="text-xs text-[var(--sub-text-color)]">Team Leader</div>
-                                        <div className="text-sm font-medium text-[var(--text-color)]">{team.teamLeader.name}</div>
+                                        <div className="text-sm font-medium text-[var(--text-color)]">{(team.teamLeader?.name || `${team.teamLeader?.firstName || ''} ${team.teamLeader?.lastName || ''}`.trim())}</div>
                                     </div>
                                     <UserCheck className="text-[var(--accent-color)]" size={16} />
                                 </div>

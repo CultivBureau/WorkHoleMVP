@@ -15,8 +15,17 @@ export const roleApi = createApi({
         },
       }),
     }),
+
+    // Get users by role id (paginated)
+    getRoleUsers: builder.query({
+      query: ({ id, pageNumber = 1, pageSize = 20 }) => ({
+        url: `/api/v1/Role/GetUsers/${id}/users`,
+        method: "GET",
+        params: { pageNumber, pageSize },
+      }),
+    }),
   }),
 });
 
-export const { useGetAllRolesQuery } = roleApi;
+export const { useGetAllRolesQuery, useGetRoleUsersQuery } = roleApi;
 
