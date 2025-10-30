@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useNavigate } from "react-router-dom";
 import { Building2, Users, UserCheck, Eye, ChevronDown, X, Plus, Check, Save } from "lucide-react";
+import { useGetAllDepartmentsQuery, useUpdateDepartmentMutation } from "../../../../services/apis/DepartmentApi";
+import { useGetAllRolesQuery, useGetRoleUsersQuery } from "../../../../services/apis/RoleApi";
+import { useCreateTeamMutation } from "../../../../services/apis/TeamApi";
 
 export default function EditDepartmentForm() {
     const { t, i18n } = useTranslation();
@@ -17,30 +20,49 @@ export default function EditDepartmentForm() {
         { label: t("departments.editDepartmentForm.steps.reviewAndSave"), icon: Eye },
     ];
 
-    // Mock data - in real app, this would be fetched based on ID
-    const [departmentData, setDepartmentData] = useState({
-        id: id,
-        name: "Marketing Department",
-        shortName: "MKT",
-        description: "Handles all marketing and promotional activities",
-        status: "active",
-        supervisors: [
-            { id: 1, name: "Leslie Alexander", role: "Senior Manager", avatar: "/assets/navbar/Avatar.png" },
-            { id: 2, name: "John Doe", role: "Team Lead", avatar: "/assets/navbar/Avatar.png" }
-        ],
-        teams: [
-            { id: 1, name: "Digital Marketing", description: "Online Marketing & SEO", members: 6 },
-            { id: 2, name: "Content Marketing", description: "Content Creation & Strategy", members: 4 },
-            { id: 3, name: "Brand Marketing", description: "Brand Management & PR", members: 4 }
-        ]
-    });
+    const [departmentData, setDepartmentData] = useState({ id, name: "", description: "", teams: [] });
+    const { data: depsData } = useGetAllDepartmentsQuery({ pageNumber: 1, pageSize: 100 });
+    const foundDepartment = useMemo(() => {
+        const items = depsData?.value || depsData?.data || depsData?.items || [];
+        return Array.isArray(items) ? items.find((d) => d.id === id) : undefined;
+    }, [depsData, id]);
+
+    // Pre-fill department fields when loaded
+    useEffect(() => {
+        if (foundDepartment) {
+            setDepartmentData((prev) => ({
+                ...prev,
+                name: foundDepartment.name || "",
+                description: foundDepartment.description || "",
+            }));
+        }
+    }, [foundDepartment]);
+
+    // Supervisor selection (role -> users)
+    const [selectedRole, setSelectedRole] = useState(null);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [isRoleOpen, setIsRoleOpen] = useState(false);
+    const [isUserOpen, setIsUserOpen] = useState(false);
+    useEffect(() => {
+        if (foundDepartment?.supervisorId) setSelectedUser({ id: foundDepartment.supervisorId });
+    }, [foundDepartment]);
+
+    const { data: rolesData } = useGetAllRolesQuery({ pageNumber: 1, pageSize: 50 });
+    const roles = Array.isArray(rolesData?.value) ? rolesData.value : (Array.isArray(rolesData?.data) ? rolesData.data : (Array.isArray(rolesData) ? rolesData : []));
+    const { data: roleUsersData } = useGetRoleUsersQuery(
+        selectedRole ? { id: selectedRole.id, pageNumber: 1, pageSize: 50 } : { id: "", pageNumber: 1, pageSize: 50 },
+        { skip: !selectedRole }
+    );
+    const users = Array.isArray(roleUsersData?.value) ? roleUsersData.value : (Array.isArray(roleUsersData?.data) ? roleUsersData.data : (Array.isArray(roleUsersData) ? roleUsersData : []));
+
+    const [updateDepartment, { isLoading: isUpdating }] = useUpdateDepartmentMutation();
 
     return (
         <div className="w-full mx-auto bg-[var(--bg-color)] rounded-xl border border-[var(--border-color)]" dir={isArabic ? "rtl" : "ltr"}>
             {/* Header with Breadcrumb */}
             <div className="p-6 border-b border-[var(--border-color)]">
                 <h1 className="text-2xl font-bold text-[var(--text-color)] mb-2">
-                    {t("departments.editDepartmentForm.title")} - {departmentData.name}
+                    {t("departments.editDepartmentForm.title")} - {departmentData.name || ""}
                 </h1>
                 <div className="flex items-center text-sm text-[var(--sub-text-color)]">
                     <span>{t("departments.editDepartmentForm.breadcrumb.allDepartments")}</span>
@@ -94,9 +116,33 @@ export default function EditDepartmentForm() {
                 {/* Step Content */}
                 <div className="mt-8">
                     {step === 0 && <EditDepartmentInfoStep departmentData={departmentData} setDepartmentData={setDepartmentData} onNext={() => setStep(1)} />}
-                    {step === 1 && <EditAssignSupervisorStep departmentData={departmentData} setDepartmentData={setDepartmentData} onNext={() => setStep(2)} onBack={() => setStep(0)} />}
+                    {step === 1 && (
+                        <EditAssignSupervisorStep
+                            departmentData={departmentData}
+                            setDepartmentData={setDepartmentData}
+                            onNext={() => setStep(2)}
+                            onBack={() => setStep(0)}
+                            selectedUser={selectedUser}
+                            setSelectedUser={setSelectedUser}
+                            roles={roles}
+                            users={users}
+                            isRoleOpen={isRoleOpen}
+                            setIsRoleOpen={setIsRoleOpen}
+                            isUserOpen={isUserOpen}
+                            setIsUserOpen={setIsUserOpen}
+                            selectedRole={selectedRole}
+                            setSelectedRole={setSelectedRole}
+                        />
+                    )}
                     {step === 2 && <EditSetupTeamsStep departmentData={departmentData} setDepartmentData={setDepartmentData} onNext={() => setStep(3)} onBack={() => setStep(1)} />}
-                    {step === 3 && <EditReviewStep departmentData={departmentData} onBack={() => setStep(2)} />}
+                    {step === 3 && <EditReviewStep departmentData={departmentData} selectedUser={selectedUser} onBack={() => setStep(2)} onSubmit={async () => {
+                        const body = {
+                            name: departmentData.name,
+                            description: departmentData.description,
+                            supervisorId: selectedUser?.id || selectedUser?.userId || selectedUser?.userID || selectedUser?.UserId
+                        };
+                        await updateDepartment({ id, ...body }).unwrap();
+                    }} isSubmitting={isUpdating} />}
                 </div>
             </div>
         </div>
@@ -126,13 +172,7 @@ function EditDepartmentInfoStep({ departmentData, setDepartmentData, onNext }) {
                     value={departmentData.name}
                     onChange={(e) => handleInputChange('name', e.target.value)}
                 />
-                <input
-                    className="form-input"
-                    placeholder={t("departments.editDepartmentForm.departmentInfo.shortName")}
-                    type="text"
-                    value={departmentData.shortName}
-                    onChange={(e) => handleInputChange('shortName', e.target.value)}
-                />
+                {/* shortName removed */}
                 <textarea
                     className="form-input md:col-span-1"
                     placeholder={t("departments.editDepartmentForm.departmentInfo.description")}
@@ -140,17 +180,7 @@ function EditDepartmentInfoStep({ departmentData, setDepartmentData, onNext }) {
                     value={departmentData.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
                 />
-                <div className="relative">
-                    <select 
-                        className="form-input appearance-none cursor-pointer pr-10"
-                        value={departmentData.status}
-                        onChange={(e) => handleInputChange('status', e.target.value)}
-                    >
-                        <option value="">{t("departments.editDepartmentForm.departmentInfo.status")}</option>
-                        <option value="active">{t("departments.editDepartmentForm.departmentInfo.active")}</option>
-                        <option value="inactive">{t("departments.editDepartmentForm.departmentInfo.inactive")}</option>
-                    </select>
-                </div>
+                {/* status removed */}
             </div>
 
             {/* Action Buttons */}
@@ -163,120 +193,55 @@ function EditDepartmentInfoStep({ departmentData, setDepartmentData, onNext }) {
 }
 
 // Step 2: Edit Assign Supervisor
-function EditAssignSupervisorStep({ departmentData, setDepartmentData, onNext, onBack }) {
+function EditAssignSupervisorStep({ onNext, onBack, selectedUser, setSelectedUser, roles, users, isRoleOpen, setIsRoleOpen, isUserOpen, setIsUserOpen, selectedRole, setSelectedRole }) {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-    // Mock supervisor data
-    const availableSupervisors = [
-        { id: 1, name: "Leslie Alexander", role: "Senior Manager", avatar: "/assets/navbar/Avatar.png" },
-        { id: 2, name: "John Doe", role: "Team Lead", avatar: "/assets/navbar/Avatar.png" },
-        { id: 3, name: "Jane Smith", role: "Department Head", avatar: "/assets/navbar/Avatar.png" },
-        { id: 4, name: "Mike Johnson", role: "Senior Manager", avatar: "/assets/navbar/Avatar.png" }
-    ];
-
-    const toggleSupervisor = (supervisor) => {
-        setDepartmentData(prev => {
-            const isSelected = prev.supervisors.find(s => s.id === supervisor.id);
-            if (isSelected) {
-                return {
-                    ...prev,
-                    supervisors: prev.supervisors.filter(s => s.id !== supervisor.id)
-                };
-            } else {
-                return {
-                    ...prev,
-                    supervisors: [...prev.supervisors, supervisor]
-                };
-            }
-        });
-    };
+    const safeRoles = Array.isArray(roles) ? roles : [];
+    const safeUsers = Array.isArray(users) ? users : [];
 
     return (
         <div className="space-y-6">
-            {/* Dropdown for selecting supervisors */}
+            {/* Role selection */}
             <div className="relative">
-                <div
-                    className="form-input cursor-pointer flex items-center justify-between"
-                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                >
-                    <span className="text-[var(--sub-text-color)]">
-                        {t("departments.editDepartmentForm.assignSupervisor.chooseSupervisor")}
-                    </span>
-                    <ChevronDown 
-                        className={`text-[var(--sub-text-color)] transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} 
-                        size={16} 
-                    />
+                <div className="form-input cursor-pointer flex items-center justify-between" onClick={() => setIsRoleOpen(!isRoleOpen)}>
+                    <span className="text-[var(--sub-text-color)]">{selectedRole ? selectedRole.name : t("departments.newDepartmentForm.assignSupervisor.chooseRole")}</span>
+                    <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isRoleOpen ? 'rotate-180' : ''}`} size={16} />
                 </div>
-                
-                {isDropdownOpen && (
+                {isRoleOpen && (
                     <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                        {availableSupervisors.map(supervisor => (
-                            <div
-                                key={supervisor.id}
-                                className="p-3 hover:bg-[var(--hover-color)] cursor-pointer flex items-center justify-between"
-                                onClick={() => toggleSupervisor(supervisor)}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <img src={supervisor.avatar} alt={supervisor.name} className="w-8 h-8 rounded-full" />
-                                    <div>
-                                        <div className="text-[var(--text-color)] font-medium">{supervisor.name}</div>
-                                        <div className="text-[var(--sub-text-color)] text-sm">{supervisor.role}</div>
-                                    </div>
-                                </div>
-                                <div className={`w-5 h-5 rounded border-2 ${
-                                    departmentData.supervisors.find(s => s.id === supervisor.id) 
-                                        ? 'bg-[var(--accent-color)] border-[var(--accent-color)]' 
-                                        : 'border-[var(--border-color)]'
-                                } flex items-center justify-center`}>
-                                    {departmentData.supervisors.find(s => s.id === supervisor.id) && (
-                                        <Check className="text-white" size={12} />
-                                    )}
-                                </div>
+                        {safeRoles.map((role) => (
+                            <div key={role.id} className="p-3 hover:bg-[var(--hover-color)] cursor-pointer" onClick={() => { setSelectedRole(role); setIsRoleOpen(false); setSelectedUser(null); }}>
+                                <div className="text-sm text-[var(--text-color)]">{role.name}</div>
                             </div>
                         ))}
+                        {safeRoles.length === 0 && <div className="p-3 text-[var(--sub-text-color)]">No roles found</div>}
                     </div>
                 )}
             </div>
 
-            {/* Selected Supervisors */}
-            {departmentData.supervisors.length > 0 && (
-                <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-[var(--text-color)]">
-                        {t("departments.editDepartmentForm.assignSupervisor.supervisor")}
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {departmentData.supervisors.map(supervisor => (
-                            <div key={supervisor.id} className="flex items-center justify-between p-4 bg-[var(--container-color)] rounded-lg border border-[var(--border-color)]">
-                                <div className="flex items-center gap-3">
-                                    <img src={supervisor.avatar} alt={supervisor.name} className="w-10 h-10 rounded-full" />
-                                    <div>
-                                        <div className="text-[var(--text-color)] font-medium">{supervisor.name}</div>
-                                        <div className="text-[var(--sub-text-color)] text-sm">{supervisor.role}</div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <button className="p-1 hover:bg-[var(--hover-color)] rounded">
-                                        <UserCheck className="text-[var(--sub-text-color)]" size={16} />
-                                    </button>
-                                    <button 
-                                        className="p-1 hover:bg-[var(--hover-color)] rounded"
-                                        onClick={() => toggleSupervisor(supervisor)}
-                                    >
-                                        <X className="text-[var(--sub-text-color)]" size={16} />
-                                    </button>
-                                </div>
+            {/* User selection */}
+            <div className="relative">
+                <div className="form-input cursor-pointer flex items-center justify-between" onClick={() => selectedRole && setIsUserOpen(!isUserOpen)}>
+                    <span className="text-[var(--sub-text-color)]">{selectedUser ? (selectedUser.name || `${selectedUser.firstName || ''} ${selectedUser.lastName || ''}`.trim()) : t("departments.newDepartmentForm.assignSupervisor.chooseSupervisor")}</span>
+                    <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isUserOpen ? 'rotate-180' : ''}`} size={16} />
+                </div>
+                {isUserOpen && (
+                    <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {!selectedRole && <div className="p-3 text-[var(--sub-text-color)]">Select a role first</div>}
+                        {selectedRole && safeUsers.map((u) => (
+                            <div key={u.id} className="p-3 hover:bg-[var(--hover-color)] cursor-pointer" onClick={() => { setSelectedUser(u); setIsUserOpen(false); }}>
+                                <div className="text-sm text-[var(--text-color)]">{u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim()}</div>
+                                <div className="text-xs text-[var(--sub-text-color)]">{u.email || u.username}</div>
                             </div>
                         ))}
+                        {selectedRole && safeUsers.length === 0 && <div className="p-3 text-[var(--sub-text-color)]">No users found</div>}
                     </div>
-                </div>
-            )}
+                )}
+            </div>
 
-            {/* Action Buttons */}
             <div className={`flex ${isArabic ? 'justify-start' : 'justify-end'} gap-3 pt-6`}>
                 <button type="button" className="btn-secondary" onClick={onBack}>{t("departments.editDepartmentForm.buttons.back")}</button>
-                <button type="button" className="btn-primary" onClick={onNext}>{t("departments.editDepartmentForm.buttons.next")}</button>
+                <button type="button" className="btn-primary" onClick={onNext} disabled={!selectedUser}>{t("departments.editDepartmentForm.buttons.next")}</button>
             </div>
         </div>
     );
@@ -287,40 +252,63 @@ function EditSetupTeamsStep({ departmentData, setDepartmentData, onNext, onBack 
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
     const [showAddTeam, setShowAddTeam] = useState(false);
-    const [newTeam, setNewTeam] = useState({ name: '', description: '', selectedEmployees: [] });
-    const [isEmployeeDropdownOpen, setIsEmployeeDropdownOpen] = useState(false);
+    const [newTeam, setNewTeam] = useState({ name: '', description: '', selectedEmployees: [], teamLeader: null });
+    const [leaderRole, setLeaderRole] = useState(null);
+    const [membersRole, setMembersRole] = useState(null);
+    const [isLeaderRoleOpen, setIsLeaderRoleOpen] = useState(false);
+    const [isLeaderUserOpen, setIsLeaderUserOpen] = useState(false);
+    const [isMembersRoleOpen, setIsMembersRoleOpen] = useState(false);
+    const [isMembersOpen, setIsMembersOpen] = useState(false);
 
-    // Mock employee data
-    const employees = [
-        { id: 1, name: "Alice Johnson", role: "Marketing Specialist", avatar: "/assets/navbar/Avatar.png" },
-        { id: 2, name: "Bob Smith", role: "Content Creator", avatar: "/assets/navbar/Avatar.png" },
-        { id: 3, name: "Carol Davis", role: "SEO Specialist", avatar: "/assets/navbar/Avatar.png" },
-        { id: 4, name: "David Wilson", role: "Brand Manager", avatar: "/assets/navbar/Avatar.png" }
-    ];
+    const { data: rolesData } = useGetAllRolesQuery({ pageNumber: 1, pageSize: 50 });
+    const roles = Array.isArray(rolesData?.value) ? rolesData.value : (Array.isArray(rolesData?.data) ? rolesData.data : (Array.isArray(rolesData) ? rolesData : []));
 
-    const toggleEmployee = (employee) => {
+    const { data: leaderUsersData } = useGetRoleUsersQuery(
+        leaderRole ? { id: leaderRole.id, pageNumber: 1, pageSize: 50 } : { id: "", pageNumber: 1, pageSize: 50 },
+        { skip: !leaderRole }
+    );
+    const leaderUsers = Array.isArray(leaderUsersData?.value) ? leaderUsersData.value : (Array.isArray(leaderUsersData?.data) ? leaderUsersData.data : (Array.isArray(leaderUsersData) ? leaderUsersData : []));
+
+    const { data: membersUsersData } = useGetRoleUsersQuery(
+        membersRole ? { id: membersRole.id, pageNumber: 1, pageSize: 50 } : { id: "", pageNumber: 1, pageSize: 50 },
+        { skip: !membersRole }
+    );
+    const memberUsers = Array.isArray(membersUsersData?.value) ? membersUsersData.value : (Array.isArray(membersUsersData?.data) ? membersUsersData.data : (Array.isArray(membersUsersData) ? membersUsersData : []));
+
+    const [createTeam, { isLoading: isCreatingTeam }] = useCreateTeamMutation();
+
+    const toggleEmployee = (user) => {
         setNewTeam(prev => ({
             ...prev,
-            selectedEmployees: prev.selectedEmployees.find(e => e.id === employee.id)
-                ? prev.selectedEmployees.filter(e => e.id !== employee.id)
-                : [...prev.selectedEmployees, employee]
+            selectedEmployees: prev.selectedEmployees.find(e => e.id === user.id)
+                ? prev.selectedEmployees.filter(e => e.id !== user.id)
+                : [...prev.selectedEmployees, user]
         }));
     };
 
-    const addTeam = () => {
-        if (newTeam.name.trim()) {
+    const addTeam = async () => {
+        if (!newTeam.name.trim() || !newTeam.teamLeader?.id) return;
+        try {
+            const res = await createTeam({
+                name: newTeam.name,
+                description: newTeam.description,
+                teamLeadId: newTeam.teamLeader.id,
+                departmentId: departmentData.id,
+            }).unwrap();
+            const value = res?.value || res;
             setDepartmentData(prev => ({
                 ...prev,
                 teams: [...prev.teams, {
-                    id: Date.now(),
-                    name: newTeam.name,
-                    description: newTeam.description,
+                    id: value?.id || Date.now(),
+                    name: value?.name || newTeam.name,
+                    description: value?.description || newTeam.description,
                     members: newTeam.selectedEmployees.length
                 }]
             }));
-            setNewTeam({ name: '', description: '', selectedEmployees: [] });
+            setNewTeam({ name: '', description: '', selectedEmployees: [], teamLeader: null });
+            setLeaderRole(null); setMembersRole(null);
             setShowAddTeam(false);
-        }
+        } catch {}
     };
 
     const removeTeam = (teamId) => {
@@ -343,59 +331,79 @@ function EditSetupTeamsStep({ departmentData, setDepartmentData, onNext, onBack 
                             value={newTeam.name}
                             onChange={(e) => setNewTeam(prev => ({ ...prev, name: e.target.value }))}
                         />
-                        <div className="relative">
-                            <div
-                                className="form-input cursor-pointer flex items-center justify-between"
-                                onClick={() => setIsEmployeeDropdownOpen(!isEmployeeDropdownOpen)}
-                            >
-                                <span className="text-[var(--sub-text-color)]">
-                                    {newTeam.selectedEmployees.length > 0 
-                                        ? `${newTeam.selectedEmployees.length} selected`
-                                        : t("departments.editDepartmentForm.setupTeams.chooseEmployee")
-                                    }
-                                </span>
-                                <div className="flex items-center gap-2">
-                                    {newTeam.selectedEmployees.slice(0, 3).map(emp => (
-                                        <img key={emp.id} src={emp.avatar} alt={emp.name} className="w-6 h-6 rounded-full" />
-                                    ))}
-                                    {newTeam.selectedEmployees.length > 3 && (
-                                        <span className="text-xs text-[var(--sub-text-color)]">+{newTeam.selectedEmployees.length - 3}</span>
-                                    )}
-                                    <ChevronDown 
-                                        className={`text-[var(--sub-text-color)] transition-transform ${isEmployeeDropdownOpen ? 'rotate-180' : ''}`} 
-                                        size={16} 
-                                    />
+                        {/* Leader role/user selection */}
+                        <div className="space-y-2">
+                            <div className="relative">
+                                <div className="form-input cursor-pointer flex items-center justify-between" onClick={() => setIsLeaderRoleOpen(!isLeaderRoleOpen)}>
+                                    <span className="text-[var(--sub-text-color)]">{leaderRole ? leaderRole.name : t("departments.newDepartmentForm.assignSupervisor.chooseRole")}</span>
+                                    <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isLeaderRoleOpen ? 'rotate-180' : ''}`} size={16} />
                                 </div>
+                                {isLeaderRoleOpen && (
+                                    <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                        {(roles || []).map(role => (
+                                            <div key={role.id} className="p-3 hover:bg-[var(--hover-color)] cursor-pointer" onClick={() => { setLeaderRole(role); setIsLeaderRoleOpen(false); setIsLeaderUserOpen(true); }}>
+                                                <div className="text-sm text-[var(--text-color)]">{role.name}</div>
+                                            </div>
+                                        ))}
+                                        {(!roles || roles.length === 0) && <div className="p-3 text-[var(--sub-text-color)]">No roles found</div>}
+                                    </div>
+                                )}
                             </div>
-                            
-                            {isEmployeeDropdownOpen && (
-                                <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                                    {employees.map(employee => (
-                                        <div
-                                            key={employee.id}
-                                            className="p-3 hover:bg-[var(--hover-color)] cursor-pointer flex items-center justify-between"
-                                            onClick={() => toggleEmployee(employee)}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <img src={employee.avatar} alt={employee.name} className="w-8 h-8 rounded-full" />
-                                                <div>
-                                                    <div className="text-[var(--text-color)] font-medium">{employee.name}</div>
-                                                    <div className="text-[var(--sub-text-color)] text-sm">{employee.role}</div>
+                            <div className="relative">
+                                <div className="form-input cursor-pointer flex items-center justify-between" onClick={() => leaderRole && setIsLeaderUserOpen(!isLeaderUserOpen)}>
+                                    <span className="text-[var(--sub-text-color)]">{newTeam.teamLeader ? (newTeam.teamLeader.name || `${newTeam.teamLeader.firstName || ''} ${newTeam.teamLeader.lastName || ''}`.trim()) : t("departments.newDepartmentForm.assignSupervisor.chooseSupervisor")}</span>
+                                    <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isLeaderUserOpen ? 'rotate-180' : ''}`} size={16} />
+                                </div>
+                                {isLeaderUserOpen && (
+                                    <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                        {leaderRole && (leaderUsers || []).map(u => (
+                                            <div key={u.id} className="p-3 hover:bg-[var(--hover-color)] cursor-pointer" onClick={() => { setNewTeam(prev => ({ ...prev, teamLeader: u })); setIsLeaderUserOpen(false); }}>
+                                                <div className="text-sm text-[var(--text-color)]">{u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim()}</div>
+                                                <div className="text-xs text-[var(--sub-text-color)]">{u.email || u.username}</div>
+                                            </div>
+                                        ))}
+                                        {leaderRole && (!leaderUsers || leaderUsers.length === 0) && <div className="p-3 text-[var(--sub-text-color)]">No users found</div>}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        {/* Members selection: role then users */}
+                        <div className="space-y-2">
+                            <div className="relative">
+                                <div className="form-input cursor-pointer flex items-center justify-between" onClick={() => setIsMembersRoleOpen(!isMembersRoleOpen)}>
+                                    <span className="text-[var(--sub-text-color)]">{membersRole ? membersRole.name : t("departments.newDepartmentForm.assignSupervisor.chooseRole")}</span>
+                                    <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isMembersRoleOpen ? 'rotate-180' : ''}`} size={16} />
+                                </div>
+                                {isMembersRoleOpen && (
+                                    <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                        {(roles || []).map(role => (
+                                            <div key={role.id} className="p-3 hover:bg-[var(--hover-color)] cursor-pointer" onClick={() => { setMembersRole(role); setIsMembersRoleOpen(false); setIsMembersOpen(true); }}>
+                                                <div className="text-sm text-[var(--text-color)]">{role.name}</div>
+                                            </div>
+                                        ))}
+                                        {(!roles || roles.length === 0) && <div className="p-3 text-[var(--sub-text-color)]">No roles found</div>}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="relative">
+                                <div className="form-input cursor-pointer flex items-center justify-between" onClick={() => membersRole && setIsMembersOpen(!isMembersOpen)}>
+                                    <span className="text-[var(--sub-text-color)]">{newTeam.selectedEmployees.length > 0 ? `${newTeam.selectedEmployees.length} selected` : t("departments.editDepartmentForm.setupTeams.chooseEmployee")}</span>
+                                    <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isMembersOpen ? 'rotate-180' : ''}`} size={16} />
+                                </div>
+                                {isMembersOpen && (
+                                    <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                        {membersRole && (memberUsers || []).map(u => (
+                                            <div key={u.id} className="p-3 hover:bg-[var(--hover-color)] cursor-pointer flex items-center justify-between" onClick={() => toggleEmployee(u)}>
+                                                <div className="text-sm text-[var(--text-color)]">{u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim()}</div>
+                                                <div className="w-5 h-5 rounded border-2 border-[var(--border-color)] flex items-center justify-center">
+                                                    {newTeam.selectedEmployees.find(e => e.id === u.id) && <Check className="text-[var(--accent-color)]" size={12} />}
                                                 </div>
                                             </div>
-                                            <div className={`w-5 h-5 rounded border-2 ${
-                                                newTeam.selectedEmployees.find(e => e.id === employee.id) 
-                                                    ? 'bg-[var(--accent-color)] border-[var(--accent-color)]' 
-                                                    : 'border-[var(--border-color)]'
-                                            } flex items-center justify-center`}>
-                                                {newTeam.selectedEmployees.find(e => e.id === employee.id) && (
-                                                    <Check className="text-white" size={12} />
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+                                        ))}
+                                        {membersRole && (!memberUsers || memberUsers.length === 0) && <div className="p-3 text-[var(--sub-text-color)]">No users found</div>}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                     <textarea
@@ -476,19 +484,16 @@ function EditSetupTeamsStep({ departmentData, setDepartmentData, onNext, onBack 
 }
 
 // Step 4: Review & Save
-function EditReviewStep({ departmentData, onBack }) {
+function EditReviewStep({ departmentData, onBack, selectedUser, onSubmit, isSubmitting }) {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
     const navigate = useNavigate();
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isCompleted, setIsCompleted] = useState(false);
-
     const handleSubmit = async () => {
-        setIsSubmitting(true);
-        setTimeout(() => {
-            setIsSubmitting(false);
+        try {
+            await onSubmit();
             setIsCompleted(true);
-        }, 2000);
+        } catch (e) {}
     };
 
     if (isCompleted) {
@@ -525,18 +530,7 @@ function EditReviewStep({ departmentData, onBack }) {
                         </span>
                         <div className="text-[var(--text-color)] font-medium">{departmentData.name}</div>
                     </div>
-                    <div>
-                        <span className="text-[var(--sub-text-color)] text-sm">
-                            {t("departments.editDepartmentForm.review.shortName")}:
-                        </span>
-                        <div className="text-[var(--text-color)] font-medium">{departmentData.shortName}</div>
-                    </div>
-                    <div>
-                        <span className="text-[var(--sub-text-color)] text-sm">
-                            {t("departments.editDepartmentForm.review.status")}:
-                        </span>
-                        <div className="text-[var(--text-color)] font-medium">{departmentData.status}</div>
-                    </div>
+                    
                     <div>
                         <span className="text-[var(--sub-text-color)] text-sm">
                             {t("departments.editDepartmentForm.review.description")}:
@@ -546,21 +540,23 @@ function EditReviewStep({ departmentData, onBack }) {
                 </div>
             </div>
 
-            {/* Supervisors */}
+            {/* Supervisor */}
             <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-[var(--text-color)]">
                     {t("departments.editDepartmentForm.review.supervisor")}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {departmentData.supervisors.map((supervisor, index) => (
-                        <div key={index} className="flex items-center gap-3 p-4 bg-[var(--container-color)] rounded-lg border border-[var(--border-color)]">
-                            <img src={supervisor.avatar} alt={supervisor.name} className="w-10 h-10 rounded-full" />
+                    {selectedUser ? (
+                        <div className="flex items-center gap-3 p-4 bg-[var(--container-color)] rounded-lg border border-[var(--border-color)]">
+                            <img src="/assets/navbar/Avatar.png" alt={selectedUser.name || selectedUser.email} className="w-10 h-10 rounded-full" />
                             <div>
-                                <div className="text-[var(--text-color)] font-medium">{supervisor.name}</div>
-                                <div className="text-[var(--sub-text-color)] text-sm">{supervisor.role}</div>
+                                <div className="text-[var(--text-color)] font-medium">{selectedUser.name || `${selectedUser.firstName || ''} ${selectedUser.lastName || ''}`.trim()}</div>
+                                <div className="text-[var(--sub-text-color)] text-sm">{selectedUser.email || selectedUser.username}</div>
                             </div>
                         </div>
-                    ))}
+                    ) : (
+                        <div className="text-[var(--sub-text-color)]">No supervisor selected</div>
+                    )}
                 </div>
             </div>
 

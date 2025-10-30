@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Search, Plus, ArrowLeft } from "lucide-react";
 import TeamCard from "./team-card";
 import TeamsStatusCards from "./status-cards";
@@ -106,6 +106,9 @@ export default function AllTeams() {
     const [selectedTeam, setSelectedTeam] = useState(null);
     const [teams, setTeams] = useState(initialTeamsData);
     const navigate = useNavigate();
+    const location = useLocation();
+    const params = new URLSearchParams(location.search);
+    const departmentId = params.get('departmentId');
 
     const handleAddNewTeam = () => {
         setIsAddTeamModalOpen(true);
@@ -258,6 +261,7 @@ export default function AllTeams() {
                 isOpen={isAddTeamModalOpen}
                 onClose={() => setIsAddTeamModalOpen(false)}
                 onAddTeam={handleAddTeam}
+                departmentId={departmentId}
             />
 
             {/* Edit Team Modal */}

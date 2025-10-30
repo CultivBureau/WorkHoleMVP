@@ -39,29 +39,29 @@ export const departmentApi = createApi({
     // Update an existing department
     updateDepartment: builder.mutation({
       query: ({ id, ...body }) => ({
-        url: `/api/Department/${id}`,
+        url: `/api/v1/Department/Update/${id}`,
         method: "PUT",
         body,
       }),
-      invalidatesTags: ["Departments"],
+      invalidatesTags: [{ type: "Departments", id: "LIST" }],
     }),
 
     // Soft delete a department
     deleteDepartment: builder.mutation({
       query: (id) => ({
-        url: `/api/Department/${id}`,
+        url: `/api/v1/Department/Delete/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Departments"],
+      invalidatesTags: [{ type: "Departments", id: "LIST" }],
     }),
 
     // Restore a soft-deleted department
     restoreDepartment: builder.mutation({
       query: (id) => ({
-        url: `/api/Department/${id}`,
+        url: `/api/v1/Department/Restore/${id}`,
         method: "POST",
       }),
-      invalidatesTags: ["Departments"],
+      invalidatesTags: [{ type: "Departments", id: "LIST" }],
     }),
 
     // Get department supervisor

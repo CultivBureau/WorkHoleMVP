@@ -1,17 +1,20 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { ChevronRight, Edit, Trash2, MoreVertical } from "lucide-react";
+import { ChevronRight, Edit, Trash2, MoreVertical, RotateCcw } from "lucide-react";
 import GroupDepartmentIcon from '/assets/groupDepartments.svg';
-import { useGetDepartmentSupervisorQuery } from "../../../services/apis/DepartmentApi";
+// Supervisor name endpoint is unavailable; use supervisorId presence instead
+import { useDeleteDepartmentMutation, useRestoreDepartmentMutation } from "../../../services/apis/DepartmentApi";
 
 export default function DepartmentCard({ department }) {
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const isArabic = i18n.language === "ar";
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const { data: supervisorResp, isLoading: isSupervisorLoading } = useGetDepartmentSupervisorQuery(department.id, { skip: !department?.id });
-    const supervisor = supervisorResp?.value || supervisorResp?.data || supervisorResp || null;
+    const supervisorAssigned = Boolean(department?.supervisorId);
+    const [isDeleted, setIsDeleted] = useState(false);
+    const [deleteDepartment] = useDeleteDepartmentMutation();
+    const [restoreDepartment] = useRestoreDepartmentMutation();
 
     const handleEditDepartment = (e) => {
         e.stopPropagation(); // Prevent card click
@@ -22,8 +25,19 @@ export default function DepartmentCard({ department }) {
     const handleDeleteDepartment = (e) => {
         e.stopPropagation(); // Prevent card click
         setIsMenuOpen(false);
-        // Add delete confirmation logic here
-        console.log("Delete department:", department.id);
+        deleteDepartment(department.id)
+            .unwrap()
+            .then(() => setIsDeleted(true))
+            .catch(() => {});
+    };
+
+    const handleRestoreDepartment = (e) => {
+        e.stopPropagation();
+        setIsMenuOpen(false);
+        restoreDepartment(department.id)
+            .unwrap()
+            .then(() => setIsDeleted(false))
+            .catch(() => {});
     };
 
     const handleMenuToggle = (e) => {
@@ -32,7 +46,7 @@ export default function DepartmentCard({ department }) {
     };
 
     const handleCardClick = () => {
-        navigate('/pages/admin/all-teams');
+        navigate(`/pages/admin/all-teams?departmentId=${department.id}`);
     };
 
     return (
@@ -51,15 +65,14 @@ export default function DepartmentCard({ department }) {
                         <p className="text-sm text-[var(--sub-text-color)]">
                             {department.totalMembers} {t("allDepartments.departmentCard.members")}
                         </p>
+                        <p className="text-sm text-[var(--sub-text-color)] mt-1">
+                            Status: <span className="text-[var(--text-color)] font-medium">{isDeleted ? 'Deleted' : (department.status || 'Active')}</span>
+                        </p>
                         {/* Supervisor */}
                         <div className="mt-1 text-xs text-[var(--sub-text-color)]">
                             <span className="mr-1">Supervisor:</span>
-                            {isSupervisorLoading ? (
-                                <span>Loading...</span>
-                            ) : supervisor ? (
-                                <span className="text-[var(--text-color)] font-medium">
-                                    {supervisor.name || `${supervisor.firstName || ''} ${supervisor.lastName || ''}`.trim() || supervisor.email || '-'}
-                                </span>
+                            {supervisorAssigned ? (
+                                <span className="text-[var(--text-color)] font-medium">Assigned</span>
                             ) : (
                                 <span className="text-[var(--sub-text-color)]">None</span>
                             )}
@@ -106,13 +119,23 @@ export default function DepartmentCard({ department }) {
                                     <Edit size={14} />
                                     <span>Edit</span>
                                 </button>
-                                <button
-                                    onClick={handleDeleteDepartment}
-                                    className="w-full px-3 py-2 text-left hover:bg-[var(--hover-color)] transition-colors flex items-center gap-2 text-red-500"
-                                >
-                                    <Trash2 size={14} />
-                                    <span>Delete</span>
-                                </button>
+                                {!isDeleted ? (
+                                    <button
+                                        onClick={handleDeleteDepartment}
+                                        className="w-full px-3 py-2 text-left hover:bg-[var(--hover-color)] transition-colors flex items-center gap-2 text-red-500"
+                                    >
+                                        <Trash2 size={14} />
+                                        <span>Delete</span>
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={handleRestoreDepartment}
+                                        className="w-full px-3 py-2 text-left hover:bg-[var(--hover-color)] transition-colors flex items-center gap-2 text-[var(--text-color)]"
+                                    >
+                                        <RotateCcw size={14} />
+                                        <span>Restore</span>
+                                    </button>
+                                )}
                             </div>
                         )}
                     </div>
