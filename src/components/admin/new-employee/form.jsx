@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { User, Briefcase, FileText, Camera, Upload, Eye, EyeOff } from "lucide-react";
-import { getUserInfo } from "../../../utils/page";
+import { jwtDecode } from "jwt-decode";
+import { getUserInfo, getCompanyId } from "../../../utils/page";
 import { useGetAllDepartmentsQuery } from "../../../services/apis/DepartmentApi";
 import { useGetAllRolesQuery } from "../../../services/apis/RoleApi";
 import { useGetAllShiftsQuery, useAssignUserShiftMutation } from "../../../services/apis/ShiftApi";
@@ -14,8 +15,7 @@ export default function NewEmployeeForm() {
     const isArabic = i18n.language === "ar";
     const [step, setStep] = useState(0);
 
-    // Initialize employee data, pre-filling companyId from decoded token
-    const userInfo = getUserInfo();
+    // Initialize employee data, pre-filling companyId from token/cookie
     const [employeeData, setEmployeeData] = useState({
         userName: "",
         email: "",
@@ -25,7 +25,7 @@ export default function NewEmployeeForm() {
         lastName: "",
         jobTitle: "",
         hireDate: "",
-        companyId: userInfo?.companyId || "",
+        companyId: getCompanyId() || "",
         roleId: "",
         departmentId: "",
         teamId: "",
@@ -62,9 +62,12 @@ export default function NewEmployeeForm() {
     const handleSubmitAll = async () => {
         // Final submit: register then assign team then assign shift
         try {
-            // Resolve companyId from cookie if not already in state
-            const cookieCompanyId = getUserInfo()?.companyId || "";
-            const companyId = employeeData.companyId || cookieCompanyId;
+            // Get companyId from token/cookie
+            const companyId = getCompanyId();
+            if (!companyId) {
+                toast.error("Company ID not found. Please login again.");
+                return;
+            }
 
             // Validate required register fields per API contract
             const required = {
@@ -82,11 +85,11 @@ export default function NewEmployeeForm() {
                 .filter(([_, v]) => !v || (typeof v === 'string' && v.trim() === ''))
                 .map(([k]) => k);
             if (missing.length) {
-                toast.error(`Missing required fields: ${missing.join(', ')}`);
+                toast.error(t("employees.newEmployeeForm.validation.missingFields") || `Missing required fields: ${missing.join(', ')}`);
                 return;
             }
 
-            // 1) Register user (roleId included here)
+            // Step 1: Register user with all required data including roleId
             const registerPayload = {
                 userName: employeeData.userName,
                 email: employeeData.email,
@@ -100,27 +103,76 @@ export default function NewEmployeeForm() {
                 roleId: employeeData.roleId,
             };
 
+            toast.loading(t("employees.newEmployeeForm.processing.register") || "Registering user...");
             const regRes = await registerUser(registerPayload).unwrap();
-            const regValue = regRes?.value || regRes || {};
-            const userId = regValue?.userId || regValue?.id || regValue?.user?.id;
-            if (!userId) {
-                toast.error("Could not determine new user ID from register response");
+            toast.dismiss();
+            
+            // Extract userId from response - API returns token, need to decode it
+            const token = regRes?.value?.token || regRes?.token;
+            if (!token) {
+                toast.error(t("employees.newEmployeeForm.errors.tokenNotFound") || "Could not find token in register response");
                 return;
             }
 
-            // 2) Assign to team (optional if team chosen)
-            if (employeeData.teamId) {
-                await assignUserToTeam({ teamId: employeeData.teamId, userId }).unwrap();
+            // Decode JWT token to extract userId
+            let userId = null;
+            try {
+                const decoded = jwtDecode(token);
+                // Extract userId from 'sub' claim (subject) - this is the standard JWT claim for user ID
+                // Based on backend API, userId is stored in 'sub' claim
+                userId = decoded?.sub;
+                
+                if (!userId) {
+                    // Fallback to other possible claims (though 'sub' should always be present)
+                    userId = decoded?.userId || decoded?.id || decoded?.user?.id || decoded?.nameid || decoded?.UserId;
+                }
+            } catch (decodeError) {
+                toast.error(t("employees.newEmployeeForm.errors.tokenDecodeFailed") || "Failed to decode authentication token");
+                return;
+            }
+            
+            if (!userId) {
+                toast.error(t("employees.newEmployeeForm.errors.userIdNotFound") || "Could not extract user ID from token 'sub' claim.");
+                return;
             }
 
-            // 3) Assign shift (optional if shift chosen)
+            // Step 2: Assign to team (if team was selected)
+            if (employeeData.teamId) {
+                toast.loading(t("employees.newEmployeeForm.processing.assignTeam") || "Assigning user to team...");
+                try {
+                    await assignUserToTeam({ 
+                        teamId: employeeData.teamId, 
+                        userId 
+                    }).unwrap();
+                    toast.dismiss();
+                    toast.success(t("employees.newEmployeeForm.success.teamAssigned") || "User assigned to team successfully");
+                } catch (teamErr) {
+                    toast.dismiss();
+                    const teamErrorMsg = teamErr?.data?.errorMessage || teamErr?.data?.message || teamErr?.message || t("employees.newEmployeeForm.errors.teamAssignmentFailed") || "Failed to assign user to team";
+                    toast.error(teamErrorMsg);
+                    // Continue even if team assignment fails
+                }
+            }
+
+            // Step 3: Assign shift (if shift was selected)
             if (employeeData.shiftId) {
-                await assignUserShift({
-                    userId,
-                    shiftId: employeeData.shiftId,
-                    effectiveFrom: new Date().toISOString(),
-                    effectiveTo: new Date().toISOString(),
-                }).unwrap();
+                toast.loading(t("employees.newEmployeeForm.processing.assignShift") || "Assigning user to shift...");
+                const now = new Date().toISOString();
+                try {
+                    await assignUserShift({
+                        userId,
+                        shiftId: employeeData.shiftId,
+                        effectiveFrom: now,
+                        effectiveTo: now,
+                    }).unwrap();
+                    toast.dismiss();
+                    toast.success(t("employees.newEmployeeForm.success.shiftAssigned") || "User assigned to shift successfully");
+                } catch (shiftErr) {
+                    toast.dismiss();
+                    const shiftErrorMsg = shiftErr?.data?.errorMessage || shiftErr?.data?.message || shiftErr?.message || t("employees.newEmployeeForm.errors.shiftAssignmentFailed") || "Failed to assign user to shift";
+                    toast.error(shiftErrorMsg);
+                    // Continue even if shift assignment fails
+                }
             }
 
             // Show success toast
@@ -136,7 +188,7 @@ export default function NewEmployeeForm() {
                 lastName: "",
                 jobTitle: "",
                 hireDate: "",
-                companyId: userInfo?.companyId || "",
+                companyId: getCompanyId() || "",
                 roleId: "",
                 departmentId: "",
                 teamId: "",
@@ -144,9 +196,11 @@ export default function NewEmployeeForm() {
             });
             setStep(0);
         } catch (err) {
+            toast.dismiss();
+            // Handle validation errors and API errors
             const apiErrors = err?.data?.errors || err?.data?.Errors;
             const modelState = apiErrors && typeof apiErrors === 'object' ? Object.values(apiErrors).flat().join(' | ') : null;
-            const message = modelState || err?.data?.errorMessage || err?.data?.message || err?.message || "Failed to create employee";
+            const message = modelState || err?.data?.errorMessage || err?.data?.message || err?.message || t("employees.newEmployeeForm.errors.createFailed") || "Failed to create employee";
             toast.error(message);
         }
     };
@@ -571,14 +625,32 @@ function PersonalInfoStep({ onNext, onChange, data }) {
 function ProfessionalInfoStep({ onNext, onBack, onChange, data, departments, roles, shifts, teams }) {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
+    const [error, setError] = useState("");
 
     const deptOptions = Array.isArray(departments) ? departments : [];
     const roleOptions = Array.isArray(roles) ? roles : [];
     const shiftOptions = Array.isArray(shifts) ? shifts : [];
     const teamOptions = Array.isArray(teams) ? teams : [];
 
+    const handleNext = () => {
+        // Validate required fields for step 2
+        if (!data.roleId) {
+            setError(t("employees.newEmployeeForm.validation.roleRequired") || "Role is required");
+            return;
+        }
+        
+        setError("");
+        onNext();
+    };
+
     return (
         <div className="space-y-6">
+            {error && (
+                <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
+                    {error}
+                </div>
+            )}
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <select
                     className="form-input"
@@ -586,6 +658,7 @@ function ProfessionalInfoStep({ onNext, onBack, onChange, data, departments, rol
                     onChange={e => {
                         onChange('departmentId', e.target.value);
                         onChange('teamId', '');
+                        setError("");
                     }}
                 >
                     <option value="">{t("employees.newEmployeeForm.professionalInfo.selectDepartment")}</option>
@@ -595,9 +668,12 @@ function ProfessionalInfoStep({ onNext, onBack, onChange, data, departments, rol
                 </select>
 
                 <select
-                    className="form-input"
+                    className={`form-input ${!data.roleId && error ? 'border-red-500' : ''}`}
                     value={data.roleId}
-                    onChange={e => onChange('roleId', e.target.value)}
+                    onChange={e => {
+                        onChange('roleId', e.target.value);
+                        setError("");
+                    }}
                 >
                     <option value="">{t("employees.newEmployeeForm.professionalInfo.selectEmployeeRole")}</option>
                     {roleOptions.map((r) => (
@@ -610,7 +686,10 @@ function ProfessionalInfoStep({ onNext, onBack, onChange, data, departments, rol
                 <select
                     className="form-input"
                     value={data.shiftId}
-                    onChange={e => onChange('shiftId', e.target.value)}
+                    onChange={e => {
+                        onChange('shiftId', e.target.value);
+                        setError("");
+                    }}
                 >
                     <option value="">{t("employees.newEmployeeForm.professionalInfo.selectShift") || "Select shift"}</option>
                     {shiftOptions.map((s) => (
@@ -621,10 +700,13 @@ function ProfessionalInfoStep({ onNext, onBack, onChange, data, departments, rol
                 <select
                     className="form-input"
                     value={data.teamId}
-                    onChange={e => onChange('teamId', e.target.value)}
+                    onChange={e => {
+                        onChange('teamId', e.target.value);
+                        setError("");
+                    }}
                     disabled={!data.departmentId}
                 >
-                    <option value="">{data.departmentId ? (t("employees.newEmployeeForm.professionalInfo.selectTeam") || "Select team") : t("employees.newEmployeeForm.professionalInfo.selectDepartment")}</option>
+                    <option value="">{data.departmentId ? (t("employees.newEmployeeForm.professionalInfo.selectTeam") || "Select team") : (t("employees.newEmployeeForm.professionalInfo.selectDepartment") || "Select department first")}</option>
                     {teamOptions.map((tm) => (
                         <option key={tm.id || tm.teamId} value={tm.id || tm.teamId}>{tm.name || tm.teamName}</option>
                     ))}
@@ -634,7 +716,7 @@ function ProfessionalInfoStep({ onNext, onBack, onChange, data, departments, rol
             {/* Action Buttons */}
             <div className={`flex ${isArabic ? 'justify-start' : 'justify-end'} gap-3 pt-6`}>
                 <button type="button" className="btn-secondary" onClick={onBack}>{t("employees.newEmployeeForm.buttons.back")}</button>
-                <button type="button" className="btn-primary" onClick={onNext}>{t("employees.newEmployeeForm.buttons.next")}</button>
+                <button type="button" className="btn-primary" onClick={handleNext}>{t("employees.newEmployeeForm.buttons.next")}</button>
             </div>
         </div>
     );
@@ -668,10 +750,10 @@ function DocumentsStep({ onNext, onBack, loading }) {
                     {loading ? (
                         <>
                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                            <span>{t("common.loading") || "Processing..."}</span>
+                            <span>{t("employees.newEmployeeForm.buttons.submitting") || t("common.loading") || "Processing..."}</span>
                         </>
                     ) : (
-                        t("common.submit") || "Submit"
+                        t("employees.newEmployeeForm.buttons.submit") || t("common.submit") || "Submit"
                     )}
                 </button>
             </div>

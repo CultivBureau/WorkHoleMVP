@@ -87,6 +87,23 @@ export const getUserInfo = () => {
   }
 };
 
+// Get companyId from token or separate cookie
+export const getCompanyId = () => {
+  // First try to get from decoded token
+  const userInfo = getUserInfo();
+  if (userInfo?.companyId) {
+    return userInfo.companyId;
+  }
+  
+  // Fallback to separate cookie if exists
+  const companyIdCookie = Cookies.get("companyId");
+  if (companyIdCookie) {
+    return companyIdCookie;
+  }
+  
+  return null;
+};
+
 // Remove user info from cookies
 export const removeUserInfo = () => {
   Cookies.remove("user_info");

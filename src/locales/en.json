@@ -772,11 +772,20 @@
       "buttons": {
         "cancel": "Cancel",
         "next": "Next",
-        "back": "Back"
+        "back": "Back",
+        "submit": "Submit",
+        "submitting": "Submitting..."
       },
       "success": {
         "title": "Employee Added!",
-        "message": "You have successfully added a new employee."
+        "message": "You have successfully added a new employee.",
+        "teamAssigned": "User assigned to team successfully",
+        "shiftAssigned": "User assigned to shift successfully"
+      },
+      "processing": {
+        "register": "Registering user...",
+        "assignTeam": "Assigning user to team...",
+        "assignShift": "Assigning user to shift..."
       },
       "validation": {
         "isRequired": "is required",
@@ -792,7 +801,17 @@
         "validPhone": "Valid phone number",
         "validFirstName": "Valid first name",
         "validLastName": "Valid last name",
-        "validJobTitle": "Valid job title"
+        "validJobTitle": "Valid job title",
+        "roleRequired": "Role is required",
+        "missingFields": "Please fill in all required fields"
+      },
+      "errors": {
+        "tokenNotFound": "Could not find token in register response",
+        "tokenDecodeFailed": "Failed to decode authentication token",
+        "userIdNotFound": "Could not extract user ID from token",
+        "teamAssignmentFailed": "Failed to assign user to team",
+        "shiftAssignmentFailed": "Failed to assign user to shift",
+        "createFailed": "Failed to create employee"
       }
     }
   },
