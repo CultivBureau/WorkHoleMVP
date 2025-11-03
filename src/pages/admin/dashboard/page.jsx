@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import NavBarAdmin from "../../../components/admin/NavBarAdmin";
 import SideBarAdmin from "../../../components/admin/SideBarAdmin";
+import Aside from "../../../components/side-menu/side-menu";
 import { useTranslation } from "react-i18next";
 import {
   Users,
@@ -67,7 +68,7 @@ const DashboardAdmin = () => {
       <div className="flex flex-1 min-h-0">
         {/* Sidebar */}
         <SideBarAdmin />
-
+        
         {/* Main Content */}
         <main className="flex-1 overflow-auto p-3 sm:p-4 md:p-6 bg-[var(--bg-color)] rounded-[22px]">
           {/* Stats Cards - Responsive Grid */}

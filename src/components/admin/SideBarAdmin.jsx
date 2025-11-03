@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useLang } from "../../contexts/LangContext";
@@ -28,9 +28,16 @@ import {
   Menu,
   CalendarCheck,
   Building2,
+  Clock,
+  Coffee,
+  LogOut,
 } from "lucide-react";
 import logo from "../../assets/side-menu-icons/logo.svg?url";
 import { useTheme } from "../../contexts/ThemeContext";
+import { usePermissions } from "../../services/PermissionProvider";
+import { PermissionGuard } from "../common/PermissionGuard";
+import { getUserMenuItems } from "../../utils/userMenuConfig";
+import SideMenuUser from "../side-menu/side-menu";
 
 
 
@@ -143,6 +150,8 @@ function SideMenuItem({
   t,
   isArabic,
   onShowToast,
+  customLabel,
+  childLabels,
 }) {
   const isActive = active === item.key;
   const hasChildren = !!item.children;
@@ -225,9 +234,9 @@ function SideMenuItem({
               WebkitBackgroundClip: shouldHighlight ? "text" : undefined,
               WebkitTextFillColor: shouldHighlight ? "transparent" : undefined,
             }}
-          >
-            {t(`aside.${item.key}`)}
-          </span>
+            >
+              {customLabel || t(`aside.${item.key}`)}
+            </span>
         )}
         {hasChildren && !collapsed && (
           <ChevronDown
@@ -314,7 +323,9 @@ function SideMenuItem({
                     WebkitTextFillColor: isChildActive ? "transparent" : undefined,
                   }}
                 >
-                  {t(`aside.${child.key}`)}
+                  {childLabels && childLabels[child.key] 
+                    ? childLabels[child.key] 
+                    : t(`aside.${child.key}`)}
                 </span>
               </button>
             );
@@ -449,7 +460,21 @@ function ThemeToggle({ theme, onToggle, collapsed, t, isArabic }) {
   );
 }
 
-export default function SideMenu({ isMobileOpen, onMobileClose }) {
+export default function SideBarAdmin({ isMobileOpen, onMobileClose }) {
+  const { isAdmin, isLoading } = usePermissions();
+  
+  // Wait for permissions to load
+  if (isLoading) {
+    return null; // Don't show anything while loading
+  }
+  
+  // If user is not admin, show user sidebar instead
+  // User sidebar will show admin menu items based on permissions
+  if (!isAdmin()) {
+    return <SideMenuUser isMobileOpen={isMobileOpen} onMobileClose={onMobileClose} />;
+  }
+  
+  // Admin sidebar content below
   const { t, i18n } = useTranslation();
   const { lang, setLang } = useLang();
   const [collapsed, setCollapsed] = useState(false);
@@ -464,6 +489,24 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
   const location = useLocation();
   const isArabic = i18n.language === "ar";
   const { theme, setTheme } = useTheme();
+  
+  // Get permissions and user menu items for dynamic sidebar
+  const { permissions: userPermissions } = usePermissions();
+  const userMenuItems = useMemo(() => {
+    // Admin gets all user menu items
+    return getUserMenuItems();
+  }, []);
+  
+  // Helper function to filter children by permissions
+  const filterChildrenByPermissions = (children, isAdminUser) => {
+    if (isAdminUser) {
+      return children; // Admin sees all children
+    }
+    return children.filter(child => {
+      const childPermission = child.permission;
+      return childPermission && userPermissions.includes(childPermission);
+    });
+  };
 
   // Use temporary state if props are not provided
   const actualIsMobileOpen = isMobileOpen !== undefined ? isMobileOpen : tempMobileOpen;
@@ -492,6 +535,7 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
 
   // تحديد الـ active بناءً على الـ route الحالي
   const getActiveKey = () => {
+    // Admin routes
     if (location.pathname.startsWith("/pages/admin/dashboard"))
       return "dashboard";
     if (location.pathname.startsWith("/pages/admin/all-employees") || location.pathname.startsWith("/pages/admin/users"))
@@ -512,6 +556,27 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
       return "Company";
     if (location.pathname.startsWith("/pages/admin/leaves"))
       return "leaves";
+    if (location.pathname.startsWith("/pages/admin/attendance"))
+      return "all_attendance";
+    if (location.pathname.startsWith("/pages/admin/Performance"))
+      return "performance";
+    if (location.pathname.startsWith("/pages/admin/TeamWallet"))
+      return "wallet";
+    
+    // User routes (for admins with permissions)
+    if (location.pathname.startsWith("/pages/User/time_tracking"))
+      return "user_time_tracking";
+    if (location.pathname.startsWith("/pages/User/attendance-logs"))
+      return "user_attendance";
+    if (location.pathname.startsWith("/pages/User/break-tracking"))
+      return "user_break_tracking";
+    if (location.pathname.startsWith("/pages/User/leaves"))
+      return "user_leaves";
+    if (location.pathname.startsWith("/pages/User/Performance"))
+      return "user_performance";
+    if (location.pathname.startsWith("/pages/User/team-wallet"))
+      return "user_wallet";
+    
     return "";
   };
 
@@ -530,6 +595,10 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
     }
     if (active === "Company") {
       setOpenDropdown("Company");
+    }
+    // User menu dropdowns
+    if (active === "user_time_tracking" || active === "user_attendance" || active === "user_break_tracking") {
+      setOpenDropdown("user_time_tracking");
     }
   }, [active]);
 
@@ -551,18 +620,26 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
 
   // تعديل دالة onClick:
   const handleMenuClick = (key) => {
+    // Admin routes
     if (key === "dashboard") navigate("/pages/admin/dashboard");
     else if (key === "All_Employees") navigate("/pages/admin/all-employees");
     else if (key === "New_Employee") navigate("/pages/admin/new-employee");
     else if (key === "Roles_Permissions") navigate("/pages/admin/Roles&Permissions");
     else if (key === "New_Role") navigate("/pages/admin/New_Role");
     else if (key === "leaves") navigate("/pages/admin/leaves");
-    else if (key === "wallet") navigate("/pages/admin/dashboard");
+    else if (key === "wallet") navigate("/pages/admin/TeamWallet");
     else if (key === "Company") navigate("/pages/admin/company");
     else if (key === "all_attendance") navigate("/pages/admin/attendance");
     else if (key === "all_departments") navigate("/pages/admin/all-departments");
     else if (key === "new_department") navigate("/pages/admin/new-department");
     else if (key === "performance") navigate("/pages/admin/Performance");
+    // User routes (for admins with permissions)
+    else if (key === "user_time_tracking") navigate("/pages/User/time_tracking");
+    else if (key === "user_attendance") navigate("/pages/User/attendance-logs");
+    else if (key === "user_break_tracking") navigate("/pages/User/break-tracking");
+    else if (key === "user_leaves") navigate("/pages/User/leaves");
+    else if (key === "user_performance") navigate("/pages/User/Performance");
+    else if (key === "user_wallet") navigate("/pages/User/team-wallet");
   };
 
   // Settings click handler
@@ -580,7 +657,7 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
 
   // Handle mobile menu item click
   const handleMobileMenuClick = (key) => {
-    const allItems = [...mainMenuItems, ...settingsItems];
+    const allItems = [...mainMenuItems, ...userMenuItems, ...settingsItems];
     const item = allItems.find(item => item.key === key) ||
       allItems.flatMap(item => item.children || []).find(child => child.key === key);
 
@@ -715,6 +792,95 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
             />
           ))}
         </nav>
+
+        {/* User Menu Items for Admins (shown based on permissions) */}
+        {userMenuItems.length > 0 && (
+          <>
+            {(!collapsed || isMobile) && (
+              <p
+                className={`px-3 pt-4 pb-2 text-xs tracking-wide uppercase font-semibold ${isArabic ? "text-right" : "text-left"
+                  }`}
+                style={{
+                  color: "var(--sub-text-color)",
+                  direction: isArabic ? "rtl" : "ltr",
+                }}
+              >
+                {t("aside.userMenu") || "User Pages"}
+              </p>
+            )}
+            <nav
+              className="flex px-2 flex-col gap-1"
+              style={{ alignItems: collapsed && !isMobile ? "center" : "stretch" }}
+            >
+              {userMenuItems.map((item) => (
+                <PermissionGuard
+                  key={item.key}
+                  permissions={[item.permission]}
+                  fallback={null}
+                >
+                  {item.children ? (
+                    // For items with children, filter them by permissions
+                    (() => {
+                      const filteredChildren = filterChildrenByPermissions(item.children, isAdmin());
+                      
+                      // Only show parent if there are visible children or user is admin
+                      if (filteredChildren.length === 0 && !isAdmin()) {
+                        return null;
+                      }
+                      
+                      return (
+                        <SideMenuItem
+                          item={{
+                            key: item.key,
+                            Icon: item.Icon,
+                            implemented: true,
+                            children: filteredChildren.map(child => ({
+                              key: child.key,
+                              Icon: child.Icon,
+                              implemented: true,
+                            })),
+                          }}
+                          active={getActiveKey()}
+                          collapsed={collapsed && !isMobile}
+                          onClick={isMobile ? handleMobileMenuClick : handleMenuClick}
+                          openDropdown={openDropdown}
+                          setOpenDropdown={setOpenDropdown}
+                          setCollapsed={setCollapsed}
+                          t={t}
+                          isArabic={isArabic}
+                          onShowToast={showToast}
+                          customLabel={item.name}
+                          childLabels={filteredChildren.reduce((acc, child) => {
+                            acc[child.key] = child.name;
+                            return acc;
+                          }, {})}
+                        />
+                      );
+                    })()
+                  ) : (
+                    <SideMenuItem
+                      item={{
+                        key: item.key,
+                        Icon: item.Icon,
+                        implemented: true,
+                      }}
+                      active={getActiveKey()}
+                      collapsed={collapsed && !isMobile}
+                      onClick={isMobile ? handleMobileMenuClick : handleMenuClick}
+                      openDropdown={openDropdown}
+                      setOpenDropdown={setOpenDropdown}
+                      setCollapsed={setCollapsed}
+                      t={t}
+                      isArabic={isArabic}
+                      onShowToast={showToast}
+                      customLabel={item.name}
+                    />
+                  )}
+                </PermissionGuard>
+              ))}
+            </nav>
+          </>
+        )}
 
         {(!collapsed || isMobile) && (
           <p
