@@ -1,13 +1,15 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { Building2, Users, UserCheck, Eye, ChevronDown, X, Plus, Check } from "lucide-react";
 import { useGetAllRolesQuery, useGetRoleUsersQuery } from "../../../services/apis/RoleApi";
 import { useCreateDepartmentMutation, useAssignSupervisorMutation } from "../../../services/apis/DepartmentApi";
-import { useCreateTeamMutation } from "../../../services/apis/TeamApi";
+import { useCreateTeamMutation, useAddUsersToTeamMutation } from "../../../services/apis/TeamApi";
 
 export default function NewDepartmentForm() {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
+    const navigate = useNavigate();
     const [step, setStep] = useState(0);
     const [departmentInfo, setDepartmentInfo] = useState({ departmentName: '', description: '' });
     const [supervisor, setSupervisor] = useState(null);
@@ -116,6 +118,7 @@ export default function NewDepartmentForm() {
 function DepartmentInfoStep({ onNext, value, onChange }) {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
+    const navigate = useNavigate();
     const [formData, setFormData] = useState(value || { departmentName: '', description: '' });
 
     const handleInputChange = (field, value) => {
@@ -155,7 +158,7 @@ function DepartmentInfoStep({ onNext, value, onChange }) {
 
             {/* Action Buttons */}
             <div className={`flex ${isArabic ? 'justify-start' : 'justify-end'} gap-3 pt-6`}>
-                <button type="button" className="btn-secondary">{t("departments.newDepartmentForm.buttons.cancel")}</button>
+                <button type="button" className="btn-secondary" onClick={() => navigate('/pages/admin/all-departments')}>{t("departments.newDepartmentForm.buttons.cancel")}</button>
                 <button type="button" className="btn-primary" onClick={onNext}>{t("departments.newDepartmentForm.buttons.next")}</button>
             </div>
         </div>
@@ -225,12 +228,15 @@ function AssignSupervisorStep({ onNext, onBack, selectedUser, setSelectedUser })
                                 <button className="btn-secondary" onClick={(e) => { e.stopPropagation(); refetchUsers(); }}>Retry</button>
                             </div>
                         )}
-                        {selectedRole && users.map((u) => (
-                            <div key={u.id} className="p-3 hover:bg-[var(--hover-color)] cursor-pointer" onClick={() => { setSelectedUser(u); setIsUserOpen(false); }}>
-                                <div className="text-sm text-[var(--text-color)]">{u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim()}</div>
-                                <div className="text-xs text-[var(--sub-text-color)]">{u.email || u.username}</div>
-                            </div>
-                        ))}
+                        {selectedRole && users.map((u, index) => {
+                            const userId = u?.id || u?.userId || u?.userID || u?.UserId || u?._id || `user-${index}`;
+                            return (
+                                <div key={userId} className="p-3 hover:bg-[var(--hover-color)] cursor-pointer" onClick={() => { setSelectedUser(u); setIsUserOpen(false); }}>
+                                    <div className="text-sm text-[var(--text-color)]">{u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim()}</div>
+                                    <div className="text-xs text-[var(--sub-text-color)]">{u.email || u.username}</div>
+                                </div>
+                            );
+                        })}
                         {selectedRole && users.length === 0 && !isLoadingUsers && !isErrorUsers && (
                             <div className="p-3 text-[var(--sub-text-color)]">No users found for this role</div>
                         )}
@@ -252,27 +258,116 @@ function SetupTeamsStep({ onNext, onBack, teams, setTeams }) {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
     const [showAddTeam, setShowAddTeam] = useState(false);
-    const [newTeam, setNewTeam] = useState({ name: '', description: '', teamLeader: null, role: null });
-    const [isLeaderDropdownOpen, setIsLeaderDropdownOpen] = useState(false);
+    const [newTeam, setNewTeam] = useState({ name: '', description: '', teamLeader: null, role: null, selectedEmployees: [] });
+    const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
+    const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+    const [membersRole, setMembersRole] = useState(null);
+    const [isMembersRoleOpen, setIsMembersRoleOpen] = useState(false);
+    const [isMembersOpen, setIsMembersOpen] = useState(false);
+
+    // Role and user hooks for team leader selection
+    const { data: rolesData } = useGetAllRolesQuery({ pageNumber: 1, pageSize: 50 });
+    const roles = Array.isArray(rolesData?.value) ? rolesData.value : (Array.isArray(rolesData?.data) ? rolesData.data : (Array.isArray(rolesData) ? rolesData : []));
+    const { data: roleUsersData } = useGetRoleUsersQuery(
+        newTeam.role ? { id: newTeam.role.id, pageNumber: 1, pageSize: 50 } : { id: "", pageNumber: 1, pageSize: 50 },
+        { skip: !newTeam.role }
+    );
+    const users = Array.isArray(roleUsersData?.value) ? roleUsersData.value : (Array.isArray(roleUsersData?.data) ? roleUsersData.data : (Array.isArray(roleUsersData) ? roleUsersData : []));
+
+    // Role and users for team members selection
+    const { data: membersUsersData } = useGetRoleUsersQuery(
+        membersRole ? { id: membersRole.id, pageNumber: 1, pageSize: 50 } : { id: "", pageNumber: 1, pageSize: 50 },
+        { skip: !membersRole }
+    );
+    const memberUsers = Array.isArray(membersUsersData?.value) ? membersUsersData.value : (Array.isArray(membersUsersData?.data) ? membersUsersData.data : (Array.isArray(membersUsersData) ? membersUsersData : []));
 
     const selectTeamLeader = (leader) => {
         setNewTeam(prev => ({
             ...prev,
             teamLeader: leader
         }));
-        setIsLeaderDropdownOpen(false);
+        setIsUserDropdownOpen(false);
     };
 
-    const addTeam = () => {
-        if (newTeam.name.trim()) {
-            setTeams(prev => [...prev, {
+    const toggleEmployee = (employee, e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        // Get employee ID (try multiple property names)
+        const employeeId = employee?.id || employee?.userId || employee?.userID || employee?.UserId || employee?.Id || employee?._id;
+        
+        if (!employeeId) {
+            return;
+        }
+        
+        setNewTeam(prev => {
+            // Check if this employee is already selected by comparing IDs strictly
+            const isAlreadySelected = prev.selectedEmployees.some(emp => {
+                const empId = emp?.id || emp?.userId || emp?.userID || emp?.UserId || emp?.Id || emp?._id;
+                // Use strict comparison with string conversion to handle different types
+                return String(empId) === String(employeeId) && empId != null && employeeId != null;
+            });
+            
+            if (isAlreadySelected) {
+                // Remove this employee from selection
+                const filtered = prev.selectedEmployees.filter(emp => {
+                    const empId = emp?.id || emp?.userId || emp?.userID || emp?.UserId || emp?.Id || emp?._id;
+                    const shouldKeep = String(empId) !== String(employeeId) || empId == null || employeeId == null;
+                    return shouldKeep;
+                });
+                return {
+                    ...prev,
+                    selectedEmployees: filtered
+                };
+            } else {
+                // Add this employee to selection
+                const updated = [...prev.selectedEmployees, employee];
+                return {
+                    ...prev,
+                    selectedEmployees: updated
+                };
+            }
+        });
+    };
+
+    const addTeam = (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        // Check for team leader - if object exists, we'll extract ID later when creating team
+        const hasTeamLeader = !!newTeam.teamLeader;
+        
+        // Check for team leader ID in multiple possible property names
+        const teamLeadId = newTeam.teamLeader?.id || 
+                          newTeam.teamLeader?.userId || 
+                          newTeam.teamLeader?.userID || 
+                          newTeam.teamLeader?.UserId ||
+                          newTeam.teamLeader?._id;
+        
+        // Validate: name is required, teamLeader object must exist
+        if (newTeam.name.trim() && hasTeamLeader) {
+            const teamToAdd = {
                 id: Date.now(),
                 name: newTeam.name,
-                description: newTeam.description,
-                teamLeader: newTeam.teamLeader
-            }]);
-            setNewTeam({ name: '', description: '', teamLeader: null, role: null });
+                description: newTeam.description || '',
+                teamLeader: newTeam.teamLeader,
+                selectedEmployees: newTeam.selectedEmployees || [],
+                // Count members: team leader (1) + employees (selectedEmployees.length)
+                members: (newTeam.teamLeader ? 1 : 0) + (newTeam.selectedEmployees || []).length
+            };
+            setTeams(prev => [...prev, teamToAdd]);
+            setNewTeam({ name: '', description: '', teamLeader: null, role: null, selectedEmployees: [] });
+            setMembersRole(null);
             setShowAddTeam(false);
+        } else {
+            let errorMsg = 'Cannot add team. Please ensure:\n';
+            if (!newTeam.name.trim()) errorMsg += '- Team name is entered\n';
+            if (!hasTeamLeader) errorMsg += '- Team leader is selected\n';
+            alert(errorMsg);
         }
     };
 
@@ -282,29 +377,41 @@ function SetupTeamsStep({ onNext, onBack, teams, setTeams }) {
             {showAddTeam && (
                 <div className="p-6 bg-[var(--container-color)] rounded-lg border border-[var(--border-color)] space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input
-                            className="form-input"
-                            placeholder={t("departments.newDepartmentForm.setupTeams.teamName")}
-                            type="text"
-                            value={newTeam.name}
-                            onChange={(e) => setNewTeam(prev => ({ ...prev, name: e.target.value }))}
-                        />
+                        <div>
+                            <label className="block text-sm font-medium text-[var(--text-color)] mb-2">
+                                {t("departments.newDepartmentForm.setupTeams.teamName")} <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                className="form-input w-full"
+                                placeholder={t("departments.newDepartmentForm.setupTeams.teamName")}
+                                type="text"
+                                value={newTeam.name}
+                                onChange={(e) => setNewTeam(prev => ({ ...prev, name: e.target.value }))}
+                            />
+                        </div>
 
                     {/* Team Leader Selection: Role then User */}
-                    <div className="grid grid-cols-1 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-[var(--text-color)] mb-2">
+                            Team Leader <span className="text-red-500">*</span>
+                        </label>
+                        <div className="grid grid-cols-1 gap-4">
                         <div className="relative">
                             <div
                                 className="form-input cursor-pointer flex items-center justify-between"
-                                onClick={() => setIsLeaderDropdownOpen(!isLeaderDropdownOpen)}
+                                onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)}
                             >
                                 <span className="text-[var(--sub-text-color)]">{newTeam.role ? newTeam.role.name : t("departments.newDepartmentForm.assignSupervisor.chooseRole")}</span>
-                                <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isLeaderDropdownOpen ? 'rotate-180' : ''}`} size={16} />
+                                <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isRoleDropdownOpen ? 'rotate-180' : ''}`} size={16} />
                             </div>
-                            {isLeaderDropdownOpen && (
+                            {isRoleDropdownOpen && (
                                 <div className="absolute top-full left-0 right-0 z-20 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                                    {/* roles list from API (reusing roles from hooks in file) */}
                                     {(Array.isArray(roles) ? roles : []).map(role => (
-                                        <div key={role.id} className="p-3 hover:bg-[var(--hover-color)] cursor-pointer" onClick={() => { setNewTeam(prev => ({ ...prev, role, teamLeader: null })); setIsLeaderDropdownOpen(false); }}>
+                                        <div key={role.id} className="p-3 hover:bg-[var(--hover-color)] cursor-pointer" onClick={(e) => { 
+                                            e.stopPropagation();
+                                            setNewTeam(prev => ({ ...prev, role, teamLeader: null })); 
+                                            setIsRoleDropdownOpen(false); 
+                                        }}>
                                             <div className="text-sm text-[var(--text-color)]">{role.name}</div>
                                         </div>
                                     ))}
@@ -317,15 +424,18 @@ function SetupTeamsStep({ onNext, onBack, teams, setTeams }) {
                         <div className="relative">
                             <div
                                 className="form-input cursor-pointer flex items-center justify-between"
-                                onClick={() => newTeam.role && setIsLeaderDropdownOpen(!isLeaderDropdownOpen)}
+                                onClick={() => newTeam.role && setIsUserDropdownOpen(!isUserDropdownOpen)}
                             >
                                 <span className="text-[var(--sub-text-color)]">{newTeam.teamLeader ? (newTeam.teamLeader.name || `${newTeam.teamLeader.firstName || ''} ${newTeam.teamLeader.lastName || ''}`.trim()) : t("departments.newDepartmentForm.assignSupervisor.chooseSupervisor")}</span>
-                                <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isLeaderDropdownOpen ? 'rotate-180' : ''}`} size={16} />
+                                <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isUserDropdownOpen ? 'rotate-180' : ''}`} size={16} />
                             </div>
-                            {isLeaderDropdownOpen && newTeam.role && (
+                            {isUserDropdownOpen && newTeam.role && (
                                 <div className="absolute top-full left-0 right-0 z-20 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
                                     {(Array.isArray(users) ? users : []).map(u => (
-                                        <div key={u.id} className="p-3 hover:bg-[var(--hover-color)] cursor-pointer" onClick={() => selectTeamLeader(u)}>
+                                        <div key={u.id} className="p-3 hover:bg-[var(--hover-color)] cursor-pointer" onClick={(e) => { 
+                                            e.stopPropagation();
+                                            selectTeamLeader(u);
+                                        }}>
                                             <div className="text-sm text-[var(--text-color)]">{u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim()}</div>
                                             <div className="text-xs text-[var(--sub-text-color)]">{u.email || u.username}</div>
                                         </div>
@@ -336,15 +446,151 @@ function SetupTeamsStep({ onNext, onBack, teams, setTeams }) {
                         </div>
                     </div>
                     </div>
+                    </div>
+
+                    {/* Team Members multi-select (choose role then users) */}
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-[var(--text-color)] mb-2">
+                            Team Members <span className="text-[var(--sub-text-color)] text-xs">(Optional)</span>
+                        </label>
+                        <div className="relative">
+                            <div className="form-input cursor-pointer flex items-center justify-between" onClick={() => setIsMembersRoleOpen(!isMembersRoleOpen)}>
+                                <span className="text-[var(--sub-text-color)]">{membersRole ? membersRole.name : t("departments.newDepartmentForm.assignSupervisor.chooseRole")}</span>
+                                <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isMembersRoleOpen ? 'rotate-180' : ''}`} size={16} />
+                            </div>
+                            {isMembersRoleOpen && (
+                                <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                    {(roles || []).map(role => (
+                                        <div key={role.id} className="p-3 hover:bg-[var(--hover-color)] cursor-pointer" onClick={(e) => { 
+                                            e.stopPropagation();
+                                            setMembersRole(role); 
+                                            setIsMembersRoleOpen(false); 
+                                            setIsMembersOpen(true); 
+                                        }}>
+                                            <div className="text-sm text-[var(--text-color)]">{role.name}</div>
+                                        </div>
+                                    ))}
+                                    {(!roles || roles.length === 0) && <div className="p-3 text-[var(--sub-text-color)]">No roles found</div>}
+                                </div>
+                            )}
+                        </div>
+                        <div className="relative">
+                            <div 
+                                className="form-input cursor-pointer flex items-center justify-between" 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (membersRole) {
+                                        setIsMembersOpen(!isMembersOpen);
+                                    } else {
+                                        alert('Please select a role first');
+                                    }
+                                }}
+                            >
+                                <span className="text-[var(--sub-text-color)]">
+                                    {newTeam.selectedEmployees.length > 0 
+                                        ? `${newTeam.selectedEmployees.length} member${newTeam.selectedEmployees.length > 1 ? 's' : ''} selected` 
+                                        : membersRole 
+                                            ? "Click to select members (multiple allowed)" 
+                                            : "Select a role first"}
+                                </span>
+                                <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isMembersOpen ? 'rotate-180' : ''}`} size={16} />
+                            </div>
+                            {isMembersOpen && membersRole && (
+                                <div className="absolute top-full left-0 right-0 z-20 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                    <div className="p-2 border-b border-[var(--border-color)] sticky top-0 bg-[var(--bg-color)]">
+                                        <div className="text-xs text-[var(--sub-text-color)]">
+                                            {newTeam.selectedEmployees.length > 0 
+                                                ? `${newTeam.selectedEmployees.length} selected - Click to toggle` 
+                                                : "Select multiple members by clicking"}
+                                        </div>
+                                    </div>
+                                    {membersRole && (memberUsers || []).map(u => {
+                                        // Get user ID for comparison
+                                        const userId = u?.id || u?.userId || u?.userID || u?.UserId || u?._id;
+                                        const isSelected = userId && newTeam.selectedEmployees.some(emp => {
+                                            const empId = emp?.id || emp?.userId || emp?.userID || emp?.UserId || emp?.Id || emp?._id;
+                                            // Strict comparison with string conversion and null checks
+                                            return String(empId) === String(userId) && empId != null && userId != null;
+                                        });
+                                        return (
+                                        <div 
+                                            key={`user-${userId || u.id || u.email || Math.random()}`} 
+                                            className={`p-3 cursor-pointer flex items-center justify-between ${
+                                                isSelected ? 'bg-[var(--accent-color)] bg-opacity-10' : 'hover:bg-[var(--hover-color)]'
+                                            }`}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                toggleEmployee(u, e);
+                                            }}
+                                        >
+                                            <div>
+                                                <div className="text-sm text-[var(--text-color)] font-medium">{u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim()}</div>
+                                                <div className="text-xs text-[var(--sub-text-color)]">{u.email || u.username}</div>
+                                            </div>
+                                            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                                                isSelected 
+                                                    ? 'border-[var(--accent-color)] bg-[var(--accent-color)]' 
+                                                    : 'border-[var(--border-color)]'
+                                            }`}>
+                                                {isSelected && <Check className="text-white" size={12} />}
+                                            </div>
+                                        </div>
+                                        );
+                                    })}
+                                    {membersRole && (!memberUsers || memberUsers.length === 0) && <div className="p-3 text-[var(--sub-text-color)]">No users found</div>}
+                                </div>
+                            )}
+                        </div>
+                        {/* Display selected members */}
+                        {newTeam.selectedEmployees && newTeam.selectedEmployees.length > 0 && (
+                            <div className="space-y-2">
+                                <div className="text-sm font-medium text-[var(--text-color)]">
+                                    Selected Members ({newTeam.selectedEmployees.length}):
+                                </div>
+                                <div className="flex flex-wrap gap-2 p-3 bg-[var(--container-color)] rounded-lg border border-[var(--border-color)]">
+                                    {newTeam.selectedEmployees.map((emp, idx) => {
+                                        const empId = emp.id || emp.userId || emp.userID || emp.Id || `emp-${idx}`;
+                                        return (
+                                            <div 
+                                                key={empId} 
+                                                className="flex items-center gap-2 px-3 py-1.5 bg-[var(--bg-color)] rounded-lg border border-[var(--border-color)] text-sm hover:border-[var(--accent-color)] transition-colors"
+                                            >
+                                                <span className="text-[var(--text-color)] font-medium">
+                                                    {emp.name || `${emp.firstName || ''} ${emp.lastName || ''}`.trim()}
+                                                </span>
+                                                <span className="text-xs text-[var(--sub-text-color)]">
+                                                    {emp.email || emp.username || ''}
+                                                </span>
+                                                <X 
+                                                    size={14} 
+                                                    className="text-[var(--sub-text-color)] cursor-pointer hover:text-red-500 ml-1" 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        toggleEmployee(emp, e);
+                                                    }}
+                                                    title="Remove member"
+                                                />
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                    </div>
 
                     {/* Team Description - Full Width */}
-                    <textarea
-                        className="form-input w-full"
-                        placeholder={t("departments.newDepartmentForm.setupTeams.description")}
-                        rows="3"
-                        value={newTeam.description}
-                        onChange={(e) => setNewTeam(prev => ({ ...prev, description: e.target.value }))}
-                    />
+                    <div>
+                        <label className="block text-sm font-medium text-[var(--text-color)] mb-2">
+                            {t("departments.newDepartmentForm.setupTeams.description")} <span className="text-[var(--sub-text-color)] text-xs">(Optional)</span>
+                        </label>
+                        <textarea
+                            className="form-input w-full"
+                            placeholder={t("departments.newDepartmentForm.setupTeams.description")}
+                            rows="3"
+                            value={newTeam.description}
+                            onChange={(e) => setNewTeam(prev => ({ ...prev, description: e.target.value }))}
+                        />
+                    </div>
                     <div className="flex gap-3">
                         <button
                             type="button"
@@ -357,6 +603,10 @@ function SetupTeamsStep({ onNext, onBack, teams, setTeams }) {
                             type="button"
                             className="btn-primary"
                             onClick={addTeam}
+                            style={{
+                                opacity: (!newTeam.name.trim() || !newTeam.teamLeader) ? 0.6 : 1,
+                            }}
+                            title={(!newTeam.name.trim() || !newTeam.teamLeader) ? 'Please fill in team name and select a team leader' : ''}
                         >
                             {t("departments.newDepartmentForm.buttons.add")}
                         </button>
@@ -380,8 +630,10 @@ function SetupTeamsStep({ onNext, onBack, teams, setTeams }) {
             {teams.length > 0 && (
                 <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {teams.map(team => (
-                            <div key={team.id} className="p-4 bg-[var(--container-color)] rounded-lg border border-[var(--border-color)]">
+                        {teams.map((team, index) => {
+                            const teamId = team.id || `team-${index}`;
+                            return (
+                            <div key={teamId} className="p-4 bg-[var(--container-color)] rounded-lg border border-[var(--border-color)]">
                                 <div className="flex items-start justify-between mb-3">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 gradient-bg rounded-full flex items-center justify-center">
@@ -393,7 +645,15 @@ function SetupTeamsStep({ onNext, onBack, teams, setTeams }) {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2 text-[var(--sub-text-color)]">
-                                        <span className="text-sm">{t("departments.newDepartmentForm.setupTeams.membersCount", { count: 0 })}</span>
+                                        <span className="text-sm">
+                                            {(() => {
+                                                // Count members: team leader (1) + employees (selectedEmployees.length)
+                                                const teamLeaderCount = team.teamLeader ? 1 : 0;
+                                                const employeesCount = team.selectedEmployees?.length || 0;
+                                                const totalCount = teamLeaderCount + employeesCount;
+                                                return t("departments.newDepartmentForm.setupTeams.membersCount", { count: totalCount });
+                                            })()}
+                                        </span>
                                         <ChevronDown size={16} />
                                     </div>
                                 </div>
@@ -413,8 +673,23 @@ function SetupTeamsStep({ onNext, onBack, teams, setTeams }) {
                                         <UserCheck className="text-[var(--accent-color)]" size={16} />
                                     </div>
                                 )}
+                                {/* Display selected members */}
+                                {team.selectedEmployees && team.selectedEmployees.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-[var(--border-color)]">
+                                        <span className="text-xs text-[var(--sub-text-color)] w-full">Members:</span>
+                                        {team.selectedEmployees.map((emp, idx) => {
+                                            const empId = emp.id || emp.userId || emp.userID || emp.Id || `emp-${idx}`;
+                                            return (
+                                                <div key={empId} className="flex items-center gap-1 px-2 py-1 bg-[var(--container-color)] rounded-lg text-xs">
+                                                    <span className="text-[var(--text-color)]">{emp.name || `${emp.firstName || ''} ${emp.lastName || ''}`.trim()}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             )}
@@ -437,6 +712,7 @@ function ReviewStep({ onBack, departmentInfo, supervisor, teams }) {
     const [createDepartment] = useCreateDepartmentMutation();
     const [assignSupervisor] = useAssignSupervisorMutation();
     const [createTeam] = useCreateTeamMutation();
+    const [addUsersToTeam] = useAddUsersToTeamMutation();
 
     const departmentData = departmentInfo || { departmentName: '', description: '' };
 
@@ -457,13 +733,68 @@ function ReviewStep({ onBack, departmentInfo, supervisor, teams }) {
             // Create teams (optional)
             if (departmentId && Array.isArray(teams) && teams.length > 0) {
                 for (const team of teams) {
+                    // Extract team leader ID (try multiple property names)
+                    const teamLeadId = team.teamLeader?.id || 
+                                      team.teamLeader?.userId || 
+                                      team.teamLeader?.userID || 
+                                      team.teamLeader?.UserId ||
+                                      team.teamLeader?._id;
+                    
+                    if (!teamLeadId) {
+                        continue; // Skip teams without a leader
+                    }
                     const teamPayload = {
                         name: team.name,
-                        description: team.description,
-                        teamLeadId: team.teamLeader?.id || team.teamLeader?.userId || team.teamLeader?.userID || team.teamLeader?.UserId,
+                        description: team.description || '',
+                        teamLeadId,
                         departmentId,
                     };
-                    try { await createTeam(teamPayload).unwrap(); } catch {}
+                    
+                    try { 
+                        // STEP 1: Create the team first using /api/v1/Team/Create
+                        const teamResult = await createTeam(teamPayload).unwrap();
+                        const createdTeam = teamResult?.value || teamResult;
+                        const createdTeamId = createdTeam?.id;
+                        
+                        if (!createdTeamId) {
+                            throw new Error('Team was created but no team ID was returned');
+                        }
+
+                        // STEP 2: Add team members using /api/v1/Team/AddUsersToTeam/{teamId}/users (plural - accepts array)
+                        if (createdTeamId && Array.isArray(team.selectedEmployees) && team.selectedEmployees.length > 0) {
+                            // Extract all userIds from selected employees
+                            const userIds = team.selectedEmployees.map(member => {
+                                const memberId = member?.id || 
+                                                member?.userId || 
+                                                member?.userID || 
+                                                member?.UserId ||
+                                                member?.Id ||
+                                                member?._id;
+                                return memberId;
+                            }).filter(Boolean); // Remove any null/undefined values
+                            
+                            if (userIds.length === 0) {
+                                alert(`Warning: Team "${team.name}" was created but no valid user IDs found in selected members.`);
+                            } else {
+                                try {
+                                    await addUsersToTeam({ 
+                                        teamId: createdTeamId, 
+                                        userIds,
+                                        departmentId: departmentId
+                                    }).unwrap();
+                                } catch (addUsersError) {
+                                    const errorMsg = addUsersError?.data?.errorMessage || 
+                                                   addUsersError?.data?.message || 
+                                                   addUsersError?.message || 
+                                                   'Unknown error';
+                                    alert(`Warning: Team "${team.name}" was created but failed to add members: ${errorMsg}`);
+                                }
+                            }
+                        }
+                    } catch (err) {
+                        // Continue with other teams even if one fails
+                        throw err; // Re-throw to stop the process if team creation fails
+                    }
                 }
             }
 
@@ -548,8 +879,10 @@ function ReviewStep({ onBack, departmentInfo, supervisor, teams }) {
             <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-[var(--text-color)]">Teams</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {teams.map((team, index) => (
-                        <div key={index} className="p-4 bg-[var(--container-color)] rounded-lg border border-[var(--border-color)]">
+                    {teams.map((team, index) => {
+                        const teamId = team.id || `team-${index}`;
+                        return (
+                        <div key={teamId} className="p-4 bg-[var(--container-color)] rounded-lg border border-[var(--border-color)]">
                             <div className="flex items-start justify-between mb-3">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 gradient-bg rounded-full flex items-center justify-center">
@@ -560,7 +893,15 @@ function ReviewStep({ onBack, departmentInfo, supervisor, teams }) {
                                         <div className="text-[var(--sub-text-color)] text-sm">{team.description}</div>
                                     </div>
                                 </div>
-                                <span className="text-[var(--sub-text-color)] text-sm">{t("departments.newDepartmentForm.setupTeams.membersCount", { count: 0 })}</span>
+                                <span className="text-[var(--sub-text-color)] text-sm">
+                                    {(() => {
+                                        // Count members: team leader (1) + employees (selectedEmployees.length)
+                                        const teamLeaderCount = team.teamLeader ? 1 : 0;
+                                        const employeesCount = team.selectedEmployees?.length || 0;
+                                        const totalCount = teamLeaderCount + employeesCount;
+                                        return t("departments.newDepartmentForm.setupTeams.membersCount", { count: totalCount });
+                                    })()}
+                                </span>
                             </div>
 
                             {/* Team Leader Info */}
@@ -578,8 +919,23 @@ function ReviewStep({ onBack, departmentInfo, supervisor, teams }) {
                                     <UserCheck className="text-[var(--accent-color)]" size={16} />
                                 </div>
                             )}
+                            {/* Display selected members */}
+                            {team.selectedEmployees && team.selectedEmployees.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-[var(--border-color)]">
+                                    <span className="text-xs text-[var(--sub-text-color)] w-full">Members:</span>
+                                    {team.selectedEmployees.map((emp, idx) => {
+                                        const empId = emp.id || emp.userId || emp.userID || emp.Id || `emp-${idx}`;
+                                        return (
+                                            <div key={empId} className="flex items-center gap-1 px-2 py-1 bg-[var(--container-color)] rounded-lg text-xs">
+                                                <span className="text-[var(--text-color)]">{emp.name || `${emp.firstName || ''} ${emp.lastName || ''}`.trim()}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
 

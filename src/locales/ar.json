@@ -1147,7 +1147,8 @@
       "assignSupervisor": {
         "chooseSupervisor": "اختر المشرف",
         "supervisor": "المشرف",
-        "supervisorManager": "مدير المشرف"
+        "supervisorManager": "مدير المشرف",
+        "chooseRole": "اختر الدور"
       },
       "setupTeams": {
         "teamName": "اسم الفريق",
@@ -1198,7 +1199,8 @@
       },
       "assignSupervisor": {
         "chooseSupervisor": "اختر المشرف",
-        "supervisor": "المشرف"
+        "supervisor": "المشرف",
+        "chooseRole": "اختر الدور"
       },
       "setupTeams": {
         "teamName": "اسم الفريق",
@@ -1263,6 +1265,64 @@
       "viewAll": "عرض الكل",
       "supervisor": "المشرف",
       "edit": "تعديل"
+    }
+  },
+  "allTeams": {
+    "title": "جميع الفرق",
+    "statusCards": {
+      "totalTeams": {
+        "title": "إجمالي الفرق",
+        "count": "15",
+        "description": "عدد الفرق عبر الأقسام"
+      },
+      "pendingTasks": {
+        "title": "المهام المعلقة",
+        "count": "8",
+        "description": "المهام في انتظار الإكمال"
+      },
+      "attendanceRate": {
+        "title": "معدل الحضور",
+        "count": "95%",
+        "description": "متوسط حضور الفريق هذا الشهر"
+      },
+      "kpiPerformance": {
+        "title": "أداء مؤشرات الأداء",
+        "count": "87%",
+        "description": "الفرق التي تحقق أهداف الأداء"
+      }
+    },
+    "search": {
+      "placeholder": "ابحث عن الفرق...",
+      "addNewTeam": "إضافة فريق جديد"
+    },
+    "editTeam": {
+      "title": "تعديل الفريق",
+      "loadingTeamData": "جاري تحميل بيانات الفريق...",
+      "noRolesFound": "لم يتم العثور على أدوار",
+      "noUsersFound": "لم يتم العثور على مستخدمين",
+      "selected": "محدد",
+      "selectedMembers": "الأعضاء المحددون",
+      "removeMember": "إزالة عضو",
+      "cancel": "إلغاء",
+      "saveChanges": "حفظ التغييرات",
+      "updatingTeam": "جاري تحديث الفريق...",
+      "updatingMembers": "جاري تحديث الأعضاء...",
+      "errors": {
+        "enterTeamName": "يرجى إدخال اسم الفريق",
+        "selectTeamLeader": "يرجى اختيار قائد الفريق",
+        "teamIdMissing": "معرف الفريق مفقود",
+        "departmentIdMissing": "معرف القسم مفقود",
+        "updateFailed": "فشل تحديث الفريق. يرجى المحاولة مرة أخرى."
+      }
+    },
+    "teamCard": {
+      "members": "الأعضاء",
+      "department": "القسم",
+      "lead": "قائد الفريق",
+      "view": "عرض التفاصيل",
+      "edit": "تعديل",
+      "tasks": "المهام",
+      "performance": "الأداء"
     }
   },
   "breakChart": {

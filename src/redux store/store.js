@@ -5,6 +5,7 @@ import { departmentApi } from "../services/apis/DepartmentApi";
 import { roleApi } from "../services/apis/RoleApi";
 import { teamApi } from "../services/apis/TeamApi";
 import { shiftApi } from "../services/apis/ShiftApi";
+import { userApi } from "../services/apis/UserApi";
 
 export const store = configureStore({
   reducer: {
@@ -14,7 +15,7 @@ export const store = configureStore({
     [roleApi.reducerPath]: roleApi.reducer,
     [teamApi.reducerPath]: teamApi.reducer,
     [shiftApi.reducerPath]: shiftApi.reducer,
-  
+    [userApi.reducerPath]: userApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -26,7 +27,7 @@ export const store = configureStore({
       roleApi.middleware,
       teamApi.middleware,
       shiftApi.middleware,
-      
+      userApi.middleware,
     ),
 });
 

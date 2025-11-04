@@ -1,101 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Search, Plus, ArrowLeft } from "lucide-react";
-import TeamCard from "./team-card";
+import EnrichedTeamCard from "./enriched-team-card";
 import TeamsStatusCards from "./status-cards";
 import AddTeamModal from "./add-team";
 import EditTeamModal from "./edit-team";
-
-// Mock teams data
-const initialTeamsData = [
-        {
-            id: 1,
-            name: "UX Team",
-            department: "Design Department",
-            lead: "Leslie Alexander",
-            leadAvatar: "/assets/navbar/Avatar.png",
-            leadRole: "Sr. Project Manager",
-            totalMembers: 5,
-            tasks: 12,
-            performance: "92%",
-            memberAvatars: [
-                "/assets/navbar/Avatar.png",
-                "/assets/navbar/Avatar.png",
-                "/assets/navbar/Avatar.png"
-            ],
-            members: [
-                { name: "Leslie Alexander", role: "Sr. Project Manager", avatar: "/assets/navbar/Avatar.png", status: "online" },
-                { name: "Ronald Richards", role: "Sr. Project Manager", avatar: "/assets/navbar/Avatar.png", status: "online" },
-                { name: "Savannah Nguyen", role: "Project Manager", avatar: "/assets/navbar/Avatar.png", status: "offline" },
-                { name: "Eleanor Pena", role: "Project Manager", avatar: "/assets/navbar/Avatar.png", status: "online" },
-                { name: "Esther Howard", role: "Project Manager", avatar: "/assets/navbar/Avatar.png", status: "online" }
-            ]
-        },
-        {
-            id: 2,
-            name: "UI Team",
-            department: "Design Department",
-            lead: "Leslie Alexander",
-            leadAvatar: "/assets/navbar/Avatar.png",
-            leadRole: "Sr. Project Manager",
-            totalMembers: 5,
-            tasks: 8,
-            performance: "88%",
-            memberAvatars: [
-                "/assets/navbar/Avatar.png",
-                "/assets/navbar/Avatar.png",
-                "/assets/navbar/Avatar.png"
-            ],
-            members: [
-                { name: "Leslie Alexander", role: "Sr. Project Manager", avatar: "/assets/navbar/Avatar.png", status: "online" },
-                { name: "Ronald Richards", role: "Sr. Project Manager", avatar: "/assets/navbar/Avatar.png", status: "offline" },
-                { name: "Savannah Nguyen", role: "Project Manager", avatar: "/assets/navbar/Avatar.png", status: "online" },
-                { name: "Eleanor Pena", role: "Project Manager", avatar: "/assets/navbar/Avatar.png", status: "online" },
-                { name: "Esther Howard", role: "Project Manager", avatar: "/assets/navbar/Avatar.png", status: "online" }
-            ]
-        },
-        {
-            id: 3,
-            name: "graphic design Team",
-            department: "Design Department",
-            lead: "Leslie Alexander",
-            leadAvatar: "/assets/navbar/Avatar.png",
-            leadRole: "Sr. Project Manager",
-            totalMembers: 5,
-            tasks: 6,
-            performance: "85%",
-            memberAvatars: [
-                "/assets/navbar/Avatar.png",
-                "/assets/navbar/Avatar.png",
-                "/assets/navbar/Avatar.png"
-            ],
-            members: [
-                { name: "Leslie Alexander", role: "Sr. Project Manager", avatar: "/assets/navbar/Avatar.png", status: "online" },
-                { name: "Ronald Richards", role: "Sr. Project Manager", avatar: "/assets/navbar/Avatar.png", status: "online" }
-            ]
-        },
-        {
-            id: 4,
-            name: "UX Team",
-            department: "Design Department",
-            lead: "Leslie Alexander",
-            leadAvatar: "/assets/navbar/Avatar.png",
-            leadRole: "Sr. Project Manager", 
-            totalMembers: 5,
-            tasks: 5,
-            performance: "90%",
-            memberAvatars: [
-                "/assets/navbar/Avatar.png",
-                "/assets/navbar/Avatar.png",
-                "/assets/navbar/Avatar.png"
-            ],
-            members: [
-                { name: "Leslie Alexander", role: "Sr. Project Manager", avatar: "/assets/navbar/Avatar.png", status: "online" },
-                { name: "Ronald Richards", role: "Sr. Project Manager", avatar: "/assets/navbar/Avatar.png", status: "online" }
-            ]
-        },
-    ];
+import { useGetTeamsByDepartmentQuery, useDeleteTeamMutation } from "../../../../services/apis/TeamApi";
+import { useTeamDetails } from "./useTeamDetails";
 
 export default function AllTeams() {
     const { t, i18n } = useTranslation();
@@ -104,30 +16,53 @@ export default function AllTeams() {
     const [isAddTeamModalOpen, setIsAddTeamModalOpen] = useState(false);
     const [isEditTeamModalOpen, setIsEditTeamModalOpen] = useState(false);
     const [selectedTeam, setSelectedTeam] = useState(null);
-    const [teams, setTeams] = useState(initialTeamsData);
     const navigate = useNavigate();
     const location = useLocation();
     const params = new URLSearchParams(location.search);
     const departmentId = params.get('departmentId');
+
+    // Fetch teams from API
+    const { data: teamsData, isLoading, isError, refetch } = useGetTeamsByDepartmentQuery(departmentId, {
+        skip: !departmentId
+    });
+    
+    // Delete team mutation
+    const [deleteTeam, { isLoading: isDeleting }] = useDeleteTeamMutation();
+
+    // Parse teams from API response (basic structure - details will be enriched by TeamCard)
+    const teams = useMemo(() => {
+        const items = teamsData?.value || teamsData?.data || teamsData?.items || teamsData || [];
+        return Array.isArray(items) ? items.map(team => {
+            // Extract teamLeader from new API structure (teamLeader can be null)
+            const teamLeader = team.teamLeader || team.teamLead || null;
+            const teamLeaderName = teamLeader 
+                ? `${teamLeader.firstName || ''} ${teamLeader.lastName || ''}`.trim() || teamLeader.userName || teamLeader.email || null
+                : null;
+            
+            return {
+                id: team.id,
+                name: team.name,
+                description: team.description || '',
+                department: team.department?.name || team.departmentName || null,
+                departmentId: team.departmentId || team.department?.id,
+                teamLeadId: team.teamLeadId || team.teamLeader?.id || team.teamLead?.id || team.teamLead?.userId || null,
+                teamLead: teamLeader, // Store full teamLeader object for compatibility
+                teamLeader: teamLeader, // New API structure
+                // Legacy fields for compatibility
+                lead: teamLeaderName,
+                leadAvatar: teamLeader?.avatar || null,
+                leadRole: teamLeader?.jobTitle || teamLeader?.role || null,
+            };
+        }) : [];
+    }, [teamsData]);
 
     const handleAddNewTeam = () => {
         setIsAddTeamModalOpen(true);
     };
 
     const handleAddTeam = (teamData) => {
-        const newTeam = {
-            ...teamData,
-            department: "Design Department",
-            lead: teamData.teamLeader?.name || "Unknown",
-            leadAvatar: teamData.teamLeader?.avatar || "/assets/navbar/Avatar.png",
-            leadRole: teamData.teamLeader?.role || "Team Lead",
-            totalMembers: teamData.selectedEmployees.length,
-            tasks: Math.floor(Math.random() * 15) + 1,
-            performance: `${Math.floor(Math.random() * 20) + 80}%`,
-            memberAvatars: teamData.selectedEmployees.slice(0, 3).map(emp => emp.avatar),
-            members: teamData.selectedEmployees
-        };
-        setTeams(prev => [...prev, newTeam]);
+        // Team is created via API, just refetch
+        refetch();
     };
 
     const handleEditTeam = (team) => {
@@ -136,16 +71,35 @@ export default function AllTeams() {
     };
 
     const handleUpdateTeam = (updatedTeam) => {
-        setTeams(prev => prev.map(team => 
-            team.id === updatedTeam.id ? updatedTeam : team
-        ));
+        // Team is updated via API, just refetch
+        refetch();
         setIsEditTeamModalOpen(false);
         setSelectedTeam(null);
     };
 
-    const handleDeleteTeam = (teamId) => {
-        // Add confirmation dialog here if needed
-        setTeams(prev => prev.filter(team => team.id !== teamId));
+    const handleDeleteTeam = async (teamId) => {
+        // Find the team to get its name and departmentId for confirmation
+        const teamToDelete = teams.find(t => t.id === teamId);
+        const teamName = teamToDelete?.name || 'this team';
+        const teamDepartmentId = teamToDelete?.departmentId || departmentId;
+        
+        // Confirm deletion
+        if (!confirm(`Are you sure you want to delete "${teamName}"? This action cannot be undone.`)) {
+            return;
+        }
+        
+        try {
+            // Call deleteTeam with both id and departmentId for cache invalidation
+            await deleteTeam({ 
+                id: teamId,
+                departmentId: teamDepartmentId 
+            }).unwrap();
+            // Refetch teams to update the UI (RTK Query should handle this automatically via cache invalidation)
+            refetch();
+        } catch (error) {
+            const errorMessage = error?.data?.errorMessage || error?.message || 'Failed to delete team. Please try again.';
+            alert(errorMessage);
+        }
     };
 
     const handleGoBack = () => {
@@ -154,13 +108,10 @@ export default function AllTeams() {
 
     // Filter teams based on search term
     const filteredTeams = teams.filter(team =>
-        team.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        team.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        team.lead.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        team.members.some(member => 
-            member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            member.role.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+        team.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        team.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        team.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        team.lead?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -222,9 +173,22 @@ export default function AllTeams() {
 
             {/* Teams Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredTeams.length > 0 ? (
+                {isLoading ? (
+                    <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+                        <div className="w-16 h-16 bg-[var(--container-color)] rounded-full flex items-center justify-center mb-4" />
+                        <h3 className="text-lg font-medium text-[var(--text-color)] mb-2">Loading...</h3>
+                    </div>
+                ) : isError ? (
+                    <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+                        <div className="w-16 h-16 bg-[var(--container-color)] rounded-full flex items-center justify-center mb-4">
+                            <Search className="text-[var(--sub-text-color)]" size={24} />
+                        </div>
+                        <h3 className="text-lg font-medium text-[var(--text-color)] mb-2">Failed to load teams</h3>
+                        <button onClick={() => refetch()} className="btn-secondary">Retry</button>
+                    </div>
+                ) : filteredTeams.length > 0 ? (
                     filteredTeams.map((team) => (
-                        <TeamCard 
+                        <EnrichedTeamCard 
                             key={team.id} 
                             team={team} 
                             onEdit={handleEditTeam}
@@ -242,7 +206,9 @@ export default function AllTeams() {
                         <p className="text-[var(--sub-text-color)] max-w-sm">
                             {searchTerm 
                                 ? `No teams match "${searchTerm}". Try adjusting your search.`
-                                : "No teams available at the moment."
+                                : departmentId
+                                ? "No teams available for this department at the moment."
+                                : "Please select a department to view teams."
                             }
                         </p>
                     </div>
@@ -273,6 +239,7 @@ export default function AllTeams() {
                 }}
                 onUpdateTeam={handleUpdateTeam}
                 teamData={selectedTeam}
+                departmentId={departmentId}
             />
         </div>
     );

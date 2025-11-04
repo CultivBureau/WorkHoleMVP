@@ -7,17 +7,15 @@ import SupervisorOverview from './supervisor';
 const TeamDetailsPopup = ({ isOpen, onClose, team }) => {
     if (!isOpen) return null;
 
-    // Default team data for status cards
-    const defaultTeam = {
-        name: "Development Team",
-        description: "Frontend and Backend Development"
-    };
-
-    const teamData = team || defaultTeam;
+    // Use only real team data from API
+    const teamData = team;
+    
+    if (!teamData) {
+        return null; // Don't render if no team data
+    }
 
     // Handle close with safety check
     const handleClose = () => {
-        console.log('Close button clicked'); // Debug log
         if (onClose && typeof onClose === 'function') {
             onClose();
         }
@@ -79,23 +77,14 @@ const TeamDetailsPopup = ({ isOpen, onClose, team }) => {
 
                 {/* Content */}
                 <div className="max-h-[70vh] overflow-auto space-y-6">
-                    {/* Status Cards */}
-                    <TeamDetailsStatusCards teamData={{
-                        kpiScore: 78,
-                        tasksCompleted: 95,
-                        tasksTotal: 120,
-                        attendanceRate: 92,
-                        topPerformer: {
-                            name: "Ahmed Ali",
-                            percentage: 92
-                        }
-                    }} />
+                    {/* Status Cards - Only show real data from API */}
+                    <TeamDetailsStatusCards teamData={teamData} />
 
                     {/* Center Content - Main Dashboard */}
-                    <CenterContent />
+                    <CenterContent team={teamData} />
 
                     {/* Supervisor Overview */}
-                    <SupervisorOverview />
+                    <SupervisorOverview team={teamData} />
                 </div>
             </div>
         </div>

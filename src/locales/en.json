@@ -802,7 +802,8 @@
       "assignSupervisor": {
         "chooseSupervisor": "Choose Supervisor",
         "supervisor": "Supervisor",
-        "supervisorManager": "Supervisor Manager"
+        "supervisorManager": "Supervisor Manager",
+        "chooseRole": "Choose Role"
       },
       "setupTeams": {
         "teamName": "Team Name",
@@ -853,7 +854,8 @@
       },
       "assignSupervisor": {
         "chooseSupervisor": "Choose Supervisor",
-        "supervisor": "Supervisor"
+        "supervisor": "Supervisor",
+        "chooseRole": "Choose Role"
       },
       "setupTeams": {
         "teamName": "Team Name",
@@ -947,6 +949,26 @@
     "search": {
       "placeholder": "Search teams...",
       "addNewTeam": "Add New Team"
+    },
+    "editTeam": {
+      "title": "Edit Team",
+      "loadingTeamData": "Loading team data...",
+      "noRolesFound": "No roles found",
+      "noUsersFound": "No users found",
+      "selected": "selected",
+      "selectedMembers": "Selected Members",
+      "removeMember": "Remove member",
+      "cancel": "Cancel",
+      "saveChanges": "Save Changes",
+      "updatingTeam": "Updating team...",
+      "updatingMembers": "Updating members...",
+      "errors": {
+        "enterTeamName": "Please enter a team name",
+        "selectTeamLeader": "Please select a team leader",
+        "teamIdMissing": "Team ID is missing",
+        "departmentIdMissing": "Department ID is missing",
+        "updateFailed": "Failed to update team. Please try again."
+      }
     },
     "teamCard": {
       "members": "Members",

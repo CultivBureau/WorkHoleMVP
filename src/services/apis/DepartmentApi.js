@@ -21,9 +21,10 @@ export const departmentApi = createApi({
     // Get a single department by id
     getDepartmentById: builder.query({
       query: (id) => ({
-        url: `/api/Department/${id}`,
+        url: `/api/v1/Department/GetById/${id}`,
         method: "GET",
       }),
+      providesTags: (result, error, id) => [{ type: "Departments", id }],
     }),
 
     // Create a new department
@@ -67,7 +68,7 @@ export const departmentApi = createApi({
     // Get department supervisor
     getDepartmentSupervisor: builder.query({
       query: (id) => ({
-        url: `/api/v1/Department/GetSupervisor/${id}`,
+        url: `/api/v1/Department/GetSupervisor/${id}/supervisor`,
         method: "GET",
       }),
     }),

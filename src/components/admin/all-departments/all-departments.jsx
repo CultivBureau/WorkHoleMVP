@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Search, Plus } from "lucide-react";
 import DepartmentCard from "./department-card";
 import { useGetAllDepartmentsQuery } from "../../../services/apis/DepartmentApi";
+import { useGetAllTeamsQuery } from "../../../services/apis/TeamApi";
 
 export default function AllDepartments() {
     const { t, i18n } = useTranslation();
@@ -14,24 +15,66 @@ export default function AllDepartments() {
     const handleAddNewDepartment = () => {
         navigate('/pages/admin/new-department');
     };
-    // API: load departments
+    // API: load departments and teams
     const { data, isLoading, isError, refetch } = useGetAllDepartmentsQuery({ pageNumber: 1, pageSize: 20 });
+    const { data: teamsData } = useGetAllTeamsQuery({ pageNumber: 1, pageSize: 100 });
+    
     const departmentsFromApi = useMemo(() => {
         const items = data?.value || data?.data || data?.items || data || [];
         return Array.isArray(items) ? items : [];
     }, [data]);
 
+    const teamsFromApi = useMemo(() => {
+        const items = teamsData?.value || teamsData?.data || teamsData?.items || teamsData || [];
+        return Array.isArray(items) ? items : [];
+    }, [teamsData]);
+
     // Map to card-safe structure (fallbacks for legacy UI fields)
     const mapped = useMemo(() => (
-        departmentsFromApi.map((d) => ({
-            id: d.id,
-            name: d.name,
-            description: d.description,
-            totalMembers: d.totalMembers || 0,
-            memberAvatars: [],
-            teams: [],
-        }))
-    ), [departmentsFromApi]);
+        departmentsFromApi.map((d) => {
+            // Filter teams for this department
+            const departmentTeams = teamsFromApi.filter(team => 
+                team.departmentId === d.id || team.department?.id === d.id
+            ).map(team => {
+                // Extract team leader information from new API structure
+                const teamLeader = team.teamLeader || team.teamLead || null;
+                const teamLeaderName = teamLeader 
+                    ? `${teamLeader.firstName || ''} ${teamLeader.lastName || ''}`.trim() || teamLeader.userName || teamLeader.email || 'Unknown'
+                    : null;
+                
+                // Count members: team leader (1) + employees (team.members?.length or totalMembers)
+                const teamLeaderCount = teamLeader ? 1 : 0;
+                // Try to get actual members array length, fallback to totalMembers (which should include leader)
+                const employeesCount = team.members?.length || (team.totalMembers ? Math.max(0, team.totalMembers - 1) : 0);
+                const totalMembersCount = teamLeaderCount + employeesCount;
+                
+                // Use the calculated count or API's totalMembers (which might already include leader)
+                const finalCount = totalMembersCount > 0 ? totalMembersCount : (team.totalMembers || team.memberCount || 0);
+                
+                return {
+                    id: team.id,
+                    name: team.name,
+                    description: team.description || null,
+                    memberCount: finalCount,
+                    teamLeader: teamLeaderName,
+                    teamLeaderJobTitle: teamLeader?.jobTitle || null,
+                };
+            });
+            
+            return {
+                id: d.id,
+                name: d.name,
+                description: d.description,
+                supervisorId: d.supervisorId,
+                status: d.status, // Include status field from API
+                isDeleted: d.isDeleted,
+                deleted: d.deleted,
+                totalMembers: d.totalMembers || 0,
+                memberAvatars: [],
+                teams: departmentTeams,
+            };
+        })
+    ), [departmentsFromApi, teamsFromApi]);
 
     const filteredDepartments = mapped.filter(department =>
         department.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -95,7 +138,14 @@ export default function AllDepartments() {
                     </div>
                 ) : filteredDepartments.length > 0 ? (
                     filteredDepartments.map((department) => (
-                        <DepartmentCard key={department.id} department={department} />
+                        <DepartmentCard 
+                            key={department.id} 
+                            department={department} 
+                            onDelete={(departmentId) => {
+                                // Refetch departments after deletion
+                                refetch();
+                            }}
+                        />
                     ))
                 ) : (
                     <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">

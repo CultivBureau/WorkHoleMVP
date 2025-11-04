@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { X, ChevronDown, Plus, Check, Users } from "lucide-react";
 import { useGetAllRolesQuery, useGetRoleUsersQuery } from "../../../../services/apis/RoleApi";
-import { useCreateTeamMutation } from "../../../../services/apis/TeamApi";
+import { useCreateTeamMutation, useAddUsersToTeamMutation } from "../../../../services/apis/TeamApi";
 
 export default function AddTeamModal({ isOpen, onClose, onAddTeam, departmentId }) {
     const { t, i18n } = useTranslation();
@@ -37,14 +37,41 @@ export default function AddTeamModal({ isOpen, onClose, onAddTeam, departmentId 
     const memberUsers = Array.isArray(membersUsersData?.value) ? membersUsersData.value : (Array.isArray(membersUsersData?.data) ? membersUsersData.data : (Array.isArray(membersUsersData) ? membersUsersData : []));
 
     const [createTeam, { isLoading: isCreating }] = useCreateTeamMutation();
+    const [addUsersToTeam, { isLoading: isAddingUsers }] = useAddUsersToTeamMutation();
 
     const toggleEmployee = (employee) => {
-        setNewTeam(prev => ({
-            ...prev,
-            selectedEmployees: prev.selectedEmployees.find(e => e.id === employee.id)
-                ? prev.selectedEmployees.filter(e => e.id !== employee.id)
-                : [...prev.selectedEmployees, employee]
-        }));
+        // Get employee ID (try multiple property names) - same as step 3 in adding department
+        const employeeId = employee?.id || employee?.userId || employee?.userID || employee?.UserId || employee?.Id || employee?._id;
+        
+        if (!employeeId) {
+            return;
+        }
+        
+        setNewTeam(prev => {
+            // Check if this employee is already selected by comparing IDs strictly
+            const isAlreadySelected = prev.selectedEmployees.some(emp => {
+                const empId = emp?.id || emp?.userId || emp?.userID || emp?.UserId || emp?.Id || emp?._id;
+                // Use strict comparison with string conversion to handle different types
+                return String(empId) === String(employeeId) && empId != null && employeeId != null;
+            });
+            
+            if (isAlreadySelected) {
+                // Remove this employee from selection
+                return {
+                    ...prev,
+                    selectedEmployees: prev.selectedEmployees.filter(emp => {
+                        const empId = emp?.id || emp?.userId || emp?.userID || emp?.UserId || emp?.Id || emp?._id;
+                        return String(empId) !== String(employeeId) || empId == null || employeeId == null;
+                    })
+                };
+            } else {
+                // Add this employee to selection
+                return {
+                    ...prev,
+                    selectedEmployees: [...prev.selectedEmployees, employee]
+                };
+            }
+        });
     };
 
     const selectTeamLeader = (leader) => {
@@ -53,27 +80,98 @@ export default function AddTeamModal({ isOpen, onClose, onAddTeam, departmentId 
     };
 
     const handleAddTeam = async () => {
-        if (!newTeam.name.trim() || !departmentId || !newTeam.teamLeader?.id) return;
+        // Extract team leader ID (try multiple property names) - same as step 3 in adding department
+        const teamLeadId = newTeam.teamLeader?.id || 
+                          newTeam.teamLeader?.userId || 
+                          newTeam.teamLeader?.userID || 
+                          newTeam.teamLeader?.UserId ||
+                          newTeam.teamLeader?._id;
+        
+        if (!newTeam.name.trim() || !departmentId || !teamLeadId) {
+            if (!newTeam.name.trim()) alert('Please enter a team name');
+            else if (!departmentId) alert('Department ID is missing');
+            else if (!teamLeadId) alert('Please select a team leader');
+            return;
+        }
+        
         try {
+            // Step 1: Create the team - same as step 3 in adding department
             const payload = {
                 name: newTeam.name,
-                description: newTeam.description,
-                teamLeadId: newTeam.teamLeader.id,
+                description: newTeam.description || '',
+                teamLeadId,
                 departmentId,
             };
-            const res = await createTeam(payload).unwrap();
-            const value = res?.value || res;
+            
+            const teamResult = await createTeam(payload).unwrap();
+            const createdTeam = teamResult?.value || teamResult;
+            const createdTeamId = createdTeam?.id;
+            
+            if (!createdTeamId) {
+                throw new Error('Team was created but no team ID was returned');
+            }
+
+            // Step 2: Add team members using /api/v1/Team/AddUsersToTeam/{teamId}/users (plural - accepts array)
+            // Same as step 3 in adding department
+            if (createdTeamId && Array.isArray(newTeam.selectedEmployees) && newTeam.selectedEmployees.length > 0) {
+                // Extract all userIds from selected employees - same as step 3
+                const userIds = newTeam.selectedEmployees.map(member => {
+                    const memberId = member?.id || 
+                                    member?.userId || 
+                                    member?.userID || 
+                                    member?.UserId ||
+                                    member?.Id ||
+                                    member?._id;
+                    return memberId;
+                }).filter(Boolean); // Remove any null/undefined values
+                
+                if (userIds.length === 0) {
+                    alert(`Warning: Team "${newTeam.name}" was created but no valid user IDs found in selected members.`);
+                } else {
+                    try {
+                        await addUsersToTeam({ 
+                            teamId: createdTeamId, 
+                            userIds,
+                            departmentId: departmentId
+                        }).unwrap();
+                    } catch (addUsersError) {
+                        // Log detailed error but don't fail the whole operation - team was created successfully
+                        const errorMsg = addUsersError?.data?.errorMessage || 
+                                       addUsersError?.data?.message || 
+                                       addUsersError?.message || 
+                                       'Unknown error';
+                        alert(`Team "${newTeam.name}" created successfully, but failed to add members: ${errorMsg}`);
+                    }
+                }
+            }
+
+            // Step 3: Callback to trigger refetch and update UI
             onAddTeam({
-                id: value?.id || Date.now(),
-                name: value?.name || newTeam.name,
-                description: value?.description || newTeam.description,
-                teamLeader: newTeam.teamLeader,
+                id: createdTeam.id,
+                name: createdTeam.name,
+                description: createdTeam.description || '',
+                departmentId: createdTeam.departmentId,
+                teamLeadId: createdTeam.teamLeadId,
+                teamLeader: createdTeam.teamLeader || newTeam.teamLeader,
+                teamMembers: createdTeam.teamMembers || newTeam.selectedEmployees.length,
                 selectedEmployees: newTeam.selectedEmployees,
-                members: newTeam.selectedEmployees.length,
             });
+            
+            console.log('✅ Team creation process completed successfully');
+            
+            // Reset form
             setNewTeam({ name: '', description: '', selectedEmployees: [], teamLeader: null });
+            setLeaderRole(null);
+            setMembersRole(null);
+            setIsLeaderRoleOpen(false);
+            setIsLeaderUserOpen(false);
+            setIsMembersRoleOpen(false);
+            setIsMembersOpen(false);
             onClose();
-        } catch {}
+        } catch (error) {
+            const errorMessage = error?.data?.errorMessage || error?.message || 'Failed to create team. Please try again.';
+            alert(errorMessage);
+        }
     };
 
     const handleCancel = () => {
@@ -84,6 +182,12 @@ export default function AddTeamModal({ isOpen, onClose, onAddTeam, departmentId 
             selectedEmployees: [],
             teamLeader: null
         });
+        setLeaderRole(null);
+        setMembersRole(null);
+        setIsLeaderRoleOpen(false);
+        setIsLeaderUserOpen(false);
+        setIsMembersRoleOpen(false);
+        setIsMembersOpen(false);
         onClose();
     };
 
@@ -183,15 +287,41 @@ export default function AddTeamModal({ isOpen, onClose, onAddTeam, departmentId 
                                 <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isMembersOpen ? 'rotate-180' : ''}`} size={16} />
                             </div>
                             {isMembersOpen && (
-                                <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                                    {membersRole && (memberUsers || []).map(u => (
-                                        <div key={u.id} className="p-3 hover:bg-[var(--hover-color)] cursor-pointer flex items-center justify-between" onClick={() => toggleEmployee(u)}>
-                                            <div className="text-sm text-[var(--text-color)]">{u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim()}</div>
-                                            <div className="w-5 h-5 rounded border-2 border-[var(--border-color)] flex items-center justify-center">
-                                                {newTeam.selectedEmployees.find(e => e.id === u.id) && <Check className="text-[var(--accent-color)]" size={12} />}
+                                <div 
+                                    className="absolute top-full left-0 right-0 z-10 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    {membersRole && (memberUsers || []).map(u => {
+                                        // Get user ID for comparison - same as step 3 in adding department
+                                        const userId = u?.id || u?.userId || u?.userID || u?.UserId || u?._id;
+                                        const isSelected = userId && newTeam.selectedEmployees.some(emp => {
+                                            const empId = emp?.id || emp?.userId || emp?.userID || emp?.UserId || emp?.Id || emp?._id;
+                                            // Use strict comparison with string conversion to handle different types
+                                            return String(empId) === String(userId) && empId != null && userId != null;
+                                        });
+                                        
+                                        return (
+                                            <div 
+                                                key={`user-${userId || u.id || u.email || Math.random()}`} 
+                                                className={`p-3 cursor-pointer flex items-center justify-between ${
+                                                    isSelected ? 'bg-[var(--accent-color)] bg-opacity-10' : 'hover:bg-[var(--hover-color)]'
+                                                }`}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    toggleEmployee(u);
+                                                }}
+                                            >
+                                                <div className="text-sm text-[var(--text-color)]">{u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim()}</div>
+                                                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                                                    isSelected 
+                                                        ? 'border-[var(--accent-color)] bg-[var(--accent-color)]' 
+                                                        : 'border-[var(--border-color)]'
+                                                }`}>
+                                                    {isSelected && <Check className="text-white" size={12} />}
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                     {membersRole && (!memberUsers || memberUsers.length === 0) && <div className="p-3 text-[var(--sub-text-color)]">No users found</div>}
                                 </div>
                             )}
@@ -219,12 +349,12 @@ export default function AddTeamModal({ isOpen, onClose, onAddTeam, departmentId 
                             type="button" 
                             className="btn-primary flex items-center gap-2"
                             onClick={handleAddTeam}
-                            disabled={!newTeam.name.trim() || !newTeam.teamLeader}
+                            disabled={!newTeam.name.trim() || !departmentId || !newTeam.teamLeader || isCreating || isAddingUsers}
                         >
-                            {isCreating ? (
+                            {(isCreating || isAddingUsers) ? (
                                 <>
                                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                    <span>Creating...</span>
+                                    <span>{isCreating ? 'Creating team...' : 'Adding members...'}</span>
                                 </>
                             ) : (
                                 <>
