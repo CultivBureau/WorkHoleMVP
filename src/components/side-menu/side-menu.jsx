@@ -29,9 +29,10 @@ import {
 import logo from "../../assets/side-menu-icons/logo.svg?url";
 import { useTheme } from "../../contexts/ThemeContext";
 import { usePermissions } from "../../services/PermissionProvider";
-import { getAdminMenuItemsByPermissions } from "../../utils/menuConfig";
+import { getAdminMenuItemsByPermissions, hasMenuItemPermission } from "../../utils/menuConfig";
 import { PermissionGuard } from "../common/PermissionGuard";
 import SideBarAdmin from "../admin/SideBarAdmin";
+import { getPermissions } from "../../utils/page";
 
 
 
@@ -105,14 +106,7 @@ const mainMenuItems = [
       { key: "projects", Icon: FolderKanban, implemented: false },
     ],
   },
-  {
-    key: "performance", // <-- Remove children here
-    Icon: BarChart3,
-    implemented: true,  // <-- Make sure it's true
-    // children: [ ... ] <-- REMOVE THIS LINE
-  },
   { key: "leaves", Icon: LogOut, implemented: true },
-  { key: "wallet", Icon: Wallet, implemented: true }, // <-- set implemented: true
 ];
 
 const settingsItems = [
@@ -452,6 +446,7 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
 
   // Get permissions from context
   const { isAdmin, isLoading, permissions: userPermissions } = usePermissions();
+  const backendPermissionCodes = getPermissions() || []; // Get backend codes for menu filtering
   
   // Wait for permissions to load
   if (isLoading) {
@@ -464,15 +459,18 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
     return <SideBarAdmin isMobileOpen={isMobileOpen} onMobileClose={onMobileClose} />;
   }
   
-  // Get all admin menu items (filtering will be done by Guard components)
+  // Get all admin menu items filtered by backend permissions
   const allAdminMenuItems = useMemo(() => {
     // Admin has their own sidebar, so don't show these here
     if (isAdmin()) {
       return [];
     }
-    // Return all admin menu items - Guard components will handle filtering
-    return getAdminMenuItemsByPermissions();
-  }, [isAdmin]);
+    // Filter menu items based on backend permissions
+    return getAdminMenuItemsByPermissions().filter(item => {
+      // Check if user has permission for this menu item
+      return hasMenuItemPermission(item);
+    });
+  }, [isAdmin, backendPermissionCodes]);
 
   // Use temporary state if props are not provided
   const actualIsMobileOpen = isMobileOpen !== undefined ? isMobileOpen : tempMobileOpen;
@@ -510,13 +508,10 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
       return "attendance";
     if (location.pathname.startsWith("/pages/User/break-tracking"))
       return "break_tracking";
-    if (location.pathname.startsWith("/pages/User/team-wallet"))
-      return "wallet";
     // Check admin routes for custom roles
     if (location.pathname.startsWith("/pages/admin/leaves")) return "admin_leaves";
     if (location.pathname.startsWith("/pages/admin/attendance")) return "admin_attendance";
-    if (location.pathname.startsWith("/pages/admin/Performance")) return "admin_performance";
-    if (location.pathname.startsWith("/pages/admin/TeamWallet")) return "admin_wallet";
+    if (location.pathname.startsWith("/pages/admin/break")) return "admin_break";
     if (location.pathname.startsWith("/pages/admin/all-employees")) return "admin_employees";
     if (location.pathname.startsWith("/pages/admin/new-employee")) return "admin_new_employee";
     if (location.pathname.startsWith("/pages/admin/all-departments")) return "admin_departments";
@@ -572,15 +567,13 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
     } else if (key === "attendance") navigate("/pages/User/attendance-logs");
     else if (key === "break") navigate("/pages/User/break");
     else if (key === "break_tracking") navigate("/pages/User/break-tracking");
-    else if (key === "performance") navigate("/pages/User/Performance");
-    else if (key === "wallet") navigate("/pages/User/team-wallet");
     // Handle admin routes for custom roles
     else if (key === "admin_leaves") navigate("/pages/admin/leaves");
     else if (key === "admin_attendance") navigate("/pages/admin/attendance");
-    else if (key === "admin_performance") navigate("/pages/admin/Performance");
-    else if (key === "admin_wallet") navigate("/pages/admin/TeamWallet");
+    else if (key === "admin_break") navigate("/pages/admin/break");
     else if (key === "admin_employees") navigate("/pages/admin/all-employees");
     else if (key === "admin_new_employee") navigate("/pages/admin/new-employee");
+    else if (key === "admin_teams") navigate("/pages/admin/all-teams");
     else if (key === "admin_departments") navigate("/pages/admin/all-departments");
     else if (key === "admin_new_department") navigate("/pages/admin/new-department");
     else if (key === "admin_company") navigate("/pages/admin/company");
@@ -759,16 +752,15 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
               style={{ alignItems: collapsed && !isMobile ? "center" : "stretch" }}
             >
               {allAdminMenuItems.map((item) => {
-                // Filter children by permissions
+                // Filter children by backend permissions
                 const filteredChildren = item.children 
                   ? item.children.filter(child => {
-                      const childPermission = child.permission || item.permission;
-                      return isAdmin() || userPermissions.includes(childPermission);
+                      return hasMenuItemPermission(child);
                     })
                   : null;
 
-                // Only show parent if there are visible children or user is admin or no children
-                if (item.children && filteredChildren.length === 0 && !isAdmin()) {
+                // Only show parent if there are visible children or no children
+                if (item.children && filteredChildren.length === 0) {
                   return null;
                 }
 

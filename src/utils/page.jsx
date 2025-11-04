@@ -33,6 +33,8 @@ export const getRefreshToken = () => {
 export const removeAuthToken = () => {
   Cookies.remove("access_token");
   Cookies.remove("refresh_token");
+  Cookies.remove("user_info");
+  Cookies.remove("user_permissions");
 };
 
 // Check if tokens are expired
@@ -107,4 +109,41 @@ export const getCompanyId = () => {
 // Remove user info from cookies
 export const removeUserInfo = () => {
   Cookies.remove("user_info");
+};
+
+// Extract permissions from token and save to cookies
+export const setPermissionsFromToken = (token) => {
+  if (!token) return;
+  
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const permissionsString = payload.permissions;
+    
+    if (permissionsString) {
+      // Parse the JSON string to get array of permissions
+      const permissions = JSON.parse(permissionsString);
+      // Store permissions array in cookies
+      Cookies.set("user_permissions", JSON.stringify(permissions), { expires: 2 });
+      return permissions;
+    }
+  } catch (error) {
+    return null;
+  }
+  
+  return null;
+};
+
+// Get permissions from cookies
+export const getPermissions = () => {
+  try {
+    const permissions = Cookies.get("user_permissions");
+    return permissions ? JSON.parse(permissions) : null;
+  } catch {
+    return null;
+  }
+};
+
+// Remove permissions from cookies
+export const removePermissions = () => {
+  Cookies.remove("user_permissions");
 };

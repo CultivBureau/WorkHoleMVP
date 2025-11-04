@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useMemo } from "react";
+import { PermissionsProvider } from "react-permission-guard";
 import { useMeQuery } from "./apis/AuthApi";
-import { getAuthToken } from "../utils/page";
-import { USE_STATIC_PERMISSIONS, getStaticPermissions } from "../utils/staticPermissions";
+import { getAuthToken, getPermissions, getUserInfo } from "../utils/page";
+import { convertBackendToFrontendPermissions } from "../utils/permissionMapping";
 
 // Static permission mapping based on role
 // TODO: Replace with API call when backend is ready
@@ -10,27 +11,72 @@ const ROLE_PERMISSIONS_MAP = {
     // Admin has all permissions
     "approveRejectLeaveRequests",
     "editLeaveBalance",
+    "viewLeaveBalance",
     "viewLeaveCalendar",
     "viewAttendanceReports",
     "editAttendanceLogs",
     "approveLateArrivalJustifications",
     "addEditEmployees",
     "assignRoles",
+    "viewRoles",
+    "deleteRoles",
+    "restoreRoles",
+    "viewUsersByRole",
     "viewEmployeeProfiles",
     "deactivateEmployees",
-    "viewReportsDashboard",
     "editCompanySettings",
+    "viewCompany",
+    "createCompany",
+    "deleteCompany",
+    "restoreCompany",
+    "assignUserToCompany",
+    "removeUserFromCompany",
+    "viewUsersInCompany",
+    "viewDepartments",
+    "viewDepartmentSupervisor",
+    "assignSupervisorToDepartment",
+    "removeSupervisorFromDepartment",
     "manageBreakCategories",
-    "accessPayrollData",
-    "viewAllTasksProjects",
-    "createProjects",
-    "assignTasksToOthers",
+    "viewBreakCategories",
+    "startBreakLog",
+    "endBreakLog",
+    "viewBreakLogs",
+    "updateBreakLogs",
+    "manageClockInRules",
+    "viewClockInRules",
+    "viewTeams",
+    "createTeams",
+    "updateTeams",
+    "deleteTeams",
+    "restoreTeams",
+    "viewTeamMembers",
+    "addTeamMember",
+    "updateTeamMember",
+    "removeTeamMember",
+    "viewShifts",
+    "createShifts",
+    "updateShifts",
+    "deleteShifts",
+    "restoreShifts",
+    "viewShiftAssignments",
+    "assignUserToShift",
+    "updateShiftAssignment",
+    "deleteShiftAssignment",
+    "restoreShiftAssignment",
+    "bulkAssignShifts",
+    "viewLeaveTypes",
+    "editLeaveTypes",
+    "cancelLeave",
   ],
   employee: [
     // Employees have basic permissions only
     "requestLeave",
+    "cancelLeave",
     "clockInOut",
     "viewOwnAttendanceLogs",
+    "startBreakLog",
+    "endBreakLog",
+    "viewBreakLogs",
   ],
   // Custom roles will have permissions passed dynamically (when API is ready)
 };
@@ -45,14 +91,33 @@ export const PermissionProvider = ({ children }) => {
 
   // Extract permissions for react-permission-guard
   const permissionsArray = useMemo(() => {
+    // First, try to get permissions from cookies (extracted from token)
+    // This ensures permissions are available immediately, even before API loads
+    const backendPermissionCodes = getPermissions(); // Returns array of backend codes like ["User.Create", "Break.View"]
+    
+    // Get user data from API (may be null if API hasn't loaded yet)
     const userData = meResponse?.value || null;
     
-    if (!userData) {
-      return [];
+    // Also get user info from cookies (decoded token) as fallback
+    // This is critical - it allows us to work even if API hasn't loaded yet
+    const userInfoFromCookie = getUserInfo();
+    
+    // If we have no data at all (no token decoded, no API), return basic permissions
+    if (!userData && !userInfoFromCookie && !backendPermissionCodes) {
+      // Return basic employee permissions as fallback to prevent unauthorized errors
+      return ROLE_PERMISSIONS_MAP.employee || [];
     }
 
-    // Get user role - check MS identity claim or fallback
-    const roles = userData.roles || [];
+    // Determine role from API response or cookie
+    let roles = [];
+    if (userData?.roles) {
+      roles = userData.roles;
+    } else if (userInfoFromCookie) {
+      // Get role from decoded token in cookie
+      const msRoleKey = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
+      roles = userInfoFromCookie[msRoleKey] || [];
+    }
+    
     const roleArray = Array.isArray(roles) ? roles : [roles];
     const userRole = roleArray[0]?.toLowerCase() || "employee";
     const isAdminRole = roleArray.some(
@@ -61,68 +126,73 @@ export const PermissionProvider = ({ children }) => {
 
     // Get permissions based on role
     let permissions = [];
+    
     if (isAdminRole) {
       // Admin gets all admin permissions + basic user permissions (for accessing user pages)
       const adminPerms = ROLE_PERMISSIONS_MAP.admin || [];
       const userPerms = ROLE_PERMISSIONS_MAP.employee || [];
       permissions = [...new Set([...adminPerms, ...userPerms])]; // Combine and deduplicate
-    } else if (userRole === "employee") {
-      // For employees: use static permissions if enabled, otherwise use default employee permissions
-      if (USE_STATIC_PERMISSIONS) {
-        // Use static test permissions for easy testing
-        permissions = getStaticPermissions();
-        // Always include basic employee permissions
-        const basicEmployeePerms = ROLE_PERMISSIONS_MAP.employee || [];
-        permissions = [...new Set([...basicEmployeePerms, ...permissions])];
-      } else {
-        permissions = ROLE_PERMISSIONS_MAP.employee || [];
-      }
     } else {
-      // Custom role - when API is ready, use: permissions = userData.permissions || []
-      // For now, try to get from userData if available, otherwise use static if enabled
-      if (userData.permissions && Array.isArray(userData.permissions)) {
-        permissions = userData.permissions;
-      } else if (userData.permissions && typeof userData.permissions === 'object') {
-        // If permissions come as object, flatten to array of permission strings
-        permissions = Object.values(userData.permissions).flatMap(cat => 
-          typeof cat === 'object' ? Object.keys(cat).filter(key => cat[key] === true) : []
-        );
-      } else if (USE_STATIC_PERMISSIONS) {
-        // Use static permissions for custom roles too when testing
-        permissions = getStaticPermissions();
-      } else {
-        permissions = [];
+      // For non-admin users (including custom roles): 
+      // ALWAYS start with ALL basic employee permissions (for accessing ALL user pages)
+      const basicEmployeePerms = ROLE_PERMISSIONS_MAP.employee || [];
+      permissions = [...basicEmployeePerms];
+      
+      // Then ADD admin permissions if user has backend permission codes
+      if (backendPermissionCodes && backendPermissionCodes.length > 0) {
+        // Convert backend codes (e.g., "User.Create") to frontend permissions (e.g., "addEditEmployees")
+        const adminPerms = convertBackendToFrontendPermissions(backendPermissionCodes);
+        // Add admin permissions to the basic employee permissions
+        permissions = [...new Set([...permissions, ...adminPerms])];
       }
+      // If no backend codes, user still has basic employee permissions (all user tabs)
     }
 
     return permissions;
   }, [meResponse]);
 
   const contextValue = useMemo(() => {
-    // Extract user data from API response
+    // Get user data from API
     const userData = meResponse?.value || null;
     
-    if (!userData) {
-      return {
-        user: null,
-        role: null,
-        permissions: [],
-        isLoading,
-        error,
-        hasPermission: () => false,
-        isAdmin: () => false,
-        isEmployee: () => false,
-        getUserRole: () => null,
-      };
+    // Also get user info from cookies (decoded token) as fallback
+    const userInfoFromCookie = getUserInfo();
+    
+    // Determine role from API response or cookie
+    let roles = [];
+    if (userData?.roles) {
+      roles = userData.roles;
+    } else if (userInfoFromCookie) {
+      // Get role from decoded token in cookie
+      const msRoleKey = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
+      roles = userInfoFromCookie[msRoleKey] || [];
     }
-
-    // Get user role - check MS identity claim or fallback
-    const roles = userData.roles || [];
+    
     const roleArray = Array.isArray(roles) ? roles : [roles];
     const userRole = roleArray[0]?.toLowerCase() || "employee";
     const isAdminRole = roleArray.some(
       (r) => typeof r === "string" && r.toLowerCase() === "admin"
     );
+    
+    // If no user data AND no cookie data, return minimal context with basic permissions
+    // This prevents unauthorized errors during initial load
+    if (!userData && !userInfoFromCookie) {
+      return {
+        user: null,
+        role: "employee", // Default to employee role
+        permissions: ROLE_PERMISSIONS_MAP.employee || [], // Give basic permissions
+        isLoading,
+        error,
+        hasPermission: (permission) => {
+          // Allow access to basic employee permissions
+          const basicPerms = ROLE_PERMISSIONS_MAP.employee || [];
+          return basicPerms.includes(permission);
+        },
+        isAdmin: () => false,
+        isEmployee: () => true,
+        getUserRole: () => "employee",
+      };
+    }
 
     // Helper functions
     const hasPermission = (permission) => {
@@ -141,7 +211,7 @@ export const PermissionProvider = ({ children }) => {
     };
 
     return {
-      user: userData,
+      user: userData || userInfoFromCookie,
       role: isAdminRole ? "admin" : userRole,
       permissions: permissionsArray,
       isLoading,
@@ -153,10 +223,26 @@ export const PermissionProvider = ({ children }) => {
     };
   }, [meResponse, isLoading, error, permissionsArray]);
 
+  // Create config for react-permission-guard
+  // The library expects getPermissionsEndpoint to be a string URL
+  // Since we're using cookies, we'll use a data URL that returns our permissions as JSON
+  const permissionsConfig = useMemo(() => {
+    // Create a data URL that returns permissions as JSON
+    // This mimics an API endpoint response
+    const permissionsJson = JSON.stringify(permissionsArray);
+    const dataUrl = `data:application/json;charset=utf-8,${encodeURIComponent(permissionsJson)}`;
+    
+    return {
+      getPermissionsEndpoint: dataUrl,
+    };
+  }, [permissionsArray]);
+
   return (
-    <PermissionContext.Provider value={contextValue}>
-      {children}
-    </PermissionContext.Provider>
+    <PermissionsProvider config={permissionsConfig}>
+      <PermissionContext.Provider value={contextValue}>
+        {children}
+      </PermissionContext.Provider>
+    </PermissionsProvider>
   );
 };
 

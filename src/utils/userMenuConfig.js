@@ -6,17 +6,21 @@ import {
   LogOut,
   Wallet,
 } from "lucide-react";
+import { hasBackendPermission } from "./permissionMapping";
+import { getPermissions } from "./page";
 
 /**
  * User menu items with permission mappings
  * These are shown to admins if they have the corresponding permissions
+ * Each menu item maps to backend permission codes
  */
 export const USER_MENU_ITEMS = [
   {
     key: "user_time_tracking",
     name: "Time Tracking",
     path: "/pages/User/time_tracking",
-    permission: "clockInOut",
+    permission: "clockInOut", // Frontend permission name
+    backendPermissions: ["ClockinLog.Clockin", "ClockinLog.Clockout"], // Backend codes
     Icon: Clock,
     category: "user",
     children: [
@@ -25,13 +29,15 @@ export const USER_MENU_ITEMS = [
         name: "Attendance",
         path: "/pages/User/attendance-logs",
         permission: "viewOwnAttendanceLogs",
+        backendPermissions: ["ClockinLog.View"],
         Icon: CalendarCheck,
       },
       {
         key: "user_break_tracking",
         name: "Break Tracking",
         path: "/pages/User/break-tracking",
-        permission: "clockInOut", // Same as parent
+        permission: "startBreakLog",
+        backendPermissions: ["BreakLog.Create", "BreakLog.EndBreak", "BreakLog.View"],
         Icon: Coffee,
       },
     ],
@@ -41,23 +47,8 @@ export const USER_MENU_ITEMS = [
     name: "Leaves",
     path: "/pages/User/leaves",
     permission: "requestLeave",
+    backendPermissions: ["LeaveRequest.Submit", "LeaveRequest.View"],
     Icon: LogOut,
-    category: "user",
-  },
-  {
-    key: "user_performance",
-    name: "Performance",
-    path: "/pages/User/Performance",
-    permission: "viewOwnAttendanceLogs", // Basic permission to view own data
-    Icon: BarChart3,
-    category: "user",
-  },
-  {
-    key: "user_wallet",
-    name: "Team Wallet",
-    path: "/pages/User/team-wallet",
-    permission: "clockInOut", // Basic permission for employees
-    Icon: Wallet,
     category: "user",
   },
 ];
@@ -68,5 +59,19 @@ export const USER_MENU_ITEMS = [
  */
 export const getUserMenuItems = () => {
   return USER_MENU_ITEMS;
+};
+
+/**
+ * Check if user has permission for a menu item based on backend permission codes
+ * @param {Object} menuItem - Menu item object with backendPermissions array
+ * @returns {boolean}
+ */
+export const hasMenuItemPermission = (menuItem) => {
+  if (!menuItem.backendPermissions || menuItem.backendPermissions.length === 0) {
+    return true; // No backend permissions required, show item
+  }
+  
+  const userPermissions = getPermissions() || [];
+  return hasBackendPermission(userPermissions, menuItem.backendPermissions);
 };
 

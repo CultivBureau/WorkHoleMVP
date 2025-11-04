@@ -193,7 +193,6 @@ function App() {
                       <ProtectedRoute>
                         <PermissionGuard
                           permissions={["viewAttendanceReports"]}
-                          fallback={<Navigate to="/pages/User/dashboard" replace />}
                         >
                           <Suspense fallback={<Loading />}>
                             <AttendanceAdmin />
@@ -206,9 +205,13 @@ function App() {
                     path="/pages/admin/break"
                     element={
                       <ProtectedRoute>
-                        <Suspense fallback={<Loading />}>
-                          <BreakAdmin />
-                        </Suspense>
+                        <PermissionGuard
+                          permissions={["viewBreakCategories"]}
+                        >
+                          <Suspense fallback={<Loading />}>
+                            <BreakAdmin />
+                          </Suspense>
+                        </PermissionGuard>
                       </ProtectedRoute>
                     }
                   />
@@ -218,7 +221,6 @@ function App() {
                       <ProtectedRoute>
                         <PermissionGuard
                           permissions={["approveRejectLeaveRequests"]}
-                          fallback={<Navigate to="/pages/User/dashboard" replace />}
                         >
                           <Suspense fallback={<Loading />}>
                             <LeavesAdmin />
@@ -231,9 +233,13 @@ function App() {
                     path="/pages/admin/users"
                     element={
                       <ProtectedRoute>
-                        <Suspense fallback={<Loading />}>
-                          <UsersAdmin />
-                        </Suspense>
+                        <PermissionGuard
+                          permissions={["viewEmployeeProfiles"]}
+                        >
+                          <Suspense fallback={<Loading />}>
+                            <UsersAdmin />
+                          </Suspense>
+                        </PermissionGuard>
                       </ProtectedRoute>
                     }
                   />
@@ -243,7 +249,6 @@ function App() {
                       <ProtectedRoute>
                         <PermissionGuard
                           permissions={["addEditEmployees"]}
-                          fallback={<Navigate to="/pages/User/dashboard" replace />}
                         >
                           <Suspense fallback={<Loading />}>
                             <NewEmployee />
@@ -258,7 +263,6 @@ function App() {
                       <ProtectedRoute>
                         <PermissionGuard
                           permissions={["editCompanySettings"]}
-                          fallback={<Navigate to="/pages/User/dashboard" replace />}
                         >
                           <Suspense fallback={<Loading />}>
                             <Company />
@@ -273,7 +277,6 @@ function App() {
                       <ProtectedRoute>
                         <PermissionGuard
                           permissions={["viewEmployeeProfiles"]}
-                          fallback={<Navigate to="/pages/User/dashboard" replace />}
                         >
                           <Suspense fallback={<Loading />}>
                             <AllEmployees />
@@ -288,7 +291,6 @@ function App() {
                       <ProtectedRoute>
                         <PermissionGuard
                           permissions={["editCompanySettings"]}
-                          fallback={<Navigate to="/pages/User/dashboard" replace />}
                         >
                           <Suspense fallback={<Loading />}>
                             <AllDepartments />
@@ -303,7 +305,6 @@ function App() {
                       <ProtectedRoute>
                         <PermissionGuard
                           permissions={["editCompanySettings"]}
-                          fallback={<Navigate to="/pages/User/dashboard" replace />}
                         >
                           <Suspense fallback={<Loading />}>
                             <NewDepartment />
@@ -318,7 +319,6 @@ function App() {
                       <ProtectedRoute>
                         <PermissionGuard
                           permissions={["editCompanySettings"]}
-                          fallback={<Navigate to="/pages/User/dashboard" replace />}
                         >
                           <Suspense fallback={<Loading />}>
                             <EditDepartment />
@@ -331,9 +331,13 @@ function App() {
                     path="/pages/admin/all-teams"
                     element={
                       <ProtectedRoute>
-                        <Suspense fallback={<Loading />}>
-                          <AllTeamsPage />
-                        </Suspense>
+                        <PermissionGuard
+                          permissions={["viewTeams"]}
+                        >
+                          <Suspense fallback={<Loading />}>
+                            <AllTeamsPage />
+                          </Suspense>
+                        </PermissionGuard>
                       </ProtectedRoute>
                     }
                   />
@@ -343,7 +347,6 @@ function App() {
                       <ProtectedRoute>
                         <PermissionGuard
                           permissions={["assignRoles"]}
-                          fallback={<Navigate to="/pages/User/dashboard" replace />}
                         >
                           <Suspense fallback={<Loading />}>
                             <RolesAndPermissions />
@@ -358,7 +361,6 @@ function App() {
                       <ProtectedRoute>
                         <PermissionGuard
                           permissions={["assignRoles"]}
-                          fallback={<Navigate to="/pages/User/dashboard" replace />}
                         >
                           <Suspense fallback={<Loading />}>
                             <NewRole />
@@ -371,14 +373,9 @@ function App() {
                     path="/pages/admin/Performance"
                     element={
                       <ProtectedRoute>
-                        <PermissionGuard
-                          permissions={["viewReportsDashboard"]}
-                          fallback={<Navigate to="/pages/User/dashboard" replace />}
-                        >
-                          <Suspense fallback={<Loading />}>
-                            <PerformanceAdmin />
-                          </Suspense>
-                        </PermissionGuard>
+                        <Suspense fallback={<Loading />}>
+                          <PerformanceAdmin />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />
@@ -386,14 +383,9 @@ function App() {
                     path="/pages/admin/TeamWallet"
                     element={
                       <ProtectedRoute>
-                        <PermissionGuard
-                          permissions={["accessPayrollData"]}
-                          fallback={<Navigate to="/pages/User/dashboard" replace />}
-                        >
-                          <Suspense fallback={<Loading />}>
-                            <AdminTeamWallet />
-                          </Suspense>
-                        </PermissionGuard>
+                        <Suspense fallback={<Loading />}>
+                          <AdminTeamWallet />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />

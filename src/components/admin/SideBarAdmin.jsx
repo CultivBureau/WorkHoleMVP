@@ -31,12 +31,15 @@ import {
   Clock,
   Coffee,
   LogOut,
+  UsersRound,
 } from "lucide-react";
 import logo from "../../assets/side-menu-icons/logo.svg?url";
 import { useTheme } from "../../contexts/ThemeContext";
 import { usePermissions } from "../../services/PermissionProvider";
 import { PermissionGuard } from "../common/PermissionGuard";
 import { getUserMenuItems } from "../../utils/userMenuConfig";
+import { hasMenuItemPermission } from "../../utils/userMenuConfig";
+import { getPermissions } from "../../utils/page";
 import SideMenuUser from "../side-menu/side-menu";
 
 
@@ -97,17 +100,13 @@ const mainMenuItems = [
     key: "All_Employees",
     Icon: Users,
     implemented: true,
-    children: [
-      { key: "New_Employee", Icon: UserPlus, implemented: true },
-    ],
+    // Removed New_Employee child
   },
   {
     key: "Roles_Permissions",
     Icon: Shield,
     implemented: true,
-    children: [
-      { key: "New_Role", Icon: Shield, implemented: true },
-    ],
+    // Removed New_Role child
   },
   {
     key: "tasks",
@@ -122,14 +121,11 @@ const mainMenuItems = [
     key: "all_departments",
     Icon: Building2,
     implemented: true,
-    children: [
-      { key: "new_department", Icon: Building2, implemented: true },
-    ]
+    // Removed new_department child
   },
-  { key: "performance", Icon: BarChart3, implemented: true },
   { key: "all_attendance", Icon: CalendarCheck, implemented: true },
+  { key: "break", Icon: Coffee, implemented: true },
   { key: "leaves", Icon: Calendar, implemented: true },
-  { key: "wallet", Icon: Wallet, implemented: true },
   { key: "Company", Icon: Building, implemented: true },
 ];
 
@@ -492,21 +488,14 @@ export default function SideBarAdmin({ isMobileOpen, onMobileClose }) {
   
   // Get permissions and user menu items for dynamic sidebar
   const { permissions: userPermissions } = usePermissions();
+  const backendPermissionCodes = getPermissions() || []; // Get backend codes for filtering
   const userMenuItems = useMemo(() => {
-    // Admin gets all user menu items
-    return getUserMenuItems();
-  }, []);
-  
-  // Helper function to filter children by permissions
-  const filterChildrenByPermissions = (children, isAdminUser) => {
-    if (isAdminUser) {
-      return children; // Admin sees all children
-    }
-    return children.filter(child => {
-      const childPermission = child.permission;
-      return childPermission && userPermissions.includes(childPermission);
+    // Filter user menu items based on backend permissions
+    // Admin sees all user menu items, but we still filter by permissions for consistency
+    return getUserMenuItems().filter(item => {
+      return hasMenuItemPermission(item);
     });
-  };
+  }, [backendPermissionCodes]);
 
   // Use temporary state if props are not provided
   const actualIsMobileOpen = isMobileOpen !== undefined ? isMobileOpen : tempMobileOpen;
@@ -540,17 +529,9 @@ export default function SideBarAdmin({ isMobileOpen, onMobileClose }) {
       return "dashboard";
     if (location.pathname.startsWith("/pages/admin/all-employees") || location.pathname.startsWith("/pages/admin/users"))
       return "All_Employees";
-    if (location.pathname.startsWith("/pages/admin/new-employee"))
-      return "New_Employee";
     if (location.pathname.startsWith("/pages/admin/Roles&Permissions"))
       return "Roles_Permissions";
-    if (location.pathname.startsWith("/pages/admin/New_Role"))
-      return "New_Role";
-    if (location.pathname.startsWith("/pages/admin/all-departments"))
-      return "all_departments";
-    if (location.pathname.startsWith("/pages/admin/new-department"))
-      return "new_department";
-    if (location.pathname.startsWith("/pages/admin/edit-department"))
+    if (location.pathname.startsWith("/pages/admin/all-departments") || location.pathname.startsWith("/pages/admin/edit-department"))
       return "all_departments";
     if (location.pathname.startsWith("/pages/admin/company"))
       return "Company";
@@ -558,10 +539,10 @@ export default function SideBarAdmin({ isMobileOpen, onMobileClose }) {
       return "leaves";
     if (location.pathname.startsWith("/pages/admin/attendance"))
       return "all_attendance";
-    if (location.pathname.startsWith("/pages/admin/Performance"))
-      return "performance";
-    if (location.pathname.startsWith("/pages/admin/TeamWallet"))
-      return "wallet";
+    if (location.pathname.startsWith("/pages/admin/break"))
+      return "break";
+    if (location.pathname.startsWith("/pages/admin/all-teams"))
+      return "all_teams";
     
     // User routes (for admins with permissions)
     if (location.pathname.startsWith("/pages/User/time_tracking"))
@@ -572,31 +553,15 @@ export default function SideBarAdmin({ isMobileOpen, onMobileClose }) {
       return "user_break_tracking";
     if (location.pathname.startsWith("/pages/User/leaves"))
       return "user_leaves";
-    if (location.pathname.startsWith("/pages/User/Performance"))
-      return "user_performance";
-    if (location.pathname.startsWith("/pages/User/team-wallet"))
-      return "user_wallet";
     
     return "";
   };
 
   const active = getActiveKey();
 
-  // فتح dropdown تلقائي لو كنت على All_Employees أو أي من children
+  // Auto-open dropdowns for items with children
   useEffect(() => {
-    if (active === "All_Employees" || active === "New_Employee") {
-      setOpenDropdown("All_Employees");
-    }
-    if (active === "Roles_Permissions" || active === "New_Role") {
-      setOpenDropdown("Roles_Permissions");
-    }
-    if (active === "all_departments" || active === "new_department") {
-      setOpenDropdown("all_departments");
-    }
-    if (active === "Company") {
-      setOpenDropdown("Company");
-    }
-    // User menu dropdowns
+    // User menu dropdowns (for admins with permissions)
     if (active === "user_time_tracking" || active === "user_attendance" || active === "user_break_tracking") {
       setOpenDropdown("user_time_tracking");
     }
@@ -623,23 +588,18 @@ export default function SideBarAdmin({ isMobileOpen, onMobileClose }) {
     // Admin routes
     if (key === "dashboard") navigate("/pages/admin/dashboard");
     else if (key === "All_Employees") navigate("/pages/admin/all-employees");
-    else if (key === "New_Employee") navigate("/pages/admin/new-employee");
     else if (key === "Roles_Permissions") navigate("/pages/admin/Roles&Permissions");
-    else if (key === "New_Role") navigate("/pages/admin/New_Role");
     else if (key === "leaves") navigate("/pages/admin/leaves");
-    else if (key === "wallet") navigate("/pages/admin/TeamWallet");
     else if (key === "Company") navigate("/pages/admin/company");
     else if (key === "all_attendance") navigate("/pages/admin/attendance");
+    else if (key === "break") navigate("/pages/admin/break");
+    else if (key === "all_teams") navigate("/pages/admin/all-teams");
     else if (key === "all_departments") navigate("/pages/admin/all-departments");
-    else if (key === "new_department") navigate("/pages/admin/new-department");
-    else if (key === "performance") navigate("/pages/admin/Performance");
     // User routes (for admins with permissions)
     else if (key === "user_time_tracking") navigate("/pages/User/time_tracking");
     else if (key === "user_attendance") navigate("/pages/User/attendance-logs");
     else if (key === "user_break_tracking") navigate("/pages/User/break-tracking");
     else if (key === "user_leaves") navigate("/pages/User/leaves");
-    else if (key === "user_performance") navigate("/pages/User/Performance");
-    else if (key === "user_wallet") navigate("/pages/User/team-wallet");
   };
 
   // Settings click handler
@@ -821,10 +781,12 @@ export default function SideBarAdmin({ isMobileOpen, onMobileClose }) {
                   {item.children ? (
                     // For items with children, filter them by permissions
                     (() => {
-                      const filteredChildren = filterChildrenByPermissions(item.children, isAdmin());
+                      const filteredChildren = item.children.filter(child => {
+                        return hasMenuItemPermission(child);
+                      });
                       
-                      // Only show parent if there are visible children or user is admin
-                      if (filteredChildren.length === 0 && !isAdmin()) {
+                      // Admin sees all items, but still filter children for consistency
+                      if (filteredChildren.length === 0) {
                         return null;
                       }
                       

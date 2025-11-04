@@ -110,7 +110,7 @@ export function TimeFocusLogs({ refreshTrigger }) {
       <div className="space-y-2 sm:space-y-3">
         {(isLoading ? [] : newestLogs).map((log, idx) => (
           <div
-            key={log._id}
+            key={log.id}
             className={`grid grid-cols-3 gap-2 sm:gap-3 items-center py-1 sm:py-2 ${idx !== newestLogs.length - 1 ? "border-b border-[var(--divider-color)]" : ""
               }`}
           >

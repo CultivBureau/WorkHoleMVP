@@ -22,6 +22,7 @@ import {
 import { Link } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
+import { setPermissionsFromToken } from "../../utils/page";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -104,14 +105,21 @@ const Login = () => {
         const decoded = jwtDecode(token);
         // Save decoded user info in cookies
         Cookies.set('user_info', JSON.stringify(decoded), { expires: 2 });
+        
+        // Extract and save permissions from token
+        setPermissionsFromToken(token);
+        
         // Check for roles in MS identity claim
         const msRoleKey = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
         let roles = decoded[msRoleKey] || [];
         const rolesArray = Array.isArray(roles) ? roles : [roles];
         const isAdmin = rolesArray.some(r => typeof r === 'string' && r.toLowerCase() === 'admin');
+        
+        // Navigate based on role
         if (isAdmin) {
           navigate("/pages/admin/dashboard");
         } else {
+          // For custom roles or employees, navigate to user dashboard
           navigate("/pages/User/dashboard");
         }
       } else {
