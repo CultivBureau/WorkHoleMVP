@@ -67,6 +67,7 @@ const ROLE_PERMISSIONS_MAP = {
     "viewLeaveTypes",
     "editLeaveTypes",
     "cancelLeave",
+    "viewPermissions",
   ],
   employee: [
     // Employees have basic permissions only
