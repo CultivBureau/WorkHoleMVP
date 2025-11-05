@@ -131,7 +131,7 @@ export default function AllTeams() {
             </div>
 
             {/* Status Cards */}
-            <TeamsStatusCards />
+            {/* <TeamsStatusCards /> */}
 
             {/* Search and Action Buttons */}
             <div className={`flex flex-col sm:flex-row gap-4 items-center justify-between ${isArabic ? 'sm:flex-row-reverse' : ''}`}>
