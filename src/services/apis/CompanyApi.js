@@ -4,6 +4,7 @@ import { baseQueryWithReauth } from "./baseQuery";
 export const companyApi = createApi({
   reducerPath: "companyApi",
   baseQuery: baseQueryWithReauth,
+  tagTypes: ["Company"],
   endpoints: (builder) => ({
     getUserCompaniesByEmail: builder.mutation({
       query: (email) => ({
@@ -12,7 +13,26 @@ export const companyApi = createApi({
         body: { Email: email },
       }),
     }),
+    getCompanyById: builder.query({
+      query: (id) => ({
+        url: `/api/v1/Company/GetById/${id}`,
+        method: "GET",
+      }),
+      providesTags: ["Company"],
+    }),
+    updateCompany: builder.mutation({
+      query: ({ companyId, name }) => ({
+        url: `/api/v1/Company/Update/${companyId}`,
+        method: "PUT",
+        body: { name },
+      }),
+      invalidatesTags: ["Company"],
+    }),
   }),
 });
 
-export const { useGetUserCompaniesByEmailMutation } = companyApi;
+export const { 
+  useGetUserCompaniesByEmailMutation,
+  useGetCompanyByIdQuery,
+  useUpdateCompanyMutation,
+} = companyApi;

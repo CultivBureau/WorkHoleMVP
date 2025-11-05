@@ -889,6 +889,9 @@
     "optional": "(اختياري)",
     "permissions": "الصلاحيات",
     "permissionsDescription": "اختر الصلاحيات التي تريد تخصيصها لهذا الدور",
+    "permissionsSelected": "صلاحيات محددة",
+    "basicInformation": "المعلومات الأساسية",
+    "basicInformationDesc": "أدخل اسم الدور والوصف",
     "save": "حفظ",
     "cancel": "إلغاء",
     "back": "رجوع",
@@ -905,7 +908,16 @@
         "tasksAndProjects": "المهام والمشاريع",
         "employeeManagement": "إدارة الموظفين",
         "leaveManagement": "إدارة الإجازات",
-        "hrAndAdminTools": "أدوات الموارد البشرية والإدارة"
+        "hrAndAdminTools": "أدوات الموارد البشرية والإدارة",
+        "breakManagement": "إدارة الاستراحات",
+        "breakLogs": "سجلات الاستراحة",
+        "company": "الشركة",
+        "department": "القسم",
+        "leaveBalance": "رصيد الإجازة",
+        "leaveType": "نوع الإجازة",
+        "permission": "الصلاحية",
+        "roles": "الأدوار",
+        "team": "الفريق"
       },
       "permissions": {
         "clockInOut": "تسجيل الدخول/الخروج"
@@ -940,7 +952,8 @@
       "users": "المستخدمون",
       "actions": "الإجراءات",
       "lastUpdated": "آخر تحديث",
-      "status": "الحالة"
+      "status": "الحالة",
+      "noRoles": "لم يتم العثور على أدوار"
     },
     "filters": {
       "roleType": "نوع الدور",
@@ -957,6 +970,15 @@
       "rolesAssignedToActive": "الأدوار المخصصة للمستخدمين النشطين",
       "createdManually": "تم إنشاؤها يدوياً للاحتياجات الخاصة",
       "allUsersInSystem": "جميع المستخدمين في النظام"
+    },
+    "validation": {
+      "roleNameRequired": "اسم الدور مطلوب"
+    },
+    "errors": {
+      "createFailed": "فشل إنشاء الدور",
+      "loadPermissionsFailed": "فشل تحميل الصلاحيات",
+      "loadRolesFailed": "فشل تحميل الأدوار",
+      "updateFailed": "فشل تحديث الدور"
     }
   },
   "adminDashboard": {
@@ -1337,7 +1359,8 @@
     "mostUsed": "الأكثر استخداماً"
   },
   "common": {
-    "loading": "جاري التحميل..."
+    "loading": "جاري التحميل...",
+    "saving": "جاري الحفظ..."
   },
   "performance": {
     "statusCards": {

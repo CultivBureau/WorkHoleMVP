@@ -1,139 +1,52 @@
 "use client"
 
 import { useState, useMemo, useEffect, useRef } from "react"
-import { Edit, Trash2, Eye } from "lucide-react"
+import { Edit, Trash2 } from "lucide-react"
 import EditRole from "./edit_role"
 import { useTranslation } from "react-i18next"
-
-// Sample roles data matching the image
-const rolesData = [
-    {
-        id: 1,
-        role: "Employee",
-        users: 123,
-        lastUpdatedDate: "2025-08-15",
-        status: "Active",
-    },
-    {
-        id: 2,
-        role: "Team Lead",
-        users: 21,
-        lastUpdatedDate: "2025-08-15",
-        status: "Inactive",
-    },
-    {
-        id: 3,
-        role: "Admin",
-        users: 11,
-        lastUpdatedDate: "2025-08-15",
-        status: "Active",
-    },
-    {
-        id: 4,
-        role: "HR",
-        users: 5,
-        lastUpdatedDate: "2025-08-15",
-        status: "Active",
-    },
-    {
-        id: 5,
-        role: "Team Lead",
-        users: 11,
-        lastUpdatedDate: "2025-08-14",
-        status: "Active",
-    },
-    {
-        id: 6,
-        role: "HR",
-        users: 23,
-        lastUpdatedDate: "2025-08-13",
-        status: "Inactive",
-    },
-    {
-        id: 7,
-        role: "Manager",
-        users: 15,
-        lastUpdatedDate: "2025-08-12",
-        status: "Active",
-    },
-    {
-        id: 8,
-        role: "Supervisor",
-        users: 8,
-        lastUpdatedDate: "2025-08-11",
-        status: "Active",
-    },
-    {
-        id: 9,
-        role: "Coordinator",
-        users: 12,
-        lastUpdatedDate: "2025-08-10",
-        status: "Inactive",
-    },
-    {
-        id: 10,
-        role: "Analyst",
-        users: 18,
-        lastUpdatedDate: "2025-08-09",
-        status: "Active",
-    },
-    {
-        id: 11,
-        role: "Director",
-        users: 5,
-        lastUpdatedDate: "2025-08-08",
-        status: "Active",
-    },
-    {
-        id: 12,
-        role: "Associate",
-        users: 25,
-        lastUpdatedDate: "2025-08-07",
-        status: "Inactive",
-    },
-    {
-        id: 13,
-        role: "Specialist",
-        users: 14,
-        lastUpdatedDate: "2025-08-06",
-        status: "Active",
-    },
-    {
-        id: 14,
-        role: "Consultant",
-        users: 9,
-        lastUpdatedDate: "2025-08-05",
-        status: "Active",
-    },
-    {
-        id: 15,
-        role: "Executive",
-        users: 3,
-        lastUpdatedDate: "2025-08-04",
-        status: "Active",
-    },
-    {
-        id: 16,
-        role: "Intern",
-        users: 20,
-        lastUpdatedDate: "2025-08-03",
-        status: "Inactive",
-    }
-]
+import { useGetAllRolesQuery } from "../../../services/apis/RoleApi"
 
 const RolesTable = () => {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
 
-    const [roleType, setRoleType] = useState(t('roles.filters.roleType'))
-    const [status, setStatus] = useState(t('roles.filters.allStatus'))
-    const [selectedDate, setSelectedDate] = useState("")
+    // Fetch roles from API
+    const { data: rolesResponse, isLoading, error, refetch } = useGetAllRolesQuery({ pageNumber: 1, pageSize: 100 });
+
+    const defaultRoleFilter = t('roles.filters.roleType');
+    const defaultStatusFilter = t('roles.filters.allStatus');
+
+    const [roleType, setRoleType] = useState(defaultRoleFilter)
+    const [status, setStatus] = useState(defaultStatusFilter)
     const [isEditOpen, setIsEditOpen] = useState(false)
     const [selectedRole, setSelectedRole] = useState(null)
     const [currentPage, setCurrentPage] = useState(1)
     const [itemsPerPage, setItemsPerPage] = useState(7)
 
     const tableContainerRef = useRef(null)
+
+    // Transform API data to table format
+    const rolesData = useMemo(() => {
+        if (!rolesResponse?.value) return [];
+        
+        return rolesResponse.value.map(role => ({
+            id: role.id,
+            role: role.name,
+            name: role.name, // Keep original name for filtering
+            users: 0, // Will be fetched separately if needed
+            lastUpdatedDate: new Date().toISOString().split('T')[0], // API doesn't provide this, using current date
+            status: "Active", // API doesn't provide status, defaulting to Active
+            permissions: role.permissions || [],
+            companyId: role.companyId
+        }));
+    }, [rolesResponse]);
+
+    // Get unique role names for filter dropdown
+    const uniqueRoleNames = useMemo(() => {
+        if (!rolesData.length) return [];
+        const uniqueNames = [...new Set(rolesData.map(role => role.name))];
+        return uniqueNames.sort();
+    }, [rolesData]);
 
     // Calculate items per page based on table height
     useEffect(() => {
@@ -164,19 +77,20 @@ const RolesTable = () => {
 
     // Filter the data based on selected filters
     const filteredData = useMemo(() => {
+        if (!rolesData.length) return [];
+        
         return rolesData.filter(role => {
-            // Role filter
-            const roleMatches = roleType === t('roles.filters.roleType') || role.role === roleType;
+            // Role filter - check if roleType is the default filter text or matches the role name
+            const defaultRoleFilter = t('roles.filters.roleType');
+            const roleMatches = roleType === defaultRoleFilter || role.name === roleType || role.role === roleType;
 
             // Status filter
-            const statusMatches = status === t('roles.filters.allStatus') || role.status === status;
+            const defaultStatusFilter = t('roles.filters.allStatus');
+            const statusMatches = status === defaultStatusFilter || role.status === status;
 
-            // Date filter
-            const dateMatches = selectedDate === "" || role.lastUpdatedDate === selectedDate;
-
-            return roleMatches && statusMatches && dateMatches;
+            return roleMatches && statusMatches;
         });
-    }, [roleType, status, selectedDate, t]);
+    }, [rolesData, roleType, status, t]);
 
     // Calculate pagination info
     const totalItems = filteredData.length;
@@ -186,19 +100,19 @@ const RolesTable = () => {
     const currentPageData = filteredData.slice(startIndex, endIndex);
 
     // Reset to first page when filters change
-    useMemo(() => {
+    useEffect(() => {
         setCurrentPage(1);
-    }, [roleType, status, selectedDate]);
+    }, [roleType, status]);
 
     const handleEditRole = (role) => {
         setSelectedRole(role);
         setIsEditOpen(true);
     };
 
-    const handleSaveRole = (updatedRole) => {
-        // Here you would typically update the role in your data source
-        console.log('Saving role:', updatedRole);
-        // You can implement the actual save logic here
+    const handleSaveRole = async (updatedRole) => {
+        // Refetch roles after update
+        await refetch();
+        setIsEditOpen(false);
     };
 
     const handlePreviousPage = () => {
@@ -233,13 +147,6 @@ const RolesTable = () => {
                     <span className="font-medium text-[var(--text-color)] text-sm">{role.role}</span>
                 </td>
                 <td className={`py-4 px-6 text-[var(--text-color)] text-sm font-medium ${isArabic ? 'text-right' : 'text-left'}`}>{role.users}</td>
-                <td className="py-4 px-6">
-                    <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                        <Eye className="w-4 h-4 text-[var(--sub-text-color)]" />
-                        <span className="text-[var(--sub-text-color)] text-sm">{t('roles.view')}</span>
-                    </div>
-                </td>
-                <td className={`py-4 px-6 text-[var(--sub-text-color)] text-sm ${isArabic ? 'text-right' : 'text-left'}`}>{role.lastUpdatedDate}</td>
                 <td className={`py-4 px-6 ${isArabic ? 'text-right' : 'text-left'}`}>{getStatusBadge(role.status)}</td>
                 <td className="py-4 px-6">
                     <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
@@ -264,6 +171,24 @@ const RolesTable = () => {
         ));
     };
 
+    // Show loading state
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center py-8" style={{ direction: isArabic ? 'rtl' : 'ltr' }}>
+                <span className="text-[var(--sub-text-color)]">{t('common.loading')}</span>
+            </div>
+        );
+    }
+
+    // Show error state
+    if (error) {
+        return (
+            <div className="flex items-center justify-center py-8" style={{ direction: isArabic ? 'rtl' : 'ltr' }}>
+                <span className="text-red-500">{t('roles.errors.loadRolesFailed') || t('roles.errors.loadPermissionsFailed') || 'Failed to load roles'}</span>
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-col" style={{ direction: isArabic ? 'rtl' : 'ltr' }}>
             {/* Filters and header section */}
@@ -279,12 +204,9 @@ const RolesTable = () => {
                                 dir={isArabic ? 'rtl' : 'ltr'}
                             >
                                 <option value={t('roles.filters.roleType')}>{t('roles.filters.roleType')}</option>
-                                <option value="Employee">{t('employees.table.employee')}</option>
-                                <option value="Team Lead">{t('profile.teamLead')}</option>
-                                <option value="Admin">{t('aside.settingsItem')}</option>
-                                <option value="HR">{t('employees.professionalInfo.humanResources')}</option>
-                                <option value="Manager">{t('employees.professionalInfo.manager')}</option>
-                                <option value="Supervisor">{t('profile.teamLead')}</option>
+                                {uniqueRoleNames.map(roleName => (
+                                    <option key={roleName} value={roleName}>{roleName}</option>
+                                ))}
                             </select>
                         </div>
 
@@ -300,20 +222,6 @@ const RolesTable = () => {
                                 <option value="Active">{t('roles.filters.active')}</option>
                                 <option value="Inactive">{t('roles.filters.inactive')}</option>
                             </select>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-medium text-[var(--sub-text-color)]">{t('roles.lastUpdated')}</span>
-                            <div className="relative">
-                                <input
-                                    type="date"
-                                    value={selectedDate}
-                                    onChange={(e) => setSelectedDate(e.target.value)}
-                                    className="h-8 px-3 border border-[var(--border-color)] rounded-md text-[10px] bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)] cursor-pointer"
-                                    style={{ minWidth: "120px" }}
-                                    dir={isArabic ? 'rtl' : 'ltr'}
-                                />
-                            </div>
                         </div>
                     </div>
 
@@ -360,12 +268,6 @@ const RolesTable = () => {
                                         {t('roles.table.users')}
                                     </th>
                                     <th className={`py-3 px-4 text-sm font-medium text-[var(--text-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
-                                        {t('roles.table.actions')}
-                                    </th>
-                                    <th className={`py-3 px-4 text-sm font-medium text-[var(--text-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
-                                        {t('roles.table.lastUpdated')}
-                                    </th>
-                                    <th className={`py-3 px-4 text-sm font-medium text-[var(--text-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
                                         {t('roles.table.status')}
                                     </th>
                                     <th className={`py-3 px-4 text-sm font-medium text-[var(--text-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
@@ -374,13 +276,25 @@ const RolesTable = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {renderTableRows()}
-                                {/* Empty rows */}
-                                {emptyRows.map((_, index) => (
-                                    <tr key={`empty-${index}`} className="border-b border-[var(--border-color)] last:border-b-0">
-                                        <td colSpan={6} className="h-[68px]"></td>
+                                {currentPageData.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={4} className="py-8 text-center">
+                                            <span className="text-[var(--sub-text-color)] text-sm" dir={isArabic ? 'rtl' : 'ltr'}>
+                                                {t('roles.table.noRoles') || 'No roles found'}
+                                            </span>
+                                        </td>
                                     </tr>
-                                ))}
+                                ) : (
+                                    <>
+                                        {renderTableRows()}
+                                        {/* Empty rows */}
+                                        {emptyRows.map((_, index) => (
+                                            <tr key={`empty-${index}`} className="border-b border-[var(--border-color)] last:border-b-0">
+                                                <td colSpan={4} className="h-[68px]"></td>
+                                            </tr>
+                                        ))}
+                                    </>
+                                )}
                             </tbody>
                         </table>
                     </div>

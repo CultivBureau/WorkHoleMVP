@@ -1113,6 +1113,9 @@
     "optional": "(optional)",
     "permissions": "Permissions",
     "permissionsDescription": "Select the permissions you want to assign to this role",
+    "permissionsSelected": "permissions selected",
+    "basicInformation": "Basic Information",
+    "basicInformationDesc": "Enter role name and description",
     "save": "Save",
     "cancel": "Cancel",
     "back": "Back",
@@ -1129,7 +1132,16 @@
         "tasksAndProjects": "Tasks & Projects",
         "employeeManagement": "Employee Management",
         "leaveManagement": "Leave Management",
-        "hrAndAdminTools": "HR & Admin Tools"
+        "hrAndAdminTools": "HR & Admin Tools",
+        "breakManagement": "Break Management",
+        "breakLogs": "Break Logs",
+        "company": "Company",
+        "department": "Department",
+        "leaveBalance": "Leave Balance",
+        "leaveType": "Leave Type",
+        "permission": "Permission",
+        "roles": "Roles",
+        "team": "Team"
       },
       "permissions": {
         "clockInOut": "Clock In/Out"
@@ -1164,7 +1176,8 @@
       "users": "Users",
       "actions": "Actions",
       "lastUpdated": "Last Updated Date",
-      "status": "Status"
+      "status": "Status",
+      "noRoles": "No roles found"
     },
     "filters": {
       "roleType": "Role Type",
@@ -1181,6 +1194,15 @@
       "rolesAssignedToActive": "Roles assigned to active users",
       "createdManually": "Created manually for specific needs",
       "allUsersInSystem": "All users in the system"
+    },
+    "validation": {
+      "roleNameRequired": "Role name is required"
+    },
+    "errors": {
+      "createFailed": "Failed to create role",
+      "loadPermissionsFailed": "Failed to load permissions",
+      "loadRolesFailed": "Failed to load roles",
+      "updateFailed": "Failed to update role"
     }
   },
   "adminLeaves": {
@@ -1376,7 +1398,8 @@
     "mostUsed": "Most Used"
   },
   "common": {
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "saving": "Saving..."
   },
   "performance": {
     "statusCards": {

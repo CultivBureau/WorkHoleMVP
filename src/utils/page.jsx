@@ -92,6 +92,19 @@ export const getUserInfo = () => {
 // Get companyId from token or separate cookie
 export const getCompanyId = () => {
   // First try to get from decoded token
+  const token = getAuthToken();
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload.companyId) {
+        return payload.companyId;
+      }
+    } catch (error) {
+      console.error("Error decoding token:", error);
+    }
+  }
+  
+  // Try to get from user info cookie
   const userInfo = getUserInfo();
   if (userInfo?.companyId) {
     return userInfo.companyId;
