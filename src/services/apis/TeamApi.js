@@ -120,8 +120,8 @@ export const teamApi = createApi({
       },
       invalidatesTags: (result, error, arg) => {
         // Get departmentId from arg if it's an object, or from result
-        const departmentId = (typeof arg === 'object' && arg.departmentId) 
-          || result?.value?.departmentId 
+        const departmentId = (typeof arg === 'object' && arg.departmentId)
+          || result?.value?.departmentId
           || result?.departmentId;
         const tags = [
           "Teams",
@@ -149,20 +149,20 @@ export const teamApi = createApi({
           if (!arg || typeof arg !== 'object' || !arg.teamId) {
             return ["Teams", { type: "Teams", id: "LIST" }];
           }
-          
+
           const { teamId, departmentId } = arg;
           const deptId = departmentId || result?.value?.[0]?.team?.departmentId || result?.value?.[0]?.departmentId;
-          
+
           const tags = [
             "Teams",
             { type: "Teams", id: "LIST" },
             { type: "Teams", id: `TEAM-USERS-${teamId}` },
           ];
-          
+
           if (deptId) {
             tags.push({ type: "Teams", id: `DEPARTMENT-${deptId}` });
           }
-          
+
           return tags;
         } catch (err) {
           console.error('Error in updateUsersInTeam invalidatesTags:', err);
@@ -182,10 +182,10 @@ export const teamApi = createApi({
       }),
       invalidatesTags: (result, error, arg) => {
         if (!arg || !arg.teamId) return ["Teams", { type: "Teams", id: "LIST" }];
-        
+
         const { teamId, departmentId } = arg;
         const deptId = departmentId || result?.value?.[0]?.team?.departmentId || result?.value?.[0]?.departmentId;
-        
+
         return [
           "Teams",
           { type: "Teams", id: "LIST" },
@@ -210,10 +210,10 @@ export const teamApi = createApi({
   tagTypes: ["Teams"],
 });
 
-export const { 
-  useGetAllTeamsQuery, 
+export const {
+  useGetAllTeamsQuery,
   useAssignUserToTeamMutation,
-  useCreateTeamMutation, 
+  useCreateTeamMutation,
   useGetTeamsByDepartmentQuery,
   useGetTeamUsersQuery,
   useAddUserToTeamMutation,
