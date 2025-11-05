@@ -767,7 +767,7 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
                 return (
                   <PermissionGuard
                     key={item.key}
-                    permissions={[item.permission]}
+                    backendPermissions={item.backendPermissions}
                     fallback={null}
                   >
                     <SideMenuItem

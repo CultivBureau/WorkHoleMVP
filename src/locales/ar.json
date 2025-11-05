@@ -896,7 +896,9 @@
     "cancel": "إلغاء",
     "back": "رجوع",
     "add": "إضافة",
-    "confirmDelete": "هل أنت متأكد من رغبتك في حذف هذا الدور؟",
+    "delete": "حذف",
+    "confirmDelete": "تأكيد الحذف",
+    "confirmDeleteMessage": "هل أنت متأكد من رغبتك في حذف هذا الدور؟",
     "roleDeleted": "تم حذف الدور بنجاح",
     "roleSaved": "تم حفظ الدور بنجاح",
     "users": "المستخدمون",
@@ -978,7 +980,8 @@
       "createFailed": "فشل إنشاء الدور",
       "loadPermissionsFailed": "فشل تحميل الصلاحيات",
       "loadRolesFailed": "فشل تحميل الأدوار",
-      "updateFailed": "فشل تحديث الدور"
+      "updateFailed": "فشل تحديث الدور",
+      "deleteFailed": "فشل حذف الدور"
     }
   },
   "adminDashboard": {
@@ -1357,6 +1360,59 @@
     "totalTypes": "إجمالي الأنواع",
     "totalTime": "إجمالي الوقت",
     "mostUsed": "الأكثر استخداماً"
+  },
+  "breaks": {
+    "title": "إدارة الاستراحات",
+    "searchPlaceholder": "ابحث عن الاستراحات...",
+    "addNew": "إضافة جديد",
+    "createTitle": "إنشاء استراحة",
+    "editTitle": "تعديل الاستراحة",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "create": "إنشاء",
+    "delete": "حذف",
+    "confirmDelete": "تأكيد الحذف",
+    "deleteMessage": "هل أنت متأكد من رغبتك في حذف هذه الاستراحة؟",
+    "deleteSuccess": "تم حذف الاستراحة بنجاح",
+    "deleteFailed": "فشل حذف الاستراحة",
+    "createSuccess": "تم إنشاء الاستراحة بنجاح",
+    "updateSuccess": "تم تحديث الاستراحة بنجاح",
+    "minutes": "دقيقة",
+    "hours": "ساعة",
+    "status": {
+      "label": "الحالة",
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "filters": {
+      "allStatus": "جميع الحالات"
+    },
+    "table": {
+      "name": "الاسم",
+      "duration": "المدة",
+      "status": "الحالة",
+      "actions": "الإجراءات",
+      "noBreaks": "لم يتم العثور على استراحات"
+    },
+    "form": {
+      "name": "اسم الاستراحة",
+      "namePlaceholder": "أدخل اسم الاستراحة",
+      "duration": "المدة (بالدقائق)",
+      "durationPlaceholder": "أدخل المدة بالدقائق"
+    },
+    "actions": {
+      "edit": "تعديل",
+      "delete": "حذف"
+    },
+    "validation": {
+      "nameRequired": "اسم الاستراحة مطلوب",
+      "durationRequired": "يجب أن تكون المدة أكبر من 0",
+      "companyIdRequired": "معرف الشركة مطلوب"
+    },
+    "errors": {
+      "loadFailed": "فشل تحميل الاستراحات",
+      "saveFailed": "فشل حفظ الاستراحة"
+    }
   },
   "common": {
     "loading": "جاري التحميل...",

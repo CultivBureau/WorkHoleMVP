@@ -4,7 +4,8 @@ import { useState, useMemo, useEffect, useRef } from "react"
 import { Edit, Trash2 } from "lucide-react"
 import EditRole from "./edit_role"
 import { useTranslation } from "react-i18next"
-import { useGetAllRolesQuery } from "../../../services/apis/RoleApi"
+import { useGetAllRolesQuery, useDeleteRoleMutation } from "../../../services/apis/RoleApi"
+import toast from "react-hot-toast"
 
 const RolesTable = () => {
     const { t, i18n } = useTranslation();
@@ -12,6 +13,7 @@ const RolesTable = () => {
 
     // Fetch roles from API
     const { data: rolesResponse, isLoading, error, refetch } = useGetAllRolesQuery({ pageNumber: 1, pageSize: 100 });
+    const [deleteRole, { isLoading: isDeleting }] = useDeleteRoleMutation();
 
     const defaultRoleFilter = t('roles.filters.roleType');
     const defaultStatusFilter = t('roles.filters.allStatus');
@@ -20,6 +22,8 @@ const RolesTable = () => {
     const [status, setStatus] = useState(defaultStatusFilter)
     const [isEditOpen, setIsEditOpen] = useState(false)
     const [selectedRole, setSelectedRole] = useState(null)
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+    const [roleToDelete, setRoleToDelete] = useState(null)
     const [currentPage, setCurrentPage] = useState(1)
     const [itemsPerPage, setItemsPerPage] = useState(7)
 
@@ -114,6 +118,25 @@ const RolesTable = () => {
         setIsEditOpen(false);
     };
 
+    const handleDeleteRole = (role) => {
+        setRoleToDelete(role);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!roleToDelete) return;
+
+        try {
+            await deleteRole(roleToDelete.id).unwrap();
+            toast.success(t('roles.roleDeleted') || 'Role deleted successfully');
+            setIsDeleteModalOpen(false);
+            setRoleToDelete(null);
+            refetch();
+        } catch (error) {
+            toast.error(error?.data?.errorMessage || t('roles.errors.deleteFailed') || 'Failed to delete role');
+        }
+    };
+
     const handlePreviousPage = () => {
         setCurrentPage(prev => Math.max(prev - 1, 1));
     };
@@ -158,6 +181,7 @@ const RolesTable = () => {
                             <Edit className="w-4 h-4" />
                         </button>
                         <button
+                            onClick={() => handleDeleteRole(role)}
                             className="p-2 text-[var(--error-color)] hover:bg-[var(--hover-color)] rounded-lg transition-colors"
                             aria-label={t('employees.actions.delete')}
                             title={t('employees.actions.delete')}
@@ -311,6 +335,39 @@ const RolesTable = () => {
                     </div>
                     )}
             </div>
+
+            {/* Delete Confirmation Modal */}
+            {isDeleteModalOpen && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-[var(--bg-color)] rounded-lg border border-[var(--border-color)] p-6 max-w-md w-full" style={{ direction: isArabic ? 'rtl' : 'ltr' }}>
+                        <h3 className={`text-lg font-semibold text-[var(--text-color)] mb-4 ${isArabic ? 'text-right' : 'text-left'}`} dir={isArabic ? 'rtl' : 'ltr'}>
+                            {t('roles.confirmDelete')}
+                        </h3>
+                        <p className={`text-[var(--sub-text-color)] mb-6 ${isArabic ? 'text-right' : 'text-left'}`} dir={isArabic ? 'rtl' : 'ltr'}>
+                            {t('roles.confirmDeleteMessage') || 'Are you sure you want to delete this role?'} "{roleToDelete?.role || roleToDelete?.name}"
+                        </p>
+                        <div className={`flex gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                            <button
+                                onClick={() => {
+                                    setIsDeleteModalOpen(false);
+                                    setRoleToDelete(null);
+                                }}
+                                disabled={isDeleting}
+                                className="flex-1 px-4 py-2 border border-[var(--border-color)] text-[var(--text-color)] rounded-lg font-medium hover:bg-[var(--hover-color)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {t('roles.cancel')}
+                            </button>
+                            <button
+                                onClick={confirmDelete}
+                                disabled={isDeleting}
+                                className="flex-1 px-4 py-2 bg-[var(--error-color)] text-white rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isDeleting ? (t('common.loading') || 'Deleting...') : (t('roles.delete') || 'Delete')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
