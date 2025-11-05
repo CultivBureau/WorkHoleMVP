@@ -33,9 +33,8 @@ const RolesTable = () => {
             id: role.id,
             role: role.name,
             name: role.name, // Keep original name for filtering
-            users: 0, // Will be fetched separately if needed
-            lastUpdatedDate: new Date().toISOString().split('T')[0], // API doesn't provide this, using current date
-            status: "Active", // API doesn't provide status, defaulting to Active
+            users: role.usersCount || 0, // Use usersCount from API
+            status: role.status ? "Active" : "Inactive", // Convert boolean to string
             permissions: role.permissions || [],
             companyId: role.companyId
         }));
