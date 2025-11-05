@@ -101,7 +101,7 @@ export const teamApi = createApi({
         method: "PUT",
         body,
       }),
-      invalidatesTags: (result, error, { id, departmentId }) => [
+      invalidatesTags: (result, error, { departmentId }) => [
         "Teams",
         { type: "Teams", id: "LIST" },
         { type: "Teams", id: `DEPARTMENT-${departmentId}` },
@@ -194,12 +194,25 @@ export const teamApi = createApi({
         ];
       },
     }),
+
+    // Assign user to a team
+    assignUserToTeam: builder.mutation({
+      query: ({ teamId, userId }) => ({
+        url: `/api/v1/Team/AddUserToTeam/${teamId}/users`,
+        method: "POST",
+        body: { userId, teamId },
+      }),
+      invalidatesTags: ["Teams"],
+    }),
+
+
   }),
   tagTypes: ["Teams"],
 });
 
 export const { 
   useGetAllTeamsQuery, 
+  useAssignUserToTeamMutation,
   useCreateTeamMutation, 
   useGetTeamsByDepartmentQuery,
   useGetTeamUsersQuery,

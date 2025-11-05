@@ -1,5 +1,5 @@
 import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { getAuthToken, setAuthToken, removeAuthToken, getRefreshToken, isTokenExpired } from "../../utils/page";
+import { getAuthToken, setAuthToken, removeAuthToken, getRefreshToken, isTokenExpired, getUserInfo } from "../../utils/page";
 
 const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -18,60 +18,74 @@ export const baseQueryWithReauth = async (args, api, extraOptions) => {
     },
   })(args, api, extraOptions);
 
-  // If the result is 401 and we have a refresh token, try to refresh
-  if (result.error && result.error.status === 401 && refreshAttempts < MAX_REFRESH_ATTEMPTS) {
-    const refreshToken = getRefreshToken();
+  // If the result is 401, check if we have cookie data first (for custom roles)
+  // This prevents redirecting to login when token is valid but /me API fails
+  if (result.error && result.error.status === 401) {
+    const userInfoFromCookie = getUserInfo();
     
-    if (refreshToken && !isTokenExpired(refreshToken)) {
-      try {
-        refreshAttempts++;
-        
-        const refreshResult = await fetchBaseQuery({
-          baseUrl: `${baseUrl}/auth`,
-        })({
-          url: '/refresh',
-          method: 'POST',
-          body: { refresh_token: refreshToken },
-        }, api, extraOptions);
+    // If we have cookie data (valid token decoded), don't redirect to login
+    // ProtectedRoute will handle access based on cookies
+    if (userInfoFromCookie) {
+      // Reset refresh attempts and return error - let ProtectedRoute handle it
+      refreshAttempts = 0;
+      return result;
+    }
+    
+    // Only try to refresh if we have a refresh token and no cookie data
+    if (refreshAttempts < MAX_REFRESH_ATTEMPTS) {
+      const refreshToken = getRefreshToken();
+      
+      if (refreshToken && !isTokenExpired(refreshToken)) {
+        try {
+          refreshAttempts++;
+          
+          const refreshResult = await fetchBaseQuery({
+            baseUrl: `${baseUrl}/auth`,
+          })({
+            url: '/refresh',
+            method: 'POST',
+            body: { refresh_token: refreshToken },
+          }, api, extraOptions);
 
-        if (refreshResult.data && refreshResult.data.access_token) {
-          // Store the new access token
-          setAuthToken(refreshResult.data.access_token);
-          
-          // Reset refresh attempts on successful refresh
-          refreshAttempts = 0;
-          
-          // Retry the original request with the new token
-          result = await fetchBaseQuery({
-            baseUrl,
-            prepareHeaders: (headers) => {
-              headers.set("Authorization", `Bearer ${refreshResult.data.access_token}`);
-              return headers;
-            },
-          })(args, api, extraOptions);
-        } else {
+          if (refreshResult.data && refreshResult.data.access_token) {
+            // Store the new access token
+            setAuthToken(refreshResult.data.access_token);
+            
+            // Reset refresh attempts on successful refresh
+            refreshAttempts = 0;
+            
+            // Retry the original request with the new token
+            result = await fetchBaseQuery({
+              baseUrl,
+              prepareHeaders: (headers) => {
+                headers.set("Authorization", `Bearer ${refreshResult.data.access_token}`);
+                return headers;
+              },
+            })(args, api, extraOptions);
+          } else {
+            // Refresh failed, remove tokens and redirect to login
+            refreshAttempts = 0;
+            removeAuthToken();
+            window.location.href = '/';
+          }
+        } catch (error) {
           // Refresh failed, remove tokens and redirect to login
           refreshAttempts = 0;
           removeAuthToken();
           window.location.href = '/';
         }
-      } catch (error) {
-        // Refresh failed, remove tokens and redirect to login
+      } else {
+        // No valid refresh token, remove tokens and redirect to login
         refreshAttempts = 0;
         removeAuthToken();
         window.location.href = '/';
       }
     } else {
-      // No valid refresh token, remove tokens and redirect to login
+      // Too many refresh attempts, redirect to login
       refreshAttempts = 0;
       removeAuthToken();
       window.location.href = '/';
     }
-  } else if (result.error && result.error.status === 401) {
-    // Too many refresh attempts, redirect to login
-    refreshAttempts = 0;
-    removeAuthToken();
-    window.location.href = '/';
   } else if (result.error && result.error.status !== 401) {
     // Reset refresh attempts for non-401 errors
     refreshAttempts = 0;

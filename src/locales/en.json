@@ -28,7 +28,30 @@
     "break_tracking": "Break Tracking",
     "all_attendance": "All Attendance",
     "all_departments": "All Departments",
-    "new_department": "New Department"
+    "new_department": "New Department",
+    "break": "Break Management",
+    "all_teams": "All Teams",
+    "admin_new_department": "New Department",
+    "admin_new_role": "New Role",
+    "admin_leaves": "Leave Requests",
+    "admin_attendance": "Attendance",
+    "admin_break": "Break Management",
+    "admin_teams": "All Teams",
+    "admin_performance": "Performance",
+    "admin_wallet": "Team Wallet",
+    "admin_employees": "All Employees",
+    "admin_new_employee": "New Employee",
+    "admin_departments": "Departments",
+    "admin_company": "Company",
+    "admin_roles_permissions": "Roles & Permissions",
+    "user_time_tracking": "Time Tracking",
+    "user_attendance": "Attendance",
+    "user_break_tracking": "Break Tracking",
+    "user_leaves": "Leaves",
+    "user_performance": "Performance",
+    "user_wallet": "Team Wallet",
+    "adminMenu": "Admin",
+    "userMenu": "User Pages"
   },
   "comingSoon": "Coming Soon",
   "navbar": {
@@ -733,6 +756,8 @@
         "userName": "User Name",
         "selectEmployeeRole": "Select Employee Role",
         "selectDepartment": "Select Department",
+        "selectTeam": "Select Team",
+        "selectShift": "Select Shift",
         "managerSupervisor": "Enter Manager / Supervisor",
         "selectWorkingDays": "Select Working Days",
         "selectEmploymentType": "Select Employment Type",
@@ -770,11 +795,46 @@
       "buttons": {
         "cancel": "Cancel",
         "next": "Next",
-        "back": "Back"
+        "back": "Back",
+        "submit": "Submit",
+        "submitting": "Submitting..."
       },
       "success": {
         "title": "Employee Added!",
-        "message": "You have successfully added a new employee."
+        "message": "You have successfully added a new employee.",
+        "teamAssigned": "User assigned to team successfully",
+        "shiftAssigned": "User assigned to shift successfully"
+      },
+      "processing": {
+        "register": "Registering user...",
+        "assignTeam": "Assigning user to team...",
+        "assignShift": "Assigning user to shift..."
+      },
+      "validation": {
+        "isRequired": "is required",
+        "usernameLettersOnly": "Username must contain only letters (A-Z)",
+        "invalidEmail": "Please enter a valid email address",
+        "passwordMinLength": "Password must be at least 8 characters long",
+        "passwordUppercase": "Password must contain at least one uppercase letter",
+        "passwordLowercase": "Password must contain at least one lowercase letter",
+        "passwordSpecialChar": "Password must contain at least one special character",
+        "validUsername": "Valid username",
+        "validEmail": "Valid email",
+        "strongPassword": "Strong password",
+        "validPhone": "Valid phone number",
+        "validFirstName": "Valid first name",
+        "validLastName": "Valid last name",
+        "validJobTitle": "Valid job title",
+        "roleRequired": "Role is required",
+        "missingFields": "Please fill in all required fields"
+      },
+      "errors": {
+        "tokenNotFound": "Could not find token in register response",
+        "tokenDecodeFailed": "Failed to decode authentication token",
+        "userIdNotFound": "Could not extract user ID from token",
+        "teamAssignmentFailed": "Failed to assign user to team",
+        "shiftAssignmentFailed": "Failed to assign user to shift",
+        "createFailed": "Failed to create employee"
       }
     }
   },

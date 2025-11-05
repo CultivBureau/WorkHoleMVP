@@ -28,7 +28,30 @@
     "break_tracking": "تتبع الاستراحة",
     "all_attendance": "جميع الحضور",
     "all_departments": "جميع الأقسام",
-    "new_department": "قسم جديد"
+    "new_department": "قسم جديد",
+    "break": "إدارة الاستراحات",
+    "all_teams": "جميع الفرق",
+    "admin_new_department": "قسم جديد",
+    "admin_new_role": "دور جديد",
+    "admin_leaves": "طلبات الإجازة",
+    "admin_attendance": "الحضور",
+    "admin_break": "إدارة الاستراحات",
+    "admin_teams": "جميع الفرق",
+    "admin_performance": "الأداء",
+    "admin_wallet": "محفظة الفريق",
+    "admin_employees": "جميع الموظفين",
+    "admin_new_employee": "موظف جديد",
+    "admin_departments": "الأقسام",
+    "admin_company": "الشركة",
+    "admin_roles_permissions": "الأدوار والصلاحيات",
+    "user_time_tracking": "تتبع الوقت",
+    "user_attendance": "سجلات الحضور",
+    "user_break_tracking": "تتبع الاستراحة",
+    "user_leaves": "الإجازات",
+    "user_performance": "الأداء",
+    "user_wallet": "محفظة الفريق",
+    "adminMenu": "الإدارة",
+    "userMenu": "صفحات المستخدم"
   },
   "comingSoon": "قريبًا",
   "navbar": {
@@ -689,6 +712,8 @@
         "userName": "اسم المستخدم",
         "selectEmployeeRole": "اختر دور الموظف",
         "selectDepartment": "اختر القسم",
+        "selectTeam": "اختر الفريق",
+        "selectShift": "اختر الوردية",
         "managerSupervisor": "أدخل المدير / المشرف",
         "selectWorkingDays": "اختر أيام العمل",
         "selectEmploymentType": "اختر نوع التوظيف",
@@ -726,11 +751,46 @@
       "buttons": {
         "cancel": "إلغاء",
         "next": "التالي",
-        "back": "رجوع"
+        "back": "رجوع",
+        "submit": "إرسال",
+        "submitting": "جاري الإرسال..."
       },
       "success": {
         "title": "تم إضافة الموظف!",
-        "message": "لقد قمت بإضافة موظف جديد بنجاح."
+        "message": "لقد قمت بإضافة موظف جديد بنجاح.",
+        "teamAssigned": "تم تعيين المستخدم للفريق بنجاح",
+        "shiftAssigned": "تم تعيين المستخدم للوردية بنجاح"
+      },
+      "processing": {
+        "register": "جاري تسجيل المستخدم...",
+        "assignTeam": "جاري تعيين المستخدم للفريق...",
+        "assignShift": "جاري تعيين المستخدم للوردية..."
+      },
+      "validation": {
+        "isRequired": "مطلوب",
+        "usernameLettersOnly": "اسم المستخدم يجب أن يحتوي على حروف فقط (A-Z)",
+        "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
+        "passwordMinLength": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+        "passwordUppercase": "كلمة المرور يجب أن تحتوي على حرف كبير واحد على الأقل",
+        "passwordLowercase": "كلمة المرور يجب أن تحتوي على حرف صغير واحد على الأقل",
+        "passwordSpecialChar": "كلمة المرور يجب أن تحتوي على رمز خاص واحد على الأقل",
+        "validUsername": "اسم مستخدم صحيح",
+        "validEmail": "بريد إلكتروني صحيح",
+        "strongPassword": "كلمة مرور قوية",
+        "validPhone": "رقم هاتف صحيح",
+        "validFirstName": "اسم أول صحيح",
+        "validLastName": "اسم عائلة صحيح",
+        "validJobTitle": "مسمى وظيفي صحيح",
+        "roleRequired": "الدور مطلوب",
+        "missingFields": "يرجى ملء جميع الحقول المطلوبة"
+      },
+      "errors": {
+        "tokenNotFound": "تعذر العثور على الرمز المميز في استجابة التسجيل",
+        "tokenDecodeFailed": "فشل فك تشفير رمز المصادقة",
+        "userIdNotFound": "تعذر استخراج معرف المستخدم من الرمز المميز",
+        "teamAssignmentFailed": "فشل تعيين المستخدم للفريق",
+        "shiftAssignmentFailed": "فشل تعيين المستخدم للوردية",
+        "createFailed": "فشل إنشاء الموظف"
       }
     }
   },

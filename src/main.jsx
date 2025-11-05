@@ -4,7 +4,8 @@ import "./index.css";
 import App from "./App.jsx";
 import "./i18n";
 import ClientProvider from "./services/ClientProvider.jsx";
-import { GlobalErrorProvider } from "./contexts/GlobalErrorContext"; // import here
+import { GlobalErrorProvider } from "./contexts/GlobalErrorContext"; 
+import { PermissionProvider } from "./services/PermissionProvider.jsx";
 
 export default function ThemeBootstrap({ children }) {
   useEffect(() => {
@@ -26,7 +27,9 @@ createRoot(document.getElementById("root")).render(
     <ThemeBootstrap>
       <ClientProvider>
         <GlobalErrorProvider>
-          <App />
+          <PermissionProvider>
+            <App />
+          </PermissionProvider>
         </GlobalErrorProvider>
       </ClientProvider>
     </ThemeBootstrap>

@@ -15,8 +15,17 @@ export const shiftApi = createApi({
         },
       }),
     }),
+
+    // Assign shift to a user
+    assignUserShift: builder.mutation({
+      query: (body) => ({
+        url: "/api/v1/Shift/AssignUser/assignments",
+        method: "POST",
+        body,
+      }),
+    }),
   }),
 });
 
-export const { useGetAllShiftsQuery } = shiftApi;
+export const { useGetAllShiftsQuery, useAssignUserShiftMutation } = shiftApi;
 
