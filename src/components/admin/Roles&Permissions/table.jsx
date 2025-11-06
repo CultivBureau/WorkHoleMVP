@@ -1,15 +1,17 @@
 "use client"
 
 import { useState, useMemo, useEffect, useRef } from "react"
-import { Edit, Trash2 } from "lucide-react"
+import { Edit, Trash2, UserPlus } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 import EditRole from "./edit_role"
 import { useTranslation } from "react-i18next"
 import { useGetAllRolesQuery, useDeleteRoleMutation } from "../../../services/apis/RoleApi"
 import toast from "react-hot-toast"
 
-const RolesTable = () => {
+const RolesTable = ({ onRoleSelect }) => {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
+    const navigate = useNavigate();
 
     // Fetch roles from API
     const { data: rolesResponse, isLoading, error, refetch } = useGetAllRolesQuery({ pageNumber: 1, pageSize: 100 });
@@ -22,6 +24,7 @@ const RolesTable = () => {
     const [status, setStatus] = useState(defaultStatusFilter)
     const [isEditOpen, setIsEditOpen] = useState(false)
     const [selectedRole, setSelectedRole] = useState(null)
+    const [selectedRoleId, setSelectedRoleId] = useState(null)
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
     const [roleToDelete, setRoleToDelete] = useState(null)
     const [currentPage, setCurrentPage] = useState(1)
@@ -110,6 +113,7 @@ const RolesTable = () => {
     const handleEditRole = (role) => {
         setSelectedRole(role);
         setIsEditOpen(true);
+        onRoleSelect?.(role.id);
     };
 
     const handleSaveRole = async (updatedRole) => {
@@ -164,16 +168,26 @@ const RolesTable = () => {
     // Render the table row with cells for both RTL and LTR
     const renderTableRows = () => {
         return currentPageData.map((role) => (
-            <tr key={role.id} className="border-b border-[var(--border-color)] last:border-b-0 hover:bg-[var(--hover-color)]">
+            <tr 
+                key={role.id} 
+                className={`border-b border-[var(--border-color)] last:border-b-0 hover:bg-[var(--hover-color)] cursor-pointer transition-colors ${selectedRoleId === role.id ? 'bg-[var(--accent-color)]/20' : ''}`}
+                onClick={() => {
+                    setSelectedRoleId(role.id);
+                    onRoleSelect?.(role.id);
+                }}
+            >
                 <td className={`py-4 px-6 ${isArabic ? 'text-right' : 'text-left'}`}>
                     <span className="font-medium text-[var(--text-color)] text-sm">{role.role}</span>
                 </td>
                 <td className={`py-4 px-6 text-[var(--text-color)] text-sm font-medium ${isArabic ? 'text-right' : 'text-left'}`}>{role.users}</td>
                 <td className={`py-4 px-6 ${isArabic ? 'text-right' : 'text-left'}`}>{getStatusBadge(role.status)}</td>
-                <td className="py-4 px-6">
+                <td className="py-4 px-6" onClick={(e) => e.stopPropagation()}>
                     <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
                         <button
-                            onClick={() => handleEditRole(role)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditRole(role);
+                            }}
                             className="p-2 text-[var(--accent-color)] hover:bg-[var(--hover-color)] rounded-lg transition-colors"
                             aria-label={t('employees.actions.edit')}
                             title={t('employees.actions.edit')}
@@ -181,7 +195,10 @@ const RolesTable = () => {
                             <Edit className="w-4 h-4" />
                         </button>
                         <button
-                            onClick={() => handleDeleteRole(role)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteRole(role);
+                            }}
                             className="p-2 text-[var(--error-color)] hover:bg-[var(--hover-color)] rounded-lg transition-colors"
                             aria-label={t('employees.actions.delete')}
                             title={t('employees.actions.delete')}

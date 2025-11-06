@@ -46,6 +46,7 @@ const EditDepartment = lazy(() => import("./pages/admin/edit-department/page"));
 const AllTeamsPage = lazy(() => import("./pages/admin/all-teams/page"));
 const RolesAndPermissions = lazy(() => import("./pages/admin/Roles&Permissions/page"));
 const NewRole = lazy(() => import("./pages/admin/New_Role/page"));
+const AssignRoleUsers = lazy(() => import("./pages/admin/assign-role-users/page"));
 const AdminTeamWallet = lazy(() => import("./pages/admin/TeamWallet/page"));
 const Company = lazy(() => import("./pages/admin/company/page"));
 
@@ -364,6 +365,18 @@ function App() {
                         >
                           <Suspense fallback={<Loading />}>
                             <NewRole />
+                          </Suspense>
+                        </PermissionGuard>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/pages/admin/assign-role-users/:roleId"
+                    element={
+                      <ProtectedRoute>
+                        <PermissionGuard backendPermissions={["Role.Update", "Role.ViewUsers"]}>
+                          <Suspense fallback={<Loading />}>
+                            <AssignRoleUsers />
                           </Suspense>
                         </PermissionGuard>
                       </ProtectedRoute>

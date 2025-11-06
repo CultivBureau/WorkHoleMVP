@@ -964,6 +964,40 @@
       "active": "نشط",
       "inactive": "غير نشط"
     },
+    "assignUsers": "تعيين المستخدمين",
+    "clickRoleInTable": "انقر على دور في الجدول",
+    "assignUsersPage": {
+      "title": "إدارة تعيينات الأدوار",
+      "subtitle": "إضافة أو إزالة المستخدمين من الدور: {roleName}",
+      "roleLabel": "الدور",
+      "description": "إضافة أو إزالة المستخدمين من هذا الدور",
+      "filters": {
+        "search": "البحث بالاسم أو البريد الإلكتروني...",
+        "department": "القسم",
+        "team": "الفريق",
+        "all": "الكل"
+      },
+      "table": {
+        "name": "الاسم",
+        "email": "البريد الإلكتروني",
+        "currentRole": "الدور الحالي",
+        "department": "القسم",
+        "team": "الفريق",
+        "actions": "الإجراءات"
+      },
+      "addRole": "إضافة الدور",
+      "removeRole": "إزالة الدور",
+      "add": "إضافة",
+      "remove": "إزالة",
+      "noUsers": "لم يتم العثور على مستخدمين",
+      "tryDifferentFilters": "جرب تعديل المرشحات الخاصة بك",
+      "addSuccess": "تم إضافة المستخدم إلى الدور بنجاح",
+      "removeSuccess": "تم إزالة المستخدم من الدور بنجاح",
+      "addError": "فشل إضافة المستخدم إلى الدور",
+      "removeError": "فشل إزالة المستخدم من الدور",
+      "usersWithoutRole": "المستخدمون بدون الدور",
+      "usersWithRole": "المستخدمون مع الدور"
+    },
     "statusCards": {
       "totalRoles": "إجمالي الأدوار",
       "activeRoles": "الأدوار النشطة",
@@ -1417,7 +1451,8 @@
   },
   "common": {
     "loading": "جاري التحميل...",
-    "saving": "جاري الحفظ..."
+    "saving": "جاري الحفظ...",
+    "back": "رجوع"
   },
   "performance": {
     "statusCards": {

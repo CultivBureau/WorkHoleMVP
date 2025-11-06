@@ -7,6 +7,7 @@ import { teamApi } from "../services/apis/TeamApi";
 import { shiftApi } from "../services/apis/ShiftApi";
 import { permissionApi } from "../services/apis/PermissionApi";
 import { breakApi } from "../services/apis/BreakApi";
+import { userApi } from "../services/apis/UserApi";
 
 export const store = configureStore({
   reducer: {
@@ -18,6 +19,7 @@ export const store = configureStore({
     [shiftApi.reducerPath]: shiftApi.reducer,
     [permissionApi.reducerPath]: permissionApi.reducer,
     [breakApi.reducerPath]: breakApi.reducer,
+    [userApi.reducerPath]: userApi.reducer,
   
   },
   middleware: (getDefaultMiddleware) =>
@@ -32,6 +34,7 @@ export const store = configureStore({
       shiftApi.middleware,
       permissionApi.middleware,
       breakApi.middleware,
+      userApi.middleware,
       
     ),
 });
