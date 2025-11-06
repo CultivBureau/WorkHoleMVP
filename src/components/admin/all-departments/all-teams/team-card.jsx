@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight, Users, Edit, Trash2, MoreVertical } from "lucide-react";
 import TeamDetailsPopup from "./team-details/team-details-popup";
+import TeamMemberItem from "./team-member-item";
 
 export default function TeamCard({ team, onEdit, onDelete }) {
     const { t, i18n } = useTranslation();
@@ -50,31 +51,25 @@ export default function TeamCard({ team, onEdit, onDelete }) {
                             {team.name}
                         </h3>
                         <p className="text-sm text-[var(--sub-text-color)]">
-                            {(team.members?.length || 0) + 1} {t("allTeams.teamCard.members")}
+                            {team.isLoadingMembers ? (
+                                <span className="text-xs">Loading...</span>
+                            ) : (
+                                <>
+                                    {team.memberCount || team.members?.length || 0} {t("allTeams.teamCard.members")}
+                                </>
+                            )}
                         </p>
                     </div>
                 </div>
 
                 {/* Avatars and Three Dot Menu */}
                 <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                    {/* Member Avatars */}
-                    <div className={`flex items-center ${isArabic ? 'flex-row-reverse' : ''}`}>
-                        {team.memberAvatars?.slice(0, 3).map((avatar, index) => (
-                            <img
-                                key={index}
-                                src={avatar}
-                                alt={`Member ${index + 1}`}
-                                className="w-8 h-8 rounded-full border-2 border-[var(--bg-color)]"
-                                style={{ marginLeft: isArabic ? '0' : index > 0 ? '-8px' : '0', marginRight: isArabic ? index > 0 ? '-8px' : '0' : '0' }}
-                            />
-                        ))}
-                        {((team.members?.length || 0) + 1) > 3 && (
-                            <div className="w-8 h-8 rounded-full bg-[var(--container-color)] border-2 border-[var(--bg-color)] flex items-center justify-center text-xs font-medium text-[var(--sub-text-color)]"
-                                style={{ marginLeft: isArabic ? '0' : '-8px', marginRight: isArabic ? '-8px' : '0' }}>
-                                +{((team.members?.length || 0) + 1) - 3}
-                            </div>
-                        )}
-                    </div>
+                    {/* Member Count Badge */}
+                    {(team.memberCount > 0 || team.memberUserIds?.length > 0) && (
+                        <div className="w-8 h-8 rounded-full bg-[var(--container-color)] border-2 border-[var(--bg-color)] flex items-center justify-center text-xs font-medium text-[var(--sub-text-color)]">
+                            {team.memberCount || team.memberUserIds?.length || 0}
+                        </div>
+                    )}
 
                     {/* Three Dot Menu */}
                     <div className="relative">
@@ -107,52 +102,63 @@ export default function TeamCard({ team, onEdit, onDelete }) {
                 </div>
             </div>
 
-            {/* Team Lead Header with View All */}
-            <div className={`flex items-center justify-between mb-4 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                <div className={`flex items-center gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                    <img
-                        src={team.leadAvatar || "/assets/navbar/Avatar.png"}
-                        alt={team.lead}
-                        className="w-8 h-8 rounded-full"
-                    />
-                    <div className={`${isArabic ? 'text-right' : 'text-left'}`}>
-                        <p className="text-sm font-medium text-[var(--text-color)]">
-                            {team.lead}
-                        </p>
-                        <p className="text-xs text-[var(--sub-text-color)]">
-                            {team.leadRole || "Sr. Project Manager"}
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Team Members List */}
-            <div className="space-y-3">
-                {team.members?.slice(0, 3).map((member, index) => (
-                    <div
-                        key={index}
-                        className={`flex items-center justify-between p-3 bg-[var(--bg-color)] rounded-lg hover:bg-[var(--hover-color)] transition-colors cursor-pointer ${isArabic ? 'flex-row-reverse' : ''}`}
-                    >
-                        <div className={`flex items-center gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
+            {/* Team Lead Header */}
+            {(team.lead || team.teamLeader) && team.lead !== "Unknown" && (
+                <div className={`flex items-center justify-between mb-4 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                    <div className={`flex items-center gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                        {team.leadAvatar && (
                             <img
-                                src={member.avatar}
-                                alt={member.name}
+                                src={team.leadAvatar}
+                                alt={team.lead || 'Team Leader'}
                                 className="w-8 h-8 rounded-full"
                             />
-                            <div className={`${isArabic ? 'text-right' : 'text-left'}`}>
-                                <p className="text-sm font-medium text-[var(--text-color)]">
-                                    {member.name}
-                                </p>
+                        )}
+                        <div className={`${isArabic ? 'text-right' : 'text-left'}`}>
+                            <p className="text-sm font-medium text-[var(--text-color)]">
+                                {team.lead || (team.teamLeader 
+                                    ? `${team.teamLeader.firstName || ''} ${team.teamLeader.lastName || ''}`.trim() || team.teamLeader.userName || team.teamLeader.email || 'Team Leader'
+                                    : 'Team Leader')}
+                            </p>
+                            {(team.leadRole || team.teamLeader?.jobTitle) && (
                                 <p className="text-xs text-[var(--sub-text-color)]">
-                                    {member.role}
+                                    {team.leadRole || team.teamLeader?.jobTitle}
                                 </p>
-                            </div>
+                            )}
+                            {team.teamLeader?.email && !team.leadRole && !team.teamLeader?.jobTitle && (
+                                <p className="text-xs text-[var(--sub-text-color)]">
+                                    {team.teamLeader.email}
+                                </p>
+                            )}
                         </div>
-
-                        <ChevronRight size={14} className={`text-[var(--sub-text-color)] ${isArabic ? 'rotate-180' : ''}`} />
                     </div>
-                ))}
-            </div>
+                </div>
+            )}
+
+            {/* Team Members List */}
+            {team.isLoadingMembers ? (
+                <div className="space-y-3">
+                    <div className="text-xs text-[var(--sub-text-color)] p-3">Loading members...</div>
+                </div>
+            ) : team.memberUserIds && team.memberUserIds.length > 0 ? (
+                <div className="space-y-3">
+                    {team.memberUserIds.slice(0, 3).map((userId) => (
+                        <TeamMemberItem 
+                            key={userId} 
+                            userId={userId} 
+                            isArabic={isArabic}
+                        />
+                    ))}
+                    {team.memberUserIds.length > 3 && (
+                        <div className="text-xs text-[var(--sub-text-color)] text-center p-2">
+                            +{team.memberUserIds.length - 3} more members
+                        </div>
+                    )}
+                </div>
+            ) : (
+                <div className="space-y-3">
+                    <div className="text-xs text-[var(--sub-text-color)] p-3 text-center">No members yet</div>
+                </div>
+            )}
 
             {/* Team Details Popup */}
             <TeamDetailsPopup

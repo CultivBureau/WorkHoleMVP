@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { X, ChevronDown, Plus, Check, Users, UserCheck } from "lucide-react";
+import { X, ChevronDown, Plus, Check, Users } from "lucide-react";
+import { useGetAllRolesQuery, useGetRoleUsersQuery } from "../../../../services/apis/RoleApi";
+import { useCreateTeamMutation, useAddUsersToTeamMutation } from "../../../../services/apis/TeamApi";
 
-export default function AddTeamModal({ isOpen, onClose, onAddTeam }) {
+export default function AddTeamModal({ isOpen, onClose, onAddTeam, departmentId }) {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
     const [newTeam, setNewTeam] = useState({ 
@@ -11,64 +13,164 @@ export default function AddTeamModal({ isOpen, onClose, onAddTeam }) {
         selectedEmployees: [],
         teamLeader: null
     });
-    const [isEmployeeDropdownOpen, setIsEmployeeDropdownOpen] = useState(false);
-    const [isLeaderDropdownOpen, setIsLeaderDropdownOpen] = useState(false);
+    const [isLeaderRoleOpen, setIsLeaderRoleOpen] = useState(false);
+    const [isLeaderUserOpen, setIsLeaderUserOpen] = useState(false);
+    const [leaderRole, setLeaderRole] = useState(null);
+    const [membersRole, setMembersRole] = useState(null);
+    const [isMembersRoleOpen, setIsMembersRoleOpen] = useState(false);
+    const [isMembersOpen, setIsMembersOpen] = useState(false);
 
-    // Mock employee data
-    const employees = [
-        { id: 1, name: "Alice Johnson", role: "UX Designer", avatar: "/assets/navbar/Avatar.png" },
-        { id: 2, name: "Bob Smith", role: "UI Designer", avatar: "/assets/navbar/Avatar.png" },
-        { id: 3, name: "Carol Davis", role: "UX Researcher", avatar: "/assets/navbar/Avatar.png" },
-        { id: 4, name: "David Wilson", role: "Product Designer", avatar: "/assets/navbar/Avatar.png" },
-        { id: 5, name: "Emily Chen", role: "Senior Designer", avatar: "/assets/navbar/Avatar.png" },
-        { id: 6, name: "Frank Miller", role: "Design Lead", avatar: "/assets/navbar/Avatar.png" }
-    ];
-
-    // Team leaders can be selected from employees or could be a separate list
-    const teamLeaders = employees.filter(emp => 
-        emp.role.includes("Lead") || 
-        emp.role.includes("Senior") || 
-        emp.role.includes("Manager")
+    // Roles and users for leader selection
+    const { data: rolesData } = useGetAllRolesQuery({ pageNumber: 1, pageSize: 50 });
+    const roles = Array.isArray(rolesData?.value) ? rolesData.value : (Array.isArray(rolesData?.data) ? rolesData.data : (Array.isArray(rolesData) ? rolesData : []));
+    const { data: leaderUsersData } = useGetRoleUsersQuery(
+        leaderRole ? { id: leaderRole.id, pageNumber: 1, pageSize: 50 } : { id: "", pageNumber: 1, pageSize: 50 },
+        { skip: !leaderRole }
     );
+    const leaderUsers = Array.isArray(leaderUsersData?.value) ? leaderUsersData.value : (Array.isArray(leaderUsersData?.data) ? leaderUsersData.data : (Array.isArray(leaderUsersData) ? leaderUsersData : []));
+
+    // Members selection via a (possibly) different role
+    const { data: membersUsersData } = useGetRoleUsersQuery(
+        membersRole ? { id: membersRole.id, pageNumber: 1, pageSize: 50 } : { id: "", pageNumber: 1, pageSize: 50 },
+        { skip: !membersRole }
+    );
+    const memberUsers = Array.isArray(membersUsersData?.value) ? membersUsersData.value : (Array.isArray(membersUsersData?.data) ? membersUsersData.data : (Array.isArray(membersUsersData) ? membersUsersData : []));
+
+    const [createTeam, { isLoading: isCreating }] = useCreateTeamMutation();
+    const [addUsersToTeam, { isLoading: isAddingUsers }] = useAddUsersToTeamMutation();
 
     const toggleEmployee = (employee) => {
-        setNewTeam(prev => ({
-            ...prev,
-            selectedEmployees: prev.selectedEmployees.find(e => e.id === employee.id)
-                ? prev.selectedEmployees.filter(e => e.id !== employee.id)
-                : [...prev.selectedEmployees, employee]
-        }));
+        // Get employee ID (try multiple property names) - same as step 3 in adding department
+        const employeeId = employee?.id || employee?.userId || employee?.userID || employee?.UserId || employee?.Id || employee?._id;
+        
+        if (!employeeId) {
+            return;
+        }
+        
+        setNewTeam(prev => {
+            // Check if this employee is already selected by comparing IDs strictly
+            const isAlreadySelected = prev.selectedEmployees.some(emp => {
+                const empId = emp?.id || emp?.userId || emp?.userID || emp?.UserId || emp?.Id || emp?._id;
+                // Use strict comparison with string conversion to handle different types
+                return String(empId) === String(employeeId) && empId != null && employeeId != null;
+            });
+            
+            if (isAlreadySelected) {
+                // Remove this employee from selection
+                return {
+                    ...prev,
+                    selectedEmployees: prev.selectedEmployees.filter(emp => {
+                        const empId = emp?.id || emp?.userId || emp?.userID || emp?.UserId || emp?.Id || emp?._id;
+                        return String(empId) !== String(employeeId) || empId == null || employeeId == null;
+                    })
+                };
+            } else {
+                // Add this employee to selection
+                return {
+                    ...prev,
+                    selectedEmployees: [...prev.selectedEmployees, employee]
+                };
+            }
+        });
     };
 
     const selectTeamLeader = (leader) => {
-        setNewTeam(prev => ({
-            ...prev,
-            teamLeader: leader
-        }));
-        setIsLeaderDropdownOpen(false);
+        setNewTeam(prev => ({ ...prev, teamLeader: leader }));
+        setIsLeaderUserOpen(false);
     };
 
-    const handleAddTeam = () => {
-        if (newTeam.name.trim()) {
-            const teamData = {
-                id: Date.now(),
+    const handleAddTeam = async () => {
+        // Extract team leader ID (try multiple property names) - same as step 3 in adding department
+        const teamLeadId = newTeam.teamLeader?.id || 
+                          newTeam.teamLeader?.userId || 
+                          newTeam.teamLeader?.userID || 
+                          newTeam.teamLeader?.UserId ||
+                          newTeam.teamLeader?._id;
+        
+        if (!newTeam.name.trim() || !departmentId || !teamLeadId) {
+            if (!newTeam.name.trim()) alert('Please enter a team name');
+            else if (!departmentId) alert('Department ID is missing');
+            else if (!teamLeadId) alert('Please select a team leader');
+            return;
+        }
+        
+        try {
+            // Step 1: Create the team - same as step 3 in adding department
+            const payload = {
                 name: newTeam.name,
-                description: newTeam.description,
-                members: newTeam.selectedEmployees.length,
-                teamLeader: newTeam.teamLeader,
-                selectedEmployees: newTeam.selectedEmployees
+                description: newTeam.description || '',
+                teamLeadId,
+                departmentId,
             };
             
-            onAddTeam(teamData);
+            const teamResult = await createTeam(payload).unwrap();
+            const createdTeam = teamResult?.value || teamResult;
+            const createdTeamId = createdTeam?.id;
+            
+            if (!createdTeamId) {
+                throw new Error('Team was created but no team ID was returned');
+            }
+
+            // Step 2: Add team members using /api/v1/Team/AddUsersToTeam/{teamId}/users (plural - accepts array)
+            // Same as step 3 in adding department
+            if (createdTeamId && Array.isArray(newTeam.selectedEmployees) && newTeam.selectedEmployees.length > 0) {
+                // Extract all userIds from selected employees - same as step 3
+                const userIds = newTeam.selectedEmployees.map(member => {
+                    const memberId = member?.id || 
+                                    member?.userId || 
+                                    member?.userID || 
+                                    member?.UserId ||
+                                    member?.Id ||
+                                    member?._id;
+                    return memberId;
+                }).filter(Boolean); // Remove any null/undefined values
+                
+                if (userIds.length === 0) {
+                    alert(`Warning: Team "${newTeam.name}" was created but no valid user IDs found in selected members.`);
+                } else {
+                    try {
+                        await addUsersToTeam({ 
+                            teamId: createdTeamId, 
+                            userIds,
+                            departmentId: departmentId
+                        }).unwrap();
+                    } catch (addUsersError) {
+                        // Log detailed error but don't fail the whole operation - team was created successfully
+                        const errorMsg = addUsersError?.data?.errorMessage || 
+                                       addUsersError?.data?.message || 
+                                       addUsersError?.message || 
+                                       'Unknown error';
+                        alert(`Team "${newTeam.name}" created successfully, but failed to add members: ${errorMsg}`);
+                    }
+                }
+            }
+
+            // Step 3: Callback to trigger refetch and update UI
+            onAddTeam({
+                id: createdTeam.id,
+                name: createdTeam.name,
+                description: createdTeam.description || '',
+                departmentId: createdTeam.departmentId,
+                teamLeadId: createdTeam.teamLeadId,
+                teamLeader: createdTeam.teamLeader || newTeam.teamLeader,
+                teamMembers: createdTeam.teamMembers || newTeam.selectedEmployees.length,
+                selectedEmployees: newTeam.selectedEmployees,
+            });
+            
+            console.log('✅ Team creation process completed successfully');
             
             // Reset form
-            setNewTeam({ 
-                name: '', 
-                description: '', 
-                selectedEmployees: [],
-                teamLeader: null
-            });
+            setNewTeam({ name: '', description: '', selectedEmployees: [], teamLeader: null });
+            setLeaderRole(null);
+            setMembersRole(null);
+            setIsLeaderRoleOpen(false);
+            setIsLeaderUserOpen(false);
+            setIsMembersRoleOpen(false);
+            setIsMembersOpen(false);
             onClose();
+        } catch (error) {
+            const errorMessage = error?.data?.errorMessage || error?.message || 'Failed to create team. Please try again.';
+            alert(errorMessage);
         }
     };
 
@@ -80,6 +182,12 @@ export default function AddTeamModal({ isOpen, onClose, onAddTeam }) {
             selectedEmployees: [],
             teamLeader: null
         });
+        setLeaderRole(null);
+        setMembersRole(null);
+        setIsLeaderRoleOpen(false);
+        setIsLeaderUserOpen(false);
+        setIsMembersRoleOpen(false);
+        setIsMembersOpen(false);
         onClose();
     };
 
@@ -115,124 +223,109 @@ export default function AddTeamModal({ isOpen, onClose, onAddTeam }) {
                             onChange={(e) => setNewTeam(prev => ({ ...prev, name: e.target.value }))}
                         />
                         
-                        {/* Team Leader Dropdown */}
-                        <div className="relative">
-                            <div
-                                className="form-input cursor-pointer flex items-center justify-between"
-                                onClick={() => setIsLeaderDropdownOpen(!isLeaderDropdownOpen)}
-                            >
-                                {newTeam.teamLeader ? (
-                                    <div className="flex items-center gap-3">
-                                        <img 
-                                            src={newTeam.teamLeader.avatar} 
-                                            alt={newTeam.teamLeader.name} 
-                                            className="w-6 h-6 rounded-full" 
-                                        />
-                                        <div>
-                                            <div className="text-[var(--text-color)] font-medium text-sm">
-                                                {newTeam.teamLeader.name}
-                                            </div>
-                                            <div className="text-[var(--sub-text-color)] text-xs">
-                                                {newTeam.teamLeader.role}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <span className="text-[var(--sub-text-color)]">
-                                        Choose Team Leader
-                                    </span>
-                                )}
-                                <ChevronDown 
-                                    className={`text-[var(--sub-text-color)] transition-transform ${isLeaderDropdownOpen ? 'rotate-180' : ''}`} 
-                                    size={16} 
-                                />
-                            </div>
-                            
-                            {isLeaderDropdownOpen && (
-                                <div className="absolute top-full left-0 right-0 z-20 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                                    {teamLeaders.map(leader => (
-                                        <div
-                                            key={leader.id}
-                                            className="p-3 hover:bg-[var(--hover-color)] cursor-pointer flex items-center justify-between"
-                                            onClick={() => selectTeamLeader(leader)}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <img src={leader.avatar} alt={leader.name} className="w-8 h-8 rounded-full" />
-                                                <div>
-                                                    <div className="text-[var(--text-color)] font-medium">{leader.name}</div>
-                                                    <div className="text-[var(--sub-text-color)] text-sm">{leader.role}</div>
-                                                </div>
-                                            </div>
-                                            <div className={`w-5 h-5 rounded border-2 ${
-                                                newTeam.teamLeader?.id === leader.id 
-                                                    ? 'bg-[var(--accent-color)] border-[var(--accent-color)]' 
-                                                    : 'border-[var(--border-color)]'
-                                            } flex items-center justify-center`}>
-                                                {newTeam.teamLeader?.id === leader.id && (
-                                                    <Check className="text-white" size={12} />
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
+                        {/* Team Leader: Role then User */}
+                        <div className="space-y-2">
+                            <div className="relative">
+                                <div className="form-input cursor-pointer flex items-center justify-between" onClick={() => setIsLeaderRoleOpen(!isLeaderRoleOpen)}>
+                                    <span className="text-[var(--sub-text-color)]">{leaderRole ? leaderRole.name : t("departments.newDepartmentForm.assignSupervisor.chooseRole")}</span>
+                                    <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isLeaderRoleOpen ? 'rotate-180' : ''}`} size={16} />
                                 </div>
-                            )}
+                                {isLeaderRoleOpen && (
+                                    <div className="absolute top-full left-0 right-0 z-20 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                        {(roles || []).map(role => (
+                                            <div key={role.id} className="p-3 hover:bg-[var(--hover-color)] cursor-pointer" onClick={() => { setLeaderRole(role); setIsLeaderRoleOpen(false); setIsLeaderUserOpen(true); }}>
+                                                <div className="text-sm text-[var(--text-color)]">{role.name}</div>
+                                            </div>
+                                        ))}
+                                        {(!roles || roles.length === 0) && <div className="p-3 text-[var(--sub-text-color)]">No roles found</div>}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="relative">
+                                <div className="form-input cursor-pointer flex items-center justify-between" onClick={() => leaderRole && setIsLeaderUserOpen(!isLeaderUserOpen)}>
+                                    <span className="text-[var(--sub-text-color)]">{newTeam.teamLeader ? (newTeam.teamLeader.name || `${newTeam.teamLeader.firstName || ''} ${newTeam.teamLeader.lastName || ''}`.trim()) : t("departments.newDepartmentForm.assignSupervisor.chooseSupervisor")}</span>
+                                    <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isLeaderUserOpen ? 'rotate-180' : ''}`} size={16} />
+                                </div>
+                                {isLeaderUserOpen && (
+                                    <div className="absolute top-full left-0 right-0 z-20 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                        {leaderRole && (leaderUsers || []).map(u => (
+                                            <div key={u.id} className="p-3 hover:bg-[var(--hover-color)] cursor-pointer" onClick={() => selectTeamLeader(u)}>
+                                                <div className="text-sm text-[var(--text-color)]">{u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim()}</div>
+                                                <div className="text-xs text-[var(--sub-text-color)]">{u.email || u.username}</div>
+                                            </div>
+                                        ))}
+                                        {leaderRole && (!leaderUsers || leaderUsers.length === 0) && <div className="p-3 text-[var(--sub-text-color)]">No users found</div>}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                     
-                    {/* Team Members - Full Width */}
-                    <div className="relative">
-                        <div
-                            className="form-input cursor-pointer flex items-center justify-between"
-                            onClick={() => setIsEmployeeDropdownOpen(!isEmployeeDropdownOpen)}
-                        >
-                            <span className="text-[var(--sub-text-color)]">
-                                {newTeam.selectedEmployees.length > 0 
-                                    ? `${newTeam.selectedEmployees.length} selected`
-                                    : t("departments.newDepartmentForm.setupTeams.chooseEmployee")
-                                }
-                            </span>
-                            <div className="flex items-center gap-2">
-                                {newTeam.selectedEmployees.slice(0, 3).map(emp => (
-                                    <img key={emp.id} src={emp.avatar} alt={emp.name} className="w-6 h-6 rounded-full" />
-                                ))}
-                                {newTeam.selectedEmployees.length > 3 && (
-                                    <span className="text-xs text-[var(--sub-text-color)]">+{newTeam.selectedEmployees.length - 3}</span>
-                                )}
-                                <ChevronDown 
-                                    className={`text-[var(--sub-text-color)] transition-transform ${isEmployeeDropdownOpen ? 'rotate-180' : ''}`} 
-                                    size={16} 
-                                />
+                    {/* Team Members multi-select (choose role then users) */}
+                    <div className="space-y-2">
+                        <div className="relative">
+                            <div className="form-input cursor-pointer flex items-center justify-between" onClick={() => setIsMembersRoleOpen(!isMembersRoleOpen)}>
+                                <span className="text-[var(--sub-text-color)]">{membersRole ? membersRole.name : t("departments.newDepartmentForm.assignSupervisor.chooseRole")}</span>
+                                <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isMembersRoleOpen ? 'rotate-180' : ''}`} size={16} />
                             </div>
+                            {isMembersRoleOpen && (
+                                <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                    {(roles || []).map(role => (
+                                        <div key={role.id} className="p-3 hover:bg-[var(--hover-color)] cursor-pointer" onClick={() => { setMembersRole(role); setIsMembersRoleOpen(false); setIsMembersOpen(true); }}>
+                                            <div className="text-sm text-[var(--text-color)]">{role.name}</div>
+                                        </div>
+                                    ))}
+                                    {(!roles || roles.length === 0) && <div className="p-3 text-[var(--sub-text-color)]">No roles found</div>}
+                                </div>
+                            )}
                         </div>
-                        
-                        {isEmployeeDropdownOpen && (
-                            <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                                {employees.map(employee => (
-                                    <div
-                                        key={employee.id}
-                                        className="p-3 hover:bg-[var(--hover-color)] cursor-pointer flex items-center justify-between"
-                                        onClick={() => toggleEmployee(employee)}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <img src={employee.avatar} alt={employee.name} className="w-8 h-8 rounded-full" />
-                                            <div>
-                                                <div className="text-[var(--text-color)] font-medium">{employee.name}</div>
-                                                <div className="text-[var(--sub-text-color)] text-sm">{employee.role}</div>
-                                            </div>
-                                        </div>
-                                        <div className={`w-5 h-5 rounded border-2 ${
-                                            newTeam.selectedEmployees.find(e => e.id === employee.id) 
-                                                ? 'bg-[var(--accent-color)] border-[var(--accent-color)]' 
-                                                : 'border-[var(--border-color)]'
-                                        } flex items-center justify-center`}>
-                                            {newTeam.selectedEmployees.find(e => e.id === employee.id) && (
-                                                <Check className="text-white" size={12} />
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
+                        <div className="relative">
+                            <div className="form-input cursor-pointer flex items-center justify-between" onClick={() => membersRole && setIsMembersOpen(!isMembersOpen)}>
+                                <span className="text-[var(--sub-text-color)]">
+                                    {newTeam.selectedEmployees.length > 0 ? `${newTeam.selectedEmployees.length} selected` : t("departments.newDepartmentForm.setupTeams.chooseEmployee")}
+                                </span>
+                                <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isMembersOpen ? 'rotate-180' : ''}`} size={16} />
                             </div>
-                        )}
+                            {isMembersOpen && (
+                                <div 
+                                    className="absolute top-full left-0 right-0 z-10 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    {membersRole && (memberUsers || []).map(u => {
+                                        // Get user ID for comparison - same as step 3 in adding department
+                                        const userId = u?.id || u?.userId || u?.userID || u?.UserId || u?._id;
+                                        const isSelected = userId && newTeam.selectedEmployees.some(emp => {
+                                            const empId = emp?.id || emp?.userId || emp?.userID || emp?.UserId || emp?.Id || emp?._id;
+                                            // Use strict comparison with string conversion to handle different types
+                                            return String(empId) === String(userId) && empId != null && userId != null;
+                                        });
+                                        
+                                        return (
+                                            <div 
+                                                key={`user-${userId || u.id || u.email || Math.random()}`} 
+                                                className={`p-3 cursor-pointer flex items-center justify-between ${
+                                                    isSelected ? 'bg-[var(--accent-color)] bg-opacity-10' : 'hover:bg-[var(--hover-color)]'
+                                                }`}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    toggleEmployee(u);
+                                                }}
+                                            >
+                                                <div className="text-sm text-[var(--text-color)]">{u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim()}</div>
+                                                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                                                    isSelected 
+                                                        ? 'border-[var(--accent-color)] bg-[var(--accent-color)]' 
+                                                        : 'border-[var(--border-color)]'
+                                                }`}>
+                                                    {isSelected && <Check className="text-white" size={12} />}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                    {membersRole && (!memberUsers || memberUsers.length === 0) && <div className="p-3 text-[var(--sub-text-color)]">No users found</div>}
+                                </div>
+                            )}
+                        </div>
                     </div>
                     
                     {/* Team Description - Full Width */}
@@ -256,10 +349,19 @@ export default function AddTeamModal({ isOpen, onClose, onAddTeam }) {
                             type="button" 
                             className="btn-primary flex items-center gap-2"
                             onClick={handleAddTeam}
-                            disabled={!newTeam.name.trim()}
+                            disabled={!newTeam.name.trim() || !departmentId || !newTeam.teamLeader || isCreating || isAddingUsers}
                         >
-                            <Plus size={16} />
-                            {t("departments.newDepartmentForm.buttons.add")}
+                            {(isCreating || isAddingUsers) ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    <span>{isCreating ? 'Creating team...' : 'Adding members...'}</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Plus size={16} />
+                                    {t("departments.newDepartmentForm.buttons.add")}
+                                </>
+                            )}
                         </button>
                     </div>
                 </div>

@@ -1,10 +1,9 @@
 import { useTranslation } from "react-i18next";
 import NavBarAdmin from "../../../components/admin/NavBarAdmin";
 import SideBarAdmin from "../../../components/admin/SideBarAdmin";
-import StatusCards from "../../../components/admin/all-departments/status-cards";
-import AllDepartmentsComponent from "../../../components/admin/all-departments/all-departments";
+import AllShiftsComponent from "../../../components/admin/all-shifts/all-shifts";
 
-const AllDepartments = () => {
+const AllShifts = () => {
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === "ar";
 
@@ -24,13 +23,10 @@ const AllDepartments = () => {
             className="h-max rounded-2xl border border-gray-200"
             style={{ background: "var(--bg-color)" }}
           >
-            {/* All Departments content */}
+            {/* All Shifts content */}
             <div className="w-full h-max p-6">
-              {/* Status Cards */}
-              {/* //<StatusCards /> */}
-              
-              {/* Main All Departments Component */}
-              <AllDepartmentsComponent />
+              {/* Main All Shifts Component */}
+              <AllShiftsComponent />
             </div>
           </div>
         </main>
@@ -39,4 +35,5 @@ const AllDepartments = () => {
   );
 };
 
-export default AllDepartments;
+export default AllShifts;
+

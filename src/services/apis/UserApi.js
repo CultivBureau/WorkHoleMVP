@@ -51,6 +51,25 @@ export const userApi = createApi({
       }),
       invalidatesTags: ["User"],
     }),
+
+    // Get user by ID
+    getUserById: builder.query({
+      query: (userId) => ({
+        url: `/api/v1/User/GetById/${userId}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, userId) => [{ type: "User", id: userId }],
+    }),
+
+    // Get multiple users by IDs (if your API supports it)
+    getUsersByIds: builder.query({
+      query: (userIds) => ({
+        url: `/api/v1/User/GetByIds`,
+        method: "POST",
+        body: { userIds },
+      }),
+      providesTags: (result) => [{ type: "User", id: "LIST" }],
+    }),
   }),
 });
 
@@ -59,5 +78,7 @@ export const {
   useCreateUserMutation,
   useUpdateUserMutation,
   useDeleteUserMutation,
+  useGetUserByIdQuery,
+  useGetUsersByIdsQuery,
 } = userApi;
 

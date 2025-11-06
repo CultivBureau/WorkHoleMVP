@@ -23,11 +23,33 @@ import {
 
 import { useLang } from "../../../contexts/LangContext";
 import Card from "../../../components/Time_Tracking_Components/Stats/Card";
-import Table from "../../../components/admin/leaves/LeavesTable/Table";
+import TeamLeadLeavesTable from "../../../components/admin/leaves/LeavesTable/TeamLeadLeavesTable";
+import HrLeavesTable from "../../../components/admin/leaves/LeavesTable/HrLeavesTable";
+import { usePermissions } from "../../../services/PermissionProvider";
+import { hasBackendPermission } from "../../../utils/permissionMapping";
+import { getPermissions } from "../../../utils/page";
 
 const LeavesAdmin = () => {
   const { lang, isRtl } = useLang();
   const { t } = useTranslation();
+  const permissions = usePermissions();
+  const backendPermissions = getPermissions() || [];
+
+  // Check if user has Team Lead permissions (ViewTeams OR Review)
+  const hasTeamLeadPermissions = hasBackendPermission(backendPermissions, [
+    "LeaveRequest.ViewTeams",
+    "LeaveRequest.Review",
+  ]);
+
+  // Check if user has HR permissions (Confirm)
+  const hasHrPermissions = hasBackendPermission(backendPermissions, [
+    "LeaveRequest.Confirm",
+  ]);
+
+  // Determine which view to show (only one table should be visible)
+  // Priority: HR permissions take precedence
+  const showHrView = hasHrPermissions;
+  const showTeamLeadView = hasTeamLeadPermissions && !hasHrPermissions;
 
   const cardData = [
     {
@@ -52,6 +74,29 @@ const LeavesAdmin = () => {
     },
   ]
 
+  // Show access denied if user has no permissions
+  if (!hasTeamLeadPermissions && !hasHrPermissions) {
+    return (
+      <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
+        <NavBarAdmin/>
+        <div className="flex flex-1 min-h-0">
+          <SideBarAdmin />
+          <main className="flex-1 overflow-auto p-6 bg-[var(--bg-all)] flex items-center justify-center">
+            <div className="text-center">
+              <AlertTriangle className="h-16 w-16 text-[var(--warning-color)] mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-[var(--text-color)] mb-2">
+                {t("adminLeaves.accessDenied.title", "Access Denied")}
+              </h2>
+              <p className="text-[var(--sub-text-color)]">
+                {t("adminLeaves.accessDenied.message", "You don't have permission to view leave requests.")}
+              </p>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
       <NavBarAdmin/>
@@ -70,9 +115,19 @@ const LeavesAdmin = () => {
               />
             ))}
           </div>
-          <div className="w-full h-max">
-            <Table />
-          </div>
+          
+          {/* Conditional rendering based on permissions - only one table should show */}
+          {showHrView && (
+            <div className="w-full h-max">
+              <HrLeavesTable />
+            </div>
+          )}
+          
+          {showTeamLeadView && (
+            <div className="w-full h-max">
+              <TeamLeadLeavesTable />
+            </div>
+          )}
         </main>
       </div>
     </div>

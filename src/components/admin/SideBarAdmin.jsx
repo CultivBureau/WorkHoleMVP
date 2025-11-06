@@ -127,6 +127,7 @@ const mainMenuItems = [
   { key: "all_attendance", Icon: CalendarCheck, implemented: true },
   { key: "break", Icon: Coffee, implemented: true },
   { key: "leaves", Icon: Calendar, implemented: true },
+  { key: "shifts", Icon: Clock, implemented: true },
   { key: "Company", Icon: Building, implemented: true },
 ];
 
@@ -458,38 +459,22 @@ function ThemeToggle({ theme, onToggle, collapsed, t, isArabic }) {
 }
 
 export default function SideBarAdmin({ isMobileOpen, onMobileClose }) {
-  const { isAdmin, isLoading } = usePermissions();
-  
-  // Wait for permissions to load
-  if (isLoading) {
-    return null; // Don't show anything while loading
-  }
-  
-  // If user is not admin, show user sidebar instead
-  // User sidebar will show admin menu items based on permissions
-  if (!isAdmin()) {
-    return <SideMenuUser isMobileOpen={isMobileOpen} onMobileClose={onMobileClose} />;
-  }
-  
-  // Admin sidebar content below
+  // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
+  const { isAdmin, isLoading, permissions: userPermissions } = usePermissions();
   const { t, i18n } = useTranslation();
   const { lang, setLang } = useLang();
   const [collapsed, setCollapsed] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
-
-  // Add this temporary state for testing
   const [tempMobileOpen, setTempMobileOpen] = useState(false);
-
   const navigate = useNavigate();
   const location = useLocation();
   const isArabic = i18n.language === "ar";
   const { theme, setTheme } = useTheme();
-  
-  // Get permissions and user menu items for dynamic sidebar
-  const { permissions: userPermissions } = usePermissions();
   const backendPermissionCodes = getPermissions() || []; // Get backend codes for filtering
+  
+  // ALL HOOKS MUST BE CALLED BEFORE CONDITIONAL RETURNS
   const userMenuItems = useMemo(() => {
     // Filter user menu items based on backend permissions
     // Admin sees all user menu items, but we still filter by permissions for consistency
@@ -497,31 +482,6 @@ export default function SideBarAdmin({ isMobileOpen, onMobileClose }) {
       return hasMenuItemPermission(item);
     });
   }, [backendPermissionCodes]);
-
-  // Use temporary state if props are not provided
-  const actualIsMobileOpen = isMobileOpen !== undefined ? isMobileOpen : tempMobileOpen;
-  const actualOnMobileClose = onMobileClose || (() => setTempMobileOpen(false));
-
-  // Custom toast function
-  const showToast = (message) => {
-    setToastMessage(message);
-    setToastVisible(true);
-  };
-
-  const hideToast = () => {
-    setToastVisible(false);
-  };
-
-  // Add temporary button to test mobile sidebar (remove this after fixing)
-  useEffect(() => {
-    const handleKeyPress = (e) => {
-      if (e.key === 'm' && e.ctrlKey) {
-        setTempMobileOpen(!tempMobileOpen);
-      }
-    };
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [tempMobileOpen]);
 
   // تحديد الـ active بناءً على الـ route الحالي
   const getActiveKey = () => {
@@ -560,6 +520,17 @@ export default function SideBarAdmin({ isMobileOpen, onMobileClose }) {
 
   const active = getActiveKey();
 
+  // Add temporary button to test mobile sidebar (remove this after fixing)
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === 'm' && e.ctrlKey) {
+        setTempMobileOpen(!tempMobileOpen);
+      }
+    };
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [tempMobileOpen]);
+
   // Auto-open dropdowns for items with children
   useEffect(() => {
     // User menu dropdowns (for admins with permissions)
@@ -583,6 +554,33 @@ export default function SideBarAdmin({ isMobileOpen, onMobileClose }) {
       // Ignore errors
     }
   }, [theme]);
+  
+  // Wait for permissions to load
+  if (isLoading) {
+    return null; // Don't show anything while loading
+  }
+  
+  // If user is not admin, show user sidebar instead
+  // User sidebar will show admin menu items based on permissions
+  if (!isAdmin()) {
+    return <SideMenuUser isMobileOpen={isMobileOpen} onMobileClose={onMobileClose} />;
+  }
+  
+  // Admin sidebar content below
+
+  // Use temporary state if props are not provided
+  const actualIsMobileOpen = isMobileOpen !== undefined ? isMobileOpen : tempMobileOpen;
+  const actualOnMobileClose = onMobileClose || (() => setTempMobileOpen(false));
+
+  // Custom toast function
+  const showToast = (message) => {
+    setToastMessage(message);
+    setToastVisible(true);
+  };
+
+  const hideToast = () => {
+    setToastVisible(false);
+  };
 
   // تعديل دالة onClick:
   const handleMenuClick = (key) => {
@@ -596,6 +594,7 @@ export default function SideBarAdmin({ isMobileOpen, onMobileClose }) {
     else if (key === "break") navigate("/pages/admin/break");
     else if (key === "all_teams") navigate("/pages/admin/all-teams");
     else if (key === "all_departments") navigate("/pages/admin/all-departments");
+    else if (key === "shifts") navigate("/pages/admin/shifts");
     // User routes (for admins with permissions)
     else if (key === "user_time_tracking") navigate("/pages/User/time_tracking");
     else if (key === "user_attendance") navigate("/pages/User/attendance-logs");

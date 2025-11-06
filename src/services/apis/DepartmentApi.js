@@ -7,23 +7,31 @@ export const departmentApi = createApi({
   endpoints: (builder) => ({
     // Get all departments (paginated)
     getAllDepartments: builder.query({
-      query: ({ pageNumber = 1, pageSize = 20 } = {}) => ({
-        url: "/api/v1/Department/GetAll",
-        method: "GET",
-        params: {
+      query: ({ pageNumber = 1, pageSize = 20, status } = {}) => {
+        const params = {
           pageNumber,
           pageSize,
-        },
-      }),
+        };
+        // Add status filter if provided ("active", "inactive", or undefined for all)
+        if (status !== undefined && status !== null) {
+          params.status = status;
+        }
+        return {
+          url: "/api/v1/Department/GetAll",
+          method: "GET",
+          params,
+        };
+      },
       providesTags: (result) => [{ type: "Departments", id: "LIST" }],
     }),
 
     // Get a single department by id
     getDepartmentById: builder.query({
       query: (id) => ({
-        url: `/api/Department/${id}`,
+        url: `/api/v1/Department/GetById/${id}`,
         method: "GET",
       }),
+      providesTags: (result, error, id) => [{ type: "Departments", id }],
     }),
 
     // Create a new department
@@ -39,35 +47,35 @@ export const departmentApi = createApi({
     // Update an existing department
     updateDepartment: builder.mutation({
       query: ({ id, ...body }) => ({
-        url: `/api/Department/${id}`,
+        url: `/api/v1/Department/Update/${id}`,
         method: "PUT",
         body,
       }),
-      invalidatesTags: ["Departments"],
+      invalidatesTags: [{ type: "Departments", id: "LIST" }],
     }),
 
     // Soft delete a department
     deleteDepartment: builder.mutation({
       query: (id) => ({
-        url: `/api/Department/${id}`,
+        url: `/api/v1/Department/Delete/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Departments"],
+      invalidatesTags: [{ type: "Departments", id: "LIST" }],
     }),
 
     // Restore a soft-deleted department
     restoreDepartment: builder.mutation({
       query: (id) => ({
-        url: `/api/Department/${id}`,
+        url: `/api/v1/Department/Restore/${id}`,
         method: "POST",
       }),
-      invalidatesTags: ["Departments"],
+      invalidatesTags: [{ type: "Departments", id: "LIST" }],
     }),
 
     // Get department supervisor
     getDepartmentSupervisor: builder.query({
       query: (id) => ({
-        url: `/api/Department/${id}/supervisor`,
+        url: `/api/v1/Department/GetSupervisor/${id}/supervisor`,
         method: "GET",
       }),
     }),

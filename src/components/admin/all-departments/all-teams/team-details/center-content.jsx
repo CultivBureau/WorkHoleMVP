@@ -27,57 +27,19 @@ ChartJS.register(
     ArcElement
 );
 
-const CenterContent = () => {
+const CenterContent = ({ team }) => {
+    // Use team data from props if available
+    const teamTasks = team?.tasks || [];
+    const teamAttendance = team?.attendanceData || [];
     const { t, i18n } = useTranslation();
     const isRtl = i18n.dir() === 'rtl';
     const [selectedPeriod, setSelectedPeriod] = useState('Over Year');
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedDate, setSelectedDate] = useState('2023-07-29');
 
-    // Sample ongoing tasks data
-    const ongoingTasks = [
-        {
-            id: 1,
-            title: "Landing Page Design",
-            assignee: "Layla Ahmed",
-            role: "Senior UI Designer",
-            progress: 26,
-            startDate: "Sept 12",
-            endDate: "Sept 20",
-            avatar: "/assets/navbar/Avatar.png"
-        },
-        {
-            id: 2,
-            title: "Mobile App Development",
-            assignee: "Layla Ahmed",
-            role: "Senior UI Designer",
-            progress: 78,
-            startDate: "Sept 12",
-            endDate: "Sept 20",
-            avatar: "/assets/navbar/Avatar.png"
-        },
-        {
-            id: 3,
-            title: "Database Optimization",
-            assignee: "Layla Ahmed",
-            role: "Senior UI Designer",
-            progress: 45,
-            startDate: "Sept 10",
-            endDate: "Sept 30",
-            avatar: "/assets/navbar/Avatar.png"
-        }
-    ];
-
-    // Sample attendance data for table (expanded for filtering)
-    const allAttendanceData = [
-        { name: "Darlene Robertson", date: "29 July 2023", checkIn: "09:00 AM", checkOut: "05:00 PM", avatar: "/assets/navbar/Avatar.png" },
-        { name: "Cody Fisher", date: "29 July 2023", checkIn: "00:00 AM", checkOut: "00:00 PM", avatar: "/assets/navbar/Avatar.png", isAbsent: true },
-        { name: "Savannah Nguyen", date: "29 July 2023", checkIn: "09:00 AM", checkOut: "05:00 PM", avatar: "/assets/navbar/Avatar.png" },
-        { name: "John Smith", date: "29 July 2023", checkIn: "08:30 AM", checkOut: "05:30 PM", avatar: "/assets/navbar/Avatar.png" },
-        { name: "Emily Davis", date: "29 July 2023", checkIn: "09:15 AM", checkOut: "05:15 PM", avatar: "/assets/navbar/Avatar.png" },
-        { name: "Michael Brown", date: "28 July 2023", checkIn: "08:45 AM", checkOut: "05:45 PM", avatar: "/assets/navbar/Avatar.png" },
-        { name: "Sarah Wilson", date: "30 July 2023", checkIn: "09:00 AM", checkOut: "05:00 PM", avatar: "/assets/navbar/Avatar.png" }
-    ];
+    // Use team data from props (tasks and attendance from API)
+    const ongoingTasks = teamTasks || [];
+    const allAttendanceData = teamAttendance || [];
 
     // Filter attendance data based on search and date
     const filteredAttendanceData = allAttendanceData.filter(record => {

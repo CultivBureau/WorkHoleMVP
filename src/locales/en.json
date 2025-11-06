@@ -30,6 +30,7 @@
     "all_departments": "All Departments",
     "new_department": "New Department",
     "break": "Break Management",
+    "shifts": "Shifts",
     "all_teams": "All Teams",
     "admin_new_department": "New Department",
     "admin_new_role": "New Role",
@@ -862,7 +863,8 @@
       "assignSupervisor": {
         "chooseSupervisor": "Choose Supervisor",
         "supervisor": "Supervisor",
-        "supervisorManager": "Supervisor Manager"
+        "supervisorManager": "Supervisor Manager",
+        "chooseRole": "Choose Role"
       },
       "setupTeams": {
         "teamName": "Team Name",
@@ -913,7 +915,8 @@
       },
       "assignSupervisor": {
         "chooseSupervisor": "Choose Supervisor",
-        "supervisor": "Supervisor"
+        "supervisor": "Supervisor",
+        "chooseRole": "Choose Role"
       },
       "setupTeams": {
         "teamName": "Team Name",
@@ -1007,6 +1010,26 @@
     "search": {
       "placeholder": "Search teams...",
       "addNewTeam": "Add New Team"
+    },
+    "editTeam": {
+      "title": "Edit Team",
+      "loadingTeamData": "Loading team data...",
+      "noRolesFound": "No roles found",
+      "noUsersFound": "No users found",
+      "selected": "selected",
+      "selectedMembers": "Selected Members",
+      "removeMember": "Remove member",
+      "cancel": "Cancel",
+      "saveChanges": "Save Changes",
+      "updatingTeam": "Updating team...",
+      "updatingMembers": "Updating members...",
+      "errors": {
+        "enterTeamName": "Please enter a team name",
+        "selectTeamLeader": "Please select a team leader",
+        "teamIdMissing": "Team ID is missing",
+        "departmentIdMissing": "Department ID is missing",
+        "updateFailed": "Failed to update team. Please try again."
+      }
     },
     "teamCard": {
       "members": "Members",
@@ -1534,6 +1557,117 @@
       "overWeek": "Over Week",
       "overMonth": "Over Month",
       "overYear": "Over Year"
+    }
+  },
+  "shifts": {
+    "addNewShift": "Add New Shift",
+    "loading": "Loading shifts...",
+    "search": {
+      "placeholder": "Search shifts..."
+    },
+    "filter": {
+      "all": "All",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "actions": {
+      "view": "View Details",
+      "edit": "Edit",
+      "delete": "Delete",
+      "restore": "Restore"
+    },
+    "location": {
+      "enabled": "Location required"
+    },
+    "details": {
+      "workingHours": "Working Hours",
+      "workingDays": "Working Days"
+    },
+    "gracePeriod": "Grace Period",
+    "minutes": "minutes",
+    "overtime": "Overtime",
+    "hours": "hours",
+    "empty": {
+      "title": "No shifts found",
+      "search": "No shifts match \"{{searchTerm}}\". Try adjusting your search.",
+      "message": "No shifts available at the moment."
+    },
+    "results": "Showing {{count}} {{status}} shift{{plural}}",
+    "resultsActive": "active",
+    "resultsInactive": "inactive",
+    "resultsPlural": "s",
+    "resultsSingular": "",
+    "delete": {
+      "confirm": "Are you sure you want to delete this shift?",
+      "success": "Shift deleted successfully",
+      "error": "Failed to delete shift"
+    },
+    "restore": {
+      "confirm": "Are you sure you want to restore this shift?",
+      "success": "Shift restored successfully",
+      "error": "Failed to restore shift"
+    },
+    "validation": {
+      "companyIdRequired": "Company ID is required",
+      "timeRequired": "Start time and end time are required",
+      "nameRequired": "Shift name is required",
+      "locationFieldsRequired": "Latitude, Longitude, and Radius are required when location is enabled",
+      "workDaysRequired": "At least one work day must be selected"
+    },
+    "days": {
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday",
+      "sunday": "Sunday"
+    },
+    "form": {
+      "name": "Shift Name",
+      "namePlaceholder": "Enter shift name",
+      "gracePeriodMinutes": "Grace Period (minutes)",
+      "gracePeriodMinutesPlaceholder": "Enter grace period in minutes",
+      "hasLocation": "Require Location",
+      "yes": "Yes",
+      "no": "No",
+      "latitude": "Latitude",
+      "latitudePlaceholder": "Enter latitude",
+      "longitude": "Longitude",
+      "longitudePlaceholder": "Enter longitude",
+      "radius": "Radius (meters)",
+      "radiusPlaceholder": "Enter radius",
+      "hasOvertime": "Enable Overtime",
+      "maxOvertime": "Max Overtime (hours)",
+      "maxOvertimePlaceholder": "Enter max overtime hours",
+      "startTime": "Start Time",
+      "endTime": "End Time",
+      "isFaceRecognition": "Face Recognition",
+      "isDevice": "Device Check",
+      "workDays": "Working Days",
+      "close": "Close",
+      "cancel": "Cancel",
+      "update": "Update Shift",
+      "updating": "Updating...",
+      "create": "Create Shift",
+      "creating": "Creating...",
+      "success": "Shift created successfully!",
+      "error": "Failed to create shift",
+      "updateSuccess": "Shift updated successfully!",
+      "updateError": "Failed to update shift"
+    },
+    "addShift": {
+      "title": "Add New Shift"
+    },
+    "editShift": {
+      "title": "Edit Shift"
+    },
+    "viewShift": {
+      "title": "View Shift Details"
     }
   }
 }

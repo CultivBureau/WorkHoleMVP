@@ -22,6 +22,21 @@ export const FRONTEND_TO_BACKEND_MAPPING = {
     "LeaveRequest.Confirm",
     "LeaveRequest.Override",
   ],
+  viewTeamLeaveRequests: [
+    "LeaveRequest.ViewTeams",
+  ],
+  reviewLeaveRequests: [
+    "LeaveRequest.Review",
+  ],
+  viewAllLeaveRequests: [
+    "LeaveRequest.View",
+  ],
+  confirmLeaveRequests: [
+    "LeaveRequest.Confirm",
+  ],
+  overrideLeaveRequests: [
+    "LeaveRequest.Override",
+  ],
   editLeaveBalance: [
     "LeaveBalance.Update",
     "LeaveBalance.Create",
