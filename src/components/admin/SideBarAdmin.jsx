@@ -40,6 +40,7 @@ import { PermissionGuard } from "../common/PermissionGuard";
 import { getUserMenuItems } from "../../utils/userMenuConfig";
 import { hasMenuItemPermission } from "../../utils/userMenuConfig";
 import { getPermissions } from "../../utils/page";
+import { hasBackendPermission } from "../../utils/permissionMapping";
 import SideMenuUser from "../side-menu/side-menu";
 
 
@@ -735,7 +736,17 @@ export default function SideBarAdmin({ isMobileOpen, onMobileClose }) {
           className="flex px-2 flex-col gap-1"
           style={{ alignItems: collapsed && !isMobile ? "center" : "stretch" }}
         >
-          {mainMenuItems.map((item) => (
+          {mainMenuItems
+            .filter((item) => {
+              // Filter break menu item based on permissions
+              if (item.key === "break") {
+                const userPermissions = getPermissions() || [];
+                return hasBackendPermission(userPermissions, ["Break.View", "Break.Create", "Break.Update", "Break.Delete", "Break.Restore"]);
+              }
+              // Other items are always shown (for admin)
+              return true;
+            })
+            .map((item) => (
             <SideMenuItem
               key={item.key}
               item={item}
@@ -774,7 +785,7 @@ export default function SideBarAdmin({ isMobileOpen, onMobileClose }) {
               {userMenuItems.map((item) => (
                 <PermissionGuard
                   key={item.key}
-                  permissions={[item.permission]}
+                  backendPermissions={item.backendPermissions}
                   fallback={null}
                 >
                   {item.children ? (

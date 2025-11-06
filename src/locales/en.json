@@ -1136,11 +1136,17 @@
     "optional": "(optional)",
     "permissions": "Permissions",
     "permissionsDescription": "Select the permissions you want to assign to this role",
+    "permissionsSelected": "permissions selected",
+    "selectAll": "Select All",
+    "basicInformation": "Basic Information",
+    "basicInformationDesc": "Enter role name and description",
     "save": "Save",
     "cancel": "Cancel",
     "back": "Back",
     "add": "Add",
-    "confirmDelete": "Are you sure you want to delete this role?",
+    "delete": "Delete",
+    "confirmDelete": "Confirm Delete",
+    "confirmDeleteMessage": "Are you sure you want to delete this role?",
     "roleDeleted": "Role deleted successfully",
     "roleSaved": "Role saved successfully",
     "users": "Users",
@@ -1152,7 +1158,16 @@
         "tasksAndProjects": "Tasks & Projects",
         "employeeManagement": "Employee Management",
         "leaveManagement": "Leave Management",
-        "hrAndAdminTools": "HR & Admin Tools"
+        "hrAndAdminTools": "HR & Admin Tools",
+        "breakManagement": "Break Management",
+        "breakLogs": "Break Logs",
+        "company": "Company",
+        "department": "Department",
+        "leaveBalance": "Leave Balance",
+        "leaveType": "Leave Type",
+        "permission": "Permission",
+        "roles": "Roles",
+        "team": "Team"
       },
       "permissions": {
         "clockInOut": "Clock In/Out"
@@ -1187,7 +1202,8 @@
       "users": "Users",
       "actions": "Actions",
       "lastUpdated": "Last Updated Date",
-      "status": "Status"
+      "status": "Status",
+      "noRoles": "No roles found"
     },
     "filters": {
       "roleType": "Role Type",
@@ -1204,6 +1220,16 @@
       "rolesAssignedToActive": "Roles assigned to active users",
       "createdManually": "Created manually for specific needs",
       "allUsersInSystem": "All users in the system"
+    },
+    "validation": {
+      "roleNameRequired": "Role name is required"
+    },
+    "errors": {
+      "createFailed": "Failed to create role",
+      "loadPermissionsFailed": "Failed to load permissions",
+      "loadRolesFailed": "Failed to load roles",
+      "updateFailed": "Failed to update role",
+      "deleteFailed": "Failed to delete role"
     }
   },
   "adminLeaves": {
@@ -1398,8 +1424,62 @@
     "totalTime": "Total Time",
     "mostUsed": "Most Used"
   },
+  "breaks": {
+    "title": "Break Management",
+    "searchPlaceholder": "Search breaks...",
+    "addNew": "Add New",
+    "createTitle": "Create Break",
+    "editTitle": "Edit Break",
+    "cancel": "Cancel",
+    "save": "Save",
+    "create": "Create",
+    "delete": "Delete",
+    "confirmDelete": "Confirm Delete",
+    "deleteMessage": "Are you sure you want to delete this break?",
+    "deleteSuccess": "Break deleted successfully",
+    "deleteFailed": "Failed to delete break",
+    "createSuccess": "Break created successfully",
+    "updateSuccess": "Break updated successfully",
+    "minutes": "min",
+    "hours": "hr",
+    "status": {
+      "label": "Status",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "filters": {
+      "allStatus": "All Status"
+    },
+    "table": {
+      "name": "Name",
+      "duration": "Duration",
+      "status": "Status",
+      "actions": "Actions",
+      "noBreaks": "No breaks found"
+    },
+    "form": {
+      "name": "Break Name",
+      "namePlaceholder": "Enter break name",
+      "duration": "Duration (minutes)",
+      "durationPlaceholder": "Enter duration in minutes"
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "validation": {
+      "nameRequired": "Break name is required",
+      "durationRequired": "Duration must be greater than 0",
+      "companyIdRequired": "Company ID is required"
+    },
+    "errors": {
+      "loadFailed": "Failed to load breaks",
+      "saveFailed": "Failed to save break"
+    }
+  },
   "common": {
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "saving": "Saving..."
   },
   "performance": {
     "statusCards": {

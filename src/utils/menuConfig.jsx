@@ -5,7 +5,6 @@ import {
   BarChart3,
   Wallet,
   Users,
-  UserPlus,
   Shield,
   Building2,
   Building,
@@ -41,8 +40,8 @@ export const PERMISSION_MENU_ITEMS = [
     key: "admin_break",
     name: "Break Management",
     path: "/pages/admin/break",
-    permission: "viewBreakCategories",
-    backendPermissions: ["Break.View", "BreakLog.View"],
+    permission: "manageBreakCategories", // Frontend permission name
+    backendPermissions: ["Break.View", "Break.Create", "Break.Update", "Break.Delete", "Break.Restore"], // Backend codes
     Icon: Coffee,
     category: "admin",
   },
@@ -53,15 +52,6 @@ export const PERMISSION_MENU_ITEMS = [
     permission: "viewEmployeeProfiles",
     backendPermissions: ["User.View"],
     Icon: Users,
-    category: "admin",
-  },
-  {
-    key: "admin_new_employee",
-    name: "New Employee",
-    path: "/pages/admin/new-employee",
-    permission: "addEditEmployees",
-    backendPermissions: ["User.Create", "User.Update"],
-    Icon: UserPlus,
     category: "admin",
   },
   {

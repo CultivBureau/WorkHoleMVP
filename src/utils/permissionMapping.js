@@ -142,6 +142,9 @@ export const FRONTEND_TO_BACKEND_MAPPING = {
   viewUsersByRole: [
     "Role.ViewUsers",
   ],
+  viewPermissions: [
+    "Permission.View",
+  ],
 
   // ==================== COMPANY & DEPARTMENT SETTINGS ====================
   editCompanySettings: [

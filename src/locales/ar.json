@@ -890,11 +890,17 @@
     "optional": "(اختياري)",
     "permissions": "الصلاحيات",
     "permissionsDescription": "اختر الصلاحيات التي تريد تخصيصها لهذا الدور",
+    "permissionsSelected": "صلاحيات محددة",
+    "selectAll": "تحديد الكل",
+    "basicInformation": "المعلومات الأساسية",
+    "basicInformationDesc": "أدخل اسم الدور والوصف",
     "save": "حفظ",
     "cancel": "إلغاء",
     "back": "رجوع",
     "add": "إضافة",
-    "confirmDelete": "هل أنت متأكد من رغبتك في حذف هذا الدور؟",
+    "delete": "حذف",
+    "confirmDelete": "تأكيد الحذف",
+    "confirmDeleteMessage": "هل أنت متأكد من رغبتك في حذف هذا الدور؟",
     "roleDeleted": "تم حذف الدور بنجاح",
     "roleSaved": "تم حفظ الدور بنجاح",
     "users": "المستخدمون",
@@ -906,7 +912,16 @@
         "tasksAndProjects": "المهام والمشاريع",
         "employeeManagement": "إدارة الموظفين",
         "leaveManagement": "إدارة الإجازات",
-        "hrAndAdminTools": "أدوات الموارد البشرية والإدارة"
+        "hrAndAdminTools": "أدوات الموارد البشرية والإدارة",
+        "breakManagement": "إدارة الاستراحات",
+        "breakLogs": "سجلات الاستراحة",
+        "company": "الشركة",
+        "department": "القسم",
+        "leaveBalance": "رصيد الإجازة",
+        "leaveType": "نوع الإجازة",
+        "permission": "الصلاحية",
+        "roles": "الأدوار",
+        "team": "الفريق"
       },
       "permissions": {
         "clockInOut": "تسجيل الدخول/الخروج"
@@ -941,7 +956,8 @@
       "users": "المستخدمون",
       "actions": "الإجراءات",
       "lastUpdated": "آخر تحديث",
-      "status": "الحالة"
+      "status": "الحالة",
+      "noRoles": "لم يتم العثور على أدوار"
     },
     "filters": {
       "roleType": "نوع الدور",
@@ -958,6 +974,16 @@
       "rolesAssignedToActive": "الأدوار المخصصة للمستخدمين النشطين",
       "createdManually": "تم إنشاؤها يدوياً للاحتياجات الخاصة",
       "allUsersInSystem": "جميع المستخدمين في النظام"
+    },
+    "validation": {
+      "roleNameRequired": "اسم الدور مطلوب"
+    },
+    "errors": {
+      "createFailed": "فشل إنشاء الدور",
+      "loadPermissionsFailed": "فشل تحميل الصلاحيات",
+      "loadRolesFailed": "فشل تحميل الأدوار",
+      "updateFailed": "فشل تحديث الدور",
+      "deleteFailed": "فشل حذف الدور"
     }
   },
   "adminDashboard": {
@@ -1397,8 +1423,62 @@
     "totalTime": "إجمالي الوقت",
     "mostUsed": "الأكثر استخداماً"
   },
+  "breaks": {
+    "title": "إدارة الاستراحات",
+    "searchPlaceholder": "ابحث عن الاستراحات...",
+    "addNew": "إضافة جديد",
+    "createTitle": "إنشاء استراحة",
+    "editTitle": "تعديل الاستراحة",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "create": "إنشاء",
+    "delete": "حذف",
+    "confirmDelete": "تأكيد الحذف",
+    "deleteMessage": "هل أنت متأكد من رغبتك في حذف هذه الاستراحة؟",
+    "deleteSuccess": "تم حذف الاستراحة بنجاح",
+    "deleteFailed": "فشل حذف الاستراحة",
+    "createSuccess": "تم إنشاء الاستراحة بنجاح",
+    "updateSuccess": "تم تحديث الاستراحة بنجاح",
+    "minutes": "دقيقة",
+    "hours": "ساعة",
+    "status": {
+      "label": "الحالة",
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "filters": {
+      "allStatus": "جميع الحالات"
+    },
+    "table": {
+      "name": "الاسم",
+      "duration": "المدة",
+      "status": "الحالة",
+      "actions": "الإجراءات",
+      "noBreaks": "لم يتم العثور على استراحات"
+    },
+    "form": {
+      "name": "اسم الاستراحة",
+      "namePlaceholder": "أدخل اسم الاستراحة",
+      "duration": "المدة (بالدقائق)",
+      "durationPlaceholder": "أدخل المدة بالدقائق"
+    },
+    "actions": {
+      "edit": "تعديل",
+      "delete": "حذف"
+    },
+    "validation": {
+      "nameRequired": "اسم الاستراحة مطلوب",
+      "durationRequired": "يجب أن تكون المدة أكبر من 0",
+      "companyIdRequired": "معرف الشركة مطلوب"
+    },
+    "errors": {
+      "loadFailed": "فشل تحميل الاستراحات",
+      "saveFailed": "فشل حفظ الاستراحة"
+    }
+  },
   "common": {
-    "loading": "جاري التحميل..."
+    "loading": "جاري التحميل...",
+    "saving": "جاري الحفظ..."
   },
   "performance": {
     "statusCards": {

@@ -4,7 +4,9 @@ import { baseQueryWithReauth } from "./baseQuery";
 export const roleApi = createApi({
   reducerPath: "roleApi",
   baseQuery: baseQueryWithReauth,
+  tagTypes: ["Role"],
   endpoints: (builder) => ({
+    // Get all roles (paginated)
     getAllRoles: builder.query({
       query: ({ pageNumber = 1, pageSize = 20 } = {}) => ({
         url: "/api/v1/Role/GetAll",
@@ -14,6 +16,54 @@ export const roleApi = createApi({
           pageSize,
         },
       }),
+      providesTags: ["Role"],
+    }),
+
+    // Get role by ID
+    getRoleById: builder.query({
+      query: (id) => ({
+        url: `/api/v1/Role/GetById/${id}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, id) => [{ type: "Role", id }],
+    }),
+
+    // Create a new role
+    createRole: builder.mutation({
+      query: (body) => ({
+        url: "/api/v1/Role/Create",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Role"],
+    }),
+
+    // Update an existing role
+    updateRole: builder.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/api/v1/Role/Update/${id}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: "Role", id }, "Role"],
+    }),
+
+    // Delete a role
+    deleteRole: builder.mutation({
+      query: (id) => ({
+        url: `/api/v1/Role/Delete/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Role"],
+    }),
+
+    // Restore a deleted role
+    restoreRole: builder.mutation({
+      query: (id) => ({
+        url: `/api/v1/Role/Restore/${id}/restore`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Role"],
     }),
 
     // Get users by role id (paginated)
@@ -23,9 +73,27 @@ export const roleApi = createApi({
         method: "GET",
         params: { pageNumber, pageSize },
       }),
+      providesTags: (result, error, { id }) => [{ type: "Role", id: `${id}-users` }],
+    }),
+
+    // Get permissions by role id
+    getRolePermissions: builder.query({
+      query: (id) => ({
+        url: `/api/v1/Role/GetPermissions/${id}/permissions`,
+        method: "GET",
+      }),
+      providesTags: (result, error, id) => [{ type: "Role", id: `${id}-permissions` }],
     }),
   }),
 });
 
-export const { useGetAllRolesQuery, useGetRoleUsersQuery } = roleApi;
-
+export const {
+  useGetAllRolesQuery,
+  useGetRoleByIdQuery,
+  useCreateRoleMutation,
+  useUpdateRoleMutation,
+  useDeleteRoleMutation,
+  useRestoreRoleMutation,
+  useGetRoleUsersQuery,
+  useGetRolePermissionsQuery,
+} = roleApi;

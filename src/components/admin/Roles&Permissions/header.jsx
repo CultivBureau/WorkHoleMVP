@@ -34,7 +34,7 @@ const Header = ({ searchValue, onSearchChange }) => {
                             direction: isArabic ? "rtl" : "ltr"
                         }}
                     >
-                        {t('roles.description')}
+                        {t('roles.pageDescription')}
                     </p>
                 </div>
 
@@ -42,7 +42,7 @@ const Header = ({ searchValue, onSearchChange }) => {
                 <div className="flex flex-col sm:flex-row gap-3 lg:gap-4">
                     {/* Search Input */}
                     <div className="relative flex-1 sm:min-w-[280px] lg:min-w-[320px]">
-                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                        <div className={`absolute inset-y-0 ${isArabic ? 'right-3' : 'left-3'} flex items-center pointer-events-none`}>
                             <Search
                                 className="w-4 h-4"
                                 style={{ color: "var(--sub-text-color)" }}
@@ -65,7 +65,7 @@ const Header = ({ searchValue, onSearchChange }) => {
                             }}
                         />
                         {isArabic && (
-                            <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
                                 <Search
                                     className="w-4 h-4"
                                     style={{ color: "var(--sub-text-color)" }}
@@ -77,8 +77,8 @@ const Header = ({ searchValue, onSearchChange }) => {
                     {/* Add New Role Button */}
                     <button
                         onClick={handleAddNewRole}
-                        className="flex gradient-bg items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 active:scale-95 whitespace-nowrap  text-white hover:shadow-lg text-sm"
-
+                        className={`flex gradient-bg items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 active:scale-95 whitespace-nowrap text-white hover:shadow-lg text-sm ${isArabic ? 'flex-row-reverse' : ''}`}
+                        dir={isArabic ? 'rtl' : 'ltr'}
                     >
                         <Plus className="w-4 h-4" />
                         <span>{t('roles.addNewRole')}</span>

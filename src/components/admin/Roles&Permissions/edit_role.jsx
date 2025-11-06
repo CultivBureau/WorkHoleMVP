@@ -1,105 +1,169 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { X, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useGetRolePermissionsQuery, useUpdateRoleMutation } from '../../../services/apis/RoleApi';
+import { useGetAllPermissionsQuery } from '../../../services/apis/PermissionApi';
 
 const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
 
+    // Fetch all permissions to map codes to IDs
+    const { data: permissionsData } = useGetAllPermissionsQuery();
+    const { data: rolePermissionsData } = useGetRolePermissionsQuery(roleData?.id || null, { 
+        skip: !roleData?.id || !isOpen 
+    });
+    const [updateRole, { isLoading: isUpdating }] = useUpdateRoleMutation();
+
+    // Create a map of permission codes to IDs
+    const permissionCodeToIdMap = useMemo(() => {
+        if (!permissionsData?.value) return {};
+        const map = {};
+        permissionsData.value.forEach(perm => {
+            map[perm.code] = perm.id;
+        });
+        return map;
+    }, [permissionsData]);
+
     const [formData, setFormData] = useState({
         roleName: '',
-        permissions: {
-            timeAndAttendance: {
-                clockInOut: false,
-                editAttendanceLogs: false,
-                viewAttendanceReports: false,
-                approveLateArrivalJustifications: false
-            },
-            tasksAndProjects: {
-                createTasks: false,
-                assignTasksToOthers: false,
-                changeTaskStatus: false,
-                viewAllTasksProjects: false,
-                createProjects: false
-            },
-            leaveManagement: {
-                requestLeave: false,
-                approveRejectLeaveRequests: false,
-                editLeaveBalance: false,
-                viewLeaveCalendar: false
-            },
-            employeeManagement: {
-                addEditEmployees: false,
-                assignRoles: false,
-                viewEmployeeProfiles: false,
-                deactivateEmployees: false
-            },
-            hrAndAdminTools: {
-                viewReportsDashboard: false,
-                editCompanySettings: false,
-                manageBreakCategories: false,
-                accessPayrollData: false
-            }
-        }
+        selectedPermissionIds: [] // Array of permission IDs
     });
+
+    // Group permissions by category (prefix before dot)
+    const groupedPermissions = useMemo(() => {
+        if (!permissionsData?.value) return {};
+
+        const grouped = {};
+        permissionsData.value.forEach(permission => {
+            const category = permission.code.split('.')[0]; // e.g., "User" from "User.Create"
+            if (!grouped[category]) {
+                grouped[category] = [];
+            }
+            grouped[category].push(permission);
+        });
+
+        // Sort permissions within each category by code
+        Object.keys(grouped).forEach(category => {
+            grouped[category].sort((a, b) => a.code.localeCompare(b.code));
+        });
+
+        return grouped;
+    }, [permissionsData]);
+
+    // Category display names mapping
+    const categoryDisplayNames = {
+        'User': t('roles.editRole.categories.employeeManagement'),
+        'Break': t('roles.editRole.categories.breakManagement'),
+        'BreakLog': t('roles.editRole.categories.breakLogs'),
+        'ClockinLog': t('roles.editRole.categories.timeAndAttendance'),
+        'Company': t('roles.editRole.categories.company'),
+        'Department': t('roles.editRole.categories.department'),
+        'LeaveBalance': t('roles.editRole.categories.leaveBalance'),
+        'LeaveRequest': t('roles.editRole.categories.leaveManagement'),
+        'LeaveType': t('roles.editRole.categories.leaveType'),
+        'Role': t('roles.editRole.categories.roles'),
+        'Team': t('roles.editRole.categories.team'),
+        'Permission': t('roles.editRole.categories.permission'),
+    };
 
     useEffect(() => {
         if (roleData) {
             setFormData({
-                roleName: roleData.role || '',
-                permissions: {
-                    timeAndAttendance: {
-                        clockInOut: false,
-                        editAttendanceLogs: false,
-                        viewAttendanceReports: false,
-                        approveLateArrivalJustifications: false
-                    },
-                    tasksAndProjects: {
-                        createTasks: false,
-                        assignTasksToOthers: false,
-                        changeTaskStatus: false,
-                        viewAllTasksProjects: false,
-                        createProjects: false
-                    },
-                    leaveManagement: {
-                        requestLeave: false,
-                        approveRejectLeaveRequests: false,
-                        editLeaveBalance: false,
-                        viewLeaveCalendar: false
-                    },
-                    employeeManagement: {
-                        addEditEmployees: false,
-                        assignRoles: false,
-                        viewEmployeeProfiles: false,
-                        deactivateEmployees: false
-                    },
-                    hrAndAdminTools: {
-                        viewReportsDashboard: false,
-                        editCompanySettings: false,
-                        manageBreakCategories: false,
-                        accessPayrollData: false
-                    }
-                }
+                roleName: roleData.role || roleData.name || '',
+                selectedPermissionIds: []
             });
-        }
-    }, [roleData]);
 
-    const handlePermissionChange = (category, permission) => {
-        setFormData(prev => ({
-            ...prev,
-            permissions: {
-                ...prev.permissions,
-                [category]: {
-                    ...prev.permissions[category],
-                    [permission]: !prev.permissions[category][permission]
-                }
+            // If we have role permissions from API, map them to IDs
+            if (rolePermissionsData?.value && permissionCodeToIdMap) {
+                const permissionIds = rolePermissionsData.value.map(perm => perm.permissionId).filter(id => id);
+                setFormData(prev => ({
+                    ...prev,
+                    selectedPermissionIds: permissionIds
+                }));
+            } else if (roleData.permissions && permissionCodeToIdMap) {
+                // Map permission codes to IDs
+                const permissionIds = roleData.permissions
+                    .map(code => permissionCodeToIdMap[code])
+                    .filter(id => id !== undefined);
+                setFormData(prev => ({
+                    ...prev,
+                    selectedPermissionIds: permissionIds
+                }));
             }
-        }));
+        }
+    }, [roleData, rolePermissionsData, permissionCodeToIdMap]);
+
+    const handlePermissionToggle = (permissionId) => {
+        setFormData(prev => {
+            const isSelected = prev.selectedPermissionIds.includes(permissionId);
+            return {
+                ...prev,
+                selectedPermissionIds: isSelected
+                    ? prev.selectedPermissionIds.filter(id => id !== permissionId)
+                    : [...prev.selectedPermissionIds, permissionId]
+            };
+        });
     };
 
-    const handleSave = () => {
-        onSave(formData);
-        onClose();
+    const handleCategorySelectAll = (category) => {
+        const categoryPermissions = groupedPermissions[category] || [];
+        const categoryPermissionIds = categoryPermissions.map(p => p.id);
+        const allSelected = categoryPermissionIds.every(id => formData.selectedPermissionIds.includes(id));
+
+        setFormData(prev => {
+            if (allSelected) {
+                // Deselect all permissions in this category
+                return {
+                    ...prev,
+                    selectedPermissionIds: prev.selectedPermissionIds.filter(id => !categoryPermissionIds.includes(id))
+                };
+            } else {
+                // Select all permissions in this category
+                const newIds = [...prev.selectedPermissionIds];
+                categoryPermissionIds.forEach(id => {
+                    if (!newIds.includes(id)) {
+                        newIds.push(id);
+                    }
+                });
+                return {
+                    ...prev,
+                    selectedPermissionIds: newIds
+                };
+            }
+        });
+    };
+
+    const isCategoryAllSelected = (category) => {
+        const categoryPermissions = groupedPermissions[category] || [];
+        if (categoryPermissions.length === 0) return false;
+        const categoryPermissionIds = categoryPermissions.map(p => p.id);
+        return categoryPermissionIds.every(id => formData.selectedPermissionIds.includes(id));
+    };
+
+    const handleSave = async () => {
+        if (!roleData?.id) return;
+
+        if (!formData.roleName.trim()) {
+            alert(t('roles.validation.roleNameRequired') || 'Role name is required');
+            return;
+        }
+
+        try {
+            await updateRole({
+                id: roleData.id,
+                name: formData.roleName.trim(),
+                permissionIds: formData.selectedPermissionIds
+            }).unwrap();
+
+            if (onSave) {
+                onSave(formData);
+            }
+            onClose();
+        } catch (error) {
+            console.error('Error updating role:', error);
+            alert(error?.data?.errorMessage || t('roles.errors.updateFailed') || t('roles.errors.createFailed') || 'Failed to update role');
+        }
     };
 
     const handleCancel = () => {
@@ -110,60 +174,15 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
 
     const isMobileOrTablet = typeof window !== 'undefined' && window.innerWidth <= 1100;
 
-    // Permission sections data with translations
-    const permissionSections = [
-        {
-            title: t('roles.editRole.categories.timeAndAttendance'),
-            category: 'timeAndAttendance',
-            items: [
-                { key: 'clockInOut', label: t('roles.editRole.permissions.clockInOut') },
-                { key: 'editAttendanceLogs', label: t('roles.permissionsList.editAttendanceLogs') },
-                { key: 'viewAttendanceReports', label: t('roles.permissionsList.viewAttendanceReports') },
-                { key: 'approveLateArrivalJustifications', label: t('roles.permissionsList.approveLateArrivalJustifications') }
-            ]
-        },
-        {
-            title: t('roles.editRole.categories.tasksAndProjects'),
-            category: 'tasksAndProjects',
-            items: [
-                { key: 'createTasks', label: t('roles.permissionsList.createTasks') },
-                { key: 'assignTasksToOthers', label: t('roles.permissionsList.assignTasksToOthers') },
-                { key: 'changeTaskStatus', label: t('roles.permissionsList.changeTaskStatus') },
-                { key: 'viewAllTasksProjects', label: t('roles.permissionsList.viewAllTasksProjects') },
-                { key: 'createProjects', label: t('roles.permissionsList.createProjects') }
-            ]
-        },
-        {
-            title: t('roles.editRole.categories.leaveManagement'),
-            category: 'leaveManagement',
-            items: [
-                { key: 'requestLeave', label: t('roles.permissionsList.requestLeave') },
-                { key: 'approveRejectLeaveRequests', label: t('roles.permissionsList.approveRejectLeaveRequests') },
-                { key: 'editLeaveBalance', label: t('roles.permissionsList.editLeaveBalance') },
-                { key: 'viewLeaveCalendar', label: t('roles.permissionsList.viewLeaveCalendar') }
-            ]
-        },
-        {
-            title: t('roles.editRole.categories.employeeManagement'),
-            category: 'employeeManagement',
-            items: [
-                { key: 'addEditEmployees', label: t('roles.permissionsList.addEditEmployees') },
-                { key: 'assignRoles', label: t('roles.permissionsList.assignRoles') },
-                { key: 'viewEmployeeProfiles', label: t('roles.permissionsList.viewEmployeeProfiles') },
-                { key: 'deactivateEmployees', label: t('roles.permissionsList.deactivateEmployees') }
-            ]
-        },
-        {
-            title: t('roles.editRole.categories.hrAndAdminTools'),
-            category: 'hrAndAdminTools',
-            items: [
-                { key: 'viewReportsDashboard', label: t('roles.permissionsList.viewReportsDashboard') },
-                { key: 'editCompanySettings', label: t('roles.permissionsList.editCompanySettings') },
-                { key: 'manageBreakCategories', label: t('roles.permissionsList.manageBreakCategories') },
-                { key: 'accessPayrollData', label: t('roles.permissionsList.accessPayrollData') }
-            ]
-        }
-    ];
+    // Show loading state if permissions are not loaded yet
+    if (!permissionsData?.value) {
+        return (
+            <div className="bg-[var(--bg-color)] rounded-lg border border-[var(--border-color)] h-full min-h-0 flex items-center justify-center"
+                style={{ direction: isArabic ? 'rtl' : 'ltr' }}>
+                <span className="text-[var(--sub-text-color)]">{t('common.loading')}</span>
+            </div>
+        );
+    }
 
     // Mobile/Tablet Modal Layout
     if (isMobileOrTablet) {
@@ -180,13 +199,14 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                     <div className="bg-[var(--bg-color)] rounded-lg border border-[var(--border-color)] w-full max-w-md max-h-[90vh] flex flex-col"
                         style={{ direction: isArabic ? 'rtl' : 'ltr' }}>
                         {/* Header */}
-                        <div className="flex items-center justify-between p-4 border-b border-[var(--border-color)]">
-                            <h2 className="text-lg font-semibold text-[var(--text-color)]">
+                        <div className={`flex items-center justify-between p-4 border-b border-[var(--border-color)] ${isArabic ? 'flex-row-reverse' : ''}`}>
+                            <h2 className={`text-lg font-semibold text-[var(--text-color)] ${isArabic ? 'text-right' : 'text-left'}`} dir={isArabic ? 'rtl' : 'ltr'}>
                                 {t('roles.editRoleTitle')}
                             </h2>
                             <button
                                 onClick={onClose}
                                 className="p-2 hover:bg-[var(--hover-color)] rounded-lg transition-colors"
+                                aria-label={t('roles.cancel')}
                             >
                                 <X className="w-5 h-5 text-[var(--sub-text-color)]" />
                             </button>
@@ -213,24 +233,43 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                             </div>
 
                             {/* Permission Sections */}
-                            {permissionSections.map((section) => (
-                                <div key={section.category} className="space-y-3">
+                            {Object.keys(groupedPermissions).map(category => (
+                                <div key={category} className="space-y-3">
                                     <div>
-                                        <h3 
-                                            className={`text-sm font-semibold text-[var(--text-color)] pb-2 ${isArabic ? 'text-right' : 'text-left'}`}
-                                            dir={isArabic ? 'rtl' : 'ltr'}
-                                        >
-                                            {section.title}
-                                        </h3>
+                                        <div className={`flex items-center justify-between pb-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                            <h3 
+                                                className={`text-sm font-semibold text-[var(--text-color)] ${isArabic ? 'text-right' : 'text-left'}`}
+                                                dir={isArabic ? 'rtl' : 'ltr'}
+                                            >
+                                                {categoryDisplayNames[category] || category}
+                                            </h3>
+                                            <label className={`flex items-center gap-2 cursor-pointer ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isCategoryAllSelected(category)}
+                                                    onChange={() => handleCategorySelectAll(category)}
+                                                    className="w-4 h-4 rounded border-2 border-[var(--border-color)] text-[var(--accent-color)] focus:ring-[var(--accent-color)] focus:ring-2 checked:bg-[var(--accent-color)] checked:border-[var(--accent-color)]"
+                                                    style={{
+                                                        accentColor: 'var(--accent-color)'
+                                                    }}
+                                                />
+                                                <span className={`text-xs text-[var(--sub-text-color)] font-medium ${isArabic ? 'text-right' : 'text-left'}`} dir={isArabic ? 'rtl' : 'ltr'}>
+                                                    {t('roles.selectAll') || 'Select All'}
+                                                </span>
+                                            </label>
+                                        </div>
                                         <div className="w-full h-px bg-[var(--border-color)]"></div>
                                     </div>
                                     <div className="space-y-2">
-                                        {section.items.map(item => (
-                                            <label key={item.key} className={`flex items-center gap-3 cursor-pointer ${isArabic ? 'flex-row-reverse justify-end' : ''}`}>
+                                        {groupedPermissions[category].map(permission => (
+                                            <label 
+                                                key={permission.id} 
+                                                className={`flex items-center gap-3 cursor-pointer ${isArabic ? 'flex-row-reverse justify-end' : ''}`}
+                                            >
                                                 <input
                                                     type="checkbox"
-                                                    checked={formData.permissions[section.category][item.key]}
-                                                    onChange={() => handlePermissionChange(section.category, item.key)}
+                                                    checked={formData.selectedPermissionIds.includes(permission.id)}
+                                                    onChange={() => handlePermissionToggle(permission.id)}
                                                     className="w-4 h-4 rounded border-2 border-[var(--border-color)] text-[var(--accent-color)] focus:ring-[var(--accent-color)] focus:ring-2 checked:bg-[var(--accent-color)] checked:border-[var(--accent-color)]"
                                                     style={{
                                                         accentColor: 'var(--accent-color)'
@@ -239,8 +278,9 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                                                 <span 
                                                     className={`text-sm text-[var(--text-color)] ${isArabic ? 'text-right' : 'text-left'}`}
                                                     dir={isArabic ? 'rtl' : 'ltr'}
+                                                    title={permission.description}
                                                 >
-                                                    {item.label}
+                                                    {permission.description}
                                                 </span>
                                             </label>
                                         ))}
@@ -260,10 +300,11 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                                 </button>
                                 <button
                                     onClick={handleSave}
-                                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--accent-color)] text-white rounded-lg font-medium hover:opacity-90 transition-opacity ${isArabic ? 'flex-row-reverse' : ''}`}
+                                    disabled={isUpdating}
+                                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--accent-color)] text-white rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed ${isArabic ? 'flex-row-reverse' : ''}`}
                                 >
                                     <Check className="w-4 h-4" />
-                                    {t('roles.save')}
+                                    {isUpdating ? (t('common.saving') || 'Saving...') : t('roles.save')}
                                 </button>
                             </div>
                         </div>
@@ -278,13 +319,14 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
         <div className="bg-[var(--bg-color)] rounded-lg border border-[var(--border-color)] h-full min-h-0 flex flex-col"
             style={{ direction: isArabic ? 'rtl' : 'ltr' }}>
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-[var(--border-color)] flex-shrink-0">
-                <h2 className="text-lg font-semibold text-[var(--text-color)]">
+            <div className={`flex items-center justify-between p-4 border-b border-[var(--border-color)] flex-shrink-0 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                <h2 className={`text-lg font-semibold text-[var(--text-color)] ${isArabic ? 'text-right' : 'text-left'}`} dir={isArabic ? 'rtl' : 'ltr'}>
                     {t('roles.editRoleTitle')}
                 </h2>
                 <button
                     onClick={onClose}
                     className="p-2 hover:bg-[var(--hover-color)] rounded-lg transition-colors"
+                    aria-label={t('roles.cancel')}
                 >
                     <X className="w-5 h-5 text-[var(--sub-text-color)]" />
                 </button>
@@ -311,24 +353,43 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                 </div>
 
                 {/* Permission Sections */}
-                {permissionSections.map((section) => (
-                    <div key={section.category} className="space-y-3">
+                {Object.keys(groupedPermissions).map(category => (
+                    <div key={category} className="space-y-3">
                         <div>
-                            <h3 
-                                className={`text-sm font-semibold text-[var(--text-color)] pb-2 ${isArabic ? 'text-right' : 'text-left'}`}
-                                dir={isArabic ? 'rtl' : 'ltr'}
-                            >
-                                {section.title}
-                            </h3>
+                            <div className={`flex items-center justify-between pb-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                <h3 
+                                    className={`text-sm font-semibold text-[var(--text-color)] ${isArabic ? 'text-right' : 'text-left'}`}
+                                    dir={isArabic ? 'rtl' : 'ltr'}
+                                >
+                                    {categoryDisplayNames[category] || category}
+                                </h3>
+                                <label className={`flex items-center gap-2 cursor-pointer ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                    <input
+                                        type="checkbox"
+                                        checked={isCategoryAllSelected(category)}
+                                        onChange={() => handleCategorySelectAll(category)}
+                                        className="w-4 h-4 rounded border-2 border-[var(--border-color)] text-[var(--accent-color)] focus:ring-[var(--accent-color)] focus:ring-2 checked:bg-[var(--accent-color)] checked:border-[var(--accent-color)]"
+                                        style={{
+                                            accentColor: 'var(--accent-color)'
+                                        }}
+                                    />
+                                    <span className={`text-xs text-[var(--sub-text-color)] font-medium ${isArabic ? 'text-right' : 'text-left'}`} dir={isArabic ? 'rtl' : 'ltr'}>
+                                        {t('roles.selectAll') || 'Select All'}
+                                    </span>
+                                </label>
+                            </div>
                             <div className="w-full h-px bg-[var(--border-color)]"></div>
                         </div>
                         <div className="space-y-2">
-                            {section.items.map(item => (
-                                <label key={item.key} className={`flex items-center gap-3 cursor-pointer ${isArabic ? 'flex-row-reverse justify-end' : ''}`}>
+                            {groupedPermissions[category].map(permission => (
+                                <label 
+                                    key={permission.id} 
+                                    className={`flex items-center gap-3 cursor-pointer ${isArabic ? 'flex-row-reverse justify-end' : ''}`}
+                                >
                                     <input
                                         type="checkbox"
-                                        checked={formData.permissions[section.category][item.key]}
-                                        onChange={() => handlePermissionChange(section.category, item.key)}
+                                        checked={formData.selectedPermissionIds.includes(permission.id)}
+                                        onChange={() => handlePermissionToggle(permission.id)}
                                         className="w-4 h-4 rounded border-2 border-[var(--border-color)] text-[var(--accent-color)] focus:ring-[var(--accent-color)] focus:ring-2 checked:bg-[var(--accent-color)] checked:border-[var(--accent-color)]"
                                         style={{
                                             accentColor: 'var(--accent-color)'
@@ -337,8 +398,9 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                                     <span 
                                         className={`text-sm text-[var(--text-color)] ${isArabic ? 'text-right' : 'text-left'}`}
                                         dir={isArabic ? 'rtl' : 'ltr'}
+                                        title={permission.description}
                                     >
-                                        {item.label}
+                                        {permission.description}
                                     </span>
                                 </label>
                             ))}
@@ -358,10 +420,11 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                     </button>
                     <button
                         onClick={handleSave}
-                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--accent-color)] text-white rounded-lg font-medium hover:opacity-90 transition-opacity ${isArabic ? 'flex-row-reverse' : ''}`}
+                        disabled={isUpdating}
+                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--accent-color)] text-white rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed ${isArabic ? 'flex-row-reverse' : ''}`}
                     >
                         <Check className="w-4 h-4" />
-                        {t('roles.save')}
+                        {isUpdating ? (t('common.saving') || 'Saving...') : t('roles.save')}
                     </button>
                 </div>
             </div>
