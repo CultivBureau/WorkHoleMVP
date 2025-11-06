@@ -3,12 +3,15 @@ import { useTranslation } from "react-i18next";
 import { Eye, Edit, Trash2, MoreHorizontal } from "lucide-react";
 
 const EmployeeCard = ({
-    name = "Layla wael",
-    position = "UX UI Designer",
-    department = "Design",
-    joinDate = "2/4/2024",
-    status = "Active",
-    avatar = "https://i.pravatar.cc/150?img=1",
+    name,
+    position,
+    role,
+    department,
+    departments = [],
+    teams = [],
+    joinDate,
+    status,
+    avatar,
     onCardClick,
     className = "",
     onView,
@@ -105,90 +108,111 @@ const EmployeeCard = ({
 
     return (
         <div
-            className={`relative rounded-xl p-3 border cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] flex flex-col justify-between ${className}`}
+            className={`relative rounded-2xl p-5 border-2 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-[1.05] flex flex-col ${className}`}
             style={{
                 backgroundColor: 'var(--bg-color)',
                 borderColor: 'var(--border-color)',
-                height: '100%', // Use full height of grid cell
-                minHeight: '200px',
-                maxHeight: '200px',
-                overflow: 'hidden'
+                height: '100%',
+                minHeight: '280px',
+                overflow: 'visible',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                zIndex: 1
             }}
             onClick={onCardClick}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--accent-color)';
+                e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+                e.currentTarget.style.zIndex = '9999'; // Bring card to front on hover for tooltips
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'var(--border-color)';
+                e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)';
+                e.currentTarget.style.zIndex = '1'; // Reset z-index when not hovering
+            }}
             dir={isArabic ? "rtl" : "ltr"}
         >
             {/* Three dots menu */}
-            <div className={`absolute top-2 z-10 ${isArabic ? 'left-2' : 'right-2'}`} ref={dropdownRef}>
+            <div className={`absolute top-3 z-10 ${isArabic ? 'left-3' : 'right-3'}`} ref={dropdownRef}>
                 <button
                     onClick={toggleDropdown}
-                    className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                    className="p-1.5 rounded-lg hover:bg-[var(--hover-color)] transition-all"
                     style={{
-                        color: 'var(--sub-text-color)',
-                        backgroundColor: isDropdownOpen ? 'var(--table-header-bg)' : 'transparent'
+                        color: 'var(--accent-color)',
+                        backgroundColor: isDropdownOpen ? 'var(--hover-color)' : 'transparent'
                     }}
                 >
-                    <MoreHorizontal className="w-4 h-4" />
+                    <MoreHorizontal className="w-5 h-5" />
                 </button>
 
-                {/* Dropdown Menu */}
+                {/* Enhanced Dropdown Menu */}
                 {isDropdownOpen && (
                     <div
-                        className={`absolute top-8 ${isArabic ? 'left-0' : 'right-0'} mt-1 w-32 rounded-lg border shadow-lg z-20`}
+                        className={`absolute top-10 ${isArabic ? 'left-0' : 'right-0'} mt-1 w-40 rounded-xl border-2 shadow-xl z-20`}
                         style={{
                             backgroundColor: 'var(--bg-color)',
                             borderColor: 'var(--border-color)'
                         }}
                     >
-                        <div className="py-1">
+                        <div className="py-2">
                             <button
                                 onClick={handleView}
-                                className={`w-full px-3 py-2 text-xs flex items-center gap-2 hover:bg-gray-50 transition-colors ${isArabic ? 'flex-row-reverse text-right' : 'text-left'}`}
+                                className={`w-full px-4 py-2.5 text-sm flex items-center gap-3 hover:bg-[var(--hover-color)] transition-colors ${isArabic ? 'flex-row-reverse text-right' : 'text-left'}`}
                                 style={{ color: 'var(--text-color)' }}
                             >
-                                <Eye className="w-3 h-3" />
-                                {t("employees.actions.view", "View")}
+                                <Eye className="w-4 h-4" style={{ color: 'var(--accent-color)' }} />
+                                <span className="font-medium">{t("employees.actions.view", "View")}</span>
                             </button>
                             <button
                                 onClick={handleEdit}
-                                className={`w-full px-3 py-2 text-xs flex items-center gap-2 hover:bg-gray-50 transition-colors ${isArabic ? 'flex-row-reverse text-right' : 'text-left'}`}
+                                className={`w-full px-4 py-2.5 text-sm flex items-center gap-3 hover:bg-[var(--hover-color)] transition-colors ${isArabic ? 'flex-row-reverse text-right' : 'text-left'}`}
                                 style={{ color: 'var(--text-color)' }}
                             >
-                                <Edit className="w-3 h-3" />
-                                {t("employees.actions.edit", "Edit")}
+                                <Edit className="w-4 h-4" style={{ color: 'var(--accent-color)' }} />
+                                <span className="font-medium">{t("employees.actions.edit", "Edit")}</span>
                             </button>
+                            <div className="border-t" style={{ borderColor: 'var(--border-color)' }} />
                             <button
                                 onClick={handleDelete}
-                                className={`w-full px-3 py-2 text-xs flex items-center gap-2 hover:bg-red-50 transition-colors ${isArabic ? 'flex-row-reverse text-right' : 'text-left'}`}
-                                style={{ color: '#ef4444' }}
+                                className={`w-full px-4 py-2.5 text-sm flex items-center gap-3 hover:bg-red-50 transition-colors ${isArabic ? 'flex-row-reverse text-right' : 'text-left'}`}
+                                style={{ color: 'var(--error-color)' }}
                             >
-                                <Trash2 className="w-3 h-3" />
-                                {t("employees.actions.delete", "Delete")}
+                                <Trash2 className="w-4 h-4" />
+                                <span className="font-medium">{t("employees.actions.delete", "Delete")}</span>
                             </button>
                         </div>
                     </div>
                 )}
             </div>
 
-            {/* Top Section: Avatar + Name + Position */}
-            <div className="flex flex-col items-center">
-                {/* Avatar */}
-                <div className="flex justify-center mb-2">
-                    <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-white shadow-md">
-                        <img
-                            src={avatar}
-                            alt={name}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=15919B&color=fff&size=48`;
-                            }}
-                        />
+            {/* Top Section: Avatar + Name + Position + Role */}
+            <div className="flex flex-col items-center mb-4">
+                {/* Avatar with gradient ring and checkmark */}
+                <div className="flex justify-center mb-4">
+                    <div className="relative">
+                        <div className="w-20 h-20 rounded-full overflow-hidden p-0.5 gradient-bg shadow-lg">
+                            <div className="w-full h-full rounded-full overflow-hidden bg-white">
+                                <img
+                                    src={avatar}
+                                    alt={name}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=15919B&color=fff&size=80`;
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full gradient-bg border-3 border-white shadow-lg flex items-center justify-center">
+                            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                        </div>
                     </div>
                 </div>
 
                 {/* Name */}
-                <div className="text-center mb-1">
+                <div className="text-center mb-2">
                     <h3
-                        className={`text-sm font-semibold ${textAlign} truncate max-w-full`}
+                        className={`text-lg font-bold ${textAlign} truncate max-w-full px-2`}
                         style={{ color: 'var(--text-color)' }}
                         title={name}
                     >
@@ -196,58 +220,173 @@ const EmployeeCard = ({
                     </h3>
                 </div>
 
-                {/* Position */}
-                <div className="text-center mb-4">
+                {/* Job Title - Separate from Role */}
+                <div className="text-center mb-2">
                     <p
-                        className={`text-xs ${textAlign} truncate max-w-full`}
+                        className={`text-sm ${textAlign} truncate max-w-full font-semibold px-2`}
                         style={{ color: 'var(--sub-text-color)' }}
                         title={position}
                     >
                         {position}
                     </p>
                 </div>
+
+                {/* Role - Separate pill badge */}
+                {role && role !== "N/A" && (
+                    <div className="text-center">
+                        <span
+                            className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold"
+                            style={{
+                                backgroundColor: 'var(--accent-color)',
+                                color: 'white',
+                                boxShadow: '0 2px 4px rgba(21, 145, 155, 0.3)'
+                            }}
+                            title={role}
+                        >
+                            {role}
+                        </span>
+                    </div>
+                )}
             </div>
 
-            {/* Middle Section: Details */}
-            <div className="flex-1 space-y-2">
-                {/* Department */}
-                <div className={`flex justify-between items-center ${isArabic ? 'flex-row-reverse' : ''}`}>
+            {/* Middle Section: Details with hover tooltips */}
+            <div className="flex-1 space-y-2.5 mb-4">
+                {/* Department - Clean layout without border on value */}
+                <div className={`flex items-start gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
                     <span
-                        className={`text-xs font-medium ${textAlign} flex-shrink-0`}
-                        style={{ color: 'var(--text-color)' }}
-                    >
-                        {t("employees.department", "Department")}
-                    </span>
-                    <span
-                        className={`text-xs ${textAlign} truncate ml-2 max-w-[80px]`}
+                        className={`text-[11px] font-bold uppercase ${textAlign} flex-shrink-0 pt-0.5`}
                         style={{ color: 'var(--sub-text-color)' }}
-                        title={department}
                     >
-                        {department}
+                        {t("employees.department", "DEPT")}:
                     </span>
+                    <div className="relative group flex-1 flex justify-end">
+                        {departments && departments.length > 0 ? (
+                            <>
+                                <div className={`flex items-center gap-1 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                    <span
+                                        className={`text-xs font-bold ${textAlign} truncate max-w-[85px]`}
+                                        style={{ color: 'var(--accent-color)' }}
+                                    >
+                                        {departments[0]}
+                                    </span>
+                                    {departments.length > 1 && (
+                                        <span
+                                            className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-bold"
+                                            style={{
+                                                backgroundColor: 'var(--accent-color)',
+                                                color: 'white'
+                                            }}
+                                        >
+                                            +{departments.length - 1}
+                                        </span>
+                                    )}
+                                </div>
+                                {/* Hover tooltip for multiple departments - Higher z-index */}
+                                {departments.length > 1 && (
+                                    <div className={`absolute ${isArabic ? 'left-0' : 'right-0'} top-full mt-2 hidden group-hover:block z-[9999] w-max max-w-[220px]`}>
+                                        <div className="rounded-xl border-2 shadow-2xl p-3 backdrop-blur-sm" style={{ backgroundColor: 'var(--bg-color)', borderColor: 'var(--accent-color)' }}>
+                                            <p className="text-xs font-bold mb-2 gradient-text">
+                                                {t("employees.allDepartments", "All Departments")}
+                                            </p>
+                                            <div className="space-y-1.5">
+                                                {departments.map((dept, idx) => (
+                                                    <div key={idx} className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                                        <span className="w-2 h-2 rounded-full gradient-bg flex-shrink-0" />
+                                                        <span className="text-xs font-medium" style={{ color: 'var(--text-color)' }}>{dept}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <span
+                                className={`text-xs font-bold ${textAlign}`}
+                                style={{ color: 'var(--accent-color)' }}
+                            >
+                                {department}
+                            </span>
+                        )}
+                    </div>
                 </div>
 
-                {/* Join Date */}
-                <div className={`flex justify-between items-center ${isArabic ? 'flex-row-reverse' : ''}`}>
+                {/* Teams - Clean layout without border on value */}
+                <div className={`flex items-start gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
                     <span
-                        className={`text-xs font-medium ${textAlign} flex-shrink-0`}
-                        style={{ color: 'var(--text-color)' }}
+                        className={`text-[11px] font-bold uppercase ${textAlign} flex-shrink-0 pt-0.5`}
+                        style={{ color: 'var(--sub-text-color)' }}
                     >
-                        {t("employees.joinDate", "Join Date")}
+                        {t("employees.team", "TEAM")}:
+                    </span>
+                    <div className="relative group flex-1 flex justify-end">
+                        {teams && teams.length > 0 ? (
+                            <>
+                                <div className={`flex items-center gap-1 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                    <span
+                                        className={`text-xs font-bold ${textAlign} truncate max-w-[85px]`}
+                                        style={{ color: 'var(--accent-color)' }}
+                                    >
+                                        {teams[0]}
+                                    </span>
+                                    {teams.length > 1 && (
+                                        <span
+                                            className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-bold"
+                                            style={{
+                                                backgroundColor: 'var(--accent-color)',
+                                                color: 'white'
+                                            }}
+                                        >
+                                            +{teams.length - 1}
+                                        </span>
+                                    )}
+                                </div>
+                                {/* Hover tooltip for multiple teams - Higher z-index */}
+                                {teams.length > 1 && (
+                                    <div className={`absolute ${isArabic ? 'left-0' : 'right-0'} top-full mt-2 hidden group-hover:block z-[9999] w-max max-w-[220px]`}>
+                                        <div className="rounded-xl border-2 shadow-2xl p-3 backdrop-blur-sm" style={{ backgroundColor: 'var(--bg-color)', borderColor: 'var(--accent-color)' }}>
+                                            <p className="text-xs font-bold mb-2 gradient-text">
+                                                {t("employees.allTeams", "All Teams")}
+                                            </p>
+                                            <div className="space-y-1.5">
+                                                {teams.map((team, idx) => (
+                                                    <div key={idx} className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                                        <span className="w-2 h-2 rounded-full gradient-bg flex-shrink-0" />
+                                                        <span className="text-xs font-medium" style={{ color: 'var(--text-color)' }}>{team}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <span className="text-xs font-bold" style={{ color: 'var(--sub-text-color)' }}>-</span>
+                        )}
+                    </div>
+                </div>
+
+                {/* Join Date - Clean layout */}
+                <div className={`flex items-start gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                    <span
+                        className={`text-[11px] font-bold uppercase ${textAlign} flex-shrink-0 pt-0.5`}
+                        style={{ color: 'var(--sub-text-color)' }}
+                    >
+                        {t("employees.joinDate", "JOINED")}:
                     </span>
                     <span
-                        className={`text-xs ${textAlign}`}
-                        style={{ color: 'var(--sub-text-color)' }}
+                        className={`text-xs font-bold ${textAlign}`}
+                        style={{ color: 'var(--accent-color)' }}
                     >
                         {joinDate}
                     </span>
                 </div>
             </div>
 
-            {/* Bottom Section: Status Badge */}
-            <div className="flex justify-center  mt-2 mb-3">
+            {/* Bottom Section: Enhanced Status Badge with full width */}
+            <div className="flex justify-center mt-auto pt-3 border-t-2" style={{ borderColor: 'var(--border-color)' }}>
                 <span
-                    className="px-8 py-0.5 rounded-full text-xs font-medium border"
+                    className="w-full text-center px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-wide border-2 shadow-md"
                     style={{
                         backgroundColor: statusColors.bg,
                         color: statusColors.text,

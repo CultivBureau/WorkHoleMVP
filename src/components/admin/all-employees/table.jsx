@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronLeft, ChevronRight, Search, LayoutGrid, TableIcon, Plus, Eye, Edit, Trash2 } from "lucide-react";
 import EmployeeCard from "./employee-card";
 import EditEmployeePopup from "./edit-employee";
+import { useGetAllUsersQuery } from "../../../services/apis/UserApi";
+import { useGetAllDepartmentsQuery } from "../../../services/apis/DepartmentApi";
+import { useGetAllRolesQuery } from "../../../services/apis/RoleApi";
 
 const EmployeesTable = () => {
     const { t, i18n } = useTranslation();
@@ -48,81 +51,127 @@ const EmployeesTable = () => {
         setItemsPerPage(getItemsPerPage());
     }, [viewMode]);
 
-    // Mock data - replace with actual API call
-    const mockEmployees = [
-        {
-            id: 1,
-            name: "Layla wael",
-            position: "UX UI Designer",
-            department: "Design",
-            joinDate: "2/4/2024",
-            status: "Active",
-            avatar: "https://i.pravatar.cc/150?img=1",
-            employeeId: "EMP-001"
-        },
-        {
-            id: 2,
-            name: "Ahmed Ali",
-            position: "Frontend Developer",
-            department: "Software",
-            joinDate: "15/3/2024",
-            status: "Active",
-            avatar: "https://i.pravatar.cc/150?img=2",
-            employeeId: "EMP-002"
-        },
-        {
-            id: 3,
-            name: "Sara Mohamed",
-            position: "Product Manager",
-            department: "Product",
-            joinDate: "10/2/2024",
-            status: "Inactive",
-            avatar: "https://i.pravatar.cc/150?img=3",
-            employeeId: "EMP-003"
-        },
-        {
-            id: 4,
-            name: "Omar Hassan",
-            position: "Backend Developer",
-            department: "Software",
-            joinDate: "5/1/2024",
-            status: "Active",
-            avatar: "https://i.pravatar.cc/150?img=4",
-            employeeId: "EMP-004"
-        },
-        {
-            id: 5,
-            name: "Fatima Ali",
-            position: "QA Engineer",
-            department: "Quality",
-            joinDate: "20/3/2024",
-            status: "Pending",
-            avatar: "https://i.pravatar.cc/150?img=5",
-            employeeId: "EMP-005"
-        },
-        // Add more mock data...
-        ...Array.from({ length: 20 }, (_, i) => ({
-            id: i + 6,
-            name: `Employee ${i + 6}`,
-            position: ["UX UI Designer", "Frontend Developer", "Backend Developer", "Product Manager"][i % 4],
-            department: ["Design", "Software", "Product", "Quality"][i % 4],
-            joinDate: `${Math.floor(Math.random() * 28) + 1}/${Math.floor(Math.random() * 12) + 1}/2024`,
-            status: ["Active", "Inactive", "Pending"][i % 3],
-            avatar: `https://i.pravatar.cc/150?img=${i + 6}`,
-            employeeId: `EMP-${String(i + 6).padStart(3, '0')}`
-        }))
-    ];
+    // API calls
+    const userQueryParams = useMemo(() => {
+        const params = { pageNumber: 1, pageSize: 100 };
+        if (departmentFilter && departmentFilter !== "") {
+            params.departmentId = departmentFilter;
+        }
+        if (searchTerm) {
+            params.name = searchTerm;
+        }
+        return params;
+    }, [departmentFilter, searchTerm]);
+
+    const { data: usersResponse, isLoading: isLoadingUsers, isError: isErrorUsers } = useGetAllUsersQuery(userQueryParams);
+    const { data: departmentsResponse } = useGetAllDepartmentsQuery({ pageNumber: 1, pageSize: 100 });
+    const { data: rolesResponse } = useGetAllRolesQuery({ pageNumber: 1, pageSize: 100 });
+
+    // Transform API data to component format
+    const employeesData = useMemo(() => {
+        if (!usersResponse?.value) return [];
+        
+        return usersResponse.value.map(user => {
+            // Format name
+            const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim() || user.userName || user.email || "Unknown";
+            
+            // Format hire date
+            const hireDate = user.hireDate 
+                ? new Date(user.hireDate).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: '2-digit', 
+                    day: '2-digit' 
+                })
+                : "";
+            
+            // Convert status boolean to string
+            const statusString = user.status === true ? "Active" : "Inactive";
+            
+            // Get first department name (or combine multiple)
+            const departments = user.departments || [];
+            const departmentNames = departments.map(dept => dept.name).filter(Boolean);
+            const primaryDepartment = departmentNames[0] || "N/A";
+            
+            // Get job title
+            const position = user.jobTitle || "N/A";
+            
+            // Get roles - primary role for display
+            const roles = user.roles || [];
+            const primaryRole = roles[0] || "N/A";
+            
+            // Get team names
+            const teams = user.teams || [];
+            const teamNames = teams.map(team => team.name).filter(Boolean);
+            
+            // Generate avatar URL
+            const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=15919B&color=fff&size=150`;
+            
+            return {
+                id: user.id,
+                name: fullName,
+                position: position, // jobTitle
+                role: primaryRole, // primary role
+                department: primaryDepartment,
+                departments: departmentNames, // For filtering and display
+                teams: teamNames, // For display
+                joinDate: hireDate,
+                status: statusString,
+                avatar: avatar,
+                employeeId: user.userName || user.email || `EMP-${user.id.substring(0, 8)}`,
+                email: user.email,
+                roles: roles, // All roles for filtering
+                rawData: user // Keep raw data for edit/view
+            };
+        });
+    }, [usersResponse]);
+
+    // Get unique values for filters from API data
+    const uniqueDepartments = useMemo(() => {
+        const deptSet = new Set();
+        employeesData.forEach(emp => {
+            if (emp.departments && emp.departments.length > 0) {
+                emp.departments.forEach(dept => deptSet.add(dept));
+            }
+        });
+        return Array.from(deptSet).sort();
+    }, [employeesData]);
+
+    const uniqueRoles = useMemo(() => {
+        const roleSet = new Set();
+        employeesData.forEach(emp => {
+            if (emp.roles && emp.roles.length > 0) {
+                emp.roles.forEach(role => roleSet.add(role));
+            }
+        });
+        return Array.from(roleSet).sort();
+    }, [employeesData]);
+
+    const uniqueJoinDates = useMemo(() => {
+        return [...new Set(employeesData.map(emp => emp.joinDate))].sort();
+    }, [employeesData]);
 
     // Filter data
-    const filteredEmployees = mockEmployees.filter(employee => {
-        return (
-            employee.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-            (joinDateFilter === "" || employee.joinDate.includes(joinDateFilter)) &&
-            (departmentFilter === "" || employee.department === departmentFilter) &&
-            (roleFilter === "" || employee.position === roleFilter) &&
-            (statusFilter === "" || employee.status === statusFilter)
-        );
-    });
+    const filteredEmployees = useMemo(() => {
+        return employeesData.filter(employee => {
+            const matchesSearch = !searchTerm || 
+                employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                employee.email?.toLowerCase().includes(searchTerm.toLowerCase());
+            
+            const matchesJoinDate = !joinDateFilter || 
+                employee.joinDate.includes(joinDateFilter);
+            
+            const matchesDepartment = !departmentFilter || 
+                employee.departments.includes(departmentFilter);
+            
+            const matchesRole = !roleFilter || 
+                employee.roles.includes(roleFilter);
+            
+            const matchesStatus = !statusFilter || 
+                employee.status === statusFilter;
+            
+            return matchesSearch && matchesJoinDate && matchesDepartment && matchesRole && matchesStatus;
+        });
+    }, [employeesData, searchTerm, joinDateFilter, departmentFilter, roleFilter, statusFilter]);
 
     // Pagination
     const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
@@ -134,10 +183,6 @@ const EmployeesTable = () => {
         setCurrentPage(1);
     }, [searchTerm, joinDateFilter, departmentFilter, roleFilter, statusFilter, viewMode, itemsPerPage]);
 
-    // Get unique values for filter options
-    const uniqueDepartments = [...new Set(mockEmployees.map(emp => emp.department))];
-    const uniqueRoles = [...new Set(mockEmployees.map(emp => emp.position))];
-    const uniqueJoinDates = [...new Set(mockEmployees.map(emp => emp.joinDate))];
 
     // Clear all filters
     const clearAllFilters = () => {
@@ -163,13 +208,13 @@ const EmployeesTable = () => {
     const FilterSelect = ({ value, onChange, options, placeholder }) => (
         <div className="relative w-full mb-2 md:mb-0">
             <select
-                value=""
+                value={value || ""}
                 onChange={onChange}
-                className="w-full border text-center     rounded-full px-4 py-2 text-xs font-medium gradient-text transition-all duration-200 appearance-none"
+                className="w-full border text-center rounded-full px-4 py-2 text-xs font-medium gradient-text transition-all duration-200 appearance-none"
                 style={{
                     borderColor: 'var(--border-color)',
                     backgroundColor: 'var(--bg-color)',
-                    color: 'var(--accent-color)',
+                    color: value ? 'var(--accent-color)' : 'var(--sub-text-color)',
                     direction: isArabic ? 'rtl' : 'ltr',
                     cursor: 'pointer'
                 }}
@@ -187,28 +232,28 @@ const EmployeesTable = () => {
         </div>
     );
 
-    // Action buttons for table
+    // Enhanced Action buttons for table
     const ActionButtons = ({ employee }) => (
-        <div className="flex items-center gap-1 md:gap-2">
+        <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
             <button
-                className="p-1 rounded hover:bg-gray-100 transition-colors"
+                className="p-2 rounded-lg hover:bg-[var(--hover-color)] transition-all hover:scale-110"
                 title={t("employees.actions.view", "View")}
                 onClick={(e) => { e.stopPropagation(); handleViewEmployee(employee); }}
             >
-                <Eye className="w-3 h-3 md:w-4 md:h-4" style={{ color: 'var(--sub-text-color)' }} />
+                <Eye className="w-5 h-5" style={{ color: 'var(--accent-color)' }} />
             </button>
             <button
-                className="p-1 rounded hover:bg-gray-100 transition-colors"
+                className="p-2 rounded-lg hover:bg-[var(--hover-color)] transition-all hover:scale-110"
                 title={t("employees.actions.edit", "Edit")}
                 onClick={(e) => { e.stopPropagation(); setSelectedEmployee(employee); setIsEditOpen(true); }}
             >
-                <Edit className="w-3 h-3 md:w-4 md:h-4" style={{ color: 'var(--sub-text-color)' }} />
+                <Edit className="w-5 h-5" style={{ color: 'var(--accent-color)' }} />
             </button>
             <button
-                className="p-1 rounded hover:bg-gray-100 transition-colors"
+                className="p-2 rounded-lg hover:bg-red-50 transition-all hover:scale-110"
                 title={t("employees.actions.delete", "Delete")}
             >
-                <Trash2 className="w-3 h-3 md:w-4 md:h-4" style={{ color: '#ef4444' }} />
+                <Trash2 className="w-5 h-5" style={{ color: 'var(--error-color)' }} />
             </button>
         </div>
     );
@@ -221,7 +266,7 @@ const EmployeesTable = () => {
         // Navigate to profile page with employee data
         navigate("/pages/User/profile", { 
             state: { 
-                employeeData: employee,
+                employeeData: employee.rawData || employee,
                 isAdminView: true 
             } 
         });
@@ -440,7 +485,40 @@ const EmployeesTable = () => {
                     boxShadow: 'var(--shadow-color)'
                 }}
             >
-                {viewMode === "grid" ? (
+                {isLoadingUsers ? (
+                    <div className="flex items-center justify-center h-full">
+                        <div className="text-center">
+                            <div className="w-16 h-16 border-4 border-[var(--accent-color)] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                            <p className="text-[var(--sub-text-color)]">{t("employees.loading", "Loading employees...")}</p>
+                        </div>
+                    </div>
+                ) : isErrorUsers ? (
+                    <div className="flex items-center justify-center h-full">
+                        <div className="text-center">
+                            <p className="text-red-500 mb-4">{t("employees.error", "Failed to load employees")}</p>
+                            <button 
+                                onClick={() => window.location.reload()} 
+                                className="px-4 py-2 bg-[var(--accent-color)] text-white rounded-lg"
+                            >
+                                {t("employees.retry", "Retry")}
+                            </button>
+                        </div>
+                    </div>
+                ) : filteredEmployees.length === 0 ? (
+                    <div className="flex items-center justify-center h-full">
+                        <div className="text-center">
+                            <p className="text-[var(--sub-text-color)] mb-2">{t("employees.noResults", "No employees found")}</p>
+                            {activeFiltersCount > 0 && (
+                                <button 
+                                    onClick={clearAllFilters}
+                                    className="text-[var(--accent-color)] text-sm"
+                                >
+                                    {t("employees.clearFilters", "Clear filters")}
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                ) : viewMode === "grid" ? (
                     /* Grid View - Responsive */
                     <div className="h-full flex flex-col">
                         <div className="flex-1 p-2 md:p-4" style={{ height: 'calc(100% - 60px)' }}>
@@ -453,7 +531,10 @@ const EmployeesTable = () => {
                                             key={employee.id}
                                             name={employee.name}
                                             position={employee.position}
+                                            role={employee.role}
                                             department={employee.department}
+                                            departments={employee.departments}
+                                            teams={employee.teams}
                                             joinDate={employee.joinDate}
                                             status={employee.status}
                                             avatar={employee.avatar}
@@ -515,31 +596,39 @@ const EmployeesTable = () => {
                     /* Table View - Responsive with horizontal scroll */
                     <div className="h-full flex flex-col">
                         <div className="flex-1 overflow-x-auto" style={{ height: 'calc(100% - 60px)' }}>
-                            <table className="w-full min-w-[800px]"> {/* Minimum width to prevent squashing */}
-                                <thead style={{ backgroundColor: 'var(--table-header-bg)' }} className="sticky top-0">
+                            <table className="w-full min-w-[800px]">
+                                <thead className="sticky top-0 z-10" style={{ background: 'linear-gradient(135deg, var(--gradient-start), var(--gradient-end))' }}>
                                     <tr>
-                                        <th className={`px-3 md:px-6 py-3 md:py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
-                                            style={{ color: 'var(--table-header-text)', minWidth: '150px' }}>
+                                        <th className={`px-4 md:px-6 py-4 text-xs font-bold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                                            style={{ color: 'white', minWidth: '180px' }}>
                                             {t("employees.table.employee", "Employee")}
                                         </th>
-                                        <th className={`px-3 md:px-6 py-3 md:py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
-                                            style={{ color: 'var(--table-header-text)', minWidth: '120px' }}>
+                                        <th className={`px-4 md:px-6 py-4 text-xs font-bold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                                            style={{ color: 'white', minWidth: '120px' }}>
                                             {t("employees.table.role", "Role")}
                                         </th>
-                                        <th className={`px-3 md:px-6 py-3 md:py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
-                                            style={{ color: 'var(--table-header-text)', minWidth: '100px' }}>
-                                            {t("employees.table.joinDate", "Join Date")}
+                                        <th className={`px-4 md:px-6 py-4 text-xs font-bold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                                            style={{ color: 'white', minWidth: '140px' }}>
+                                            {t("employees.table.jobTitle", "Job Title")}
                                         </th>
-                                        <th className={`px-3 md:px-6 py-3 md:py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
-                                            style={{ color: 'var(--table-header-text)', minWidth: '120px' }}>
+                                        <th className={`px-4 md:px-6 py-4 text-xs font-bold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                                            style={{ color: 'white', minWidth: '140px' }}>
                                             {t("employees.table.department", "Department")}
                                         </th>
-                                        <th className={`px-3 md:px-6 py-3 md:py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
-                                            style={{ color: 'var(--table-header-text)', minWidth: '100px' }}>
+                                        <th className={`px-4 md:px-6 py-4 text-xs font-bold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                                            style={{ color: 'white', minWidth: '120px' }}>
+                                            {t("employees.table.team", "Team")}
+                                        </th>
+                                        <th className={`px-4 md:px-6 py-4 text-xs font-bold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                                            style={{ color: 'white', minWidth: '110px' }}>
+                                            {t("employees.table.joinDate", "Join Date")}
+                                        </th>
+                                        <th className={`px-4 md:px-6 py-4 text-xs font-bold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                                            style={{ color: 'white', minWidth: '100px' }}>
                                             {t("employees.table.status", "Status")}
                                         </th>
-                                        <th className={`px-3 md:px-6 py-3 md:py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
-                                            style={{ color: 'var(--table-header-text)', minWidth: '100px' }}>
+                                        <th className={`px-4 md:px-6 py-4 text-xs font-bold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                                            style={{ color: 'white', minWidth: '120px' }}>
                                             {t("employees.table.action", "Action")}
                                         </th>
                                     </tr>
@@ -548,64 +637,191 @@ const EmployeesTable = () => {
                                     {paginatedEmployees.map((employee, index) => (
                                         <tr
                                             key={employee.id}
-                                            className="transition-colors duration-200 cursor-pointer hover:shadow-sm"
+                                            className="transition-all duration-300 cursor-pointer group border-b-2"
                                             style={{
-                                                borderBottom: '1px solid var(--table-border)',
-                                                backgroundColor: index % 2 === 0 ? 'var(--table-row-bg)' : 'var(--table-row-alt-bg)'
+                                                borderColor: 'var(--border-color)',
+                                                backgroundColor: index % 2 === 0 ? 'var(--bg-color)' : 'var(--container-color)'
                                             }}
                                             onMouseEnter={(e) => {
-                                                e.currentTarget.style.backgroundColor = 'var(--table-header-bg)';
+                                                e.currentTarget.style.backgroundColor = 'var(--hover-color)';
                                             }}
                                             onMouseLeave={(e) => {
                                                 e.currentTarget.style.backgroundColor =
-                                                    index % 2 === 0 ? 'var(--table-row-bg)' : 'var(--table-row-alt-bg)';
+                                                    index % 2 === 0 ? 'var(--bg-color)' : 'var(--container-color)';
                                             }}
                                         >
-                                            <td className={`px-3 md:px-6 py-3 md:py-4 ${isArabic ? 'text-right' : 'text-left'}`}>
-                                                <div className={`flex items-center gap-2 md:gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                                                    <img
-                                                        src={employee.avatar}
-                                                        alt={employee.name}
-                                                        className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover flex-shrink-0"
-                                                        onError={(e) => {
-                                                            e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(employee.name)}&background=15919B&color=fff&size=40`;
-                                                        }}
-                                                    />
+                                            {/* Employee Info */}
+                                            <td className={`px-4 md:px-6 py-5 ${isArabic ? 'text-right' : 'text-left'}`}>
+                                                <div className={`flex items-center gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                                    <div className="relative">
+                                                        <img
+                                                            src={employee.avatar}
+                                                            alt={employee.name}
+                                                            className="w-11 h-11 rounded-full object-cover flex-shrink-0 ring-2"
+                                                            style={{ ringColor: 'var(--accent-color)' }}
+                                                            onError={(e) => {
+                                                                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(employee.name)}&background=15919B&color=fff&size=44`;
+                                                            }}
+                                                        />
+                                                        <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full gradient-bg border-2 border-white"></div>
+                                                    </div>
                                                     <div className="min-w-0 flex-1">
-                                                        <div className="text-xs md:text-sm font-medium truncate" style={{ color: 'var(--text-color)' }}>
+                                                        <div className="text-sm font-bold truncate" style={{ color: 'var(--text-color)' }}>
                                                             {employee.name}
                                                         </div>
-                                                        <div className="text-xs truncate" style={{ color: 'var(--sub-text-color)' }}>
+                                                        <div className="text-xs truncate font-medium" style={{ color: 'var(--accent-color)' }}>
                                                             {employee.employeeId}
                                                         </div>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className={`px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm ${isArabic ? 'text-right' : 'text-left'}`}
-                                                style={{ color: 'var(--sub-text-color)' }}>
-                                                <div className="truncate">{employee.position}</div>
+                                            
+                                            {/* Role - Separate Column */}
+                                            <td className={`px-4 md:px-6 py-5 text-sm ${isArabic ? 'text-right' : 'text-left'}`}>
+                                                <span
+                                                    className="inline-flex items-center px-0 py-1 rounded-full text-xs font-bold "
+                                                    style={{
+                                                        backgroundColor: 'var(--accent-color)/10',
+                                                        color: 'var(--accent-color)',
+                                                        borderColor: 'var(--accent-color)/20'
+                                                    }}
+                                                >
+                                                    {employee.role || 'N/A'}
+                                                </span>
                                             </td>
-                                            <td className={`px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm ${isArabic ? 'text-right' : 'text-left'}`}
-                                                style={{ color: 'var(--sub-text-color)' }}>
+
+                                            {/* Job Title - Separate Column */}
+                                            <td className={`px-4 md:px-6 py-5 text-sm font-semibold ${isArabic ? 'text-right' : 'text-left'}`}
+                                                style={{ color: 'var(--text-color)' }}>
+                                                {employee.position || '-'}
+                                            </td>
+
+                                            {/* Department - Separate Column with Hover Tooltip */}
+                                            <td className={`px-4 md:px-6 py-5 text-sm ${isArabic ? 'text-right' : 'text-left'}`}>
+                                                {employee.departments && employee.departments.length > 0 ? (
+                                                    <div className="relative group/dept inline-block">
+                                                        <div className="flex flex-wrap gap-1.5">
+                                                            <span 
+                                                                className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold border-2"
+                                                                style={{
+                                                                    backgroundColor: 'var(--container-color)',
+                                                                    color: 'var(--text-color)',
+                                                                    borderColor: 'var(--border-color)'
+                                                                }}
+                                                            >
+                                                                {employee.departments[0]}
+                                                            </span>
+                                                            {employee.departments.length > 1 && (
+                                                                <span 
+                                                                    className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold border-2"
+                                                                    style={{
+                                                                        backgroundColor: 'var(--accent-color)',
+                                                                        color: 'white',
+                                                                        borderColor: 'var(--accent-color)'
+                                                                    }}
+                                                                >
+                                                                    +{employee.departments.length - 1}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        {/* Hover Tooltip */}
+                                                        {employee.departments.length > 1 && (
+                                                            <div className={`absolute ${isArabic ? 'left-0' : 'right-0'} top-full mt-2 hidden group-hover/dept:block z-50 w-max max-w-xs`}>
+                                                                <div className="rounded-xl border-2 shadow-2xl p-4" style={{ backgroundColor: 'var(--bg-color)', borderColor: 'var(--accent-color)' }}>
+                                                                    <p className="text-xs font-bold mb-3 gradient-text">
+                                                                        {t("employees.allDepartments", "All Departments")}
+                                                                    </p>
+                                                                    <div className="space-y-2">
+                                                                        {employee.departments.map((dept, idx) => (
+                                                                            <div key={idx} className="flex items-center gap-2">
+                                                                                <span className="w-2 h-2 rounded-full gradient-bg" />
+                                                                                <span className="text-sm font-medium" style={{ color: 'var(--text-color)' }}>{dept}</span>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-sm" style={{ color: 'var(--sub-text-color)' }}>-</span>
+                                                )}
+                                            </td>
+
+                                            {/* Team - Separate Column with Hover Tooltip */}
+                                            <td className={`px-4 md:px-6 py-5 text-sm ${isArabic ? 'text-right' : 'text-left'}`}>
+                                                {employee.teams && employee.teams.length > 0 ? (
+                                                    <div className="relative group/team inline-block">
+                                                        <div className="flex flex-wrap gap-1.5">
+                                                            <span 
+                                                                className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold border-2"
+                                                                style={{
+                                                                    backgroundColor: 'var(--container-color)',
+                                                                    color: 'var(--text-color)',
+                                                                    borderColor: 'var(--border-color)'
+                                                                }}
+                                                            >
+                                                                {employee.teams[0]}
+                                                            </span>
+                                                            {employee.teams.length > 1 && (
+                                                                <span 
+                                                                    className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold border-2"
+                                                                    style={{
+                                                                        backgroundColor: 'var(--accent-color)',
+                                                                        color: 'white',
+                                                                        borderColor: 'var(--accent-color)'
+                                                                    }}
+                                                                >
+                                                                    +{employee.teams.length - 1}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        {/* Hover Tooltip */}
+                                                        {employee.teams.length > 1 && (
+                                                            <div className={`absolute ${isArabic ? 'left-0' : 'right-0'} top-full mt-2 hidden group-hover/team:block z-50 w-max max-w-xs`}>
+                                                                <div className="rounded-xl border-2 shadow-2xl p-4" style={{ backgroundColor: 'var(--bg-color)', borderColor: 'var(--accent-color)' }}>
+                                                                    <p className="text-xs font-bold mb-3 gradient-text">
+                                                                        {t("employees.allTeams", "All Teams")}
+                                                                    </p>
+                                                                    <div className="space-y-2">
+                                                                        {employee.teams.map((team, idx) => (
+                                                                            <div key={idx} className="flex items-center gap-2">
+                                                                                <span className="w-2 h-2 rounded-full gradient-bg" />
+                                                                                <span className="text-sm font-medium" style={{ color: 'var(--text-color)' }}>{team}</span>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-sm" style={{ color: 'var(--sub-text-color)' }}>-</span>
+                                                )}
+                                            </td>
+
+                                            {/* Join Date */}
+                                            <td className={`px-4 md:px-6 py-5 text-sm font-medium ${isArabic ? 'text-right' : 'text-left'}`}
+                                                style={{ color: 'var(--accent-color)' }}>
                                                 {employee.joinDate}
                                             </td>
-                                            <td className={`px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm ${isArabic ? 'text-right' : 'text-left'}`}
-                                                style={{ color: 'var(--sub-text-color)' }}>
-                                                <div className="truncate">{employee.department}</div>
-                                            </td>
-                                            <td className={`px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm ${isArabic ? 'text-right' : 'text-left'}`}>
+
+                                            {/* Status */}
+                                            <td className={`px-4 md:px-6 py-5 ${isArabic ? 'text-right' : 'text-left'}`}>
                                                 <span
-                                                    className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${employee.status === "Active"
-                                                        ? 'bg-green-100 text-green-700'
+                                                    className={`px-3 py-1.5 rounded-full text-xs font-bold border-2 shadow-sm ${employee.status === "Active"
+                                                        ? 'bg-green-100 text-green-700 border-green-200'
                                                         : employee.status === "Inactive"
-                                                            ? 'bg-red-100 text-red-700'
-                                                            : 'bg-yellow-100 text-yellow-700'
+                                                            ? 'bg-red-100 text-red-700 border-red-200'
+                                                            : 'bg-yellow-100 text-yellow-700 border-yellow-200'
                                                         }`}
                                                 >
                                                     {employee.status}
                                                 </span>
                                             </td>
-                                            <td className={`px-3 md:px-6 py-3 md:py-4 ${isArabic ? 'text-right' : 'text-left'}`}>
+
+                                            {/* Actions */}
+                                            <td className={`px-4 md:px-6 py-5 ${isArabic ? 'text-right' : 'text-left'}`}>
                                                 <ActionButtons employee={employee} />
                                             </td>
                                         </tr>
