@@ -1114,6 +1114,7 @@
     "permissions": "Permissions",
     "permissionsDescription": "Select the permissions you want to assign to this role",
     "permissionsSelected": "permissions selected",
+    "selectAll": "Select All",
     "basicInformation": "Basic Information",
     "basicInformationDesc": "Enter role name and description",
     "save": "Save",

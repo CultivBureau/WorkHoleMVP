@@ -890,6 +890,7 @@
     "permissions": "الصلاحيات",
     "permissionsDescription": "اختر الصلاحيات التي تريد تخصيصها لهذا الدور",
     "permissionsSelected": "صلاحيات محددة",
+    "selectAll": "تحديد الكل",
     "basicInformation": "المعلومات الأساسية",
     "basicInformationDesc": "أدخل اسم الدور والوصف",
     "save": "حفظ",

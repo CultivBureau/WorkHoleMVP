@@ -77,6 +77,41 @@ const NewRoleForm = () => {
         });
     };
 
+    const handleCategorySelectAll = (category) => {
+        const categoryPermissions = groupedPermissions[category] || [];
+        const categoryPermissionIds = categoryPermissions.map(p => p.id);
+        const allSelected = categoryPermissionIds.every(id => formData.selectedPermissionIds.includes(id));
+
+        setFormData(prev => {
+            if (allSelected) {
+                // Deselect all permissions in this category
+                return {
+                    ...prev,
+                    selectedPermissionIds: prev.selectedPermissionIds.filter(id => !categoryPermissionIds.includes(id))
+                };
+            } else {
+                // Select all permissions in this category
+                const newIds = [...prev.selectedPermissionIds];
+                categoryPermissionIds.forEach(id => {
+                    if (!newIds.includes(id)) {
+                        newIds.push(id);
+                    }
+                });
+                return {
+                    ...prev,
+                    selectedPermissionIds: newIds
+                };
+            }
+        });
+    };
+
+    const isCategoryAllSelected = (category) => {
+        const categoryPermissions = groupedPermissions[category] || [];
+        if (categoryPermissions.length === 0) return false;
+        const categoryPermissionIds = categoryPermissions.map(p => p.id);
+        return categoryPermissionIds.every(id => formData.selectedPermissionIds.includes(id));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         
@@ -301,18 +336,32 @@ const NewRoleForm = () => {
                                         borderColor: "var(--border-color)"
                                     }}
                                 >
-                                    <div className={`flex items-center gap-2 mb-3 pb-2 ${isArabic ? 'flex-row-reverse' : ''}`} style={{ borderBottom: "1px solid var(--divider-color)" }}>
-                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--accent-color)20" }}>
-                                            <svg className="w-4 h-4" style={{ color: "var(--accent-color)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-                                            </svg>
+                                    <div className={`flex items-center justify-between gap-2 mb-3 pb-2 ${isArabic ? 'flex-row-reverse' : ''}`} style={{ borderBottom: "1px solid var(--divider-color)" }}>
+                                        <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--accent-color)20" }}>
+                                                <svg className="w-4 h-4" style={{ color: "var(--accent-color)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                                                </svg>
+                                            </div>
+                                            <h3 
+                                                className={`text-sm font-bold text-[var(--text-color)] ${isArabic ? 'text-right' : 'text-left'}`}
+                                                dir={isArabic ? 'rtl' : 'ltr'}
+                                            >
+                                                {categoryDisplayNames[category] || category}
+                                            </h3>
                                         </div>
-                                        <h3 
-                                            className={`text-sm font-bold text-[var(--text-color)] ${isArabic ? 'text-right' : 'text-left'}`}
-                                            dir={isArabic ? 'rtl' : 'ltr'}
-                                        >
-                                            {categoryDisplayNames[category] || category}
-                                        </h3>
+                                        <label className={`flex items-center gap-2 cursor-pointer ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                            <input
+                                                type="checkbox"
+                                                checked={isCategoryAllSelected(category)}
+                                                onChange={() => handleCategorySelectAll(category)}
+                                                className="w-4 h-4 rounded border-2 border-[var(--border-color)] cursor-pointer"
+                                                style={{ accentColor: 'var(--accent-color)' }}
+                                            />
+                                            <span className={`text-xs text-[var(--sub-text-color)] font-medium ${isArabic ? 'text-right' : 'text-left'}`} dir={isArabic ? 'rtl' : 'ltr'}>
+                                                {t('roles.selectAll') || 'Select All'}
+                                            </span>
+                                        </label>
                                     </div>
                                     <div className="space-y-2">
                                         {groupedPermissions[category].map(permission => (

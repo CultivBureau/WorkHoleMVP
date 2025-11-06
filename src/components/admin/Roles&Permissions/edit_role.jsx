@@ -106,6 +106,41 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
         });
     };
 
+    const handleCategorySelectAll = (category) => {
+        const categoryPermissions = groupedPermissions[category] || [];
+        const categoryPermissionIds = categoryPermissions.map(p => p.id);
+        const allSelected = categoryPermissionIds.every(id => formData.selectedPermissionIds.includes(id));
+
+        setFormData(prev => {
+            if (allSelected) {
+                // Deselect all permissions in this category
+                return {
+                    ...prev,
+                    selectedPermissionIds: prev.selectedPermissionIds.filter(id => !categoryPermissionIds.includes(id))
+                };
+            } else {
+                // Select all permissions in this category
+                const newIds = [...prev.selectedPermissionIds];
+                categoryPermissionIds.forEach(id => {
+                    if (!newIds.includes(id)) {
+                        newIds.push(id);
+                    }
+                });
+                return {
+                    ...prev,
+                    selectedPermissionIds: newIds
+                };
+            }
+        });
+    };
+
+    const isCategoryAllSelected = (category) => {
+        const categoryPermissions = groupedPermissions[category] || [];
+        if (categoryPermissions.length === 0) return false;
+        const categoryPermissionIds = categoryPermissions.map(p => p.id);
+        return categoryPermissionIds.every(id => formData.selectedPermissionIds.includes(id));
+    };
+
     const handleSave = async () => {
         if (!roleData?.id) return;
 
@@ -201,12 +236,28 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                             {Object.keys(groupedPermissions).map(category => (
                                 <div key={category} className="space-y-3">
                                     <div>
-                                        <h3 
-                                            className={`text-sm font-semibold text-[var(--text-color)] pb-2 ${isArabic ? 'text-right' : 'text-left'}`}
-                                            dir={isArabic ? 'rtl' : 'ltr'}
-                                        >
-                                            {categoryDisplayNames[category] || category}
-                                        </h3>
+                                        <div className={`flex items-center justify-between pb-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                            <h3 
+                                                className={`text-sm font-semibold text-[var(--text-color)] ${isArabic ? 'text-right' : 'text-left'}`}
+                                                dir={isArabic ? 'rtl' : 'ltr'}
+                                            >
+                                                {categoryDisplayNames[category] || category}
+                                            </h3>
+                                            <label className={`flex items-center gap-2 cursor-pointer ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isCategoryAllSelected(category)}
+                                                    onChange={() => handleCategorySelectAll(category)}
+                                                    className="w-4 h-4 rounded border-2 border-[var(--border-color)] text-[var(--accent-color)] focus:ring-[var(--accent-color)] focus:ring-2 checked:bg-[var(--accent-color)] checked:border-[var(--accent-color)]"
+                                                    style={{
+                                                        accentColor: 'var(--accent-color)'
+                                                    }}
+                                                />
+                                                <span className={`text-xs text-[var(--sub-text-color)] font-medium ${isArabic ? 'text-right' : 'text-left'}`} dir={isArabic ? 'rtl' : 'ltr'}>
+                                                    {t('roles.selectAll') || 'Select All'}
+                                                </span>
+                                            </label>
+                                        </div>
                                         <div className="w-full h-px bg-[var(--border-color)]"></div>
                                     </div>
                                     <div className="space-y-2">
@@ -305,12 +356,28 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                 {Object.keys(groupedPermissions).map(category => (
                     <div key={category} className="space-y-3">
                         <div>
-                            <h3 
-                                className={`text-sm font-semibold text-[var(--text-color)] pb-2 ${isArabic ? 'text-right' : 'text-left'}`}
-                                dir={isArabic ? 'rtl' : 'ltr'}
-                            >
-                                {categoryDisplayNames[category] || category}
-                            </h3>
+                            <div className={`flex items-center justify-between pb-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                <h3 
+                                    className={`text-sm font-semibold text-[var(--text-color)] ${isArabic ? 'text-right' : 'text-left'}`}
+                                    dir={isArabic ? 'rtl' : 'ltr'}
+                                >
+                                    {categoryDisplayNames[category] || category}
+                                </h3>
+                                <label className={`flex items-center gap-2 cursor-pointer ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                    <input
+                                        type="checkbox"
+                                        checked={isCategoryAllSelected(category)}
+                                        onChange={() => handleCategorySelectAll(category)}
+                                        className="w-4 h-4 rounded border-2 border-[var(--border-color)] text-[var(--accent-color)] focus:ring-[var(--accent-color)] focus:ring-2 checked:bg-[var(--accent-color)] checked:border-[var(--accent-color)]"
+                                        style={{
+                                            accentColor: 'var(--accent-color)'
+                                        }}
+                                    />
+                                    <span className={`text-xs text-[var(--sub-text-color)] font-medium ${isArabic ? 'text-right' : 'text-left'}`} dir={isArabic ? 'rtl' : 'ltr'}>
+                                        {t('roles.selectAll') || 'Select All'}
+                                    </span>
+                                </label>
+                            </div>
                             <div className="w-full h-px bg-[var(--border-color)]"></div>
                         </div>
                         <div className="space-y-2">
