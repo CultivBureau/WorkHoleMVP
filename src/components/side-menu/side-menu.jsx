@@ -448,18 +448,8 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
   const { isAdmin, isLoading, permissions: userPermissions } = usePermissions();
   const backendPermissionCodes = getPermissions() || []; // Get backend codes for menu filtering
   
-  // Wait for permissions to load
-  if (isLoading) {
-    return null; // Don't show anything while loading
-  }
-  
-  // If user is admin, show admin sidebar instead
-  // Admin sidebar will show user menu items based on permissions
-  if (isAdmin()) {
-    return <SideBarAdmin isMobileOpen={isMobileOpen} onMobileClose={onMobileClose} />;
-  }
-  
   // Get all admin menu items filtered by backend permissions
+  // This hook must be called before any early returns
   const allAdminMenuItems = useMemo(() => {
     // Admin has their own sidebar, so don't show these here
     if (isAdmin()) {
@@ -485,17 +475,6 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
   const hideToast = () => {
     setToastVisible(false);
   };
-
-  // Add temporary button to test mobile sidebar (remove this after fixing)
-  useEffect(() => {
-    const handleKeyPress = (e) => {
-      if (e.key === 'm' && e.ctrlKey) {
-        setTempMobileOpen(!tempMobileOpen);
-      }
-    };
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [tempMobileOpen]);
 
   // تحديد الـ active بناءً على الـ route الحالي
   const getActiveKey = () => {
@@ -523,6 +502,17 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
     return "";
   };
   const active = getActiveKey();
+
+  // Add temporary button to test mobile sidebar (remove this after fixing)
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === 'm' && e.ctrlKey) {
+        setTempMobileOpen(!tempMobileOpen);
+      }
+    };
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [tempMobileOpen]);
 
   // فتح dropdown تلقائي لو كنت على time_tracking أو أي صفحة من children بتوعها
   useEffect(() => {
@@ -557,6 +547,17 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
       // Ignore errors
     }
   }, [theme]);
+  
+  // Wait for permissions to load
+  if (isLoading) {
+    return null; // Don't show anything while loading
+  }
+  
+  // If user is admin, show admin sidebar instead
+  // Admin sidebar will show user menu items based on permissions
+  if (isAdmin()) {
+    return <SideBarAdmin isMobileOpen={isMobileOpen} onMobileClose={onMobileClose} />;
+  }
 
   // تعديل دالة onClick:
   const handleMenuClick = (key) => {
