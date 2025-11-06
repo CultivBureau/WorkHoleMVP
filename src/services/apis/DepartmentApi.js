@@ -7,14 +7,21 @@ export const departmentApi = createApi({
   endpoints: (builder) => ({
     // Get all departments (paginated)
     getAllDepartments: builder.query({
-      query: ({ pageNumber = 1, pageSize = 20 } = {}) => ({
-        url: "/api/v1/Department/GetAll",
-        method: "GET",
-        params: {
+      query: ({ pageNumber = 1, pageSize = 20, status } = {}) => {
+        const params = {
           pageNumber,
           pageSize,
-        },
-      }),
+        };
+        // Add status filter if provided ("active", "inactive", or undefined for all)
+        if (status !== undefined && status !== null) {
+          params.status = status;
+        }
+        return {
+          url: "/api/v1/Department/GetAll",
+          method: "GET",
+          params,
+        };
+      },
       providesTags: (result) => [{ type: "Departments", id: "LIST" }],
     }),
 

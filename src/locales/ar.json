@@ -30,6 +30,7 @@
     "all_departments": "جميع الأقسام",
     "new_department": "قسم جديد",
     "break": "إدارة الاستراحات",
+    "shifts": "الورديات",
     "all_teams": "جميع الفرق",
     "admin_new_department": "قسم جديد",
     "admin_new_role": "دور جديد",
@@ -1440,6 +1441,117 @@
       "overWeek": "خلال الأسبوع",
       "overMonth": "خلال الشهر",
       "overYear": "خلال السنة"
+    }
+  },
+  "shifts": {
+    "addNewShift": "إضافة وردية جديدة",
+    "loading": "جاري تحميل الورديات...",
+    "search": {
+      "placeholder": "ابحث عن الورديات..."
+    },
+    "filter": {
+      "all": "الكل",
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "actions": {
+      "view": "عرض التفاصيل",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "restore": "استعادة"
+    },
+    "location": {
+      "enabled": "الموقع مطلوب"
+    },
+    "details": {
+      "workingHours": "ساعات العمل",
+      "workingDays": "أيام العمل"
+    },
+    "gracePeriod": "فترة السماح",
+    "minutes": "دقائق",
+    "overtime": "العمل الإضافي",
+    "hours": "ساعات",
+    "empty": {
+      "title": "لم يتم العثور على ورديات",
+      "search": "لا توجد ورديات تطابق \"{{searchTerm}}\". حاول تعديل البحث.",
+      "message": "لا توجد ورديات متاحة في الوقت الحالي."
+    },
+    "results": "عرض {{count}} وردية {{status}}{{plural}}",
+    "resultsActive": "نشطة",
+    "resultsInactive": "غير نشطة",
+    "resultsPlural": "",
+    "resultsSingular": "",
+    "delete": {
+      "confirm": "هل أنت متأكد من رغبتك في حذف هذه الوردية؟",
+      "success": "تم حذف الوردية بنجاح",
+      "error": "فشل حذف الوردية"
+    },
+    "restore": {
+      "confirm": "هل أنت متأكد من رغبتك في استعادة هذه الوردية؟",
+      "success": "تم استعادة الوردية بنجاح",
+      "error": "فشل استعادة الوردية"
+    },
+    "validation": {
+      "companyIdRequired": "معرف الشركة مطلوب",
+      "timeRequired": "وقت البدء ووقت الانتهاء مطلوبان",
+      "nameRequired": "اسم الوردية مطلوب",
+      "locationFieldsRequired": "خط العرض وخط الطول ونصف القطر مطلوبة عند تفعيل الموقع",
+      "workDaysRequired": "يجب اختيار يوم عمل واحد على الأقل"
+    },
+    "days": {
+      "monday": "الاثنين",
+      "tuesday": "الثلاثاء",
+      "wednesday": "الأربعاء",
+      "thursday": "الخميس",
+      "friday": "الجمعة",
+      "saturday": "السبت",
+      "sunday": "الأحد"
+    },
+    "form": {
+      "name": "اسم الوردية",
+      "namePlaceholder": "أدخل اسم الوردية",
+      "gracePeriodMinutes": "فترة السماح (بالدقائق)",
+      "gracePeriodMinutesPlaceholder": "أدخل فترة السماح بالدقائق",
+      "hasLocation": "يتطلب الموقع",
+      "yes": "نعم",
+      "no": "لا",
+      "latitude": "خط العرض",
+      "latitudePlaceholder": "أدخل خط العرض",
+      "longitude": "خط الطول",
+      "longitudePlaceholder": "أدخل خط الطول",
+      "radius": "نصف القطر (بالمتر)",
+      "radiusPlaceholder": "أدخل نصف القطر",
+      "hasOvertime": "تفعيل العمل الإضافي",
+      "maxOvertime": "الحد الأقصى للعمل الإضافي (بالساعات)",
+      "maxOvertimePlaceholder": "أدخل الحد الأقصى لساعات العمل الإضافي",
+      "startTime": "وقت البدء",
+      "endTime": "وقت الانتهاء",
+      "isFaceRecognition": "التعرف على الوجه",
+      "isDevice": "فحص الجهاز",
+      "workDays": "أيام العمل",
+      "close": "إغلاق",
+      "cancel": "إلغاء",
+      "update": "تحديث الوردية",
+      "updating": "جاري التحديث...",
+      "create": "إنشاء وردية",
+      "creating": "جاري الإنشاء...",
+      "success": "تم إنشاء الوردية بنجاح!",
+      "error": "فشل إنشاء الوردية",
+      "updateSuccess": "تم تحديث الوردية بنجاح!",
+      "updateError": "فشل تحديث الوردية"
+    },
+    "addShift": {
+      "title": "إضافة وردية جديدة"
+    },
+    "editShift": {
+      "title": "تعديل الوردية"
+    },
+    "viewShift": {
+      "title": "عرض تفاصيل الوردية"
     }
   }
 }

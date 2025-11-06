@@ -48,6 +48,7 @@ const RolesAndPermissions = lazy(() => import("./pages/admin/Roles&Permissions/p
 const NewRole = lazy(() => import("./pages/admin/New_Role/page"));
 const AdminTeamWallet = lazy(() => import("./pages/admin/TeamWallet/page"));
 const Company = lazy(() => import("./pages/admin/company/page"));
+const AllShifts = lazy(() => import("./pages/admin/shifts/page"));
 
 function App() {
   useTokenRefresh();
@@ -268,6 +269,16 @@ function App() {
                             <Company />
                           </Suspense>
                         </PermissionGuard>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/pages/admin/shifts"
+                    element={
+                      <ProtectedRoute>
+                        <Suspense fallback={<Loading />}>
+                          <AllShifts />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />
