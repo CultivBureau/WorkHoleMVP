@@ -9,7 +9,6 @@ import { userApi } from "../services/apis/UserApi";
 import { leaveApi } from "../services/apis/LeaveApi";
 import { permissionApi } from "../services/apis/PermissionApi";
 import { breakApi } from "../services/apis/BreakApi";
-import { userApi } from "../services/apis/UserApi";
 
 export const store = configureStore({
   reducer: {
@@ -23,8 +22,6 @@ export const store = configureStore({
     [leaveApi.reducerPath]: leaveApi.reducer,
     [permissionApi.reducerPath]: permissionApi.reducer,
     [breakApi.reducerPath]: breakApi.reducer,
-    [userApi.reducerPath]: userApi.reducer,
-  
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -40,8 +37,6 @@ export const store = configureStore({
       leaveApi.middleware,
       permissionApi.middleware,
       breakApi.middleware,
-      userApi.middleware,
-      
     ),
 });
 

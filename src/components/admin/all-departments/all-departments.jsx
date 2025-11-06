@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Search, Plus, Filter } from "lucide-react";
 import DepartmentCard from "./department-card";
 import { useGetAllDepartmentsQuery } from "../../../services/apis/DepartmentApi";
-import { useGetAllTeamsQuery } from "../../../services/apis/TeamApi";
+import { useGetTeamsByDepartmentQuery } from "../../../services/apis/TeamApi";
 
 export default function AllDepartments() {
     const { t, i18n } = useTranslation();
@@ -28,25 +28,18 @@ export default function AllDepartments() {
     }, [statusFilter]);
     
     const { data, isLoading, isError, refetch } = useGetAllDepartmentsQuery(queryArgs);
-    const { data: teamsData } = useGetAllTeamsQuery({ pageNumber: 1, pageSize: 100 });
     
     const departmentsFromApi = useMemo(() => {
         const items = data?.value || data?.data || data?.items || data || [];
         return Array.isArray(items) ? items : [];
     }, [data]);
 
-    const teamsFromApi = useMemo(() => {
-        const items = teamsData?.value || teamsData?.data || teamsData?.items || teamsData || [];
-        return Array.isArray(items) ? items : [];
-    }, [teamsData]);
-
     // Map to card-safe structure (fallbacks for legacy UI fields)
     const mapped = useMemo(() => (
         departmentsFromApi.map((d) => {
-            // Filter teams for this department
-            const departmentTeams = teamsFromApi.filter(team => 
-                team.departmentId === d.id || team.department?.id === d.id
-            ).map(team => {
+            // Teams may come from API response, or DepartmentCard will fetch them per department
+            // If teams are included in department response, use them; otherwise empty array
+            const departmentTeams = (d.teams || []).map(team => {
                 // Extract team leader information from new API structure
                 const teamLeader = team.teamLeader || team.teamLead || null;
                 const teamLeaderName = teamLeader 
@@ -82,10 +75,10 @@ export default function AllDepartments() {
                 deleted: d.deleted,
                 totalMembers: d.totalMembers || 0,
                 memberAvatars: [],
-                teams: departmentTeams,
+                teams: departmentTeams, // May be empty - DepartmentCard will fetch teams per department
             };
         })
-    ), [departmentsFromApi, teamsFromApi]);
+    ), [departmentsFromApi]);
 
     // Filter departments by search term only (status filtering is done by API)
     const filteredDepartments = useMemo(() => {

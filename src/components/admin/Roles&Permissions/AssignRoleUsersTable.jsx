@@ -5,7 +5,7 @@ import { UserPlus, UserMinus, Search, Users } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useGetAllUsersQuery } from "../../../services/apis/UserApi"
 import { useGetAllDepartmentsQuery } from "../../../services/apis/DepartmentApi"
-import { useGetAllTeamsQuery, useGetTeamsByDepartmentQuery } from "../../../services/apis/TeamApi"
+import { useGetTeamsByDepartmentQuery } from "../../../services/apis/TeamApi"
 import { useAssignUserToRoleMutation, useRemoveUserFromRoleMutation, useGetRoleByIdQuery, useGetRoleUsersQuery } from "../../../services/apis/RoleApi"
 import { useGetAllRolesQuery } from "../../../services/apis/RoleApi"
 import toast from "react-hot-toast"
@@ -61,7 +61,6 @@ const AssignRoleUsersTable = ({ roleId, roleName }) => {
     
     // Fetch departments and teams for filters
     const { data: departmentsResponse } = useGetAllDepartmentsQuery({ pageNumber: 1, pageSize: 100 });
-    const { data: teamsResponse } = useGetAllTeamsQuery({ pageNumber: 1, pageSize: 100 });
     const { data: departmentTeamsResponse } = useGetTeamsByDepartmentQuery(selectedDepartment, { 
         skip: selectedDepartment === "all" 
     });
@@ -116,12 +115,8 @@ const AssignRoleUsersTable = ({ roleId, roleName }) => {
                 name: team.name
             }));
         }
-        if (!teamsResponse?.value) return [];
-        return teamsResponse.value.map(team => ({
-            id: team.id,
-            name: team.name
-        }));
-    }, [selectedDepartment, departmentTeamsResponse, teamsResponse]);
+        return [];
+    }, [selectedDepartment, departmentTeamsResponse]);
 
     // Check if user has this role - check against role name in user.roles array
     const userHasRole = (user) => {
