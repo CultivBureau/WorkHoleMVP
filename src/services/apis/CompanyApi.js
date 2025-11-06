@@ -28,6 +28,38 @@ export const companyApi = createApi({
       }),
       invalidatesTags: ["Company"],
     }),
+    updateCompanyDetails: builder.mutation({
+      query: ({ companyId, name, attachments }) => {
+        const formData = new FormData();
+        
+        // Add company name - API expects "Name" with capital N
+        if (name) {
+          formData.append("Name", name);
+        }
+        
+        // Add attachments array
+        if (attachments && Array.isArray(attachments)) {
+          attachments.forEach((attachment, index) => {
+            if (attachment.id !== undefined && attachment.id !== null) {
+              formData.append(`Attachments[${index}].id`, attachment.id.toString());
+            }
+            if (attachment.file) {
+              formData.append(`Attachments[${index}].file`, attachment.file);
+            }
+            if (attachment.expiryDate) {
+              formData.append(`Attachments[${index}].expiryDate`, attachment.expiryDate);
+            }
+          });
+        }
+        
+        return {
+          url: `/api/v1/Company/UpdateDetails/${companyId}/details`,
+          method: "PUT",
+          body: formData,
+        };
+      },
+      invalidatesTags: ["Company"],
+    }),
   }),
 });
 
@@ -35,4 +67,5 @@ export const {
   useGetUserCompaniesByEmailMutation,
   useGetCompanyByIdQuery,
   useUpdateCompanyMutation,
+  useUpdateCompanyDetailsMutation,
 } = companyApi;

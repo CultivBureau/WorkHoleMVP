@@ -1,45 +1,134 @@
-import { useState } from "react";
-import { useGetCompanyByIdQuery, useUpdateCompanyMutation } from "../../../services/apis/CompanyApi";
+import { useState, useEffect } from "react";
+import { useGetCompanyByIdQuery, useUpdateCompanyDetailsMutation } from "../../../services/apis/CompanyApi";
 import { getCompanyId } from "../../../utils/page";
 import { useTranslation } from "react-i18next";
+import { Edit, Save, X, Upload, File, Calendar } from "lucide-react";
+import toast from "react-hot-toast";
 
 const CompanyDetailsCard = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === "ar";
   const companyId = getCompanyId();
   const [isEditing, setIsEditing] = useState(false);
   const [companyName, setCompanyName] = useState("");
+  const [attachments, setAttachments] = useState([]);
 
   const { data: companyData, isLoading, error, refetch } = useGetCompanyByIdQuery(companyId, {
     skip: !companyId,
   });
 
-  const [updateCompany, { isLoading: isUpdating }] = useUpdateCompanyMutation();
+  const [updateCompanyDetails, { isLoading: isUpdating }] = useUpdateCompanyDetailsMutation();
 
   const company = companyData?.value;
 
-  // Update local state when company data loads
-  if (company && companyName === "" && !isEditing) {
-    setCompanyName(company.name);
-  }
+  // Initialize state when company data loads
+  useEffect(() => {
+    if (company && !isEditing) {
+      setCompanyName(company.name || "");
+      // Initialize attachments from companyAttachment
+      if (company.companyAttachment?.attachments && company.companyAttachment.attachments.length > 0) {
+        setAttachments(
+          company.companyAttachment.attachments.map((att) => ({
+            id: att.id,
+            file: null, // No file initially, only when user uploads new one
+            expiryDate: att.expiryDate || "",
+            filePath: att.filePath, // Keep original file path for display
+            fileContent: att.fileContent, // Keep original file content for display
+          }))
+        );
+      } else {
+        setAttachments([]);
+      }
+    }
+  }, [company?.id, isEditing]);
 
   const handleEdit = () => {
     setIsEditing(true);
-    setCompanyName(company.name);
+    setCompanyName(company.name || "");
+    if (company.companyAttachment?.attachments) {
+      setAttachments(
+        company.companyAttachment.attachments.map((att) => ({
+          id: att.id,
+          file: null,
+          expiryDate: att.expiryDate || "",
+          filePath: att.filePath,
+          fileContent: att.fileContent,
+        }))
+      );
+    } else {
+      setAttachments([]);
+    }
   };
 
   const handleCancel = () => {
     setIsEditing(false);
-    setCompanyName(company.name);
+    setCompanyName(company.name || "");
+    if (company.companyAttachment?.attachments) {
+      setAttachments(
+        company.companyAttachment.attachments.map((att) => ({
+          id: att.id,
+          file: null,
+          expiryDate: att.expiryDate || "",
+          filePath: att.filePath,
+          fileContent: att.fileContent,
+        }))
+      );
+    } else {
+      setAttachments([]);
+    }
   };
 
   const handleSave = async () => {
     try {
-      await updateCompany({ companyId, name: companyName }).unwrap();
+      await updateCompanyDetails({
+        companyId,
+        name: companyName,
+        attachments: attachments.map((att) => ({
+          id: att.id,
+          file: att.file,
+          expiryDate: att.expiryDate,
+        })),
+      }).unwrap();
+      
       setIsEditing(false);
+      toast.success(t("company.updateSuccess", "Company details updated successfully"));
       refetch();
     } catch (error) {
       console.error("Failed to update company:", error);
+      toast.error(t("company.updateError", "Failed to update company details"));
     }
+  };
+
+  const handleAttachmentFileChange = (index, file) => {
+    const newAttachments = [...attachments];
+    newAttachments[index] = {
+      ...newAttachments[index],
+      file: file,
+    };
+    setAttachments(newAttachments);
+  };
+
+  const handleAttachmentExpiryChange = (index, expiryDate) => {
+    const newAttachments = [...attachments];
+    newAttachments[index] = {
+      ...newAttachments[index],
+      expiryDate: expiryDate,
+    };
+    setAttachments(newAttachments);
+  };
+
+  const handleAttachmentIdChange = (index, id) => {
+    const newAttachments = [...attachments];
+    newAttachments[index] = {
+      ...newAttachments[index],
+      id: id ? parseInt(id) : null,
+    };
+    setAttachments(newAttachments);
+  };
+
+  const removeAttachment = (index) => {
+    const newAttachments = attachments.filter((_, i) => i !== index);
+    setAttachments(newAttachments);
   };
 
   const getPlanTypeName = (planType) => {
@@ -62,13 +151,24 @@ const CompanyDetailsCard = () => {
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
+    if (!dateString || dateString === "0001-01-01T00:00:00") return "N/A";
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "N/A";
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
     });
+  };
+
+  const formatExpiryDate = (dateString) => {
+    if (!dateString) return "";
+    // Handle MM/DD/YYYY format
+    if (dateString.includes("/")) {
+      const [month, day, year] = dateString.split("/");
+      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    }
+    return dateString;
   };
 
   const calculateDaysRemaining = (endDate) => {
@@ -115,6 +215,12 @@ const CompanyDetailsCard = () => {
   }
 
   const daysRemaining = calculateDaysRemaining(company.endPlanDate);
+  const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const getFileUrl = (filePath) => {
+    if (!filePath) return null;
+    if (filePath.startsWith("http")) return filePath;
+    return `${baseUrl}${filePath}`;
+  };
 
   return (
     <div className="w-full p-6 space-y-6">
@@ -166,17 +272,16 @@ const CompanyDetailsCard = () => {
                       disabled={isUpdating || !companyName.trim()}
                       className="btn-primary whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      {isUpdating ? "Saving..." : "Save"}
+                      <Save className="w-5 h-5" />
+                      {isUpdating ? t("company.saving", "Saving...") : t("company.save", "Save")}
                     </button>
                     <button
                       onClick={handleCancel}
                       disabled={isUpdating}
-                      className="btn-secondary whitespace-nowrap disabled:opacity-50"
+                      className="btn-secondary whitespace-nowrap disabled:opacity-50 flex items-center gap-2"
                     >
-                      Cancel
+                      <X className="w-5 h-5" />
+                      {t("company.cancel", "Cancel")}
                     </button>
                   </div>
                 </div>
@@ -189,10 +294,8 @@ const CompanyDetailsCard = () => {
                     onClick={handleEdit}
                     className="btn-primary flex items-center gap-2"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    Edit Name
+                    <Edit className="w-5 h-5" />
+                    {t("company.edit", "Edit Details")}
                   </button>
                 </div>
               )}
@@ -317,6 +420,170 @@ const CompanyDetailsCard = () => {
               {company.id}
             </p>
           </div>
+        </div>
+
+        {/* Attachments Section */}
+        <div className="mt-8 pt-6" style={{ borderTop: "2px solid var(--divider-color)" }}>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-bold" style={{ color: "var(--text-color)" }}>
+              {t("company.attachments", "Company Attachments")}
+            </h3>
+          </div>
+
+          {attachments.length === 0 ? (
+            <div className="text-center py-8">
+              <File className="w-12 h-12 mx-auto mb-3" style={{ color: "var(--sub-text-color)" }} />
+              <p style={{ color: "var(--sub-text-color)" }}>
+                {t("company.noAttachments", "No attachments available")}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {attachments.map((attachment, index) => (
+                <div
+                  key={index}
+                  className="rounded-xl p-4 border"
+                  style={{
+                    background: "var(--container-color)",
+                    borderColor: "var(--border-color)",
+                  }}
+                >
+                  <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
+                    {/* File Display/Upload */}
+                    <div className="flex-1">
+                      {isEditing ? (
+                        <div className="space-y-2">
+                          <label className="block text-sm font-semibold mb-2" style={{ color: "var(--sub-text-color)" }}>
+                            {t("company.file", "File")}
+                          </label>
+                          <div className="flex items-center gap-2">
+                            {attachment.file ? (
+                              <span className="text-sm" style={{ color: "var(--text-color)" }}>
+                                {attachment.file.name}
+                              </span>
+                            ) : attachment.filePath ? (
+                              <a
+                                href={getFileUrl(attachment.filePath)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm flex items-center gap-2"
+                                style={{ color: "var(--accent-color)" }}
+                              >
+                                <File className="w-4 h-4" />
+                                {attachment.filePath.split("/").pop()}
+                              </a>
+                            ) : (
+                              <span className="text-sm" style={{ color: "var(--sub-text-color)" }}>
+                                {t("company.noFile", "No file")}
+                              </span>
+                            )}
+                            <label className="cursor-pointer">
+                              <input
+                                type="file"
+                                className="hidden"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) handleAttachmentFileChange(index, file);
+                                }}
+                              />
+                              <span className="btn-secondary text-sm flex items-center gap-2 px-3 py-1">
+                                <Upload className="w-4 h-4" />
+                                {attachment.file || attachment.filePath ? t("company.changeFile", "Change") : t("company.uploadFile", "Upload")}
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          {attachment.filePath ? (
+                            <a
+                              href={getFileUrl(attachment.filePath)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-sm font-medium"
+                              style={{ color: "var(--accent-color)" }}
+                            >
+                              <File className="w-4 h-4" />
+                              {attachment.filePath.split("/").pop()}
+                            </a>
+                          ) : (
+                            <span className="text-sm" style={{ color: "var(--sub-text-color)" }}>
+                              {t("company.noFile", "No file")}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Attachment ID */}
+                    {isEditing && (
+                      <div className="w-full md:w-32">
+                        <label className="block text-sm font-semibold mb-2" style={{ color: "var(--sub-text-color)" }}>
+                          {t("company.attachmentId", "ID")}
+                        </label>
+                        <input
+                          type="number"
+                          value={attachment.id || ""}
+                          onChange={(e) => handleAttachmentIdChange(index, e.target.value)}
+                          className="form-input w-full"
+                          style={{
+                            background: "var(--bg-color)",
+                            color: "var(--text-color)",
+                          }}
+                          placeholder={t("company.enterId", "Enter ID")}
+                        />
+                      </div>
+                    )}
+
+                    {/* Expiry Date */}
+                    <div className="w-full md:w-48">
+                      {isEditing ? (
+                        <div>
+                          <label className="block text-sm font-semibold mb-2" style={{ color: "var(--sub-text-color)" }}>
+                            {t("company.expiryDate", "Expiry Date")}
+                          </label>
+                          <div className="relative">
+                            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: "var(--sub-text-color)" }} />
+                            <input
+                              type="date"
+                              value={formatExpiryDate(attachment.expiryDate)}
+                              onChange={(e) => handleAttachmentExpiryChange(index, e.target.value)}
+                              className="form-input w-full pl-10"
+                              style={{
+                                background: "var(--bg-color)",
+                                color: "var(--text-color)",
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <span className="block text-sm font-semibold mb-1" style={{ color: "var(--sub-text-color)" }}>
+                            {t("company.expiryDate", "Expiry Date")}
+                          </span>
+                          <span className="text-sm font-medium" style={{ color: "var(--text-color)" }}>
+                            {attachment.expiryDate || t("company.noExpiry", "N/A")}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Remove Button (only in edit mode) */}
+                    {isEditing && (
+                      <button
+                        onClick={() => removeAttachment(index)}
+                        className="p-2 rounded-lg hover:bg-red-50 transition-colors"
+                        style={{ color: "var(--error-color)" }}
+                        title={t("company.removeAttachment", "Remove attachment")}
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
