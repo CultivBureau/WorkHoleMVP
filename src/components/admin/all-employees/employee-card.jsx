@@ -374,12 +374,14 @@ const EmployeeCard = ({
                     >
                         {t("employees.joinDate", "JOINED")}:
                     </span>
-                    <span
-                        className={`text-xs font-bold ${textAlign}`}
-                        style={{ color: 'var(--accent-color)' }}
-                    >
-                        {joinDate}
-                    </span>
+                    <div className="flex-1 flex justify-end">
+                        <span
+                            className={`text-xs font-bold ${textAlign}`}
+                            style={{ color: 'var(--accent-color)' }}
+                        >
+                            {joinDate}
+                        </span>
+                    </div>
                 </div>
             </div>
 
