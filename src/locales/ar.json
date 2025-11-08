@@ -1030,6 +1030,7 @@
     }
   },
   "adminLeaves": {
+    "manageLeaveTypes": "إدارة أنواع الإجازات",
     "cards": {
       "totalLeaveRequests": "إجمالي طلبات الإجازة",
       "pendingApprovals": "الموافقات المعلقة",
@@ -1632,6 +1633,60 @@
     },
     "viewShift": {
       "title": "عرض تفاصيل الوردية"
+    }
+  },
+  "leaveTypes": {
+    "title": "إدارة أنواع الإجازات",
+    "addNew": "إضافة نوع إجازة جديد",
+    "loading": "جاري تحميل أنواع الإجازات...",
+    "filter": {
+      "all": "الكل",
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "addTitle": "إضافة نوع إجازة جديد",
+    "editTitle": "تعديل نوع الإجازة",
+    "create": "إنشاء",
+    "creating": "جاري الإنشاء...",
+    "update": "تحديث",
+    "updating": "جاري التحديث...",
+    "cancel": "إلغاء",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "restore": "استعادة",
+    "isPaid": "مدفوع",
+    "carryOver": "الترحيل",
+    "maxDays": "الحد الأقصى للأيام/السنة",
+    "balanceChecked": "فحص الرصيد",
+    "yes": "نعم",
+    "no": "لا",
+    "createSuccess": "تم إنشاء نوع الإجازة بنجاح",
+    "updateSuccess": "تم تحديث نوع الإجازة بنجاح",
+    "deleteSuccess": "تم حذف نوع الإجازة بنجاح",
+    "deleteError": "فشل حذف نوع الإجازة",
+    "restoreSuccess": "تم استعادة نوع الإجازة بنجاح",
+    "restoreError": "فشل استعادة نوع الإجازة",
+    "error": "فشل حفظ نوع الإجازة",
+    "deleteConfirm": "هل أنت متأكد من رغبتك في حذف نوع الإجازة هذا؟",
+    "validation": {
+      "nameRequired": "اسم نوع الإجازة مطلوب"
+    },
+    "form": {
+      "name": "الاسم",
+      "namePlaceholder": "أدخل اسم نوع الإجازة",
+      "maxDaysPerYear": "الحد الأقصى للأيام في السنة",
+      "maxDaysPlaceholder": "أدخل الحد الأقصى للأيام (اختياري)",
+      "isPaid": "مدفوع",
+      "isCarryOverAllowed": "السماح بالترحيل",
+      "isBalanceChecked": "فحص الرصيد"
+    },
+    "empty": {
+      "title": "لم يتم العثور على أنواع إجازات",
+      "message": "لا توجد أنواع إجازات متاحة في الوقت الحالي."
     }
   }
 }

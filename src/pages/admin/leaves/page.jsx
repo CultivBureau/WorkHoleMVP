@@ -19,12 +19,14 @@ import {
   CalendarDays,
   MessageSquare,
   Paperclip,
+  Settings,
 } from "lucide-react";
 
 import { useLang } from "../../../contexts/LangContext";
 import Card from "../../../components/Time_Tracking_Components/Stats/Card";
 import TeamLeadLeavesTable from "../../../components/admin/leaves/LeavesTable/TeamLeadLeavesTable";
 import HrLeavesTable from "../../../components/admin/leaves/LeavesTable/HrLeavesTable";
+import LeaveTypesModal from "../../../components/admin/leaves/LeaveTypesModal";
 import { usePermissions } from "../../../services/PermissionProvider";
 import { hasBackendPermission } from "../../../utils/permissionMapping";
 import { getPermissions } from "../../../utils/page";
@@ -34,6 +36,7 @@ const LeavesAdmin = () => {
   const { t } = useTranslation();
   const permissions = usePermissions();
   const backendPermissions = getPermissions() || [];
+  const [showLeaveTypesModal, setShowLeaveTypesModal] = useState(false);
 
   // Check if user has Team Lead permissions (ViewTeams OR Review)
   const hasTeamLeadPermissions = hasBackendPermission(backendPermissions, [
@@ -115,6 +118,17 @@ const LeavesAdmin = () => {
               />
             ))}
           </div>
+
+          {/* Leave Types Management Button */}
+          <div className="mb-4 flex justify-end">
+            <button
+              onClick={() => setShowLeaveTypesModal(true)}
+              className="btn-primary flex items-center gap-2"
+            >
+              <Settings size={16} />
+              <span>{t("adminLeaves.manageLeaveTypes", "Manage Leave Types")}</span>
+            </button>
+          </div>
           
           {/* Conditional rendering based on permissions - only one table should show */}
           {showHrView && (
@@ -127,6 +141,14 @@ const LeavesAdmin = () => {
             <div className="w-full h-max">
               <TeamLeadLeavesTable />
             </div>
+          )}
+
+          {/* Leave Types Modal */}
+          {showLeaveTypesModal && (
+            <LeaveTypesModal
+              isOpen={showLeaveTypesModal}
+              onClose={() => setShowLeaveTypesModal(false)}
+            />
           )}
         </main>
       </div>

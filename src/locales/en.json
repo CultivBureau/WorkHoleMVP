@@ -1233,6 +1233,7 @@
     }
   },
   "adminLeaves": {
+    "manageLeaveTypes": "Manage Leave Types",
     "cards": {
       "totalLeaveRequests": "Total Leave Requests",
       "pendingApprovals": "Pending Approvals",
@@ -1633,6 +1634,60 @@
     },
     "viewShift": {
       "title": "View Shift Details"
+    }
+  },
+  "leaveTypes": {
+    "title": "Manage Leave Types",
+    "addNew": "Add New Leave Type",
+    "loading": "Loading leave types...",
+    "filter": {
+      "all": "All",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "addTitle": "Add New Leave Type",
+    "editTitle": "Edit Leave Type",
+    "create": "Create",
+    "creating": "Creating...",
+    "update": "Update",
+    "updating": "Updating...",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "restore": "Restore",
+    "isPaid": "Paid",
+    "carryOver": "Carry Over",
+    "maxDays": "Max Days/Year",
+    "balanceChecked": "Balance Checked",
+    "yes": "Yes",
+    "no": "No",
+    "createSuccess": "Leave type created successfully",
+    "updateSuccess": "Leave type updated successfully",
+    "deleteSuccess": "Leave type deleted successfully",
+    "deleteError": "Failed to delete leave type",
+    "restoreSuccess": "Leave type restored successfully",
+    "restoreError": "Failed to restore leave type",
+    "error": "Failed to save leave type",
+    "deleteConfirm": "Are you sure you want to delete this leave type?",
+    "validation": {
+      "nameRequired": "Leave type name is required"
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "Enter leave type name",
+      "maxDaysPerYear": "Max Days Per Year",
+      "maxDaysPlaceholder": "Enter max days (optional)",
+      "isPaid": "Is Paid",
+      "isCarryOverAllowed": "Carry Over Allowed",
+      "isBalanceChecked": "Balance Checked"
+    },
+    "empty": {
+      "title": "No leave types found",
+      "message": "No leave types available at the moment."
     }
   }
 }
