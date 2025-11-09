@@ -611,7 +611,7 @@ function EditSetupTeamsStep({ departmentData, setDepartmentData, onNext, onBack 
                         {/* Leader role/user selection */}
                         <div className="space-y-2">
                             <label className="block text-sm font-medium text-[var(--text-color)] mb-2">
-                                Team Leader <span className="text-red-500">*</span>
+                                {t("departments.newDepartmentForm.setupTeams.teamLeader")} <span className="text-red-500">*</span>
                             </label>
                             <div className="relative">
                                 <div className="form-input cursor-pointer flex items-center justify-between" onClick={() => setIsLeaderRoleOpen(!isLeaderRoleOpen)}>

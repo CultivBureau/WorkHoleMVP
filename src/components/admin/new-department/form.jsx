@@ -393,7 +393,7 @@ function SetupTeamsStep({ onNext, onBack, teams, setTeams }) {
                     {/* Team Leader Selection: Role then User */}
                     <div>
                         <label className="block text-sm font-medium text-[var(--text-color)] mb-2">
-                            Team Leader <span className="text-red-500">*</span>
+                            {t("departments.newDepartmentForm.setupTeams.teamLeader")} <span className="text-red-500">*</span>
                         </label>
                         <div className="grid grid-cols-1 gap-4">
                         <div className="relative">
@@ -651,7 +651,8 @@ function SetupTeamsStep({ onNext, onBack, teams, setTeams }) {
                                                 const teamLeaderCount = team.teamLeader ? 1 : 0;
                                                 const employeesCount = team.selectedEmployees?.length || 0;
                                                 const totalCount = teamLeaderCount + employeesCount;
-                                                return t("departments.newDepartmentForm.setupTeams.membersCount", { count: totalCount });
+                                                const pluralText = totalCount !== 1 ? t("departments.newDepartmentForm.setupTeams.membersCountPlural", "s") : t("departments.newDepartmentForm.setupTeams.membersCountSingular", "");
+                                                return t("departments.newDepartmentForm.setupTeams.membersCount", { count: totalCount, plural: pluralText });
                                             })()}
                                         </span>
                                         <ChevronDown size={16} />
@@ -667,7 +668,7 @@ function SetupTeamsStep({ onNext, onBack, teams, setTeams }) {
                                             className="w-6 h-6 rounded-full"
                                         />
                                         <div className="flex-1">
-                                            <div className="text-xs text-[var(--sub-text-color)]">Team Leader</div>
+                                            <div className="text-xs text-[var(--sub-text-color)]">{t("departments.newDepartmentForm.setupTeams.teamLeader")}</div>
                                             <div className="text-sm font-medium text-[var(--text-color)]">{(team.teamLeader?.name || `${team.teamLeader?.firstName || ''} ${team.teamLeader?.lastName || ''}`.trim())}</div>
                                         </div>
                                         <UserCheck className="text-[var(--accent-color)]" size={16} />
@@ -676,7 +677,7 @@ function SetupTeamsStep({ onNext, onBack, teams, setTeams }) {
                                 {/* Display selected members */}
                                 {team.selectedEmployees && team.selectedEmployees.length > 0 && (
                                     <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-[var(--border-color)]">
-                                        <span className="text-xs text-[var(--sub-text-color)] w-full">Members:</span>
+                                        <span className="text-xs text-[var(--sub-text-color)] w-full">{t("departments.newDepartmentForm.setupTeams.membersLabel")}</span>
                                         {team.selectedEmployees.map((emp, idx) => {
                                             const empId = emp.id || emp.userId || emp.userID || emp.Id || `emp-${idx}`;
                                             return (
@@ -899,7 +900,8 @@ function ReviewStep({ onBack, departmentInfo, supervisor, teams }) {
                                         const teamLeaderCount = team.teamLeader ? 1 : 0;
                                         const employeesCount = team.selectedEmployees?.length || 0;
                                         const totalCount = teamLeaderCount + employeesCount;
-                                        return t("departments.newDepartmentForm.setupTeams.membersCount", { count: totalCount });
+                                        const pluralText = totalCount !== 1 ? t("departments.newDepartmentForm.setupTeams.membersCountPlural", "s") : t("departments.newDepartmentForm.setupTeams.membersCountSingular", "");
+                                        return t("departments.newDepartmentForm.setupTeams.membersCount", { count: totalCount, plural: pluralText });
                                     })()}
                                 </span>
                             </div>
@@ -913,7 +915,7 @@ function ReviewStep({ onBack, departmentInfo, supervisor, teams }) {
                                         className="w-6 h-6 rounded-full"
                                     />
                                     <div className="flex-1">
-                                        <div className="text-xs text-[var(--sub-text-color)]">Team Leader</div>
+                                        <div className="text-xs text-[var(--sub-text-color)]">{t("departments.newDepartmentForm.setupTeams.teamLeader")}</div>
                                         <div className="text-sm font-medium text-[var(--text-color)]">{(team.teamLeader?.name || `${team.teamLeader?.firstName || ''} ${team.teamLeader?.lastName || ''}`.trim())}</div>
                                     </div>
                                     <UserCheck className="text-[var(--accent-color)]" size={16} />
@@ -922,7 +924,7 @@ function ReviewStep({ onBack, departmentInfo, supervisor, teams }) {
                             {/* Display selected members */}
                             {team.selectedEmployees && team.selectedEmployees.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-[var(--border-color)]">
-                                    <span className="text-xs text-[var(--sub-text-color)] w-full">Members:</span>
+                                    <span className="text-xs text-[var(--sub-text-color)] w-full">{t("departments.newDepartmentForm.setupTeams.membersLabel")}</span>
                                     {team.selectedEmployees.map((emp, idx) => {
                                         const empId = emp.id || emp.userId || emp.userID || emp.Id || `emp-${idx}`;
                                         return (

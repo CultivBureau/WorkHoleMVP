@@ -1243,7 +1243,12 @@
         "chooseEmployee": "اختر موظف",
         "description": "الوصف",
         "addNewTeam": "إضافة فريق جديد",
-        "members": "الأعضاء"
+        "members": "الأعضاء",
+        "membersCount": "{{count}} عضو{{plural}}",
+        "membersCountPlural": "",
+        "membersCountSingular": "",
+        "teamLeader": "قائد الفريق",
+        "membersLabel": "الأعضاء:"
       },
       "review": {
         "reviewDepartmentDetails": "مراجعة تفاصيل القسم",
@@ -1295,7 +1300,12 @@
         "chooseEmployee": "اختر موظف",
         "description": "الوصف",
         "addNewTeam": "إضافة فريق جديد",
-        "members": "الأعضاء"
+        "members": "الأعضاء",
+        "membersCount": "{{count}} عضو{{plural}}",
+        "membersCountPlural": "",
+        "membersCountSingular": "",
+        "teamLeader": "قائد الفريق",
+        "membersLabel": "الأعضاء:"
       },
       "review": {
         "reviewDepartmentDetails": "مراجعة تفاصيل القسم",

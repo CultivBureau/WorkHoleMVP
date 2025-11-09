@@ -871,7 +871,12 @@
         "chooseEmployee": "Choose Employee",
         "description": "Description",
         "addNewTeam": "Add New Team",
-        "members": "Members"
+        "members": "Members",
+        "membersCount": "{{count}} member{{plural}}",
+        "membersCountPlural": "s",
+        "membersCountSingular": "",
+        "teamLeader": "Team Leader",
+        "membersLabel": "Members:"
       },
       "review": {
         "reviewDepartmentDetails": "Review Department Details",
@@ -923,7 +928,12 @@
         "chooseEmployee": "Choose Employee",
         "description": "Description",
         "addNewTeam": "Add New Team",
-        "members": "Members"
+        "members": "Members",
+        "membersCount": "{{count}} member{{plural}}",
+        "membersCountPlural": "s",
+        "membersCountSingular": "",
+        "teamLeader": "Team Leader",
+        "membersLabel": "Members:"
       },
       "review": {
         "reviewDepartmentDetails": "Review Department Details",
