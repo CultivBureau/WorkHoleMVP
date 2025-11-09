@@ -1,6 +1,7 @@
 import NavBarAdmin from "../../../components/admin/NavBarAdmin";
 import SideBarAdmin from "../../../components/admin/SideBarAdmin";
 import { useTranslation } from "react-i18next";
+import { useState } from "react";
 import StatusCards from "../../../components/admin/Roles&Permissions/status_cards";
 import Header from "../../../components/admin/Roles&Permissions/header";
 import RolesTable from "../../../components/admin/Roles&Permissions/table";
@@ -9,6 +10,7 @@ import { PermissionGuard } from "../../../components/common/PermissionGuard";
 const RolesAndPermissions = () => {
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === "ar";
+  const [selectedRoleId, setSelectedRoleId] = useState(null);
 
   return (
     <PermissionGuard 
@@ -39,9 +41,9 @@ const RolesAndPermissions = () => {
                 {/* Status Cards Row */}
                 <StatusCards />
                 {/* Header with Search and Add Button */}
-                <Header />
+                <Header selectedRoleId={selectedRoleId} />
                 {/* Roles Table */}
-                <RolesTable />
+                <RolesTable onRoleSelect={setSelectedRoleId} />
               </div>
             </div>
           </main>

@@ -84,6 +84,24 @@ export const roleApi = createApi({
       }),
       providesTags: (result, error, id) => [{ type: "Role", id: `${id}-permissions` }],
     }),
+
+    // Assign user to role
+    assignUserToRole: builder.mutation({
+      query: ({ id, userId }) => ({
+        url: `/api/v1/Role/AssignUserToRole/${id}/assign-user/${userId}`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Role"],
+    }),
+
+    // Remove user from role
+    removeUserFromRole: builder.mutation({
+      query: ({ id, userId }) => ({
+        url: `/api/v1/Role/RemoveUserFromRole/${id}/remove-user/${userId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Role"],
+    }),
   }),
 });
 
@@ -96,4 +114,6 @@ export const {
   useRestoreRoleMutation,
   useGetRoleUsersQuery,
   useGetRolePermissionsQuery,
+  useAssignUserToRoleMutation,
+  useRemoveUserFromRoleMutation,
 } = roleApi;

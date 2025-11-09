@@ -5,18 +5,6 @@ export const teamApi = createApi({
   reducerPath: "teamApi",
   baseQuery: baseQueryWithReauth,
   endpoints: (builder) => ({
-    getAllTeams: builder.query({
-      query: ({ pageNumber = 1, pageSize = 10 } = {}) => ({
-        url: "/api/v1/Team/GetAll",
-        method: "GET",
-        params: {
-          pageNumber,
-          pageSize,
-        },
-      }),
-      providesTags: ["Teams", { type: "Teams", id: "LIST" }],
-    }),
-
     // Create a new team
     createTeam: builder.mutation({
       query: (body) => ({
@@ -211,7 +199,6 @@ export const teamApi = createApi({
 });
 
 export const {
-  useGetAllTeamsQuery,
   useAssignUserToTeamMutation,
   useCreateTeamMutation,
   useGetTeamsByDepartmentQuery,

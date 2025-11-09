@@ -24,7 +24,6 @@ export const store = configureStore({
     [leaveTypeApi.reducerPath]: leaveTypeApi.reducer,
     [permissionApi.reducerPath]: permissionApi.reducer,
     [breakApi.reducerPath]: breakApi.reducer,
-  
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -41,7 +40,6 @@ export const store = configureStore({
       leaveTypeApi.middleware,
       permissionApi.middleware,
       breakApi.middleware,
-      
     ),
 });
 

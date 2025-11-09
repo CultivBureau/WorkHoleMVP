@@ -1221,6 +1221,40 @@
       "active": "Active",
       "inactive": "Inactive"
     },
+    "assignUsers": "Assign Users",
+    "clickRoleInTable": "Click on a role in the table",
+    "assignUsersPage": {
+      "title": "Manage Role Assignments",
+      "subtitle": "Add or remove users from role: {roleName}",
+      "roleLabel": "Role",
+      "description": "Assign or remove users from this role",
+      "filters": {
+        "search": "Search by name or email...",
+        "department": "Department",
+        "team": "Team",
+        "all": "All"
+      },
+      "table": {
+        "name": "Name",
+        "email": "Email",
+        "currentRole": "Current Role",
+        "department": "Department",
+        "team": "Team",
+        "actions": "Actions"
+      },
+      "addRole": "Add Role",
+      "removeRole": "Remove Role",
+      "add": "Add",
+      "remove": "Remove",
+      "noUsers": "No users found",
+      "tryDifferentFilters": "Try adjusting your filters",
+      "addSuccess": "User added to role successfully",
+      "removeSuccess": "User removed from role successfully",
+      "addError": "Failed to add user to role",
+      "removeError": "Failed to remove user from role",
+      "usersWithoutRole": "Users Without Role",
+      "usersWithRole": "Users With Role"
+    },
     "statusCards": {
       "totalRoles": "Total Roles",
       "activeRoles": "Active Roles",
@@ -1490,7 +1524,8 @@
   },
   "common": {
     "loading": "Loading...",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "back": "Back"
   },
   "performance": {
     "statusCards": {
