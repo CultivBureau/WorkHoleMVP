@@ -233,7 +233,7 @@ const RolesTable = ({ onRoleSelect }) => {
         <div className="flex flex-col" style={{ direction: isArabic ? 'rtl' : 'ltr' }}>
             {/* Filters and header section */}
             <div className="mb-4 flex-shrink-0">
-                <div className="flex bg-[var(--bg-color)] p-4 w-100%] h-max shadow-xl rounded-3xl border border-[var(--border-color)] flex-wrap items-center gap-4 justify-between">
+                <div className="flex bg-[var(--bg-color)] p-4 w-100%] h-max shadow-md rounded-3xl border border-[var(--border-color)] flex-wrap items-center gap-4 justify-between">
                     <div className="flex flex-wrap items-center gap-4">
                         <div className="flex items-center gap-2">
                             <span className="text-[10px] font-medium text-[var(--sub-text-color)]">{t('roles.table.role')}</span>

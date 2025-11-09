@@ -864,7 +864,8 @@
         "chooseSupervisor": "Choose Supervisor",
         "supervisor": "Supervisor",
         "supervisorManager": "Supervisor Manager",
-        "chooseRole": "Choose Role"
+        "chooseRole": "Choose Role",
+        "searchUsers": "Search users..."
       },
       "setupTeams": {
         "teamName": "Team Name",
@@ -921,7 +922,8 @@
       "assignSupervisor": {
         "chooseSupervisor": "Choose Supervisor",
         "supervisor": "Supervisor",
-        "chooseRole": "Choose Role"
+        "chooseRole": "Choose Role",
+        "searchUsers": "Search users..."
       },
       "setupTeams": {
         "teamName": "Team Name",
@@ -1136,6 +1138,8 @@
     "title": "Roles & Permissions",
     "pageDescription": "Allow this employee to access Workhole",
     "searchPlaceholder": "Search Role",
+    "search": "Search roles...",
+    "searchUsers": "Search users...",
     "addNewRole": "Add New Role",
     "allRoles": "All Roles",
     "editRoleTitle": "Edit Role",

@@ -283,7 +283,7 @@ const AssignRoleUsersTable = ({ roleId, roleName }) => {
                                     type="text"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    placeholder={t('roles.assignUsersPage.filters.search') || 'Search by name or email...'}
+                                    placeholder={t('roles.assignUsersPage.filters.search') || t('roles.searchUsers') || 'Search by name or email...'}
                                     className="w-full py-2.5 rounded-xl border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
                                     style={{
                                         backgroundColor: "var(--input-bg)",
@@ -463,11 +463,14 @@ const AssignRoleUsersTable = ({ roleId, roleName }) => {
                                         </td>
                                         <td className={`py-5 px-6 text-[var(--text-color)] text-sm ${isArabic ? 'text-right' : 'text-left'}`}>
                                             {user.departmentNames && user.departmentNames.length > 0 ? (
-                                                <div className="flex flex-wrap gap-1.5">
+                                                <div className={`flex flex-wrap items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
                                                     {user.departmentNames.map((dept, idx) => (
-                                                        <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--container-color)] text-[var(--text-color)]">
-                                                            {dept}
-                                                        </span>
+                                                        <div key={idx} className={`flex items-center gap-1.5 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                                            <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: '#09D1C7' }}></div>
+                                                            <span className="text-xs font-medium text-[var(--text-color)]">
+                                                                {dept}
+                                                            </span>
+                                                        </div>
                                                     ))}
                                                 </div>
                                             ) : (
@@ -476,11 +479,14 @@ const AssignRoleUsersTable = ({ roleId, roleName }) => {
                                         </td>
                                         <td className={`py-5 px-6 text-[var(--text-color)] text-sm ${isArabic ? 'text-right' : 'text-left'}`}>
                                             {user.teamNames && user.teamNames.length > 0 ? (
-                                                <div className="flex flex-wrap gap-1.5">
+                                                <div className={`flex flex-wrap items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
                                                     {user.teamNames.map((team, idx) => (
-                                                        <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--container-color)] text-[var(--text-color)]">
-                                                            {team}
-                                                        </span>
+                                                        <div key={idx} className={`flex items-center gap-1.5 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                                            <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: '#09D1C7' }}></div>
+                                                            <span className="text-xs font-medium text-[var(--text-color)]">
+                                                                {team}
+                                                            </span>
+                                                        </div>
                                                     ))}
                                                 </div>
                                             ) : (
@@ -556,11 +562,14 @@ const AssignRoleUsersTable = ({ roleId, roleName }) => {
                                         </td>
                                         <td className={`py-5 px-6 text-[var(--text-color)] text-sm ${isArabic ? 'text-right' : 'text-left'}`}>
                                             {user.departmentNames && user.departmentNames.length > 0 ? (
-                                                <div className="flex flex-wrap gap-1.5">
+                                                <div className={`flex flex-wrap items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
                                                     {user.departmentNames.map((dept, idx) => (
-                                                        <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--container-color)] text-[var(--text-color)]">
-                                                            {dept}
-                                                        </span>
+                                                        <div key={idx} className={`flex items-center gap-1.5 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                                            <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: '#09D1C7' }}></div>
+                                                            <span className="text-xs font-medium text-[var(--text-color)]">
+                                                                {dept}
+                                                            </span>
+                                                        </div>
                                                     ))}
                                                 </div>
                                             ) : (
@@ -569,11 +578,14 @@ const AssignRoleUsersTable = ({ roleId, roleName }) => {
                                         </td>
                                         <td className={`py-5 px-6 text-[var(--text-color)] text-sm ${isArabic ? 'text-right' : 'text-left'}`}>
                                             {user.teamNames && user.teamNames.length > 0 ? (
-                                                <div className="flex flex-wrap gap-1.5">
+                                                <div className={`flex flex-wrap items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
                                                     {user.teamNames.map((team, idx) => (
-                                                        <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--container-color)] text-[var(--text-color)]">
-                                                            {team}
-                                                        </span>
+                                                        <div key={idx} className={`flex items-center gap-1.5 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                                            <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: '#09D1C7' }}></div>
+                                                            <span className="text-xs font-medium text-[var(--text-color)]">
+                                                                {team}
+                                                            </span>
+                                                        </div>
                                                     ))}
                                                 </div>
                                             ) : (

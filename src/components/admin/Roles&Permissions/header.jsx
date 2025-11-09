@@ -56,7 +56,7 @@ const Header = ({ searchValue, onSearchChange, selectedRoleId }) => {
                         </div>
                         <input
                             type="text"
-                            placeholder={t('roles.searchPlaceholder')}
+                            placeholder={t('roles.searchPlaceholder') || t('roles.search') || 'Search roles...'}
                             value={searchValue || ""}
                             onChange={(e) => onSearchChange?.(e.target.value)}
                             className="w-full pl-10 pr-4 py-3 rounded-xl border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"

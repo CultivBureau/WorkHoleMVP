@@ -303,15 +303,15 @@ const AttendanceTable = () => {
     const baseClasses = "px-3 py-1 rounded-full text-xs font-medium inline-block border";
     switch (status) {
       case "Present":
-        return <span className={`${baseClasses} bg-[var(--approved-leave-box-bg)] text-[var(--success-color)] border-[var(--success-color)]`}>
+        return <span className={`${baseClasses} bg-[var(--success-color)]/10 text-[var(--success-color)]/70 border-[var(--success-color)]/30`}>
           {t("adminAttendance.table.status.present", "Present")}
         </span>
       case "Absent":
-        return <span className={`${baseClasses} bg-[var(--rejected-leave-box-bg)] text-[var(--error-color)] border-[var(--error-color)]`}>
+        return <span className={`${baseClasses} bg-[var(--error-color)]/10 text-[var(--error-color)]/70 border-[var(--error-color)]/30`}>
           {t("adminAttendance.table.status.absent", "Absent")}
         </span>
       case "Late arrival":
-        return <span className={`${baseClasses} bg-[var(--pending-leave-box-bg)] text-[var(--warning-color)] border-[var(--warning-color)]`}>
+        return <span className={`${baseClasses} bg-[var(--warning-color)]/10 text-[var(--warning-color)]/70 border-[var(--warning-color)]/30`}>
           {t("adminAttendance.table.status.lateArrival", "Late arrival")}
         </span>
       default:
@@ -328,8 +328,8 @@ const AttendanceTable = () => {
     return (
       <span
         className={`${baseClasses} ${isOffice
-          ? "bg-[var(--available-leave-box-bg)] text-[var(--accent-color)] border-[var(--accent-color)]"
-          : "bg-[var(--card-bg)] text-[var(--sub-text-color)] border-[var(--border-color)]"
+          ? "bg-[var(--accent-color)]/10 text-[var(--accent-color)]/70 border-[var(--accent-color)]/30"
+          : "bg-[var(--sub-text-color)]/10 text-[var(--sub-text-color)]/70 border-[var(--border-color)]/50"
           }`}
       >
         {isOffice
@@ -367,7 +367,7 @@ const AttendanceTable = () => {
     <div className="bg-[var(--bg-color)] rounded-lg border border-[var(--border-color)]">
       {/* Header with filters */}
       <div className="px-6 py-4 border-b flex justify-center items-center bg-[var(--bg-color)]">
-        <div className="flex bg-[var(--bg-color)] p-4 w-[98%] h-max shadow-xl rounded-3xl border border-[var(--border-color)] flex-wrap items-center gap-4 justify-between">
+        <div className="flex bg-[var(--bg-color)] p-4 w-[98%] h-max shadow-md rounded-3xl border border-[var(--border-color)] flex-wrap items-center gap-4 justify-between">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-medium text-[var(--sub-text-color)]">

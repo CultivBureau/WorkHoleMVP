@@ -634,20 +634,19 @@ const EmployeesTable = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {paginatedEmployees.map((employee, index) => (
+                                    {paginatedEmployees.map((employee) => (
                                         <tr
                                             key={employee.id}
                                             className="transition-all duration-300 cursor-pointer group border-b-2"
                                             style={{
                                                 borderColor: 'var(--border-color)',
-                                                backgroundColor: index % 2 === 0 ? 'var(--bg-color)' : 'var(--container-color)'
+                                                backgroundColor: 'var(--bg-color)'
                                             }}
                                             onMouseEnter={(e) => {
                                                 e.currentTarget.style.backgroundColor = 'var(--hover-color)';
                                             }}
                                             onMouseLeave={(e) => {
-                                                e.currentTarget.style.backgroundColor =
-                                                    index % 2 === 0 ? 'var(--bg-color)' : 'var(--container-color)';
+                                                e.currentTarget.style.backgroundColor = 'var(--bg-color)';
                                             }}
                                         >
                                             {/* Employee Info */}

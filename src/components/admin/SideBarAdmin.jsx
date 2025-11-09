@@ -490,9 +490,9 @@ export default function SideBarAdmin({ isMobileOpen, onMobileClose }) {
       return "dashboard";
     if (location.pathname.startsWith("/pages/admin/all-employees") || location.pathname.startsWith("/pages/admin/users"))
       return "All_Employees";
-    if (location.pathname.startsWith("/pages/admin/Roles&Permissions"))
+    if (location.pathname.startsWith("/pages/admin/Roles&Permissions") || location.pathname.startsWith("/pages/admin/assign-role-users"))
       return "Roles_Permissions";
-    if (location.pathname.startsWith("/pages/admin/all-departments") || location.pathname.startsWith("/pages/admin/edit-department"))
+    if (location.pathname.startsWith("/pages/admin/all-departments") || location.pathname.startsWith("/pages/admin/edit-department") || location.pathname.startsWith("/pages/admin/all-teams"))
       return "all_departments";
     if (location.pathname.startsWith("/pages/admin/company"))
       return "Company";
@@ -502,8 +502,8 @@ export default function SideBarAdmin({ isMobileOpen, onMobileClose }) {
       return "all_attendance";
     if (location.pathname.startsWith("/pages/admin/break"))
       return "break";
-    if (location.pathname.startsWith("/pages/admin/all-teams"))
-      return "all_teams";
+    if (location.pathname.startsWith("/pages/admin/shifts"))
+      return "shifts";
     
     // User routes (for admins with permissions)
     if (location.pathname.startsWith("/pages/User/time_tracking"))

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { X, ChevronDown, Check, Save } from "lucide-react";
+import { X, ChevronDown, Check, Save, Search } from "lucide-react";
 import { useGetAllRolesQuery, useGetRoleUsersQuery } from "../../../../services/apis/RoleApi";
 import { useUpdateTeamMutation, useUpdateUsersInTeamMutation, useGetTeamUsersQuery } from "../../../../services/apis/TeamApi";
 export default function EditTeamModal({ isOpen, onClose, onUpdateTeam, teamData, departmentId }) {
@@ -18,6 +18,8 @@ export default function EditTeamModal({ isOpen, onClose, onUpdateTeam, teamData,
     const [membersRole, setMembersRole] = useState(null);
     const [isMembersRoleOpen, setIsMembersRoleOpen] = useState(false);
     const [isMembersOpen, setIsMembersOpen] = useState(false);
+    const [leaderSearchTerm, setLeaderSearchTerm] = useState("");
+    const [membersSearchTerm, setMembersSearchTerm] = useState("");
 
     // Get departmentId from teamData if not provided
     const teamDepartmentId = departmentId || teamData?.departmentId;
@@ -38,6 +40,30 @@ export default function EditTeamModal({ isOpen, onClose, onUpdateTeam, teamData,
         { skip: !membersRole }
     );
     const memberUsers = Array.isArray(membersUsersData?.value) ? membersUsersData.value : (Array.isArray(membersUsersData?.data) ? membersUsersData.data : (Array.isArray(membersUsersData) ? membersUsersData : []));
+
+    // Filter leader users based on search term
+    const filteredLeaderUsers = useMemo(() => {
+        if (!leaderSearchTerm.trim()) return leaderUsers || [];
+        const search = leaderSearchTerm.toLowerCase();
+        return (leaderUsers || []).filter(u => {
+            const name = (u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim()).toLowerCase();
+            const email = (u.email || '').toLowerCase();
+            const username = (u.username || '').toLowerCase();
+            return name.includes(search) || email.includes(search) || username.includes(search);
+        });
+    }, [leaderUsers, leaderSearchTerm]);
+
+    // Filter member users based on search term
+    const filteredMemberUsers = useMemo(() => {
+        if (!membersSearchTerm.trim()) return memberUsers || [];
+        const search = membersSearchTerm.toLowerCase();
+        return (memberUsers || []).filter(u => {
+            const name = (u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim()).toLowerCase();
+            const email = (u.email || '').toLowerCase();
+            const username = (u.username || '').toLowerCase();
+            return name.includes(search) || email.includes(search) || username.includes(search);
+        });
+    }, [memberUsers, membersSearchTerm]);
 
     // Fetch existing team members - API returns user objects in the response
     const { data: teamUsersData, isLoading: isLoadingMembers } = useGetTeamUsersQuery(teamData?.id, {
@@ -75,6 +101,8 @@ export default function EditTeamModal({ isOpen, onClose, onUpdateTeam, teamData,
             setIsMembersOpen(false);
             setLeaderRole(null);
             setMembersRole(null);
+            setLeaderSearchTerm("");
+            setMembersSearchTerm("");
         } else {
             // Reset form when modal closes
             setEditTeam({ name: '', description: '', selectedEmployees: [], teamLeader: null });
@@ -226,6 +254,8 @@ export default function EditTeamModal({ isOpen, onClose, onUpdateTeam, teamData,
             setIsLeaderUserOpen(false);
             setIsMembersRoleOpen(false);
             setIsMembersOpen(false);
+            setLeaderSearchTerm("");
+            setMembersSearchTerm("");
             onClose();
         } catch (error) {
             const errorMessage = error?.data?.errorMessage || error?.message || t("allTeams.editTeam.errors.updateFailed");
@@ -250,6 +280,8 @@ export default function EditTeamModal({ isOpen, onClose, onUpdateTeam, teamData,
         setIsLeaderUserOpen(false);
         setIsMembersRoleOpen(false);
         setIsMembersOpen(false);
+        setLeaderSearchTerm("");
+        setMembersSearchTerm("");
         onClose();
     };
 
@@ -337,17 +369,41 @@ export default function EditTeamModal({ isOpen, onClose, onUpdateTeam, teamData,
                                             <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isLeaderUserOpen ? 'rotate-180' : ''}`} size={16} />
                                         </div>
                                         {isLeaderUserOpen && leaderRole && (
-                                            <div className="absolute top-full left-0 right-0 z-20 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                                                {(leaderUsers || []).map(u => (
-                                                    <div key={u.id} className="p-3 hover:bg-[var(--hover-color)] cursor-pointer" onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        selectTeamLeader(u);
-                                                    }}>
-                                                        <div className="text-sm text-[var(--text-color)]">{u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim()}</div>
-                                                        <div className="text-xs text-[var(--sub-text-color)]">{u.email || u.username}</div>
+                                            <div className="absolute top-full left-0 right-0 z-20 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-hidden flex flex-col">
+                                                {/* Search Input */}
+                                                <div className="p-2 border-b border-[var(--border-color)] sticky top-0 bg-[var(--bg-color)]">
+                                                    <div className="relative">
+                                                        <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--sub-text-color)]" />
+                                                        <input
+                                                            type="text"
+                                                            value={leaderSearchTerm}
+                                                            onChange={(e) => setLeaderSearchTerm(e.target.value)}
+                                                            placeholder={t("departments.newDepartmentForm.assignSupervisor.searchUsers") || "Search users..."}
+                                                            className="w-full pl-8 pr-3 py-2 text-sm border border-[var(--border-color)] rounded-lg bg-[var(--input-bg)] text-[var(--text-color)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]"
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            dir={isArabic ? 'rtl' : 'ltr'}
+                                                        />
                                                     </div>
-                                                ))}
-                                                {(!leaderUsers || leaderUsers.length === 0) && <div className="p-3 text-[var(--sub-text-color)]">{t("allTeams.editTeam.noUsersFound")}</div>}
+                                                </div>
+                                                {/* Users List */}
+                                                <div className="overflow-y-auto max-h-[240px]">
+                                                    {filteredLeaderUsers.length > 0 ? (
+                                                        filteredLeaderUsers.map(u => (
+                                                            <div key={u.id} className="p-3 hover:bg-[var(--hover-color)] cursor-pointer" onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                selectTeamLeader(u);
+                                                                setLeaderSearchTerm("");
+                                                            }}>
+                                                                <div className="text-sm text-[var(--text-color)]">{u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim()}</div>
+                                                                <div className="text-xs text-[var(--sub-text-color)]">{u.email || u.username}</div>
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <div className="p-3 text-[var(--sub-text-color)]">
+                                                            {leaderSearchTerm ? "No users found matching your search" : t("allTeams.editTeam.noUsersFound")}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         )}
                                     </div>
@@ -398,41 +454,64 @@ export default function EditTeamModal({ isOpen, onClose, onUpdateTeam, teamData,
                             </div>
                                     {isMembersOpen && (
                                         <div 
-                                            className="absolute top-full left-0 right-0 z-10 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                                            className="absolute top-full left-0 right-0 z-10 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-hidden flex flex-col"
                                             onClick={(e) => e.stopPropagation()}
                                         >
-                                            {membersRole && (memberUsers || []).map(u => {
-                                                // Get user ID for comparison - same as add team
-                                                const userId = u?.id || u?.userId || u?.userID || u?.UserId || u?._id;
-                                                const isSelected = userId && editTeam.selectedEmployees.some(emp => {
-                                                    const empId = emp?.id || emp?.userId || emp?.userID || emp?.UserId || emp?.Id || emp?._id;
-                                                    // Use strict comparison with string conversion to handle different types
-                                                    return String(empId) === String(userId) && empId != null && userId != null;
-                                                });
-                                                
-                                                return (
-                                                    <div 
-                                                        key={`user-${userId || u.id || u.email || Math.random()}`} 
-                                                        className={`p-3 cursor-pointer flex items-center justify-between ${
-                                                            isSelected ? 'bg-[var(--accent-color)] bg-opacity-10' : 'hover:bg-[var(--hover-color)]'
-                                                        }`}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            toggleEmployee(u);
-                                                        }}
-                                                    >
-                                                        <div className="text-sm text-[var(--text-color)]">{u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim()}</div>
-                                                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-                                                            isSelected 
-                                                                ? 'border-[var(--accent-color)] bg-[var(--accent-color)]' 
-                                                                : 'border-[var(--border-color)]'
-                                                        }`}>
-                                                            {isSelected && <Check className="text-white" size={12} />}
-                                                        </div>
+                                            {/* Search Input */}
+                                            <div className="p-2 border-b border-[var(--border-color)] sticky top-0 bg-[var(--bg-color)]">
+                                                <div className="relative">
+                                                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--sub-text-color)]" />
+                                                    <input
+                                                        type="text"
+                                                        value={membersSearchTerm}
+                                                        onChange={(e) => setMembersSearchTerm(e.target.value)}
+                                                        placeholder={t("departments.newDepartmentForm.assignSupervisor.searchUsers") || "Search users..."}
+                                                        className="w-full pl-8 pr-3 py-2 text-sm border border-[var(--border-color)] rounded-lg bg-[var(--input-bg)] text-[var(--text-color)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        dir={isArabic ? 'rtl' : 'ltr'}
+                                                    />
+                                                </div>
+                                            </div>
+                                            {/* Users List */}
+                                            <div className="overflow-y-auto max-h-[240px]">
+                                                {membersRole && filteredMemberUsers.length > 0 ? (
+                                                    filteredMemberUsers.map(u => {
+                                                        // Get user ID for comparison - same as add team
+                                                        const userId = u?.id || u?.userId || u?.userID || u?.UserId || u?._id;
+                                                        const isSelected = userId && editTeam.selectedEmployees.some(emp => {
+                                                            const empId = emp?.id || emp?.userId || emp?.userID || emp?.UserId || emp?.Id || emp?._id;
+                                                            // Use strict comparison with string conversion to handle different types
+                                                            return String(empId) === String(userId) && empId != null && userId != null;
+                                                        });
+                                                        
+                                                        return (
+                                                            <div 
+                                                                key={`user-${userId || u.id || u.email || Math.random()}`} 
+                                                                className={`p-3 cursor-pointer flex items-center justify-between ${
+                                                                    isSelected ? 'bg-[var(--accent-color)] bg-opacity-10' : 'hover:bg-[var(--hover-color)]'
+                                                                }`}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    toggleEmployee(u);
+                                                                }}
+                                                            >
+                                                                <div className="text-sm text-[var(--text-color)]">{u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim()}</div>
+                                                                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                                                                    isSelected 
+                                                                        ? 'border-[var(--accent-color)] bg-[var(--accent-color)]' 
+                                                                        : 'border-[var(--border-color)]'
+                                                                }`}>
+                                                                    {isSelected && <Check className="text-white" size={12} />}
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })
+                                                ) : (
+                                                    <div className="p-3 text-[var(--sub-text-color)]">
+                                                        {membersRole ? (membersSearchTerm ? "No users found matching your search" : t("allTeams.editTeam.noUsersFound")) : "Select a role first"}
                                                     </div>
-                                                );
-                                            })}
-                                            {membersRole && (!memberUsers || memberUsers.length === 0) && <div className="p-3 text-[var(--sub-text-color)]">{t("allTeams.editTeam.noUsersFound")}</div>}
+                                                )}
+                                            </div>
                                         </div>
                                     )}
                                         </div>

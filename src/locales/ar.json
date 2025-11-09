@@ -880,6 +880,8 @@
     "title": "الأدوار والصلاحيات",
     "pageDescription": "السماح لهذا الموظف بالوصول إلى ووركهول",
     "searchPlaceholder": "بحث عن دور",
+    "search": "البحث عن الأدوار...",
+    "searchUsers": "البحث عن المستخدمين...",
     "addNewRole": "إضافة دور جديد",
     "allRoles": "جميع الأدوار",
     "editRoleTitle": "تعديل الدور",
@@ -1270,7 +1272,8 @@
         "chooseSupervisor": "اختر المشرف",
         "supervisor": "المشرف",
         "supervisorManager": "مدير المشرف",
-        "chooseRole": "اختر الدور"
+        "chooseRole": "اختر الدور",
+        "searchUsers": "البحث عن المستخدمين..."
       },
       "setupTeams": {
         "teamName": "اسم الفريق",
@@ -1327,7 +1330,8 @@
       "assignSupervisor": {
         "chooseSupervisor": "اختر المشرف",
         "supervisor": "المشرف",
-        "chooseRole": "اختر الدور"
+        "chooseRole": "اختر الدور",
+        "searchUsers": "البحث عن المستخدمين..."
       },
       "setupTeams": {
         "teamName": "اسم الفريق",

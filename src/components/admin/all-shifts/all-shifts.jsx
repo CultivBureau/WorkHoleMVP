@@ -368,9 +368,7 @@ export default function AllShifts() {
                                         {/* Shift Name and Status Badge */}
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-12 h-12 rounded-xl gradient-bg flex items-center justify-center flex-shrink-0 shadow-md">
-                                                    <Clock className="w-6 h-6 text-white" />
-                                                </div>
+                                                
                                                 <div className="flex-1 min-w-0">
                                                     <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
                                                         <h3 className={`text-lg font-bold text-[var(--text-color)] truncate ${isArabic ? 'text-right' : 'text-left'}`}>

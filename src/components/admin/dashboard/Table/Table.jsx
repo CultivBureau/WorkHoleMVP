@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useLang } from '../../../../contexts/LangContext';
 
 // Sample employee data matching the image (keeping only first 8 for better fit)
 const employeeData = [
@@ -91,11 +90,10 @@ const employeeData = [
 
 const AttendanceTable = () => {
   const { t, i18n } = useTranslation();
-  const { isRtl } = useLang();
   const isArabic = i18n.language === "ar";
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [designationFilter, setDesignationFilter] = useState('All');
+  const [roleFilter, setRoleFilter] = useState('All');
   const [locationFilter, setLocationFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [currentPage, setCurrentPage] = useState(1);
@@ -105,7 +103,7 @@ const AttendanceTable = () => {
   const filteredEmployees = employeeData.filter(employee => {
     return (
       employee.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (designationFilter === "All" || employee.designation.includes(designationFilter)) &&
+      (roleFilter === "All" || employee.designation.includes(roleFilter)) &&
       (locationFilter === "All" || employee.type === locationFilter) &&
       (statusFilter === "All Status" || employee.status === statusFilter)
     );
@@ -119,7 +117,7 @@ const AttendanceTable = () => {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, designationFilter, locationFilter, statusFilter]);
+  }, [searchTerm, roleFilter, locationFilter, statusFilter]);
 
   return (
     <div className="w-full p-2 sm:p-4" dir={isArabic ? "rtl" : "ltr"}>
@@ -129,37 +127,37 @@ const AttendanceTable = () => {
       </h1>
 
       {/* Filters Section */}
-      <div className="flex flex-col gap-3 shadow-lg border border-[var(--border-color)] rounded-4xl p-5 mb-4">
-        {/* Search Input - Full width on mobile */}
-        <div className="relative w-[25%] max-[1200px]:w-full">
-          <Search className={`absolute top-1/2 transform -translate-y-1/2 text-[var(--sub-text-color)] w-3.5 h-3.5 ${isArabic ? 'right-2.5' : 'left-2.5'}`} />
-          <input
-            type="text"
-            placeholder={t("adminDashboard.table.search", "Search")}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full py-2 text-sm bg-[var(--bg-color)] border border-[var(--border-color)] rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-            style={{
-              paddingLeft: isArabic ? '12px' : '32px',
-              paddingRight: isArabic ? '32px' : '12px'
-            }}
-          />
-        </div>
+      <div className="shadow-md border border-[var(--border-color)] rounded-4xl p-3 sm:p-4 md:p-5 mb-4">
+        {/* Search and Filters Row */}
+        <div className={`flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 md:gap-4 ${isArabic ? 'sm:flex-row-reverse' : ''}`}>
+          {/* Search Input */}
+          <div className="relative w-full sm:w-[25%] sm:flex-shrink-0">
+            <Search className={`absolute top-1/2 transform -translate-y-1/2 text-[var(--sub-text-color)] w-3.5 h-3.5 ${isArabic ? 'right-2.5' : 'left-2.5'}`} />
+            <input
+              type="text"
+              placeholder={t("adminDashboard.table.search", "Search")}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full py-2 px-3 text-sm bg-[var(--bg-color)] border border-[var(--border-color)] rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+              style={{
+                paddingLeft: isArabic ? '12px' : '32px',
+                paddingRight: isArabic ? '32px' : '12px'
+              }}
+            />
+          </div>
 
-        {/* Filters and Button Row */}
-        <div className={`flex flex-col sm:flex-row items-start sm:items-center gap-3 ${isArabic ? 'sm:flex-row-reverse' : ''}`}>
           {/* Filter Dropdowns Container */}
-          <div className={`flex flex-col min-[480px]:flex-row flex-wrap gap-2 min-[480px]:gap-3 w-full sm:flex-1 ${isArabic ? 'min-[480px]:flex-row-reverse' : ''}`}>
-            {/* Designation Filter */}
-            <div className={`flex flex-col min-[320px]:flex-row min-[320px]:items-center gap-1 min-[320px]:gap-1.5 flex-1 min-[480px]:flex-none min-w-0 ${isArabic ? 'min-[320px]:flex-row-reverse' : ''}`}>
-              <span className={`text-xs text-[var(--sub-text-color)] whitespace-nowrap min-[320px]:min-w-[70px] min-[480px]:min-w-[60px] ${isArabic ? 'text-right' : 'text-left'}`}>
-                {t("adminDashboard.table.designation", "Designation")}
+          <div className={`flex flex-row flex-nowrap gap-2 sm:gap-3 w-full sm:flex-1 overflow-x-auto ${isArabic ? 'flex-row-reverse' : ''}`}>
+            {/* Role Filter */}
+            <div className={`flex flex-row items-center gap-1.5 flex-shrink-0 ${isArabic ? 'flex-row-reverse' : ''}`}>
+              <span className={`text-xs text-[var(--sub-text-color)] whitespace-nowrap ${isArabic ? 'text-right' : 'text-left'}`}>
+                {t("employees.table.role", "Role")}
               </span>
-              <div className="relative flex-1 min-[480px]:flex-none min-w-0">
+              <div className="relative flex-shrink-0">
                 <select
-                  value={designationFilter}
-                  onChange={(e) => setDesignationFilter(e.target.value)}
-                  className="w-full min-[480px]:w-[100px] sm:w-[120px] h-[32px] appearance-none bg-[var(--bg-color)] border border-[var(--border-color)] rounded-full px-2.5 py-1.5 pr-7 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  value={roleFilter}
+                  onChange={(e) => setRoleFilter(e.target.value)}
+                  className="w-[100px] sm:w-[120px] h-[32px] appearance-none bg-[var(--bg-color)] border border-[var(--border-color)] rounded-full px-3 py-1.5 pr-7 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
                   dir={isArabic ? 'rtl' : 'ltr'}
                 >
                   <option value="All">{t("adminDashboard.table.all", "All")}</option>
@@ -172,15 +170,15 @@ const AttendanceTable = () => {
             </div>
 
             {/* Location Filter */}
-            <div className={`flex flex-col min-[320px]:flex-row min-[320px]:items-center gap-1 min-[320px]:gap-1.5 flex-1 min-[480px]:flex-none min-w-0 ${isArabic ? 'min-[320px]:flex-row-reverse' : ''}`}>
-              <span className={`text-xs text-[var(--sub-text-color)] whitespace-nowrap min-[320px]:min-w-[50px] min-[480px]:min-w-[45px] ${isArabic ? 'text-right' : 'text-left'}`}>
+            <div className={`flex flex-row items-center gap-1.5 flex-shrink-0 ${isArabic ? 'flex-row-reverse' : ''}`}>
+              <span className={`text-xs text-[var(--sub-text-color)] whitespace-nowrap ${isArabic ? 'text-right' : 'text-left'}`}>
                 {t("adminDashboard.table.location", "Location")}
               </span>
-              <div className="relative flex-1 min-[480px]:flex-none min-w-0">
+              <div className="relative flex-shrink-0">
                 <select
                   value={locationFilter}
                   onChange={(e) => setLocationFilter(e.target.value)}
-                  className="w-full min-[480px]:w-[80px] sm:w-[100px] h-[32px] appearance-none bg-[var(--bg-color)] border border-[var(--border-color)] rounded-full px-2.5 py-1.5 pr-7 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-[80px] sm:w-[100px] h-[32px] appearance-none bg-[var(--bg-color)] border border-[var(--border-color)] rounded-full px-3 py-1.5 pr-7 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
                   dir={isArabic ? 'rtl' : 'ltr'}
                 >
                   <option value="All">{t("adminDashboard.table.all", "All")}</option>
@@ -192,15 +190,15 @@ const AttendanceTable = () => {
             </div>
 
             {/* Status Filter */}
-            <div className={`flex flex-col min-[320px]:flex-row min-[320px]:items-center gap-1 min-[320px]:gap-1.5 flex-1 min-[480px]:flex-none min-w-0 ${isArabic ? 'min-[320px]:flex-row-reverse' : ''}`}>
-              <span className={`text-xs text-[var(--sub-text-color)] whitespace-nowrap min-[320px]:min-w-[40px] min-[480px]:min-w-[35px] ${isArabic ? 'text-right' : 'text-left'}`}>
+            <div className={`flex flex-row items-center gap-1.5 flex-shrink-0 ${isArabic ? 'flex-row-reverse' : ''}`}>
+              <span className={`text-xs text-[var(--sub-text-color)] whitespace-nowrap ${isArabic ? 'text-right' : 'text-left'}`}>
                 {t("adminDashboard.table.status", "Status")}
               </span>
-              <div className="relative flex-1 min-[480px]:flex-none min-w-0">
+              <div className="relative flex-shrink-0">
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w-full min-[480px]:w-[90px] sm:w-[110px] h-[32px] appearance-none bg-[var(--bg-color)] border border-[var(--border-color)] rounded-full px-2.5 py-1.5 pr-7 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-[90px] sm:w-[110px] h-[32px] appearance-none bg-[var(--bg-color)] border border-[var(--border-color)] rounded-full px-3 py-1.5 pr-7 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
                   dir={isArabic ? 'rtl' : 'ltr'}
                 >
                   <option value="All Status">{t("adminDashboard.table.allStatus", "All Status")}</option>
@@ -211,11 +209,6 @@ const AttendanceTable = () => {
               </div>
             </div>
           </div>
-
-          {/* View All Button
-          <button className="text-xs text-[var(--accent-color)] hover:text-[var(--accent-hover)] border border-[var(--border-color)] rounded-lg px-3 py-2 whitespace-nowrap hover:underline w-full min-[480px]:w-auto sm:flex-shrink-0">
-            {t("adminDashboard.table.viewAll", "View All")}
-          </button> */}
         </div>
       </div>
 
@@ -231,7 +224,7 @@ const AttendanceTable = () => {
                     {t("adminDashboard.table.employeeName", "Employee Name")}
                   </th>
                   <th className={`text-[var(--sub-text-color)] font-medium text-xs py-3 px-4 ${isArabic ? 'text-right' : 'text-left'}`}>
-                    {t("adminDashboard.table.designation", "Designation")}
+                    {t("employees.table.role", "Role")}
                   </th>
                   <th className={`text-[var(--sub-text-color)] font-medium text-xs py-3 px-4 ${isArabic ? 'text-right' : 'text-left'}`}>
                     {t("adminDashboard.table.type", "Type")}

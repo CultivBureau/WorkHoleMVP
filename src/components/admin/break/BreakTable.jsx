@@ -199,7 +199,7 @@ const BreakTable = () => {
                         {/* Add New Button */}
                         <button
                             onClick={handleAddNew}
-                            className={`flex items-center gap-2 px-4 py-2 bg-[var(--accent-color)] text-white rounded-lg font-medium hover:opacity-90 transition-opacity ${isArabic ? 'flex-row-reverse' : ''}`}
+                            className={`flex items-center gap-2 h-8 px-3 bg-[var(--accent-color)] text-white rounded-md text-[12px] font-medium hover:opacity-90 transition-opacity ${isArabic ? 'flex-row-reverse' : ''}`}
                         >
                             <Plus className="w-4 h-4" />
                             <span>{t('breaks.addNew') || 'Add New'}</span>

@@ -104,34 +104,38 @@ export default function TeamCard({ team, onEdit, onDelete }) {
 
             {/* Team Lead Header */}
             {(team.lead || team.teamLeader) && team.lead !== "Unknown" && (
-                <div className={`flex items-center justify-between mb-4 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                    <div className={`flex items-center gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                        {team.leadAvatar && (
-                            <img
-                                src={team.leadAvatar}
-                                alt={team.lead || 'Team Leader'}
-                                className="w-8 h-8 rounded-full"
-                            />
-                        )}
-                        <div className={`${isArabic ? 'text-right' : 'text-left'}`}>
-                            <p className="text-sm font-medium text-[var(--text-color)]">
-                                {team.lead || (team.teamLeader 
-                                    ? `${team.teamLeader.firstName || ''} ${team.teamLeader.lastName || ''}`.trim() || team.teamLeader.userName || team.teamLeader.email || 'Team Leader'
-                                    : 'Team Leader')}
-                            </p>
-                            {(team.leadRole || team.teamLeader?.jobTitle) && (
-                                <p className="text-xs text-[var(--sub-text-color)]">
-                                    {team.leadRole || team.teamLeader?.jobTitle}
-                                </p>
+                <>
+                    <div className={`flex items-center justify-between mb-4 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                        <div className={`flex items-center gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                            {team.leadAvatar && (
+                                <img
+                                    src={team.leadAvatar}
+                                    alt={team.lead || 'Team Leader'}
+                                    className="w-8 h-8 rounded-full"
+                                />
                             )}
-                            {team.teamLeader?.email && !team.leadRole && !team.teamLeader?.jobTitle && (
-                                <p className="text-xs text-[var(--sub-text-color)]">
-                                    {team.teamLeader.email}
+                            <div className={`${isArabic ? 'text-right' : 'text-left'}`}>
+                                <p className="text-sm font-medium text-[var(--text-color)]">
+                                    {team.lead || (team.teamLeader 
+                                        ? `${team.teamLeader.firstName || ''} ${team.teamLeader.lastName || ''}`.trim() || team.teamLeader.userName || team.teamLeader.email || 'Team Leader'
+                                        : 'Team Leader')}
                                 </p>
-                            )}
+                                {(team.leadRole || team.teamLeader?.jobTitle) && (
+                                    <p className="text-xs text-[var(--sub-text-color)]">
+                                        {team.leadRole || team.teamLeader?.jobTitle}
+                                    </p>
+                                )}
+                                {team.teamLeader?.email && !team.leadRole && !team.teamLeader?.jobTitle && (
+                                    <p className="text-xs text-[var(--sub-text-color)]">
+                                        {team.teamLeader.email}
+                                    </p>
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
+                    {/* Divider under team leader */}
+                    <div className="w-full h-px bg-[var(--border-color)] mb-4"></div>
+                </>
             )}
 
             {/* Team Members List */}
