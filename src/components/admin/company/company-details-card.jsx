@@ -30,8 +30,10 @@ const CompanyDetailsCard = () => {
         setAttachments(
           company.companyAttachment.attachments.map((att) => ({
             id: att.id,
+            internalId: att.internalId || null, // UUID string
             file: null, // No file initially, only when user uploads new one
-            expiryDate: att.expiryDate || "",
+            fileName: att.fileName || "", // File name string
+            expiryDate: formatExpiryDate(att.expiryDate || ""), // Convert to YYYY-MM-DD format
             filePath: att.filePath, // Keep original file path for display
             fileContent: att.fileContent, // Keep original file content for display
           }))
@@ -49,8 +51,10 @@ const CompanyDetailsCard = () => {
       setAttachments(
         company.companyAttachment.attachments.map((att) => ({
           id: att.id,
+          internalId: att.internalId || null, // UUID string
           file: null,
-          expiryDate: att.expiryDate || "",
+          fileName: att.fileName || "", // File name string
+          expiryDate: formatExpiryDate(att.expiryDate || ""), // Convert to YYYY-MM-DD format
           filePath: att.filePath,
           fileContent: att.fileContent,
         }))
@@ -67,8 +71,10 @@ const CompanyDetailsCard = () => {
       setAttachments(
         company.companyAttachment.attachments.map((att) => ({
           id: att.id,
+          internalId: att.internalId || null, // UUID string
           file: null,
-          expiryDate: att.expiryDate || "",
+          fileName: att.fileName || "", // File name string
+          expiryDate: formatExpiryDate(att.expiryDate || ""), // Convert to YYYY-MM-DD format
           filePath: att.filePath,
           fileContent: att.fileContent,
         }))
@@ -85,8 +91,10 @@ const CompanyDetailsCard = () => {
         name: companyName,
         attachments: attachments.map((att) => ({
           id: att.id,
-          file: att.file,
-          expiryDate: att.expiryDate,
+          internalId: att.internalId, // UUID string
+          file: att.file, // File object if new upload, null if keeping existing
+          fileName: att.fileName || (att.file instanceof File ? att.file.name : ""), // File name
+          expiryDate: formatExpiryDate(att.expiryDate), // Format date to YYYY-MM-DD
         })),
       }).unwrap();
       
@@ -104,6 +112,7 @@ const CompanyDetailsCard = () => {
     newAttachments[index] = {
       ...newAttachments[index],
       file: file,
+      fileName: file ? file.name : newAttachments[index].fileName || "", // Set fileName when file is selected
     };
     setAttachments(newAttachments);
   };
@@ -122,6 +131,15 @@ const CompanyDetailsCard = () => {
     newAttachments[index] = {
       ...newAttachments[index],
       id: id ? parseInt(id) : null,
+    };
+    setAttachments(newAttachments);
+  };
+
+  const handleAttachmentInternalIdChange = (index, internalId) => {
+    const newAttachments = [...attachments];
+    newAttachments[index] = {
+      ...newAttachments[index],
+      internalId: internalId || null,
     };
     setAttachments(newAttachments);
   };
