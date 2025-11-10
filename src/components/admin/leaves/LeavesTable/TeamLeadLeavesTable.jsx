@@ -1,16 +1,26 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useLang } from "../../../../contexts/LangContext"
 import { ChevronDown, ChevronUp, Calendar, Users } from "lucide-react"
 import LeavePopUp from "../leavePopUp/LeavePopUp"
 import { useGetAllTeamLeadRequestsQuery } from "../../../../services/apis/LeaveApi"
 
+function normalizeDecision(status) {
+	if (!status) return "Pending"
+	const lower = status.toLowerCase()
+	if (lower.includes("reject")) return "Rejected"
+	if (lower.includes("approve") || lower.includes("confirm")) return "Approved"
+	if (lower.includes("pending")) return "Pending"
+	return status
+}
+
 const getStatusBadge = (status, t) => {
 	const baseClasses =
 		"px-3 py-1 rounded-full text-xs font-medium inline-block border"
-	const statusLower = status?.toLowerCase() || ""
+	const normalized = normalizeDecision(status)
+	const statusLower = normalized?.toLowerCase() || ""
 	switch (statusLower) {
 		case "pending":
 			return (
@@ -41,7 +51,7 @@ const getStatusBadge = (status, t) => {
 				<span
 					className={`${baseClasses} bg-[var(--container-color)] text-[var(--sub-text-color)] border-[var(--border-color)]`}
 				>
-					{status || "Unknown"}
+					{normalized || status || "Unknown"}
 				</span>
 			)
 	}
@@ -66,8 +76,9 @@ const TeamLeadLeavesTable = () => {
 	const [tableSortColumn, setTableSortColumn] = useState(null)
 	const [tableSortDirection, setTableSortDirection] = useState('asc')
 
-	// Popup state
+	// Popup / local override states
 	const [selectedLeave, setSelectedLeave] = useState(null)
+	const [manualUpdates, setManualUpdates] = useState({})
 
 	// Fetch leave requests from API
 	const { data, isLoading, isError, refetch } = useGetAllTeamLeadRequestsQuery({
@@ -89,6 +100,9 @@ const TeamLeadLeavesTable = () => {
 			const endDate = request.endDate ? new Date(request.endDate) : null
 			const teamLeadActionDate = request.teamLeadActionDate ? new Date(request.teamLeadActionDate) : null
 			const hrActionDate = request.hrActionDate || request.hrConfirmDate ? new Date(request.hrActionDate || request.hrConfirmDate) : null
+			const rawStatus = request.requestStatus || "Pending"
+			const rawDecision = request.finalDecision || rawStatus
+			const normalizedDecision = normalizeDecision(rawDecision)
 			
 			return {
 				id: request.id,
@@ -100,7 +114,8 @@ const TeamLeadLeavesTable = () => {
 				to: endDate ? endDate.toLocaleDateString() : "N/A",
 				toSort: endDate,
 				days: request.totalDays || 0,
-				status: request.requestStatus || "Pending",
+				status: rawStatus,
+				finalDecision: normalizedDecision,
 				reason: request.reason || "",
 				attachmentUrl: request.attachmentUrl,
 				// Approver fields
@@ -134,13 +149,29 @@ const TeamLeadLeavesTable = () => {
 	}
 
 	// Filter and sort data
+	const mergedLeaves = useMemo(() => {
+		const map = new Map()
+		formattedLeaves.forEach((leave) => {
+			map.set(leave.id, { ...leave })
+		})
+		Object.entries(manualUpdates).forEach(([id, update]) => {
+			const existing = map.get(id)
+			if (existing) {
+				map.set(id, { ...existing, ...update })
+			} else {
+				map.set(id, { ...update })
+			}
+		})
+		return Array.from(map.values())
+	}, [formattedLeaves, manualUpdates])
+
 	const filteredAndSortedData = useMemo(() => {
-		let filtered = [...formattedLeaves]
+		let filtered = [...mergedLeaves]
 
 		// Apply filters
 		if (statusFilter !== "all") {
 			filtered = filtered.filter(leave => {
-				return leave.status?.toLowerCase() === statusFilter.toLowerCase()
+				return normalizeDecision(leave.status)?.toLowerCase() === statusFilter.toLowerCase()
 			})
 		}
 
@@ -208,6 +239,10 @@ const TeamLeadLeavesTable = () => {
 						aVal = a.status?.toLowerCase() || ""
 						bVal = b.status?.toLowerCase() || ""
 						break
+					case 'finalDecision':
+						aVal = a.finalDecision?.toLowerCase() || ""
+						bVal = b.finalDecision?.toLowerCase() || ""
+						break
 					case 'reason':
 						aVal = a.reason?.toLowerCase() || ""
 						bVal = b.reason?.toLowerCase() || ""
@@ -233,7 +268,7 @@ const TeamLeadLeavesTable = () => {
 		}
 
 		return filtered
-	}, [formattedLeaves, sortBy, leaveTypeFilter, statusFilter, dateFromFilter, dateToFilter, tableSortColumn, tableSortDirection])
+	}, [mergedLeaves, sortBy, leaveTypeFilter, statusFilter, dateFromFilter, dateToFilter, tableSortColumn, tableSortDirection])
 
 	// Reset current page when filters change
 	useEffect(() => {
@@ -250,9 +285,58 @@ const TeamLeadLeavesTable = () => {
 	}
 
 	// Handle refetch after actions
-	const handleRefetch = () => {
+	const handleRefetch = useCallback(() => {
 		refetch()
-	}
+	}, [refetch])
+
+	const handleActionComplete = useCallback((result) => {
+		if (!result?.leaveId) {
+			handleRefetch()
+			setSelectedLeave(null)
+			return
+		}
+
+		setManualUpdates((prev) => {
+			const existing =
+				formattedLeaves.find((leave) => leave.id === result.leaveId) ||
+				prev[result.leaveId] ||
+				selectedLeave
+
+			if (!existing) return prev
+
+			const decision = normalizeDecision(result.newStatus) || existing.finalDecision || existing.status
+			const now = new Date()
+			const formattedActionDate = result.actionDate || now.toLocaleDateString()
+
+			const updatedLeave = {
+				...existing,
+				status: decision,
+				finalDecision: decision,
+				...(result.action === "teamLeadReview"
+					? {
+							teamLeadComment: result.comment ?? existing.teamLeadComment,
+							teamLeadActionDate: formattedActionDate,
+							teamLeadActionDateSort: now,
+					  }
+					: {}),
+				...(result.action !== "teamLeadReview"
+					? {
+							hrComment: result.comment ?? existing.hrComment,
+							hrActionDate: formattedActionDate,
+							hrActionDateSort: now,
+					  }
+					: {}),
+			}
+
+			return {
+				...prev,
+				[result.leaveId]: updatedLeave,
+			}
+		})
+
+		handleRefetch()
+		setSelectedLeave(null)
+	}, [formattedLeaves, selectedLeave, handleRefetch])
 
 	return (
 		<>
@@ -261,7 +345,7 @@ const TeamLeadLeavesTable = () => {
 					leaveRequest={selectedLeave}
 					userRole="teamLead"
 					onClose={() => setSelectedLeave(null)}
-					onActionComplete={handleRefetch}
+					onActionComplete={handleActionComplete}
 				/>
 			)}
 			<div className="bg-[var(--bg-color)] rounded-lg border border-[var(--border-color)]">
@@ -479,6 +563,15 @@ const TeamLeadLeavesTable = () => {
 											{getSortIcon('status')}
 										</div>
 									</th>
+								<th
+									onClick={() => handleTableSort('finalDecision')}
+									className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors"
+								>
+									<div className="flex items-center gap-1">
+										{t("adminLeaves.table.columns.finalDecision", "Final Decision")}
+										{getSortIcon('finalDecision')}
+									</div>
+								</th>
 									<th
 										onClick={() => handleTableSort('reason')}
 										className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors"
@@ -551,6 +644,9 @@ const TeamLeadLeavesTable = () => {
 										</td>
 										<td className="py-4 px-6">
 											{getStatusBadge(leave.status, t)}
+										</td>
+										<td className="py-4 px-6">
+											{getStatusBadge(leave.finalDecision, t)}
 										</td>
 										<td className="py-4 px-6 text-[var(--text-color)] text-sm">
 											{leave.reason || "-"}

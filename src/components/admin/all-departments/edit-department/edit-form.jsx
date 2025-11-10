@@ -198,6 +198,9 @@ export default function EditDepartmentForm() {
                             setIsUserOpen={setIsUserOpen}
                             selectedRole={selectedRole}
                             setSelectedRole={setSelectedRole}
+                            supervisorSearchTerm={supervisorSearchTerm}
+                            setSupervisorSearchTerm={setSupervisorSearchTerm}
+                            filteredSupervisorUsers={filteredSupervisorUsers}
                         />
                     )}
                     {step === 2 && <EditSetupTeamsStep departmentData={departmentData} setDepartmentData={setDepartmentData} onNext={() => setStep(3)} onBack={() => setStep(1)} />}
@@ -275,11 +278,28 @@ function EditDepartmentInfoStep({ departmentData, setDepartmentData, onNext }) {
 }
 
 // Step 2: Edit Assign Supervisor
-function EditAssignSupervisorStep({ onNext, onBack, selectedUser, setSelectedUser, roles, users, isRoleOpen, setIsRoleOpen, isUserOpen, setIsUserOpen, selectedRole, setSelectedRole }) {
+function EditAssignSupervisorStep({
+    onNext,
+    onBack,
+    selectedUser,
+    setSelectedUser,
+    roles,
+    users,
+    isRoleOpen,
+    setIsRoleOpen,
+    isUserOpen,
+    setIsUserOpen,
+    selectedRole,
+    setSelectedRole,
+    supervisorSearchTerm,
+    setSupervisorSearchTerm,
+    filteredSupervisorUsers,
+}) {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
     const safeRoles = Array.isArray(roles) ? roles : [];
     const safeUsers = Array.isArray(users) ? users : [];
+    const safeFilteredUsers = Array.isArray(filteredSupervisorUsers) ? filteredSupervisorUsers : safeUsers;
 
     return (
         <div className="space-y-6">
@@ -327,8 +347,8 @@ function EditAssignSupervisorStep({ onNext, onBack, selectedUser, setSelectedUse
                         {/* Users List */}
                         <div className="overflow-y-auto max-h-[240px]">
                             {!selectedRole && <div className="p-3 text-[var(--sub-text-color)]">Select a role first</div>}
-                            {selectedRole && filteredSupervisorUsers.length > 0 ? (
-                                filteredSupervisorUsers.map((u) => (
+                            {selectedRole && safeFilteredUsers.length > 0 ? (
+                                safeFilteredUsers.map((u) => (
                                     <div key={u.id} className="p-3 hover:bg-[var(--hover-color)] cursor-pointer" onClick={() => { 
                                         setSelectedUser(u); 
                                         setIsUserOpen(false);

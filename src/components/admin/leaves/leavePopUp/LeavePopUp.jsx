@@ -17,7 +17,8 @@ const LeavePopUp = ({
   days,
   status,
   reason,
-  approver,
+  // eslint-disable-next-line no-unused-vars
+  approver, // Legacy prop, kept for backward compatibility
   comment,
 }) => {
   const { t } = useTranslation()
@@ -70,7 +71,14 @@ const LeavePopUp = ({
       }).unwrap()
       
       if (onActionComplete) {
-        onActionComplete()
+        onActionComplete({
+          leaveId: leaveRequest?.id,
+          action: "teamLeadReview",
+          isApproved,
+          newStatus: isApproved ? "Approved" : "Rejected",
+          comment: commentText,
+          actionDate: new Date().toLocaleDateString(),
+        })
       }
       onClose()
     } catch (error) {
@@ -94,7 +102,14 @@ const LeavePopUp = ({
       }).unwrap()
       
       if (onActionComplete) {
-        onActionComplete()
+        onActionComplete({
+          leaveId: leaveRequest?.id,
+          action: "hrConfirm",
+          isConfirmed,
+          newStatus: isConfirmed ? "Approved" : "Rejected",
+          comment: commentText,
+          actionDate: new Date().toLocaleDateString(),
+        })
       }
       onClose()
     } catch (error) {
@@ -118,7 +133,14 @@ const LeavePopUp = ({
       }).unwrap()
       
       if (onActionComplete) {
-        onActionComplete()
+        onActionComplete({
+          leaveId: leaveRequest?.id,
+          action: "hrOverride",
+          forceApprove: true,
+          newStatus: "Approved",
+          comment: justificationText,
+          actionDate: new Date().toLocaleDateString(),
+        })
       }
       setShowOverrideModal(false)
       onClose()
@@ -130,9 +152,37 @@ const LeavePopUp = ({
     }
   }
 
-  const canApprove = displayStatus?.toLowerCase() === "pending"
-  const canReject = displayStatus?.toLowerCase() === "pending"
-  const canConfirm = userRole === "hr" && displayStatus?.toLowerCase() === "approved"
+  // Normalize status for checking
+  const normalizedStatus = displayStatus?.toLowerCase()?.trim() || ""
+  
+  // Team leads can approve/reject if:
+  // 1. Status is "pending" (any case variation)
+  // 2. Status doesn't indicate final rejection or HR confirmation
+  // This allows team leads to review requests even if status shows variations like "TeamLeadApproved"
+  const isFinalStatus = normalizedStatus.includes("rejected") || 
+                       normalizedStatus.includes("hrconfirmed") || 
+                       normalizedStatus.includes("confirmed") ||
+                       normalizedStatus === "rejected"
+  
+  const isPendingStatus = normalizedStatus === "pending" || normalizedStatus.includes("pending")
+  
+  // Team leads can approve/reject if status is pending or not in final state
+  const canApprove = userRole === "teamLead" && (isPendingStatus || !isFinalStatus)
+  const canReject = userRole === "teamLead" && (isPendingStatus || !isFinalStatus)
+  
+  // HR can confirm if status is approved by team lead (not rejected, not already confirmed)
+  const canConfirm = userRole === "hr" && 
+                     (normalizedStatus === "approved" || 
+                      normalizedStatus.includes("approved") || 
+                      normalizedStatus === "teamleadapproved") &&
+                     !normalizedStatus.includes("rejected") &&
+                     !normalizedStatus.includes("hrconfirmed") &&
+                     !normalizedStatus.includes("confirmed")
+  
+  // HR can override any status (pending, approved, or rejected) - allows overriding team lead rejections
+  const canOverride = userRole === "hr" && 
+                      !normalizedStatus.includes("hrconfirmed") &&
+                      !normalizedStatus.includes("confirmed")
 
   // Format avatar display
   const getAvatarDisplay = () => {
@@ -147,7 +197,7 @@ const LeavePopUp = ({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-2">
-      <div className="w-full max-w-2xl bg-[var(--bg-color)] rounded-2xl shadow-2xl border border-[var(--border-color)] overflow-hidden">
+      <div className="w-full max-w-2xl bg-[var(--bg-color)] rounded-2xl shadow-2xl border border-[var(--border-color)] overflow-hidden max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-6 pb-2">
           <div className="flex items-center gap-4">
@@ -178,137 +228,153 @@ const LeavePopUp = ({
             <X className="w-6 h-6 text-[var(--text-color)]" />
           </button>
         </div>
-        {/* Leave type and dates */}
-        <div className="flex flex-wrap items-center gap-6 px-6 py-2">
-          <span className="text-[var(--text-color)] text-base">
-            {t("adminLeaves.popup.leaveType")} <span className="font-bold text-[var(--text-color)]">{displayType}</span>
-          </span>
-          <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-teal-500" />
-            <span className="text-[var(--text-color)] font-medium">{t("adminLeaves.popup.from")}</span>
-            <span className="text-[var(--text-color)]">{displayFrom}</span>
+        <div className="overflow-y-auto">
+          {/* Leave type and dates */}
+          <div className="flex flex-wrap items-center gap-6 px-6 py-2">
+            <span className="text-[var(--text-color)] text-base">
+              {t("adminLeaves.popup.leaveType")} <span className="font-bold text-[var(--text-color)]">{displayType}</span>
+            </span>
+            <div className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-teal-500" />
+              <span className="text-[var(--text-color)] font-medium">{t("adminLeaves.popup.from")}</span>
+              <span className="text-[var(--text-color)]">{displayFrom}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-teal-500" />
+              <span className="text-[var(--text-color)] font-medium">{t("adminLeaves.popup.to")}</span>
+              <span className="text-[var(--text-color)]">{displayTo}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-teal-500" />
+              <span className="text-[var(--text-color)] font-medium">{t("adminLeaves.popup.days")}</span>
+              <span className="text-[var(--text-color)]">{displayDays}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-teal-500" />
-            <span className="text-[var(--text-color)] font-medium">{t("adminLeaves.popup.to")}</span>
-            <span className="text-[var(--text-color)]">{displayTo}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-teal-500" />
-            <span className="text-[var(--text-color)] font-medium">{t("adminLeaves.popup.days")}</span>
-            <span className="text-[var(--text-color)]">{displayDays}</span>
-          </div>
-        </div>
-        {/* Reason */}
-        <div className="px-6 pt-4">
-          <div className="text-[var(--text-color)] font-semibold mb-2">{t("adminLeaves.popup.reason")}</div>
-          <div className="bg-[var(--container-color)] rounded-xl p-4 text-[var(--text-color)] text-base border border-[var(--border-color)]">
-            {displayReason || t("adminLeaves.popup.noReason", "No reason provided")}
-          </div>
-        </div>
-        {/* Attachment */}
-        {attachmentUrl && (
-          <div className="px-6 pt-2">
-            <a
-              href={attachmentUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[var(--accent-color)] hover:underline text-sm"
-            >
-              {t("adminLeaves.popup.viewAttachment", "View Attachment")}
-            </a>
-          </div>
-        )}
-        {/* Team Lead Comment (for HR view) */}
-        {userRole === "hr" && teamLeadName && (
+          {/* Reason */}
           <div className="px-6 pt-4">
-            <div className="text-[var(--text-color)] font-semibold mb-2">
-              {t("adminLeaves.popup.teamLeadComment", "Team Lead Comment")}
-            </div>
+            <div className="text-[var(--text-color)] font-semibold mb-2">{t("adminLeaves.popup.reason")}</div>
             <div className="bg-[var(--container-color)] rounded-xl p-4 text-[var(--text-color)] text-base border border-[var(--border-color)]">
-              <div className="mb-2">
-                <span className="font-medium">{teamLeadName}</span>
-                <span className="text-sm text-[var(--sub-text-color)] ml-2">
-                  ({t("adminLeaves.popup.roles.teamLead")})
-                </span>
-              </div>
-              <div>{displayComment || t("adminLeaves.popup.noComment", "No comment")}</div>
+              {displayReason || t("adminLeaves.popup.noReason", "No reason provided")}
             </div>
           </div>
-        )}
-        {/* Action Buttons */}
-        {userRole === "teamLead" && (canApprove || canReject) && (
-          <>
+          {/* Attachment */}
+          {attachmentUrl && (
+            <div className="px-6 pt-2">
+              <a
+                href={attachmentUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[var(--accent-color)] hover:underline text-sm"
+              >
+                {t("adminLeaves.popup.viewAttachment", "View Attachment")}
+              </a>
+            </div>
+          )}
+          {/* Team Lead Comment (for HR view) */}
+          {userRole === "hr" && teamLeadName && (
             <div className="px-6 pt-4">
-              <label className="block text-[var(--text-color)] font-semibold mb-2">
-                {t("adminLeaves.popup.addComment", "Add Comment (Optional)")}
-              </label>
-              <textarea
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                placeholder={t("adminLeaves.popup.commentPlaceholder", "Enter your comment...")}
-                className="w-full px-4 py-2 bg-[var(--container-color)] border border-[var(--border-color)] rounded-lg text-[var(--text-color)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)] resize-none"
-                rows="3"
-              />
+              <div className="text-[var(--text-color)] font-semibold mb-2">
+                {t("adminLeaves.popup.teamLeadComment", "Team Lead Comment")}
+              </div>
+              <div className="bg-[var(--container-color)] rounded-xl p-4 text-[var(--text-color)] text-base border border-[var(--border-color)]">
+                <div className="mb-2">
+                  <span className="font-medium">{teamLeadName}</span>
+                  <span className="text-sm text-[var(--sub-text-color)] ml-2">
+                    ({t("adminLeaves.popup.roles.teamLead")})
+                  </span>
+                </div>
+                <div>{displayComment || t("adminLeaves.popup.noComment", "No comment")}</div>
+              </div>
             </div>
+          )}
+          {/* Action Buttons */}
+          {userRole === "teamLead" && (canApprove || canReject) && (
+            <>
+              <div className="px-6 pt-4">
+                <label className="block text-[var(--text-color)] font-semibold mb-2">
+                  {t("adminLeaves.popup.addComment", "Add Comment (Optional)")}
+                </label>
+                <textarea
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  placeholder={t("adminLeaves.popup.commentPlaceholder", "Enter your comment...")}
+                  className="w-full px-4 py-2 bg-[var(--container-color)] border border-[var(--border-color)] rounded-lg text-[var(--text-color)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)] resize-none"
+                  rows="3"
+                />
+              </div>
+              <div className="flex gap-4 px-6 py-4">
+                <button
+                  onClick={() => handleTeamLeadReview(true)}
+                  disabled={isSubmitting}
+                  className="flex-1 gradient-bg hover:bg-[var(--accent-hover)] text-white font-semibold py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
+                >
+                  {isSubmitting ? t("adminLeaves.popup.processing", "Processing...") : t("adminLeaves.popup.approve", "Approve")}
+                </button>
+                <button
+                  onClick={() => handleTeamLeadReview(false)}
+                  disabled={isSubmitting}
+                  className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? t("adminLeaves.popup.processing", "Processing...") : t("adminLeaves.popup.reject", "Reject")}
+                </button>
+              </div>
+            </>
+          )}
+          {userRole === "hr" && canConfirm && (
+            <>
+              <div className="px-6 pt-4">
+                <label className="block text-[var(--text-color)] font-semibold mb-2">
+                  {t("adminLeaves.popup.addComment", "Add Comment (Optional)")}
+                </label>
+                <textarea
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  placeholder={t("adminLeaves.popup.commentPlaceholder", "Enter your comment...")}
+                  className="w-full px-4 py-2 bg-[var(--container-color)] border border-[var(--border-color)] rounded-lg text-[var(--text-color)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)] resize-none"
+                  rows="3"
+                />
+              </div>
+              <div className="flex gap-4 px-6 py-4">
+                <button
+                  onClick={() => handleHrConfirm(true)}
+                  disabled={isSubmitting}
+                  className="flex-1 gradient-bg hover:bg-[var(--accent-hover)] text-white font-semibold py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
+                >
+                  {isSubmitting ? t("adminLeaves.popup.processing", "Processing...") : t("adminLeaves.popup.confirm", "Confirm")}
+                </button>
+                <button
+                  onClick={() => handleHrConfirm(false)}
+                  disabled={isSubmitting}
+                  className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? t("adminLeaves.popup.processing", "Processing...") : t("adminLeaves.popup.reject", "Reject")}
+                </button>
+                <button
+                  onClick={() => setShowOverrideModal(true)}
+                  disabled={isSubmitting}
+                  className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  <AlertCircle className="w-4 h-4" />
+                  {t("adminLeaves.popup.override", "Override")}
+                </button>
+              </div>
+            </>
+          )}
+          {/* HR Override button for rejected or pending requests */}
+          {userRole === "hr" && canOverride && !canConfirm && (
             <div className="flex gap-4 px-6 py-4">
-              <button
-                onClick={() => handleTeamLeadReview(true)}
-                disabled={isSubmitting}
-                className="flex-1 gradient-bg hover:bg-[var(--accent-hover)] text-white font-semibold py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
-              >
-                {isSubmitting ? t("adminLeaves.popup.processing", "Processing...") : t("adminLeaves.popup.approve", "Approve")}
-              </button>
-              <button
-                onClick={() => handleTeamLeadReview(false)}
-                disabled={isSubmitting}
-                className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? t("adminLeaves.popup.processing", "Processing...") : t("adminLeaves.popup.reject", "Reject")}
-              </button>
-            </div>
-          </>
-        )}
-        {userRole === "hr" && canConfirm && (
-          <>
-            <div className="px-6 pt-4">
-              <label className="block text-[var(--text-color)] font-semibold mb-2">
-                {t("adminLeaves.popup.addComment", "Add Comment (Optional)")}
-              </label>
-              <textarea
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                placeholder={t("adminLeaves.popup.commentPlaceholder", "Enter your comment...")}
-                className="w-full px-4 py-2 bg-[var(--container-color)] border border-[var(--border-color)] rounded-lg text-[var(--text-color)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)] resize-none"
-                rows="3"
-              />
-            </div>
-            <div className="flex gap-4 px-6 py-4">
-              <button
-                onClick={() => handleHrConfirm(true)}
-                disabled={isSubmitting}
-                className="flex-1 gradient-bg hover:bg-[var(--accent-hover)] text-white font-semibold py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
-              >
-                {isSubmitting ? t("adminLeaves.popup.processing", "Processing...") : t("adminLeaves.popup.confirm", "Confirm")}
-              </button>
-              <button
-                onClick={() => handleHrConfirm(false)}
-                disabled={isSubmitting}
-                className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? t("adminLeaves.popup.processing", "Processing...") : t("adminLeaves.popup.reject", "Reject")}
-              </button>
               <button
                 onClick={() => setShowOverrideModal(true)}
                 disabled={isSubmitting}
                 className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 <AlertCircle className="w-4 h-4" />
-                {t("adminLeaves.popup.override", "Override")}
+                {t("adminLeaves.popup.override", "Override & Approve")}
               </button>
             </div>
-          </>
-        )}
+          )}
+          <div className="pb-6" />
+        </div>
         {/* Override Modal */}
         {showOverrideModal && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4">

@@ -91,8 +91,15 @@ const HrLeavesTable = () => {
 	}, [data])
 
 	// Format leave request for display
+	// Filter out rejected requests - HR should only see approved/pending requests
 	const formattedLeaves = useMemo(() => {
-		return leaveRequests.map(request => {
+		// Filter out rejected requests before formatting
+		const filteredRequests = leaveRequests.filter(request => {
+			const status = (request.requestStatus || "").toLowerCase()
+			return !status.includes("rejected")
+		})
+		
+		return filteredRequests.map(request => {
 			const startDate = request.startDate ? new Date(request.startDate) : null
 			const endDate = request.endDate ? new Date(request.endDate) : null
 			const teamLeadActionDate = request.teamLeadActionDate ? new Date(request.teamLeadActionDate) : null
