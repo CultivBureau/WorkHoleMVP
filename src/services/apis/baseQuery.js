@@ -11,10 +11,21 @@ const MAX_REFRESH_ATTEMPTS = 2;
 export const baseQueryWithReauth = async (args, api, extraOptions) => {
   let result = await fetchBaseQuery({
     baseUrl,
-    prepareHeaders: (headers) => {
+    prepareHeaders: (headers, { getState, endpoint, type }) => {
       const token = getAuthToken();
       if (token) headers.set("Authorization", `Bearer ${token}`);
       return headers;
+    },
+    fetchFn: async (url, options = {}) => {
+      // If body is FormData, ensure Content-Type is not set
+      // Browser will automatically set it with boundary for multipart/form-data
+      if (options.body instanceof FormData) {
+        const headers = new Headers(options.headers);
+        // Remove Content-Type header - browser will set it with boundary
+        headers.delete('Content-Type');
+        options.headers = headers;
+      }
+      return fetch(url, options);
     },
   })(args, api, extraOptions);
 
