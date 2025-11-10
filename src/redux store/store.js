@@ -8,6 +8,7 @@ import { shiftApi } from "../services/apis/ShiftApi";
 import { userApi } from "../services/apis/UserApi";
 import { leaveApi } from "../services/apis/LeaveApi";
 import { leaveTypeApi } from "../services/apis/LeaveTypeApi";
+import { leaveBalanceApi } from "../services/apis/LeaveBalanceApi";
 import { permissionApi } from "../services/apis/PermissionApi";
 import { breakApi } from "../services/apis/BreakApi";
 
@@ -22,6 +23,7 @@ export const store = configureStore({
     [userApi.reducerPath]: userApi.reducer,
     [leaveApi.reducerPath]: leaveApi.reducer,
     [leaveTypeApi.reducerPath]: leaveTypeApi.reducer,
+    [leaveBalanceApi.reducerPath]: leaveBalanceApi.reducer,
     [permissionApi.reducerPath]: permissionApi.reducer,
     [breakApi.reducerPath]: breakApi.reducer,
   },
@@ -38,6 +40,7 @@ export const store = configureStore({
       userApi.middleware,
       leaveApi.middleware,
       leaveTypeApi.middleware,
+      leaveBalanceApi.middleware,
       permissionApi.middleware,
       breakApi.middleware,
     ),

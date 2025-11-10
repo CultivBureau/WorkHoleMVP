@@ -81,7 +81,7 @@ const TeamLeadLeavesTable = () => {
 	const [manualUpdates, setManualUpdates] = useState({})
 
 	// Fetch leave requests from API
-	const { data, isLoading, isError, refetch } = useGetAllTeamLeadRequestsQuery({
+	const { data, isLoading, isError, error, refetch } = useGetAllTeamLeadRequestsQuery({
 		pageNumber: currentPage,
 		pageSize: pageSize,
 	})
@@ -89,8 +89,29 @@ const TeamLeadLeavesTable = () => {
 	// Parse leave requests from API response
 	const leaveRequests = useMemo(() => {
 		if (!data) return []
-		const items = data?.value || data?.data || data?.items || data || []
-		return Array.isArray(items) ? items : []
+		
+		// Handle different response structures
+		// Response might be: { value: [...], totalCount: X } or just { value: [...] } or direct array
+		let items = []
+		
+		if (Array.isArray(data)) {
+			items = data
+		} else if (data?.value && Array.isArray(data.value)) {
+			items = data.value
+		} else if (data?.data && Array.isArray(data.data)) {
+			items = data.data
+		} else if (data?.items && Array.isArray(data.items)) {
+			items = data.items
+		} else if (data?.results && Array.isArray(data.results)) {
+			items = data.results
+		}
+		
+		// Debug logging (remove in production if needed)
+		if (process.env.NODE_ENV === 'development') {
+			console.log('TeamLeadLeavesTable - API Response:', { data, itemsCount: items.length })
+		}
+		
+		return items
 	}, [data])
 
 	// Format leave request for display
@@ -488,6 +509,11 @@ const TeamLeadLeavesTable = () => {
 							<div className="text-[var(--error-color)] mb-4">
 								{t("adminLeaves.error", "Failed to load leave requests")}
 							</div>
+							{error && (
+								<div className="text-sm text-[var(--sub-text-color)] mb-4">
+									{error?.data?.message || error?.message || "An error occurred"}
+								</div>
+							)}
 							<button
 								onClick={() => refetch()}
 								className="btn-secondary"

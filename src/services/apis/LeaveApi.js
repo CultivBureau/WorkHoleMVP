@@ -83,6 +83,35 @@ export const leaveApi = createApi({
         { type: "LeaveRequests", id: "TEAM_LEAD_LIST" },
       ],
     }),
+
+    // Get user's own leave requests
+    getMyLeaveRequests: builder.query({
+      query: () => ({
+        url: "/api/v1/LeaveRequest/GetMy/my",
+        method: "GET",
+      }),
+      providesTags: (result) => [
+        { type: "LeaveRequests", id: "MY_LIST" },
+      ],
+    }),
+
+    // Submit a new leave request
+    submitLeaveRequest: builder.mutation({
+      query: ({ leaveTypeId, startDate, endDate, reason }) => ({
+        url: "/api/v1/LeaveRequest/Submit",
+        method: "POST",
+        body: {
+          leaveTypeId,
+          startDate,
+          endDate,
+          reason,
+        },
+      }),
+      invalidatesTags: [
+        { type: "LeaveRequests", id: "MY_LIST" },
+        { type: "LeaveRequests", id: "TEAM_LEAD_LIST" },
+      ],
+    }),
   }),
 });
 
@@ -92,5 +121,7 @@ export const {
   useGetAllHrRequestsQuery,
   useHrConfirmMutation,
   useHrOverrideMutation,
+  useGetMyLeaveRequestsQuery,
+  useSubmitLeaveRequestMutation,
 } = leaveApi;
 

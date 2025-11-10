@@ -1,15 +1,8 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronDown, ChevronLeft, ChevronRight, Eye, Edit, RefreshCw, FileX, Calendar } from "lucide-react";
-// Static leaves data
-const staticLeavesData = {
-  leaves: [
-    { id: 1, leaveType: "annual", fromDate: "2024-01-10", toDate: "2024-01-15", numberOfDays: 5, reason: "Vacation", status: "approved", createdAt: "2024-01-05" },
-    { id: 2, leaveType: "sick", fromDate: "2024-01-18", toDate: "2024-01-18", numberOfDays: 1, reason: "Medical appointment", status: "pending", createdAt: "2024-01-12" },
-    { id: 3, leaveType: "emergency", fromDate: "2024-01-20", toDate: "2024-01-20", numberOfDays: 1, reason: "Family emergency", status: "rejected", createdAt: "2024-01-15" }
-  ],
-  pagination: { page: 1, limit: 6, total: 3, totalPages: 1 }
-};
+import { useGetMyLeaveRequestsQuery } from "../../services/apis/LeaveApi";
+import { useGetAllLeaveTypesQuery } from "../../services/apis/LeaveTypeApi";
 
 const LeaveTable = () => {
   const { t, i18n } = useTranslation();
@@ -24,15 +17,63 @@ const LeaveTable = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const itemsPerPage = 6;
 
-  // Use static data instead of API call
-  const data = staticLeavesData;
-  const isLoading = false;
-  const error = null;
-  const refetch = () => {}; // Empty function for compatibility
-  const isFetching = false;
+  // Fetch user's leave requests from API
+  const { data: leaveRequestsData, isLoading, isError: error, refetch, isFetching } = useGetMyLeaveRequestsQuery();
 
-  const leaves = data?.leaves || [];
-  const pagination = data?.pagination || { page: 1, limit: itemsPerPage, total: 0, totalPages: 1 };
+  // Fetch leave types to map IDs to names
+  const { data: leaveTypesData } = useGetAllLeaveTypesQuery({ 
+    pageNumber: 1, 
+    pageSize: 50,
+    status: 2 // All types
+  });
+
+  // Normalize status from API to display status
+  const normalizeStatus = (status) => {
+    if (!status) return "pending";
+    const statusLower = status.toLowerCase();
+    if (statusLower === "confirmed" || statusLower === "true") return "approved";
+    if (statusLower.includes("reject")) return "rejected";
+    if (statusLower.includes("approve") || statusLower.includes("confirm")) return "approved";
+    if (statusLower.includes("pending")) return "pending";
+    return statusLower;
+  };
+
+  // Create a map of leave type names for lookup
+  const leaveTypeMap = useMemo(() => {
+    if (!leaveTypesData?.value) return {};
+    const items = Array.isArray(leaveTypesData.value) ? leaveTypesData.value : [];
+    const map = {};
+    items.forEach(type => {
+      map[type.name] = type.name; // Map name to name (API returns name as string)
+    });
+    return map;
+  }, [leaveTypesData]);
+
+  // Parse leave requests from API response
+  const leaves = useMemo(() => {
+    if (!leaveRequestsData?.value) return [];
+    const items = Array.isArray(leaveRequestsData.value) ? leaveRequestsData.value : [];
+    return items.map(request => ({
+      id: request.id,
+      leaveType: request.leaveType || "Unknown",
+      startDate: request.startDate,
+      endDate: request.endDate,
+      fromDate: request.startDate ? new Date(request.startDate).toISOString().split("T")[0] : "",
+      toDate: request.endDate ? new Date(request.endDate).toISOString().split("T")[0] : "",
+      days: request.totalDays || 0,
+      numberOfDays: request.totalDays || 0,
+      reason: request.reason || "",
+      status: normalizeStatus(request.requestStatus),
+      requestStatus: request.requestStatus,
+      reviewerName: request.reviewerName || "",
+      reviewerComment: request.reviewerComment || "",
+      reviewedAt: request.reviewedAt,
+      attachmentUrl: request.attachmentUrl,
+      createdAt: request.startDate, // Use startDate as fallback for createdAt
+    }));
+  }, [leaveRequestsData]);
+
+  const pagination = { page: currentPage, limit: itemsPerPage, total: leaves.length, totalPages: Math.ceil(leaves.length / itemsPerPage) };
 
   // Auto-refresh when data changes (from external sources like new leave requests)
   useEffect(() => {
@@ -72,25 +113,47 @@ const LeaveTable = () => {
     let filtered = [...leaves];
 
     if (leaveType !== "all") {
-      filtered = filtered.filter(item => item.leaveType.toLowerCase().includes(leaveType));
+      filtered = filtered.filter(item => {
+        const itemType = item.leaveType?.toLowerCase() || "";
+        return itemType.includes(leaveType.toLowerCase());
+      });
     }
 
     if (status !== "all") {
-      filtered = filtered.filter(item => item.status.toLowerCase() === status);
+      filtered = filtered.filter(item => item.status?.toLowerCase() === status.toLowerCase());
     }
 
     if (dateFrom) {
-      filtered = filtered.filter(item => new Date(item.startDate) >= new Date(dateFrom));
+      filtered = filtered.filter(item => {
+        if (!item.startDate) return false;
+        const itemDate = new Date(item.startDate);
+        const fromDate = new Date(dateFrom);
+        return itemDate >= fromDate;
+      });
     }
     if (dateTo) {
-      filtered = filtered.filter(item => new Date(item.endDate) <= new Date(dateTo));
+      filtered = filtered.filter(item => {
+        if (!item.endDate) return false;
+        const itemDate = new Date(item.endDate);
+        const toDate = new Date(dateTo);
+        toDate.setHours(23, 59, 59, 999);
+        return itemDate <= toDate;
+      });
     }
 
     // Sort data
     if (sortBy === "newest") {
-      filtered.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+      filtered.sort((a, b) => {
+        const dateA = a.startDate ? new Date(a.startDate) : new Date(0);
+        const dateB = b.startDate ? new Date(b.startDate) : new Date(0);
+        return dateB - dateA;
+      });
     } else if (sortBy === "oldest") {
-      filtered.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+      filtered.sort((a, b) => {
+        const dateA = a.startDate ? new Date(a.startDate) : new Date(0);
+        const dateB = b.startDate ? new Date(b.startDate) : new Date(0);
+        return dateA - dateB;
+      });
     }
 
     return filtered;
@@ -102,13 +165,15 @@ const LeaveTable = () => {
   const currentPageData = filteredData;
 
   const getStatusBadge = (status) => {
+    const normalized = normalizeStatus(status);
     const statusConfig = {
       pending: { bg: "bg-yellow-100", text: "text-yellow-700", label: t("leaves.table.status.pending") },
       approved: { bg: "bg-green-100", text: "text-green-700", label: t("leaves.table.status.approved") },
-      rejected: { bg: "bg-red-100", text: "text-red-700", label: t("leaves.table.status.rejected") }
+      rejected: { bg: "bg-red-100", text: "text-red-700", label: t("leaves.table.status.rejected") },
+      confirmed: { bg: "bg-green-100", text: "text-green-700", label: t("leaves.table.status.approved") }
     };
 
-    const config = statusConfig[status?.toLowerCase()] || statusConfig.pending;
+    const config = statusConfig[normalized] || statusConfig.pending;
 
     return (
       <span className={`px-3 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
@@ -418,7 +483,7 @@ const LeaveTable = () => {
                 >
                   <td className={`px-6 py-4 text-sm font-medium ${isArabic ? 'text-right' : 'text-left'}`}
                     style={{ color: 'var(--table-text)' }}>
-                    {record.leaveType}
+                    {record.leaveType || "Unknown"}
                   </td>
                   <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
                     style={{ color: 'var(--table-text)' }}>
@@ -458,9 +523,7 @@ const LeaveTable = () => {
                   </td>
                   <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
                     style={{ color: 'var(--table-text)' }}>
-                    {record.actionBy
-                      ? `${record.actionBy}`
-                      : "-"}
+                    {record.reviewerName || "-"}
                   </td>
                 </tr>
               ))}

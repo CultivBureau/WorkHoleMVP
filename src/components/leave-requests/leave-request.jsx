@@ -1,9 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Upload, File, Loader2, AlertCircle, CheckCircle } from "lucide-react"
 import { toast } from "react-hot-toast"
+import { useGetAllLeaveTypesQuery } from "../../services/apis/LeaveTypeApi"
+import { useSubmitLeaveRequestMutation } from "../../services/apis/LeaveApi"
 
 // Static user data
 const staticUser = {
@@ -22,7 +24,7 @@ const LeaveRequest = ({ refetch }) => {
 
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState({
-    leaveType: "annual",
+    leaveTypeId: "",
     fromDate: "",
     toDate: "",
     numberOfDays: 0,
@@ -31,19 +33,27 @@ const LeaveRequest = ({ refetch }) => {
   })
   const [showSuccess, setShowSuccess] = useState(false)
   const [errors, setErrors] = useState({})
-  const [isLoading, setIsLoading] = useState(false)
   const [submitError, setSubmitError] = useState(null)
 
-  // Mock mutation - disabled for static data
-  const createLeave = async () => ({ data: {} });
-  const isSubmitting = false;
+  // Fetch leave types from API
+  const { data: leaveTypesData, isLoading: isLoadingLeaveTypes, isError: isErrorLeaveTypes } = useGetAllLeaveTypesQuery({ 
+    pageNumber: 1, 
+    pageSize: 50,
+    status: 0 // Active only
+  })
 
-  const leaveTypes = [
-    { value: "annual", label: t("leaves.types.annual") },
-    { value: "sick", label: t("leaves.types.sick") },
-    { value: "emergency", label: t("leaves.types.emergency") },
-    { value: "unpaid", label: t("leaves.types.unpaid") },
-  ]
+  // Submit leave request mutation
+  const [submitLeaveRequest, { isLoading: isSubmitting }] = useSubmitLeaveRequestMutation()
+
+  // Map leave types from API to form options
+  const leaveTypes = useMemo(() => {
+    if (!leaveTypesData?.value) return []
+    const items = Array.isArray(leaveTypesData.value) ? leaveTypesData.value : []
+    return items.map(type => ({
+      value: type.id,
+      label: type.name,
+    }))
+  }, [leaveTypesData])
 
   const today = new Date().toISOString().split("T")[0]
 
@@ -124,8 +134,8 @@ const LeaveRequest = ({ refetch }) => {
   const validateStep1 = () => {
     const newErrors = {}
 
-    if (!formData.leaveType) {
-      newErrors.leaveType = t("leaves.validation.leaveTypeRequired", "Please select a leave type")
+    if (!formData.leaveTypeId) {
+      newErrors.leaveTypeId = t("leaves.validation.leaveTypeRequired", "Please select a leave type")
     }
 
     if (!formData.fromDate) {
@@ -185,46 +195,25 @@ const LeaveRequest = ({ refetch }) => {
     return validateStep1() && validateStep2()
   }
 
-  // Map frontend leaveType to API value
-  const getApiLeaveType = (type) => {
-    switch (type) {
-      case "annual":
-        return "Annual Leave"
-      case "sick":
-        return "Sick Leave"
-      case "emergency":
-        return "Emergency Leave"
-      case "unpaid":
-        return "Unpaid Leave"
-      default:
-        return "Annual Leave"
-    }
-  }
-
   const handleSubmit = async () => {
-    setIsLoading(true)
     setSubmitError(null)
 
     // Final validation
     if (!validateStep3()) {
-      setIsLoading(false)
       toast.error(t("leaves.validation.pleaseFixErrors", "Please fix the errors before submitting"))
       return
     }
 
     // Prepare data for API
-    const data = {
-      leaveType: getApiLeaveType(formData.leaveType),
-      startDate: formData.fromDate,
-      endDate: formData.toDate,
+    const submitData = {
+      leaveTypeId: formData.leaveTypeId,
+      startDate: new Date(formData.fromDate).toISOString(),
+      endDate: new Date(formData.toDate).toISOString(),
       reason: formData.reason.trim(),
     }
 
     try {
-      await createLeave({
-        data,
-        file: formData.attachment || undefined,
-      }).unwrap()
+      await submitLeaveRequest(submitData).unwrap()
 
       toast.success(t("leaves.form.successToast", "Leave request submitted successfully!"))
       setShowSuccess(true)
@@ -234,7 +223,7 @@ const LeaveRequest = ({ refetch }) => {
       setTimeout(() => {
         setCurrentStep(1)
         setFormData({
-          leaveType: "annual",
+          leaveTypeId: "",
           fromDate: "",
           toDate: "",
           numberOfDays: 0,
@@ -266,8 +255,6 @@ const LeaveRequest = ({ refetch }) => {
       }
 
       toast.error(errorMessage)
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -381,23 +368,23 @@ const LeaveRequest = ({ refetch }) => {
           <label key={type.value} className="flex items-center gap-2 cursor-pointer">
             <input
               type="radio"
-              name="leaveType"
+              name="leaveTypeId"
               value={type.value}
-              checked={formData.leaveType === type.value}
+              checked={formData.leaveTypeId === type.value}
               onChange={(e) => {
-                setFormData((prev) => ({ ...prev, leaveType: e.target.value }))
-                setErrors(prev => ({ ...prev, leaveType: null }))
+                setFormData((prev) => ({ ...prev, leaveTypeId: e.target.value }))
+                setErrors(prev => ({ ...prev, leaveTypeId: null }))
               }}
               className="sr-only"
             />
             <div
               className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center transition-colors`}
               style={{
-                borderColor: formData.leaveType === type.value ? "var(--accent-color)" : "var(--border-color)",
-                backgroundColor: formData.leaveType === type.value ? "var(--accent-color)" : "transparent",
+                borderColor: formData.leaveTypeId === type.value ? "var(--accent-color)" : "var(--border-color)",
+                backgroundColor: formData.leaveTypeId === type.value ? "var(--accent-color)" : "transparent",
               }}
             >
-              {formData.leaveType === type.value && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+              {formData.leaveTypeId === type.value && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
             </div>
             <span className="font-medium text-xs" style={{ color: "var(--text-color)" }}>
               {type.label}
@@ -405,7 +392,13 @@ const LeaveRequest = ({ refetch }) => {
           </label>
         ))}
       </div>
-      {renderError("leaveType")}
+      {renderError("leaveTypeId")}
+      {isLoadingLeaveTypes && (
+        <div className="text-xs text-[var(--sub-text-color)]">Loading leave types...</div>
+      )}
+      {isErrorLeaveTypes && (
+        <div className="text-xs text-[var(--error-color)]">Failed to load leave types</div>
+      )}
 
       <div className="space-y-2">
         <div className="text-center">
@@ -521,7 +514,9 @@ const LeaveRequest = ({ refetch }) => {
       </div>
 
       {/* Show upload section only for sick leave */}
-      {formData.leaveType === "sick" && (
+      {(() => {
+        const selectedType = leaveTypes.find(t => t.value === formData.leaveTypeId)
+        return selectedType?.label?.toLowerCase() === "sick" && (
         <div className="flex-shrink-0 space-y-2">
           <div className={`flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}>
             <label className="text-xs font-medium" style={{ color: "var(--text-color)" }}>
@@ -612,7 +607,7 @@ const LeaveRequest = ({ refetch }) => {
           )}
           {renderError("attachment")}
         </div>
-      )}
+      )})()}
     </div>
   )
 
@@ -636,7 +631,7 @@ const LeaveRequest = ({ refetch }) => {
               Type:
             </span>
             <span style={{ color: "var(--sub-text-color)" }}>
-              {leaveTypes.find((type) => type.value === formData.leaveType)?.label}
+              {leaveTypes.find((type) => type.value === formData.leaveTypeId)?.label || "-"}
             </span>
           </div>
           <div className="flex items-center gap-2 text-xs">
@@ -771,7 +766,7 @@ const LeaveRequest = ({ refetch }) => {
             {currentStep !== 1 && (
               <button
                 onClick={handleBack}
-                disabled={isSubmitting || isLoading}
+                disabled={isSubmitting}
                 className="px-2 sm:px-3 lg:px-2 xl:px-3 2xl:px-3 py-1 border rounded-md font-medium hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed text-[10px] sm:text-xs lg:text-[10px] xl:text-xs 2xl:text-xs"
                 style={{
                   borderColor: "var(--border-color)",
@@ -784,14 +779,14 @@ const LeaveRequest = ({ refetch }) => {
             )}
             <button
               onClick={handleNext}
-              disabled={isSubmitting || isLoading}
+              disabled={isSubmitting}
               className="px-2 sm:px-3 lg:px-2 xl:px-3 2xl:px-3 py-1 gradient-bg opacity-100 text-white rounded-md font-medium hover:opacity-90 transition-opacity disabled:opacity-70 disabled:cursor-not-allowed text-[10px] sm:text-xs lg:text-[10px] xl:text-xs 2xl:text-xs flex items-center gap-1 sm:gap-2 lg:gap-1 xl:gap-2 2xl:gap-2"
             >
-              {(isSubmitting || isLoading) && currentStep === 3 && (
+              {isSubmitting && currentStep === 3 && (
                 <Loader2 className="w-2.5 h-2.5 sm:w-3 sm:h-3 lg:w-2.5 lg:h-2.5 xl:w-3 xl:h-3 2xl:w-3 2xl:h-3 animate-spin" />
               )}
               {currentStep === 3
-                ? (isSubmitting || isLoading)
+                ? isSubmitting
                   ? t("leaves.form.submitting", "Submitting...")
                   : t("leaves.form.submit", "Submit")
                 : t("leaves.form.next", "Next")
