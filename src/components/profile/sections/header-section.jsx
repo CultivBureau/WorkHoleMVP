@@ -43,29 +43,29 @@ const HeaderSection = ({ firstName, lastName, email, role, avatar, teamLeader, t
         </div>
 
         {/* Center - Team Lead Section */}
-        <div className="flex flex-col items-center gap-3 order-last sm:order-none">
-          <span className="text-sm font-medium" style={{ color: 'var(--sub-text-color)' }}>
-            {t("profile.teamLead")}
-          </span>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden bg-gray-100">
-              <img 
-                src={teamLeaderAvatar || "/api/placeholder/48/48"} 
-                alt={teamLeader} 
-                className="w-full h-full object-cover" 
-              />
-            </div>
-            
-            <div className="text-center sm:text-left">
-              <div className="text-sm font-medium" style={{ color: 'var(--text-color)' }}>
-                {teamLeader}
-              </div>
-              <div className="text-xs" style={{ color: 'var(--sub-text-color)' }}>
-                {t("profile.srProjectManager")}
+        {teamLeader && (
+          <div className="flex flex-col items-center gap-3 order-last sm:order-none">
+            <span className="text-sm font-medium" style={{ color: 'var(--sub-text-color)' }}>
+              {t("profile.teamLead")}
+            </span>
+            <div className="flex items-center gap-3">
+              {teamLeaderAvatar && (
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden bg-gray-100">
+                  <img 
+                    src={teamLeaderAvatar || "/api/placeholder/48/48"} 
+                    alt={teamLeader} 
+                    className="w-full h-full object-cover" 
+                  />
+                </div>
+              )}
+              <div className="text-center">
+                <div className="text-sm font-medium" style={{ color: 'var(--text-color)' }}>
+                  {teamLeader}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Right side - Edit Button (only show if not in admin view) */}
         {!isAdminView && (

@@ -273,7 +273,6 @@ const Profile = () => {
             role={displayData.professionalInfo?.role || displayData.professionalInfo?.designation || displayData.professionalInfo?.jobTitle || 'N/A'}
             avatar={displayData.avatar}
             teamLeader={displayData.teamLeader}
-            teamLeaderAvatar={displayData.teamLeaderAvatar}
             isAdminView={isAdminView}
           />
         </div>
