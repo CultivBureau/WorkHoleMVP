@@ -44,8 +44,7 @@ export const authApi = createApi({
     }),
     me: builder.query({
       query: () => ({
-        url: "/api/v1/User/UserProfile/me",
-        
+        url: "/api/v1/User/GetUserProfile/me",
         method: "GET",
       }),
     }),

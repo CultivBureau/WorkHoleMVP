@@ -120,7 +120,7 @@ export const PermissionProvider = ({ children }) => {
     }
     
     const roleArray = Array.isArray(roles) ? roles : [roles];
-    const userRole = roleArray[0]?.toLowerCase() || "employee";
+    const userRole = roleArray[0].name?.toLowerCase() || "employee";
     const isAdminRole = roleArray.some(
       (r) => typeof r === "string" && r.toLowerCase() === "admin"
     );
@@ -170,7 +170,7 @@ export const PermissionProvider = ({ children }) => {
     }
     
     const roleArray = Array.isArray(roles) ? roles : [roles];
-    const userRole = roleArray[0]?.toLowerCase() || "employee";
+    const userRole = roleArray[0].name?.toLowerCase() || "employee";
     const isAdminRole = roleArray.some(
       (r) => typeof r === "string" && r.toLowerCase() === "admin"
     );
