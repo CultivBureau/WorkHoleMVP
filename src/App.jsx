@@ -50,6 +50,7 @@ const AssignRoleUsers = lazy(() => import("./pages/admin/assign-role-users/page"
 const AdminTeamWallet = lazy(() => import("./pages/admin/TeamWallet/page"));
 const Company = lazy(() => import("./pages/admin/company/page"));
 const AllShifts = lazy(() => import("./pages/admin/shifts/page"));
+const ShiftAssignments = lazy(() => import("./pages/admin/shifts/assignments/page"));
 
 function App() {
   useTokenRefresh();
@@ -279,6 +280,16 @@ function App() {
                       <ProtectedRoute>
                         <Suspense fallback={<Loading />}>
                           <AllShifts />
+                        </Suspense>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/pages/admin/shifts/:shiftId/assignments"
+                    element={
+                      <ProtectedRoute>
+                        <Suspense fallback={<Loading />}>
+                          <ShiftAssignments />
                         </Suspense>
                       </ProtectedRoute>
                     }
