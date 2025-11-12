@@ -319,50 +319,52 @@ const CompanyDetailsCard = () => {
               )}
             </div>
 
-            {/* Right Action Buttons */}
-            <div className="flex flex-row gap-2 sm:flex-row lg:min-w-[200px] lg:justify-end">
-              {isEditing ? (
-                <>
+            {/* Right Action Buttons - Only show if user has update permission */}
+            {canUpdateCompany && (
+              <div className="flex flex-row gap-2 sm:flex-row lg:min-w-[200px] lg:justify-end">
+                {isEditing ? (
+                  <>
+                    <button
+                      onClick={handleSave}
+                      disabled={isUpdating}
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-bold text-xs shadow-md transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                      style={{
+                        background: "linear-gradient(135deg, #15919B 0%, #09D1C7 100%)",
+                        color: "white",
+                      }}
+                    >
+                      <Save className="w-4 h-4" />
+                      {isUpdating ? t("company.saving", "Saving...") : t("company.save", "Save")}
+                    </button>
+                    <button
+                      onClick={handleCancel}
+                      disabled={isUpdating}
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-bold text-xs border transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{
+                        background: "var(--container-color)",
+                        borderColor: "var(--border-color)",
+                        color: "var(--text-color)",
+                      }}
+                    >
+                      <X className="w-4 h-4" />
+                      {t("company.cancel", "Cancel")}
+                    </button>
+                  </>
+                ) : (
                   <button
-                    onClick={handleSave}
-                    disabled={isUpdating}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-bold text-xs shadow-md transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    onClick={handleEdit}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-bold text-xs shadow-md transition-all duration-200 hover:scale-105"
                     style={{
                       background: "linear-gradient(135deg, #15919B 0%, #09D1C7 100%)",
                       color: "white",
                     }}
                   >
-                    <Save className="w-4 h-4" />
-                    {isUpdating ? t("company.saving", "Saving...") : t("company.save", "Save")}
+                    <Edit className="w-4 h-4" />
+                    {t("company.edit", "Edit")}
                   </button>
-                  <button
-                    onClick={handleCancel}
-                    disabled={isUpdating}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-bold text-xs border transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{
-                      background: "var(--container-color)",
-                      borderColor: "var(--border-color)",
-                      color: "var(--text-color)",
-                    }}
-                  >
-                    <X className="w-4 h-4" />
-                    {t("company.cancel", "Cancel")}
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={handleEdit}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-bold text-xs shadow-md transition-all duration-200 hover:scale-105"
-                  style={{
-                    background: "linear-gradient(135deg, #15919B 0%, #09D1C7 100%)",
-                    color: "white",
-                  }}
-                >
-                  <Edit className="w-4 h-4" />
-                  {t("company.edit", "Edit")}
-                </button>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

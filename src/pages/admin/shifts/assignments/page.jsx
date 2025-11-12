@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import NavBarAdmin from "../../../../components/admin/NavBarAdmin";
 import SideBarAdmin from "../../../../components/admin/SideBarAdmin";
 import ShiftAssignmentsComponent from "../../../../components/admin/all-shifts/shift-assignments";
+import { PermissionGuard } from "../../../../components/common/PermissionGuard";
 
 const ShiftAssignments = () => {
   const { t, i18n } = useTranslation();
@@ -11,7 +12,15 @@ const ShiftAssignments = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
+    <PermissionGuard 
+      backendPermissions={["ShiftAssignment.View", "ShiftAssignment.AssignUser"]}
+      loadingFallback={
+        <div className="flex items-center justify-center min-h-screen" style={{ background: "var(--bg-all)" }}>
+          <span className="text-[var(--sub-text-color)]">{t('common.loading') || 'Loading...'}</span>
+        </div>
+      }
+    >
+      <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
       {/* Navigation Bar */}
       <NavBarAdmin />
 
@@ -34,6 +43,7 @@ const ShiftAssignments = () => {
         </main>
       </div>
     </div>
+    </PermissionGuard>
   );
 };
 
