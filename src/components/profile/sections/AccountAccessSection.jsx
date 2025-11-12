@@ -4,6 +4,26 @@ import { useTranslation } from "react-i18next"
 const AccountAccessSection = ({ accountAccess }) => {
   const { t } = useTranslation()
   
+  // Handle permissions array from API
+  const permissions = Array.isArray(accountAccess?.permissions) 
+    ? accountAccess.permissions 
+    : []
+  
+  // Group permissions by category (e.g., "User", "Break", "Company")
+  const groupedPermissions = permissions.reduce((acc, permission) => {
+    const category = permission.code?.split('.')[0] || 'Other'
+    if (!acc[category]) {
+      acc[category] = []
+    }
+    acc[category].push(permission.description || permission.code || permission)
+    return acc
+  }, {})
+  
+  // Handle leave balances array from API
+  const leaveBalances = Array.isArray(accountAccess?.leaveBalances)
+    ? accountAccess.leaveBalances
+    : []
+  
   return (
     <div className="space-y-6 sm:space-y-8 lg:space-y-10">
       {/* Enhanced User Credentials Section */}
@@ -13,7 +33,7 @@ const AccountAccessSection = ({ accountAccess }) => {
             className="text-xs sm:text-sm font-semibold block uppercase tracking-wide transition-colors duration-200"
             style={{ color: 'var(--sub-text-color)' }}
           >
-            {t("profile.emailAddress")}
+            {t("profile.emailAddress") || "Email Address"}
           </label>
           <div 
             className="p-3 sm:p-4 rounded-xl transition-all duration-200 hover:shadow-sm"
@@ -22,7 +42,7 @@ const AccountAccessSection = ({ accountAccess }) => {
               className="text-sm sm:text-base font-medium break-all sm:break-normal"
               style={{ color: 'var(--text-color)' }}
             >
-              {accountAccess.emailAddress}
+              {accountAccess?.emailAddress || 'N/A'}
             </p>
           </div>
         </div>
@@ -31,7 +51,7 @@ const AccountAccessSection = ({ accountAccess }) => {
             className="text-xs sm:text-sm font-semibold block uppercase tracking-wide transition-colors duration-200"
             style={{ color: 'var(--sub-text-color)' }}
           >
-            {t("employees.newEmployeeForm.professionalInfo.userName")}
+            {t("employees.newEmployeeForm.professionalInfo.userName") || "User Name"}
           </label>
           <div 
             className="p-3 sm:p-4 rounded-xl transition-all duration-200 hover:shadow-sm"
@@ -40,80 +60,122 @@ const AccountAccessSection = ({ accountAccess }) => {
               className="text-sm sm:text-base font-medium"
               style={{ color: 'var(--text-color)' }}
             >
-              {accountAccess.userName}
+              {accountAccess?.userName || 'N/A'}
             </p>
           </div>
         </div>
       </div>
       
-      {/* Enhanced Role & Permissions Section */}
-      <div className="space-y-6 sm:space-y-8">
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-          <div className="space-y-2">
-            <h3 
-              className="text-xl sm:text-2xl font-bold"
-              style={{ color: 'var(--text-color)' }}
-            >
-              {t("roles.title")}
-            </h3>
-            <p 
-              className="text-xs sm:text-sm font-medium"
-              style={{ color: 'var(--sub-text-color)' }}
-            >
-              {t("roles.pageDescription")}
-            </p>
+      {/* Permissions Section */}
+      {permissions.length > 0 && (
+        <div className="space-y-6 sm:space-y-8">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+            <div className="space-y-2">
+              <h3 
+                className="text-xl sm:text-2xl font-bold"
+                style={{ color: 'var(--text-color)' }}
+              >
+                {t("roles.permissions") || "Permissions"}
+              </h3>
+              <p 
+                className="text-xs sm:text-sm font-medium"
+                style={{ color: 'var(--sub-text-color)' }}
+              >
+                {t("roles.pageDescription") || "Your assigned permissions"}
+              </p>
+            </div>
           </div>
-          <div 
-            className="px-4 sm:px-6 py-2 sm:py-3 rounded-xl border shadow-sm transition-all duration-200 hover:shadow-md self-start"
-            style={{ 
-              backgroundColor: 'var(--bg-color)',
-              borderColor: 'var(--border-color)',
-              color: 'var(--text-color)'
-            }}
-          >
-            <span className="text-xs sm:text-sm font-semibold">{t("roles.table.role")}</span>
+          
+          <div className="space-y-6 sm:space-y-8 lg:space-y-10">
+            {Object.entries(groupedPermissions).map(([category, perms]) => (
+              <div key={category} className="space-y-4 sm:space-y-5">
+                <h4 
+                  className="text-lg sm:text-xl font-bold capitalize pb-2 border-b"
+                  style={{ 
+                    color: 'var(--text-color)',
+                    borderColor: 'var(--divider-color)'
+                  }}
+                >
+                  {category}
+                </h4>
+                
+                <div className="flex flex-wrap gap-4 sm:gap-6 lg:gap-8">
+                  {perms.map((permission, index) => (
+                    <div 
+                      key={index} 
+                      className="flex items-center gap-3 sm:gap-4 group cursor-pointer transition-all duration-200 hover:scale-105"
+                    >
+                      <div 
+                        className="w-4 h-4 sm:w-5 sm:h-5 rounded-full flex-shrink-0 shadow-sm transition-all duration-200 group-hover:scale-110"
+                        style={{ 
+                          background: 'linear-gradient(135deg, #09D1C7 0%, #15919B 100%)',
+                          boxShadow: '0 2px 8px rgba(9, 209, 199, 0.3)'
+                        }}
+                      />
+                      <span 
+                        className="text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors duration-200 group-hover:opacity-80"
+                        style={{ color: 'var(--text-color)' }}
+                      >
+                        {permission}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-        
-        <div className="space-y-6 sm:space-y-8 lg:space-y-10">
-          {Object.entries(accountAccess.permissions).map(([category, permissions]) => (
-            <div key={category} className="space-y-4 sm:space-y-5">
-              <h4 
-                className="text-lg sm:text-xl font-bold capitalize pb-2 border-b"
+      )}
+      
+      {/* Leave Balances Section */}
+      {leaveBalances.length > 0 && (
+        <div className="space-y-6 sm:space-y-8">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+            <div className="space-y-2">
+              <h3 
+                className="text-xl sm:text-2xl font-bold"
+                style={{ color: 'var(--text-color)' }}
+              >
+                {t("leaves.balances") || "Leave Balances"}
+              </h3>
+              <p 
+                className="text-xs sm:text-sm font-medium"
+                style={{ color: 'var(--sub-text-color)' }}
+              >
+                {t("leaves.balancesDescription") || "Your available leave balances"}
+              </p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {leaveBalances.map((balance, index) => (
+              <div 
+                key={index}
+                className="p-4 sm:p-6 rounded-xl border transition-all duration-200 hover:shadow-md"
                 style={{ 
-                  color: 'var(--text-color)',
-                  borderColor: 'var(--divider-color)'
+                  backgroundColor: 'var(--bg-color)',
+                  borderColor: 'var(--border-color)'
                 }}
               >
-                {category.replace(/([A-Z])/g, ' $1')}
-              </h4>
-              
-              <div className="flex flex-wrap gap-4 sm:gap-6 lg:gap-8">
-                {permissions.map((permission, index) => (
-                  <div 
-                    key={index} 
-                    className="flex items-center gap-3 sm:gap-4 group cursor-pointer transition-all duration-200 hover:scale-105"
+                <div className="space-y-2">
+                  <h4 
+                    className="text-base sm:text-lg font-semibold"
+                    style={{ color: 'var(--text-color)' }}
                   >
-                    <div 
-                      className="w-4 h-4 sm:w-5 sm:h-5 rounded-full flex-shrink-0 shadow-sm transition-all duration-200 group-hover:scale-110"
-                      style={{ 
-                        background: 'linear-gradient(135deg, #09D1C7 0%, #15919B 100%)',
-                        boxShadow: '0 2px 8px rgba(9, 209, 199, 0.3)'
-                      }}
-                    />
-                    <span 
-                      className="text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors duration-200 group-hover:opacity-80"
-                      style={{ color: 'var(--text-color)' }}
-                    >
-                      {permission}
-                    </span>
-                  </div>
-                ))}
+                    {balance.leaveType?.name || 'Leave Type'}
+                  </h4>
+                  <p 
+                    className="text-2xl sm:text-3xl font-bold"
+                    style={{ color: 'var(--accent-color)' }}
+                  >
+                    {balance.balanceDays || 0} {t("leaves.days") || "Days"}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

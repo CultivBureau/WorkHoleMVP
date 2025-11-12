@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { useLang } from "../contexts/LangContext"
 import { useProfile } from '../hooks/useProfile'
@@ -7,10 +7,11 @@ import NavigationMenu from "../components/profile/sections/NavigationMenu"
 import ProfileTabs from "../components/profile/sections/profile-tabs"
 import DataReview from "../components/profile/sections/data-review"
 import Table from "../components/profile/sections/Table"
-import DocumentsSection from "../components/profile/sections/DocumentsSection"
 import AccountAccessSection from "../components/profile/sections/AccountAccessSection"
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
+import { useMeQuery } from "../services/apis/AuthApi"
+import { useGetAllShiftAssignmentsQuery } from "../services/apis/ShiftApi"
 
 const Profile = () => {
   const { isRtl } = useLang()
@@ -21,8 +22,15 @@ const Profile = () => {
   const isAdminView = location.state?.isAdminView || false
   const employeeData = location.state?.employeeData || null
   
+  // Fetch user data from /me endpoint
+  const { data: meResponse, isLoading: isLoadingUser } = useMeQuery()
+  const userDataFromApi = meResponse?.value || null
+  
+  // Fetch shift assignments to get user's shift
+  const { data: assignmentsData } = useGetAllShiftAssignmentsQuery()
+  const allAssignments = assignmentsData?.value || assignmentsData || []
+  
   const {
-    userData,
     fieldLabels,
     activeTab,
     setActiveTab,
@@ -31,44 +39,116 @@ const Profile = () => {
     renderContent
   } = useProfile(isRtl)
 
-  // Use employee data if available, otherwise use default user data
-  const displayData = employeeData ? {
-    firstName: employeeData.name?.split(' ')[0] || 'N/A',
-    lastName: employeeData.name?.split(' ').slice(1).join(' ') || 'N/A',
-    email: employeeData.email || 'N/A',
-    avatar: employeeData.avatar || 'https://ui-avatars.com/api/?name=Employee&background=15919B&color=fff&size=80',
-    professionalInfo: {
-      designation: employeeData.position || 'N/A',
-      department: employeeData.department || 'N/A',
-      employeeId: employeeData.employeeId || 'N/A',
-      joinDate: employeeData.joinDate || 'N/A'
-    },
-    personalInfo: {
-      firstName: employeeData.name?.split(' ')[0] || 'N/A',
-      lastName: employeeData.name?.split(' ').slice(1).join(' ') || 'N/A',
-      email: employeeData.email || 'N/A',
-      mobileNumber: employeeData.mobileNumber || 'N/A',
-      dateOfBirth: employeeData.dateOfBirth || 'N/A',
-      gender: employeeData.gender || 'N/A',
-      nationality: employeeData.nationality || 'N/A',
-      address: employeeData.address || 'N/A',
-      status: employeeData.status || 'N/A'
-    },
-    documents: {
-      proofOfIdentity: employeeData.proofOfIdentity || null,
-      employmentContract: employeeData.employmentContract || null,
-      certificates: employeeData.certificates || null,
-      socialInsurance: employeeData.socialInsurance || null
-    },
-    accountAccess: {
-      username: employeeData.username || 'N/A',
-      accessLevel: employeeData.accessLevel || 'Standard User',
-      permissions: employeeData.permissions || 'Basic Access',
-      lastLogin: employeeData.lastLogin || 'Never'
-    },
-    teamLeader: userData.teamLeader,
-    teamLeaderAvatar: userData.teamLeaderAvatar
-  } : userData
+  // Get user's shift from assignments
+  const userShift = useMemo(() => {
+    if (!userDataFromApi?.id || !Array.isArray(allAssignments)) return null
+    const userAssignment = allAssignments.find(
+      assignment => assignment.userId === userDataFromApi.id
+    )
+    // Check both possible structures
+    return userAssignment?.shiftRule?.name || userAssignment?.shift?.name || null
+  }, [allAssignments, userDataFromApi?.id])
+
+  // Map API data to display structure
+  const displayData = useMemo(() => {
+    if (employeeData) {
+      // Admin viewing employee - use employeeData
+      return {
+        firstName: employeeData.name?.split(' ')[0] || 'N/A',
+        lastName: employeeData.name?.split(' ').slice(1).join(' ') || 'N/A',
+        email: employeeData.email || 'N/A',
+        avatar: employeeData.avatar || `https://ui-avatars.com/api/?name=${employeeData.name || 'Employee'}&background=15919B&color=fff&size=80`,
+        professionalInfo: {
+          designation: employeeData.position || 'N/A',
+          department: employeeData.department || 'N/A',
+          employeeId: employeeData.employeeId || 'N/A',
+          joinDate: employeeData.joinDate || 'N/A'
+        },
+        personalInfo: {
+          firstName: employeeData.name?.split(' ')[0] || 'N/A',
+          lastName: employeeData.name?.split(' ').slice(1).join(' ') || 'N/A',
+          email: employeeData.email || 'N/A',
+          mobileNumber: employeeData.mobileNumber || 'N/A',
+          dateOfBirth: employeeData.dateOfBirth || 'N/A',
+          gender: employeeData.gender || 'N/A',
+          nationality: employeeData.nationality || 'N/A',
+          address: employeeData.address || 'N/A',
+          status: employeeData.status || 'N/A'
+        },
+        accountAccess: {
+          username: employeeData.username || 'N/A',
+          accessLevel: employeeData.accessLevel || 'Standard User',
+          permissions: employeeData.permissions || 'Basic Access',
+          lastLogin: employeeData.lastLogin || 'Never'
+        },
+        teamLeader: employeeData.teamLeader || null,
+        teamLeaderAvatar: employeeData.teamLeaderAvatar || null,
+        isAdmin: employeeData.isAdmin || false
+      }
+    }
+    
+    // User viewing own profile - use /me endpoint data
+    if (!userDataFromApi) {
+      return {
+        firstName: 'Loading...',
+        lastName: '',
+        email: '',
+        avatar: 'https://ui-avatars.com/api/?name=User&background=15919B&color=fff&size=80',
+        professionalInfo: {},
+        personalInfo: {},
+        accountAccess: {},
+        teamLeader: null,
+        teamLeaderAvatar: null,
+        isAdmin: false
+      }
+    }
+
+    // Extract role name (handle both object and string format)
+    const firstRole = userDataFromApi.roles?.[0]
+    const roleName = firstRole 
+      ? (typeof firstRole === 'string' ? firstRole : firstRole?.name || '')
+      : userDataFromApi.jobTitle || 'N/A'
+
+    // Extract department name
+    const departmentName = userDataFromApi.departments?.[0]?.name || 'N/A'
+
+    // Extract team name
+    const teamName = userDataFromApi.teams?.[0]?.name || 'N/A'
+
+    // Extract team leader name
+    const teamLeadName = userDataFromApi.teams?.[0]?.teamLeadName || null
+
+    return {
+      firstName: userDataFromApi.firstName || 'N/A',
+      lastName: userDataFromApi.lastName || 'N/A',
+      email: userDataFromApi.email || 'N/A',
+      avatar: `https://ui-avatars.com/api/?name=${userDataFromApi.firstName}+${userDataFromApi.lastName}&background=15919B&color=fff&size=80`,
+      professionalInfo: {
+        role: roleName,
+        department: departmentName,
+        team: teamName,
+        shift: userShift || 'N/A',
+        jobTitle: userDataFromApi.jobTitle || 'N/A',
+        hireDate: userDataFromApi.hireDate ? new Date(userDataFromApi.hireDate).toLocaleDateString() : 'N/A'
+      },
+      personalInfo: {
+        firstName: userDataFromApi.firstName || 'N/A',
+        lastName: userDataFromApi.lastName || 'N/A',
+        email: userDataFromApi.email || 'N/A',
+        userName: userDataFromApi.userName || 'N/A',
+        hireDate: userDataFromApi.hireDate ? new Date(userDataFromApi.hireDate).toLocaleDateString() : 'N/A'
+      },
+      accountAccess: {
+        userName: userDataFromApi.userName || 'N/A',
+        emailAddress: userDataFromApi.email || 'N/A',
+        permissions: userDataFromApi.permissions || [],
+        leaveBalances: userDataFromApi.leaveBalances || []
+      },
+      teamLeader: teamLeadName,
+      teamLeaderAvatar: null,
+      isAdmin: userDataFromApi.isAdmin || false
+    }
+  }, [employeeData, userDataFromApi, userShift])
 
   const content = renderContent()
 
@@ -92,7 +172,7 @@ const Profile = () => {
     if (content.type === "profile") {
       return (
         <>
-          <ProfileTabs activeTab={activeTab} onTabChange={setActiveTab} />
+          <ProfileTabs activeTab={activeTab} onTabChange={setActiveTab} isAdmin={displayData.isAdmin} />
           <div className="mt-4 sm:mt-6 lg:mt-8">
             {activeTab === "personal" && (
               <DataReview 
@@ -106,10 +186,7 @@ const Profile = () => {
                 fieldLabels={fieldLabels.professional} 
               />
             )}
-            {activeTab === "documents" && (
-              <DocumentsSection documents={displayData.documents} />
-            )}
-            {activeTab === "account" && (
+            {activeTab === "account" && displayData.isAdmin && (
               <AccountAccessSection accountAccess={displayData.accountAccess} />
             )}
           </div>
@@ -175,7 +252,7 @@ const Profile = () => {
             firstName={displayData.firstName}
             lastName={displayData.lastName}
             email={displayData.email}
-            role={displayData.professionalInfo.designation}
+            role={displayData.professionalInfo?.role || displayData.professionalInfo?.designation || displayData.professionalInfo?.jobTitle || 'N/A'}
             avatar={displayData.avatar}
             teamLeader={displayData.teamLeader}
             teamLeaderAvatar={displayData.teamLeaderAvatar}

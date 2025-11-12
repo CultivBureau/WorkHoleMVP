@@ -1,17 +1,17 @@
 "use client"
 
 import React from "react"
-import { User, Briefcase, FileText, Lock } from "lucide-react"
+import { User, Briefcase, Lock } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
-export default function ProfileTabs({ activeTab, onTabChange }) {
+export default function ProfileTabs({ activeTab, onTabChange, isAdmin = false }) {
   const { t } = useTranslation()
   
   const tabs = [
     { id: "personal", label: t("profile.personalInformation"), shortLabel: t("profile.personalInformation"), icon: <User className="w-4 h-4 sm:w-5 sm:h-5" /> },
-    { id: "professional", label: t("profile.personalInformation"), shortLabel: t("profile.personalInformation"), icon: <Briefcase className="w-4 h-4 sm:w-5 sm:h-5" /> },
-    { id: "documents", label: t("employees.newEmployeeForm.steps.documents"), shortLabel: t("employees.newEmployeeForm.steps.documents"), icon: <FileText className="w-4 h-4 sm:w-5 sm:h-5" /> },
-    { id: "account", label: t("employees.newEmployeeForm.steps.accountAccess"), shortLabel: t("employees.newEmployeeForm.steps.accountAccess"), icon: <Lock className="w-4 h-4 sm:w-5 sm:h-5" /> },
+    { id: "professional", label: t("profile.professionalInformation") || "Professional Information", shortLabel: t("profile.professionalInformation") || "Professional", icon: <Briefcase className="w-4 h-4 sm:w-5 sm:h-5" /> },
+    // Only show account tab if user is admin
+    ...(isAdmin ? [{ id: "account", label: t("employees.newEmployeeForm.steps.accountAccess"), shortLabel: t("employees.newEmployeeForm.steps.accountAccess"), icon: <Lock className="w-4 h-4 sm:w-5 sm:h-5" /> }] : []),
   ]
 
   return (
