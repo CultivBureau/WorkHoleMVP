@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
 import { useMeQuery } from "../services/apis/AuthApi"
 import { useGetAllShiftAssignmentsQuery } from "../services/apis/ShiftApi"
+import { useGetUserProfileClockInLogsQuery } from "../services/apis/ClockInApi"
 
 const Profile = () => {
   const { isRtl } = useLang()
@@ -38,6 +39,19 @@ const Profile = () => {
     setActiveSection,
     renderContent
   } = useProfile(isRtl)
+  
+  // Determine which userId to use for attendance logs
+  const userIdForAttendance = useMemo(() => {
+    if (employeeData?.id) return employeeData.id
+    if (userDataFromApi?.id) return userDataFromApi.id
+    return null
+  }, [employeeData?.id, userDataFromApi?.id])
+  
+  // Fetch attendance logs when attendance section is active
+  const { data: attendanceResponse, isLoading: isLoadingAttendance } = useGetUserProfileClockInLogsQuery(
+    { userId: userIdForAttendance, pageNumber: 1, pageSize: 20 },
+    { skip: !userIdForAttendance || activeSection !== 'attendance' }
+  )
 
   // Get user's shift from assignments
   const userShift = useMemo(() => {
@@ -168,6 +182,59 @@ const Profile = () => {
     }
   }, [employeeData, userDataFromApi, userShift, isRtl])
 
+  // Transform attendance API response to match table structure
+  const attendanceData = useMemo(() => {
+    if (!attendanceResponse?.value || !Array.isArray(attendanceResponse.value)) {
+      return []
+    }
+
+    return attendanceResponse.value.map((log) => {
+      const clockInTime = log.clockinTime ? new Date(log.clockinTime) : null
+      const clockOutTime = log.clockoutTime ? new Date(log.clockoutTime) : null
+      
+      // Format date
+      const date = clockInTime ? clockInTime.toLocaleDateString() : 'N/A'
+      
+      // Format check-in time
+      const checkIn = clockInTime 
+        ? clockInTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+        : 'N/A'
+      
+      // Format check-out time
+      const checkOut = clockOutTime 
+        ? clockOutTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+        : 'N/A'
+      
+      // Calculate working hours
+      let workingHours = 'N/A'
+      if (clockInTime && clockOutTime) {
+        const diffMs = clockOutTime - clockInTime
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+        const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
+        workingHours = `${diffHours}h ${diffMinutes}m`
+      } else if (clockInTime && !clockOutTime) {
+        workingHours = 'In Progress'
+      }
+      
+      // Determine status
+      const status = log.isLate ? 'Late' : 'On Time'
+      
+      // Format office location
+      const office = log.office ? 'Work from Office' : 'Work from Home'
+      
+      return {
+        id: log.id,
+        date,
+        checkIn,
+        checkOut,
+        break: 'N/A', // Break data not available in API response
+        workingHours,
+        office,
+        status
+      }
+    })
+  }, [attendanceResponse])
+
   const content = renderContent()
 
   // Handle back navigation
@@ -213,9 +280,33 @@ const Profile = () => {
     }
 
     if (content.type === "table") {
+      // Use attendance data from API if attendance section is active
+      const tableData = activeSection === "attendance" ? attendanceData : content.data
+      const isLoading = activeSection === "attendance" ? isLoadingAttendance : false
+      
+      if (isLoading) {
+        return (
+          <div 
+            className="flex flex-col items-center justify-center py-12 sm:py-16 rounded-xl border"
+            style={{ 
+              backgroundColor: 'var(--bg-color)',
+              borderColor: 'var(--border-color)'
+            }}
+          >
+            <div className="text-3xl sm:text-4xl mb-4 animate-spin">⏳</div>
+            <p 
+              className="text-base sm:text-lg font-medium text-center px-4"
+              style={{ color: 'var(--sub-text-color)' }}
+            >
+              {t("common.loading") || "Loading..."}
+            </p>
+          </div>
+        )
+      }
+      
       return (
         <Table 
-          data={content.data} 
+          data={tableData} 
           columns={content.config.columns}
           title={content.config.title}
           statusConfig={content.config.statusConfig}

@@ -10,6 +10,7 @@ import { leaveApi } from "../services/apis/LeaveApi";
 import { leaveTypeApi } from "../services/apis/LeaveTypeApi";
 import { permissionApi } from "../services/apis/PermissionApi";
 import { breakApi } from "../services/apis/BreakApi";
+import { clockInApi } from "../services/apis/ClockInApi";
 
 export const store = configureStore({
   reducer: {
@@ -24,6 +25,7 @@ export const store = configureStore({
     [leaveTypeApi.reducerPath]: leaveTypeApi.reducer,
     [permissionApi.reducerPath]: permissionApi.reducer,
     [breakApi.reducerPath]: breakApi.reducer,
+    [clockInApi.reducerPath]: clockInApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -40,6 +42,7 @@ export const store = configureStore({
       leaveTypeApi.middleware,
       permissionApi.middleware,
       breakApi.middleware,
+      clockInApi.middleware,
     ),
 });
 
