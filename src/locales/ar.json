@@ -1026,7 +1026,9 @@
       "loadRolesFailed": "فشل تحميل الأدوار",
       "updateFailed": "فشل تحديث الدور",
       "deleteFailed": "فشل حذف الدور"
-    }
+    },
+    "noPermissionToViewPermissions": "لا يوجد صلاحية لعرض الصلاحيات",
+    "noPermissionToViewPermissionsDesc": "ليس لديك صلاحية لعرض الصلاحيات. لا يزال بإمكانك إنشاء دور، لكن لن تتمكن من تعيين الصلاحيات له."
   },
   "adminDashboard": {
     "cards": {

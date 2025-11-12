@@ -3,15 +3,25 @@ import { X, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useGetRolePermissionsQuery, useUpdateRoleMutation } from '../../../services/apis/RoleApi';
 import { useGetAllPermissionsQuery } from '../../../services/apis/PermissionApi';
+import { useHasPermission } from '../../../hooks/useHasPermission';
 
 const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
+    
+    // Permission checks
+    const canUpdateRole = useHasPermission('Role.Update');
+    const canViewRolePermissions = useHasPermission('Role.ViewPermissions');
+    const canViewAllPermissions = useHasPermission('Permission.View');
+    const canViewPermissions = canViewRolePermissions || canViewAllPermissions;
 
-    // Fetch all permissions to map codes to IDs
-    const { data: permissionsData } = useGetAllPermissionsQuery();
+    // Fetch all permissions to map codes to IDs - only if user has permission to view permissions
+    const { data: permissionsData } = useGetAllPermissionsQuery(undefined, {
+        skip: !canViewPermissions
+    });
+    // Fetch role permissions - only if user has permission to view permissions
     const { data: rolePermissionsData } = useGetRolePermissionsQuery(roleData?.id || null, { 
-        skip: !roleData?.id || !isOpen 
+        skip: !roleData?.id || !isOpen || !canViewPermissions
     });
     const [updateRole, { isLoading: isUpdating }] = useUpdateRoleMutation();
 
@@ -226,14 +236,24 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                                     type="text"
                                     value={formData.roleName}
                                     onChange={(e) => setFormData(prev => ({ ...prev, roleName: e.target.value }))}
-                                    className="w-full px-3 py-2 border border-[var(--border-color)] rounded-lg bg-[var(--input-bg)] text-[var(--text-color)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)]"
+                                    disabled={!canUpdateRole}
+                                    className={`w-full px-3 py-2 border border-[var(--border-color)] rounded-lg bg-[var(--input-bg)] text-[var(--text-color)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)] ${
+                                        !canUpdateRole ? 'opacity-60 cursor-not-allowed' : ''
+                                    }`}
                                     placeholder={t('roles.editRole.roleNamePlaceholder')}
                                     dir={isArabic ? 'rtl' : 'ltr'}
                                 />
                             </div>
 
-                            {/* Permission Sections */}
-                            {Object.keys(groupedPermissions).map(category => (
+                            {/* Permission Sections - Only show if user has permission to view permissions */}
+                            {!canViewPermissions ? (
+                                <div className="text-center py-8">
+                                    <p className="text-[var(--sub-text-color)] text-sm">
+                                        {t('roles.noPermissionToViewPermissions') || 'You do not have permission to view permissions'}
+                                    </p>
+                                </div>
+                            ) : (
+                                Object.keys(groupedPermissions).map(category => (
                                 <div key={category} className="space-y-3">
                                     <div>
                                         <div className={`flex items-center justify-between pb-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
@@ -243,20 +263,22 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                                             >
                                                 {categoryDisplayNames[category] || category}
                                             </h3>
-                                            <label className={`flex items-center gap-2 cursor-pointer ${isArabic ? 'flex-row-reverse' : ''}`}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={isCategoryAllSelected(category)}
-                                                    onChange={() => handleCategorySelectAll(category)}
-                                                    className="w-4 h-4 rounded border-2 border-[var(--border-color)] text-[var(--accent-color)] focus:ring-[var(--accent-color)] focus:ring-2 checked:bg-[var(--accent-color)] checked:border-[var(--accent-color)]"
-                                                    style={{
-                                                        accentColor: 'var(--accent-color)'
-                                                    }}
-                                                />
-                                                <span className={`text-xs text-[var(--sub-text-color)] font-medium ${isArabic ? 'text-right' : 'text-left'}`} dir={isArabic ? 'rtl' : 'ltr'}>
-                                                    {t('roles.selectAll') || 'Select All'}
-                                                </span>
-                                            </label>
+                                            {canUpdateRole && (
+                                                <label className={`flex items-center gap-2 cursor-pointer ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isCategoryAllSelected(category)}
+                                                        onChange={() => handleCategorySelectAll(category)}
+                                                        className="w-4 h-4 rounded border-2 border-[var(--border-color)] text-[var(--accent-color)] focus:ring-[var(--accent-color)] focus:ring-2 checked:bg-[var(--accent-color)] checked:border-[var(--accent-color)]"
+                                                        style={{
+                                                            accentColor: 'var(--accent-color)'
+                                                        }}
+                                                    />
+                                                    <span className={`text-xs text-[var(--sub-text-color)] font-medium ${isArabic ? 'text-right' : 'text-left'}`} dir={isArabic ? 'rtl' : 'ltr'}>
+                                                        {t('roles.selectAll') || 'Select All'}
+                                                    </span>
+                                                </label>
+                                            )}
                                         </div>
                                         <div className="w-full h-px bg-[var(--border-color)]"></div>
                                     </div>
@@ -270,7 +292,10 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                                                     type="checkbox"
                                                     checked={formData.selectedPermissionIds.includes(permission.id)}
                                                     onChange={() => handlePermissionToggle(permission.id)}
-                                                    className="w-4 h-4 rounded border-2 border-[var(--border-color)] text-[var(--accent-color)] focus:ring-[var(--accent-color)] focus:ring-2 checked:bg-[var(--accent-color)] checked:border-[var(--accent-color)]"
+                                                    disabled={!canUpdateRole}
+                                                    className={`w-4 h-4 rounded border-2 border-[var(--border-color)] text-[var(--accent-color)] focus:ring-[var(--accent-color)] focus:ring-2 checked:bg-[var(--accent-color)] checked:border-[var(--accent-color)] ${
+                                                        !canUpdateRole ? 'opacity-60 cursor-not-allowed' : ''
+                                                    }`}
                                                     style={{
                                                         accentColor: 'var(--accent-color)'
                                                     }}
@@ -286,10 +311,11 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                                         ))}
                                     </div>
                                 </div>
-                            ))}
+                                ))
+                            )}
                         </div>
 
-                        {/* Fixed Footer with Buttons */}
+                        {/* Fixed Footer with Buttons - Only show Save if user has update permission */}
                         <div className="border-t border-[var(--border-color)] p-4 bg-[var(--bg-color)]">
                             <div className={`flex gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
                                 <button
@@ -298,14 +324,16 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                                 >
                                     {t('roles.cancel')}
                                 </button>
-                                <button
-                                    onClick={handleSave}
-                                    disabled={isUpdating}
-                                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--accent-color)] text-white rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed ${isArabic ? 'flex-row-reverse' : ''}`}
-                                >
-                                    <Check className="w-4 h-4" />
-                                    {isUpdating ? (t('common.saving') || 'Saving...') : t('roles.save')}
-                                </button>
+                                {canUpdateRole && (
+                                    <button
+                                        onClick={handleSave}
+                                        disabled={isUpdating}
+                                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--accent-color)] text-white rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed ${isArabic ? 'flex-row-reverse' : ''}`}
+                                    >
+                                        <Check className="w-4 h-4" />
+                                        {isUpdating ? (t('common.saving') || 'Saving...') : t('roles.save')}
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -346,14 +374,24 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                         type="text"
                         value={formData.roleName}
                         onChange={(e) => setFormData(prev => ({ ...prev, roleName: e.target.value }))}
-                        className="w-full px-3 py-2 border border-[var(--border-color)] rounded-lg bg-[var(--input-bg)] text-[var(--text-color)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)]"
+                        disabled={!canUpdateRole}
+                        className={`w-full px-3 py-2 border border-[var(--border-color)] rounded-lg bg-[var(--input-bg)] text-[var(--text-color)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)] ${
+                            !canUpdateRole ? 'opacity-60 cursor-not-allowed' : ''
+                        }`}
                         placeholder={t('roles.editRole.roleNamePlaceholder')}
                         dir={isArabic ? 'rtl' : 'ltr'}
                     />
                 </div>
 
-                {/* Permission Sections */}
-                {Object.keys(groupedPermissions).map(category => (
+                {/* Permission Sections - Only show if user has permission to view permissions */}
+                {!canViewPermissions ? (
+                    <div className="text-center py-8">
+                        <p className="text-[var(--sub-text-color)] text-sm">
+                            {t('roles.noPermissionToViewPermissions') || 'You do not have permission to view permissions'}
+                        </p>
+                    </div>
+                ) : (
+                    Object.keys(groupedPermissions).map(category => (
                     <div key={category} className="space-y-3">
                         <div>
                             <div className={`flex items-center justify-between pb-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
@@ -363,20 +401,22 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                                 >
                                     {categoryDisplayNames[category] || category}
                                 </h3>
-                                <label className={`flex items-center gap-2 cursor-pointer ${isArabic ? 'flex-row-reverse' : ''}`}>
-                                    <input
-                                        type="checkbox"
-                                        checked={isCategoryAllSelected(category)}
-                                        onChange={() => handleCategorySelectAll(category)}
-                                        className="w-4 h-4 rounded border-2 border-[var(--border-color)] text-[var(--accent-color)] focus:ring-[var(--accent-color)] focus:ring-2 checked:bg-[var(--accent-color)] checked:border-[var(--accent-color)]"
-                                        style={{
-                                            accentColor: 'var(--accent-color)'
-                                        }}
-                                    />
-                                    <span className={`text-xs text-[var(--sub-text-color)] font-medium ${isArabic ? 'text-right' : 'text-left'}`} dir={isArabic ? 'rtl' : 'ltr'}>
-                                        {t('roles.selectAll') || 'Select All'}
-                                    </span>
-                                </label>
+                                {canUpdateRole && (
+                                    <label className={`flex items-center gap-2 cursor-pointer ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                        <input
+                                            type="checkbox"
+                                            checked={isCategoryAllSelected(category)}
+                                            onChange={() => handleCategorySelectAll(category)}
+                                            className="w-4 h-4 rounded border-2 border-[var(--border-color)] text-[var(--accent-color)] focus:ring-[var(--accent-color)] focus:ring-2 checked:bg-[var(--accent-color)] checked:border-[var(--accent-color)]"
+                                            style={{
+                                                accentColor: 'var(--accent-color)'
+                                            }}
+                                        />
+                                        <span className={`text-xs text-[var(--sub-text-color)] font-medium ${isArabic ? 'text-right' : 'text-left'}`} dir={isArabic ? 'rtl' : 'ltr'}>
+                                            {t('roles.selectAll') || 'Select All'}
+                                        </span>
+                                    </label>
+                                )}
                             </div>
                             <div className="w-full h-px bg-[var(--border-color)]"></div>
                         </div>
@@ -390,7 +430,10 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                                         type="checkbox"
                                         checked={formData.selectedPermissionIds.includes(permission.id)}
                                         onChange={() => handlePermissionToggle(permission.id)}
-                                        className="w-4 h-4 rounded border-2 border-[var(--border-color)] text-[var(--accent-color)] focus:ring-[var(--accent-color)] focus:ring-2 checked:bg-[var(--accent-color)] checked:border-[var(--accent-color)]"
+                                        disabled={!canUpdateRole}
+                                        className={`w-4 h-4 rounded border-2 border-[var(--border-color)] text-[var(--accent-color)] focus:ring-[var(--accent-color)] focus:ring-2 checked:bg-[var(--accent-color)] checked:border-[var(--accent-color)] ${
+                                            !canUpdateRole ? 'opacity-60 cursor-not-allowed' : ''
+                                        }`}
                                         style={{
                                             accentColor: 'var(--accent-color)'
                                         }}
@@ -406,10 +449,11 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                             ))}
                         </div>
                     </div>
-                ))}
+                    ))
+                )}
             </div>
 
-            {/* Fixed Footer with Buttons */}
+            {/* Fixed Footer with Buttons - Only show Save if user has update permission */}
             <div className="border-t border-[var(--border-color)] p-4 bg-[var(--bg-color)] flex-shrink-0">
                 <div className={`flex gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
                     <button
@@ -418,14 +462,16 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
                     >
                         {t('roles.cancel')}
                     </button>
-                    <button
-                        onClick={handleSave}
-                        disabled={isUpdating}
-                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--accent-color)] text-white rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed ${isArabic ? 'flex-row-reverse' : ''}`}
-                    >
-                        <Check className="w-4 h-4" />
-                        {isUpdating ? (t('common.saving') || 'Saving...') : t('roles.save')}
-                    </button>
+                    {canUpdateRole && (
+                        <button
+                            onClick={handleSave}
+                            disabled={isUpdating}
+                            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--accent-color)] text-white rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed ${isArabic ? 'flex-row-reverse' : ''}`}
+                        >
+                            <Check className="w-4 h-4" />
+                            {isUpdating ? (t('common.saving') || 'Saving...') : t('roles.save')}
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

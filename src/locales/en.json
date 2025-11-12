@@ -1284,7 +1284,9 @@
       "loadRolesFailed": "Failed to load roles",
       "updateFailed": "Failed to update role",
       "deleteFailed": "Failed to delete role"
-    }
+    },
+    "noPermissionToViewPermissions": "No Permission to View Permissions",
+    "noPermissionToViewPermissionsDesc": "You do not have permission to view permissions. You can still create a role, but you will not be able to assign permissions to it."
   },
   "adminLeaves": {
     "manageLeaveTypes": "Manage Leave Types",

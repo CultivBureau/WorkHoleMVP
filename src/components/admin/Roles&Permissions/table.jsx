@@ -186,8 +186,9 @@ const RolesTable = ({ onRoleSelect }) => {
                 </td>
                 <td className={`py-4 px-6 text-[var(--text-color)] text-sm font-medium ${isArabic ? 'text-right' : 'text-left'}`}>{role.users}</td>
                 <td className={`py-4 px-6 ${isArabic ? 'text-right' : 'text-left'}`}>{getStatusBadge(role.status)}</td>
-                <td className="py-4 px-6" onClick={(e) => e.stopPropagation()}>
-                    {(canUpdateRole || canDeleteRole) && (
+                {/* Actions cell - Only show if user has any action permissions */}
+                {(canUpdateRole || canDeleteRole) && (
+                    <td className="py-4 px-6" onClick={(e) => e.stopPropagation()}>
                         <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
                             {canUpdateRole && (
                                 <button
@@ -216,8 +217,8 @@ const RolesTable = ({ onRoleSelect }) => {
                                 </button>
                             )}
                         </div>
-                    )}
-                </td>
+                    </td>
+                )}
             </tr>
         ));
     };
@@ -321,15 +322,18 @@ const RolesTable = ({ onRoleSelect }) => {
                                     <th className={`py-3 px-4 text-sm font-medium text-[var(--text-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
                                         {t('roles.table.status')}
                                     </th>
-                                    <th className={`py-3 px-4 text-sm font-medium text-[var(--text-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
-                                        {t('roles.table.actions')}
-                                    </th>
+                                    {/* Actions column - Only show if user has any action permissions */}
+                                    {(canUpdateRole || canDeleteRole) && (
+                                        <th className={`py-3 px-4 text-sm font-medium text-[var(--text-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
+                                            {t('roles.table.actions')}
+                                        </th>
+                                    )}
                                 </tr>
                             </thead>
                             <tbody>
                                 {currentPageData.length === 0 ? (
                                     <tr>
-                                        <td colSpan={4} className="py-8 text-center">
+                                        <td colSpan={(canUpdateRole || canDeleteRole) ? 4 : 3} className="py-8 text-center">
                                             <span className="text-[var(--sub-text-color)] text-sm" dir={isArabic ? 'rtl' : 'ltr'}>
                                                 {t('roles.table.noRoles') || 'No roles found'}
                                             </span>
@@ -341,7 +345,7 @@ const RolesTable = ({ onRoleSelect }) => {
                                         {/* Empty rows */}
                                         {emptyRows.map((_, index) => (
                                             <tr key={`empty-${index}`} className="border-b border-[var(--border-color)] last:border-b-0">
-                                                <td colSpan={4} className="h-[68px]"></td>
+                                                <td colSpan={(canUpdateRole || canDeleteRole) ? 4 : 3} className="h-[68px]"></td>
                                             </tr>
                                         ))}
                                     </>
