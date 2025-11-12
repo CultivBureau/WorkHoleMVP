@@ -499,6 +499,7 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
     if (location.pathname.startsWith("/pages/admin/company")) return "admin_company";
     if (location.pathname.startsWith("/pages/admin/Roles&Permissions")) return "admin_roles_permissions";
     if (location.pathname.startsWith("/pages/admin/New_Role")) return "admin_new_role";
+    if (location.pathname.startsWith("/pages/admin/shifts")) return "admin_shifts";
     return "";
   };
   const active = getActiveKey();
@@ -580,6 +581,7 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
     else if (key === "admin_company") navigate("/pages/admin/company");
     else if (key === "admin_roles_permissions") navigate("/pages/admin/Roles&Permissions");
     else if (key === "admin_new_role") navigate("/pages/admin/New_Role");
+    else if (key === "admin_shifts") navigate("/pages/admin/shifts");
   };
 
   // Settings click handler
@@ -791,7 +793,7 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
                       t={t}
                       isArabic={isArabic}
                       onShowToast={showToast}
-                      customLabel={item.name}
+                      customLabel={t(`aside.${item.key}`) || item.name}
                       childLabels={filteredChildren ? filteredChildren.reduce((acc, child) => {
                         acc[child.key] = child.name;
                         return acc;

@@ -10,6 +10,7 @@ import {
   Building,
   Coffee,
   UsersRound,
+  Clock,
 } from "lucide-react";
 import { hasBackendPermission } from "./permissionMapping";
 import { getPermissions } from "./page";
@@ -79,6 +80,15 @@ export const PERMISSION_MENU_ITEMS = [
     permission: "assignRoles",
     backendPermissions: ["Role.View", "Role.Create", "Role.Update", "Role.ViewPermissions"],
     Icon: Shield,
+    category: "admin",
+  },
+  {
+    key: "admin_shifts",
+    name: "Shifts",
+    path: "/pages/admin/shifts",
+    permission: "viewShifts",
+    backendPermissions: ["Shift.View", "Shift.Create", "Shift.Update", "Shift.Delete", "Shift.Restore", "ShiftAssignment.View", "ShiftAssignment.AssignUser"],
+    Icon: Clock,
     category: "admin",
   },
 ];
