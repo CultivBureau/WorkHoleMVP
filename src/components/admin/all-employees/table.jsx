@@ -556,6 +556,9 @@ const EmployeesTable = () => {
                                             onCardClick={() => handleViewEmployee(employee)}
                                             onView={() => handleViewEmployee(employee)}
                                             onEdit={() => { setSelectedEmployee(employee); setIsEditOpen(true); }}
+                                            canViewAllProfiles={canViewAllProfiles}
+                                            canUpdate={canUpdate}
+                                            canDelete={canDelete}
                                             className="h-full"
                                         />
                                     ) : (
@@ -642,21 +645,27 @@ const EmployeesTable = () => {
                                             style={{ color: 'white', minWidth: '100px' }}>
                                             {t("employees.table.status", "Status")}
                                         </th>
-                                        <th className={`px-4 md:px-6 py-4 text-xs font-bold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
-                                            style={{ color: 'white', minWidth: '120px' }}>
-                                            {t("employees.table.action", "Action")}
-                                        </th>
+                                        {/* Actions column - Only show if user has any action permissions */}
+                                        {(canViewAllProfiles || canUpdate || canDelete) && (
+                                            <th className={`px-4 md:px-6 py-4 text-xs font-bold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                                                style={{ color: 'white', minWidth: '120px' }}>
+                                                {t("employees.table.action", "Action")}
+                                            </th>
+                                        )}
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {paginatedEmployees.map((employee) => (
                                         <tr
                                             key={employee.id}
-                                            className="transition-all duration-300 cursor-pointer group border-b-2"
+                                            className={`transition-all duration-300 group border-b-2 ${
+                                                canViewAllProfiles ? 'cursor-pointer' : 'cursor-default'
+                                            }`}
                                             style={{
                                                 borderColor: 'var(--border-color)',
                                                 backgroundColor: 'var(--bg-color)'
                                             }}
+                                            onClick={canViewAllProfiles ? () => handleViewEmployee(employee) : undefined}
                                             onMouseEnter={(e) => {
                                                 e.currentTarget.style.backgroundColor = 'var(--hover-color)';
                                             }}
@@ -834,10 +843,12 @@ const EmployeesTable = () => {
                                                 </span>
                                             </td>
 
-                                            {/* Actions */}
-                                            <td className={`px-4 md:px-6 py-5 ${isArabic ? 'text-right' : 'text-left'}`}>
-                                                <ActionButtons employee={employee} />
-                                            </td>
+                                            {/* Actions - Only show if user has any action permissions */}
+                                            {(canViewAllProfiles || canUpdate || canDelete) && (
+                                                <td className={`px-4 md:px-6 py-5 ${isArabic ? 'text-right' : 'text-left'}`}>
+                                                    <ActionButtons employee={employee} />
+                                                </td>
+                                            )}
                                         </tr>
                                     ))}
                                 </tbody>

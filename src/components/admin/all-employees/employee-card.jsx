@@ -16,7 +16,10 @@ const EmployeeCard = ({
     className = "",
     onView,
     onEdit,
-    onDelete
+    onDelete,
+    canViewAllProfiles = true,
+    canUpdate = true,
+    canDelete = true
 }) => {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
@@ -108,7 +111,9 @@ const EmployeeCard = ({
 
     return (
         <div
-            className={`relative rounded-2xl p-5 border-2 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-[1.05] flex flex-col ${className}`}
+            className={`relative rounded-2xl p-5 border-2 transition-all duration-300 flex flex-col ${className} ${
+                canViewAllProfiles ? 'cursor-pointer hover:shadow-2xl hover:scale-[1.05]' : 'cursor-default'
+            }`}
             style={{
                 backgroundColor: 'var(--bg-color)',
                 borderColor: 'var(--border-color)',
@@ -118,7 +123,7 @@ const EmployeeCard = ({
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
                 zIndex: 1
             }}
-            onClick={onCardClick}
+            onClick={canViewAllProfiles ? onCardClick : undefined}
             onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = 'var(--accent-color)';
                 e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
@@ -131,58 +136,70 @@ const EmployeeCard = ({
             }}
             dir={isArabic ? "rtl" : "ltr"}
         >
-            {/* Three dots menu */}
-            <div className={`absolute top-3 z-10 ${isArabic ? 'left-3' : 'right-3'}`} ref={dropdownRef}>
-                <button
-                    onClick={toggleDropdown}
-                    className="p-1.5 rounded-lg hover:bg-[var(--hover-color)] transition-all"
-                    style={{
-                        color: 'var(--accent-color)',
-                        backgroundColor: isDropdownOpen ? 'var(--hover-color)' : 'transparent'
-                    }}
-                >
-                    <MoreHorizontal className="w-5 h-5" />
-                </button>
-
-                {/* Enhanced Dropdown Menu */}
-                {isDropdownOpen && (
-                    <div
-                        className={`absolute top-10 ${isArabic ? 'left-0' : 'right-0'} mt-1 w-40 rounded-xl border-2 shadow-xl z-20`}
+            {/* Three dots menu - Only show if user has any action permissions */}
+            {(canViewAllProfiles || canUpdate || canDelete) && (
+                <div className={`absolute top-3 z-10 ${isArabic ? 'left-3' : 'right-3'}`} ref={dropdownRef}>
+                    <button
+                        onClick={toggleDropdown}
+                        className="p-1.5 rounded-lg hover:bg-[var(--hover-color)] transition-all"
                         style={{
-                            backgroundColor: 'var(--bg-color)',
-                            borderColor: 'var(--border-color)'
+                            color: 'var(--accent-color)',
+                            backgroundColor: isDropdownOpen ? 'var(--hover-color)' : 'transparent'
                         }}
                     >
-                        <div className="py-2">
-                            <button
-                                onClick={handleView}
-                                className={`w-full px-4 py-2.5 text-sm flex items-center gap-3 hover:bg-[var(--hover-color)] transition-colors ${isArabic ? 'flex-row-reverse text-right' : 'text-left'}`}
-                                style={{ color: 'var(--text-color)' }}
-                            >
-                                <Eye className="w-4 h-4" style={{ color: 'var(--accent-color)' }} />
-                                <span className="font-medium">{t("employees.actions.view", "View")}</span>
-                            </button>
-                            <button
-                                onClick={handleEdit}
-                                className={`w-full px-4 py-2.5 text-sm flex items-center gap-3 hover:bg-[var(--hover-color)] transition-colors ${isArabic ? 'flex-row-reverse text-right' : 'text-left'}`}
-                                style={{ color: 'var(--text-color)' }}
-                            >
-                                <Edit className="w-4 h-4" style={{ color: 'var(--accent-color)' }} />
-                                <span className="font-medium">{t("employees.actions.edit", "Edit")}</span>
-                            </button>
-                            <div className="border-t" style={{ borderColor: 'var(--border-color)' }} />
-                            <button
-                                onClick={handleDelete}
-                                className={`w-full px-4 py-2.5 text-sm flex items-center gap-3 hover:bg-red-50 transition-colors ${isArabic ? 'flex-row-reverse text-right' : 'text-left'}`}
-                                style={{ color: 'var(--error-color)' }}
-                            >
-                                <Trash2 className="w-4 h-4" />
-                                <span className="font-medium">{t("employees.actions.delete", "Delete")}</span>
-                            </button>
+                        <MoreHorizontal className="w-5 h-5" />
+                    </button>
+
+                    {/* Enhanced Dropdown Menu */}
+                    {isDropdownOpen && (
+                        <div
+                            className={`absolute top-10 ${isArabic ? 'left-0' : 'right-0'} mt-1 w-40 rounded-xl border-2 shadow-xl z-20`}
+                            style={{
+                                backgroundColor: 'var(--bg-color)',
+                                borderColor: 'var(--border-color)'
+                            }}
+                        >
+                            <div className="py-2">
+                                {canViewAllProfiles && (
+                                    <button
+                                        onClick={handleView}
+                                        className={`w-full px-4 py-2.5 text-sm flex items-center gap-3 hover:bg-[var(--hover-color)] transition-colors ${isArabic ? 'flex-row-reverse text-right' : 'text-left'}`}
+                                        style={{ color: 'var(--text-color)' }}
+                                    >
+                                        <Eye className="w-4 h-4" style={{ color: 'var(--accent-color)' }} />
+                                        <span className="font-medium">{t("employees.actions.view", "View")}</span>
+                                    </button>
+                                )}
+                                {canUpdate && (
+                                    <button
+                                        onClick={handleEdit}
+                                        className={`w-full px-4 py-2.5 text-sm flex items-center gap-3 hover:bg-[var(--hover-color)] transition-colors ${isArabic ? 'flex-row-reverse text-right' : 'text-left'}`}
+                                        style={{ color: 'var(--text-color)' }}
+                                    >
+                                        <Edit className="w-4 h-4" style={{ color: 'var(--accent-color)' }} />
+                                        <span className="font-medium">{t("employees.actions.edit", "Edit")}</span>
+                                    </button>
+                                )}
+                                {canDelete && (
+                                    <>
+                                        {(canViewAllProfiles || canUpdate) && (
+                                            <div className="border-t" style={{ borderColor: 'var(--border-color)' }} />
+                                        )}
+                                        <button
+                                            onClick={handleDelete}
+                                            className={`w-full px-4 py-2.5 text-sm flex items-center gap-3 hover:bg-red-50 transition-colors ${isArabic ? 'flex-row-reverse text-right' : 'text-left'}`}
+                                            style={{ color: 'var(--error-color)' }}
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                            <span className="font-medium">{t("employees.actions.delete", "Delete")}</span>
+                                        </button>
+                                    </>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                )}
-            </div>
+                    )}
+                </div>
+            )}
 
             {/* Top Section: Avatar + Name + Position + Role */}
             <div className="flex flex-col items-center mb-4">
