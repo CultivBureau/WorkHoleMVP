@@ -119,6 +119,7 @@ export const FRONTEND_TO_BACKEND_MAPPING = {
   ],
   viewEmployeeProfiles: [
     "User.View",
+    "User.Profile.ViewAll",
   ],
   deactivateEmployees: [
     "User.Delete",

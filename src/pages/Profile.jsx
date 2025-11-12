@@ -13,6 +13,8 @@ import { useLocation } from "react-router-dom"
 import { useMeQuery } from "../services/apis/AuthApi"
 import { useGetAllShiftAssignmentsQuery } from "../services/apis/ShiftApi"
 import { useGetUserProfileClockInLogsQuery } from "../services/apis/ClockInApi"
+import { useGetUserProfileByIdQuery } from "../services/apis/UserApi"
+import Loading from "../components/Loading/Loading"
 
 const Profile = () => {
   const { isRtl } = useLang()
@@ -21,9 +23,22 @@ const Profile = () => {
   
   // Check if we're viewing an employee from admin panel
   const isAdminView = location.state?.isAdminView || false
-  const employeeData = location.state?.employeeData || null
+  const employeeDataFromState = location.state?.employeeData || null
   
-  // Fetch user data from /me endpoint
+  // Get employee ID from state (if available)
+  const employeeIdFromState = employeeDataFromState?.id || employeeDataFromState?.rawData?.id || null
+  
+  // Fetch employee profile data from API when viewing as admin
+  const { data: employeeProfileResponse, isLoading: isLoadingEmployeeProfile } = useGetUserProfileByIdQuery(
+    employeeIdFromState,
+    { skip: !isAdminView || !employeeIdFromState }
+  )
+  const employeeDataFromApi = employeeProfileResponse?.value || null
+  
+  // Use API data if available, otherwise fall back to state data
+  const employeeData = employeeDataFromApi || employeeDataFromState
+  
+  // Fetch user data from /me endpoint (for own profile)
   const { data: meResponse, isLoading: isLoadingUser } = useMeQuery()
   const userDataFromApi = meResponse?.value || null
   
@@ -53,51 +68,124 @@ const Profile = () => {
     { skip: !userIdForAttendance || activeSection !== 'attendance' }
   )
 
-  // Get user's shift from assignments
+  // Get user's shift from assignments (for both own profile and employee profile)
   const userShift = useMemo(() => {
-    if (!userDataFromApi?.id || !Array.isArray(allAssignments)) return null
+    // Determine which user ID to use
+    const userId = isAdminView && employeeData?.id ? employeeData.id : userDataFromApi?.id
+    if (!userId || !Array.isArray(allAssignments)) return null
     const userAssignment = allAssignments.find(
-      assignment => assignment.userId === userDataFromApi.id
+      assignment => assignment.userId === userId
     )
     // Check both possible structures
     return userAssignment?.shiftRule?.name || userAssignment?.shift?.name || null
-  }, [allAssignments, userDataFromApi?.id])
+  }, [allAssignments, userDataFromApi?.id, employeeData?.id, isAdminView])
+
+  // Helper function to format arrays with bullet points (respects RTL/LTR)
+  const formatArrayWithBullets = useMemo(() => {
+    return (array, extractName) => {
+      if (!array || !Array.isArray(array) || array.length === 0) return 'N/A'
+      const names = array.map(item => extractName(item)).filter(Boolean)
+      if (names.length === 0) return 'N/A'
+      // Use bullet point (•) as separator, with proper spacing for RTL/LTR
+      const separator = isRtl ? ' • ' : ' • '
+      return names.join(separator)
+    }
+  }, [isRtl])
 
   // Map API data to display structure
   const displayData = useMemo(() => {
     if (employeeData) {
-      // Admin viewing employee - use employeeData
-      return {
-        firstName: employeeData.name?.split(' ')[0] || 'N/A',
-        lastName: employeeData.name?.split(' ').slice(1).join(' ') || 'N/A',
-        email: employeeData.email || 'N/A',
-        avatar: employeeData.avatar || `https://ui-avatars.com/api/?name=${employeeData.name || 'Employee'}&background=15919B&color=fff&size=80`,
-        professionalInfo: {
-          designation: employeeData.position || 'N/A',
-          department: employeeData.department || 'N/A',
-          employeeId: employeeData.employeeId || 'N/A',
-          joinDate: employeeData.joinDate || 'N/A'
-        },
-        personalInfo: {
+      // Check if this is API data (has firstName directly) or state data (has name)
+      const isApiData = employeeData.firstName !== undefined
+      
+      if (isApiData) {
+        // Admin viewing employee - use API data structure
+        // Extract all roles
+        const roleNames = formatArrayWithBullets(
+          employeeData.roles,
+          (role) => typeof role === 'string' ? role : role?.name || ''
+        )
+        const roleDisplay = roleNames !== 'N/A' ? roleNames : (employeeData.jobTitle || 'N/A')
+
+        // Extract all department names
+        const departmentNames = formatArrayWithBullets(
+          employeeData.departments,
+          (dept) => dept?.name || ''
+        )
+
+        // Extract all team names
+        const teamNames = formatArrayWithBullets(
+          employeeData.teams,
+          (team) => team?.name || ''
+        )
+
+        // Extract team leader name (from first team if available)
+        const teamLeadName = employeeData.teams?.[0]?.teamLeadName || null
+
+        return {
+          firstName: employeeData.firstName || 'N/A',
+          lastName: employeeData.lastName || 'N/A',
+          email: employeeData.email || 'N/A',
+          avatar: `https://ui-avatars.com/api/?name=${employeeData.firstName}+${employeeData.lastName}&background=15919B&color=fff&size=80`,
+          professionalInfo: {
+            role: roleDisplay,
+            department: departmentNames,
+            team: teamNames,
+            shift: userShift || 'N/A',
+            jobTitle: employeeData.jobTitle || 'N/A',
+            hireDate: employeeData.hireDate ? new Date(employeeData.hireDate).toLocaleDateString() : 'N/A'
+          },
+          personalInfo: {
+            firstName: employeeData.firstName || 'N/A',
+            lastName: employeeData.lastName || 'N/A',
+            email: employeeData.email || 'N/A',
+            userName: employeeData.userName || 'N/A',
+            hireDate: employeeData.hireDate ? new Date(employeeData.hireDate).toLocaleDateString() : 'N/A'
+          },
+          accountAccess: {
+            userName: employeeData.userName || 'N/A',
+            emailAddress: employeeData.email || 'N/A',
+            permissions: employeeData.permissions || [],
+            leaveBalances: employeeData.leaveBalances || []
+          },
+          teamLeader: teamLeadName,
+          teamLeaderAvatar: null,
+          isAdmin: employeeData.isAdmin || false
+        }
+      } else {
+        // Fallback to state data structure (for backward compatibility)
+        return {
           firstName: employeeData.name?.split(' ')[0] || 'N/A',
           lastName: employeeData.name?.split(' ').slice(1).join(' ') || 'N/A',
           email: employeeData.email || 'N/A',
-          mobileNumber: employeeData.mobileNumber || 'N/A',
-          dateOfBirth: employeeData.dateOfBirth || 'N/A',
-          gender: employeeData.gender || 'N/A',
-          nationality: employeeData.nationality || 'N/A',
-          address: employeeData.address || 'N/A',
-          status: employeeData.status || 'N/A'
-        },
-        accountAccess: {
-          username: employeeData.username || 'N/A',
-          accessLevel: employeeData.accessLevel || 'Standard User',
-          permissions: employeeData.permissions || 'Basic Access',
-          lastLogin: employeeData.lastLogin || 'Never'
-        },
-        teamLeader: employeeData.teamLeader || null,
-        teamLeaderAvatar: employeeData.teamLeaderAvatar || null,
-        isAdmin: employeeData.isAdmin || false
+          avatar: employeeData.avatar || `https://ui-avatars.com/api/?name=${employeeData.name || 'Employee'}&background=15919B&color=fff&size=80`,
+          professionalInfo: {
+            designation: employeeData.position || 'N/A',
+            department: employeeData.department || 'N/A',
+            employeeId: employeeData.employeeId || 'N/A',
+            joinDate: employeeData.joinDate || 'N/A'
+          },
+          personalInfo: {
+            firstName: employeeData.name?.split(' ')[0] || 'N/A',
+            lastName: employeeData.name?.split(' ').slice(1).join(' ') || 'N/A',
+            email: employeeData.email || 'N/A',
+            mobileNumber: employeeData.mobileNumber || 'N/A',
+            dateOfBirth: employeeData.dateOfBirth || 'N/A',
+            gender: employeeData.gender || 'N/A',
+            nationality: employeeData.nationality || 'N/A',
+            address: employeeData.address || 'N/A',
+            status: employeeData.status || 'N/A'
+          },
+          accountAccess: {
+            username: employeeData.username || 'N/A',
+            accessLevel: employeeData.accessLevel || 'Standard User',
+            permissions: employeeData.permissions || 'Basic Access',
+            lastLogin: employeeData.lastLogin || 'Never'
+          },
+          teamLeader: employeeData.teamLeader || null,
+          teamLeaderAvatar: employeeData.teamLeaderAvatar || null,
+          isAdmin: employeeData.isAdmin || false
+        }
       }
     }
     
@@ -117,15 +205,6 @@ const Profile = () => {
       }
     }
 
-    // Helper function to format arrays with bullet points (respects RTL/LTR)
-    const formatArrayWithBullets = (array, extractName) => {
-      if (!array || !Array.isArray(array) || array.length === 0) return 'N/A'
-      const names = array.map(item => extractName(item)).filter(Boolean)
-      if (names.length === 0) return 'N/A'
-      // Use bullet point (•) as separator, with proper spacing for RTL/LTR
-      const separator = isRtl ? ' • ' : ' • '
-      return names.join(separator)
-    }
 
     // Extract all roles (handle both object and string format)
     const roleNames = formatArrayWithBullets(
@@ -180,7 +259,7 @@ const Profile = () => {
       teamLeaderAvatar: null,
       isAdmin: userDataFromApi.isAdmin || false
     }
-  }, [employeeData, userDataFromApi, userShift, isRtl])
+  }, [employeeData, userDataFromApi, userShift, isRtl, formatArrayWithBullets])
 
   // Transform attendance API response to match table structure
   const attendanceData = useMemo(() => {
@@ -236,6 +315,11 @@ const Profile = () => {
   }, [attendanceResponse])
 
   const content = renderContent()
+
+  // Show loading state when fetching employee profile or own profile
+  if ((isAdminView && isLoadingEmployeeProfile) || (!isAdminView && isLoadingUser)) {
+    return <Loading />
+  }
 
   // Handle back navigation
   const handleBack = () => {
