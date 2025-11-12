@@ -43,6 +43,7 @@ export const getFieldLabels = (isRtl) => ({
         { key: 'checkOut', header: isRtl ? 'وقت الانصراف' : 'Check Out' },
         { key: 'break', header: isRtl ? 'الاستراحة' : 'Break' },
         { key: 'workingHours', header: isRtl ? 'ساعات العمل' : 'Working Hours' },
+        { key: 'office', header: isRtl ? 'موقع العمل' : 'Location' },
         { key: 'status', header: isRtl ? 'الحالة' : 'Status' }
       ],
       title: isRtl ? "سجل الحضور" : "Attendance Records",
