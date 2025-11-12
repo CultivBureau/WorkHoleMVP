@@ -388,6 +388,7 @@
   "profile": {
     "profile": "Profile",
     "personalInformation": "Personal Information",
+    "professionalInformation": "Professional Information",
     "firstName": "First Name",
     "lastName": "Last Name",
     "mobileNumber": "Mobile Number",
@@ -488,6 +489,10 @@
       "emergency": "Emergency Leave",
       "unpaid": "Unpaid Leave"
     },
+    "balances": "Leave Balances",
+    "balancesDescription": "Your available leave balances",
+    "days": "Days",
+    "noAvailableBalance": "No available leave balance",
     "form": {
       "step1Title": "Step 1 - Leave Details",
       "step2Title": "Step 2 - Reason & Attachment",

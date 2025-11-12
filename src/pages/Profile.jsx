@@ -103,19 +103,37 @@ const Profile = () => {
       }
     }
 
-    // Extract role name (handle both object and string format)
-    const firstRole = userDataFromApi.roles?.[0]
-    const roleName = firstRole 
-      ? (typeof firstRole === 'string' ? firstRole : firstRole?.name || '')
-      : userDataFromApi.jobTitle || 'N/A'
+    // Helper function to format arrays with bullet points (respects RTL/LTR)
+    const formatArrayWithBullets = (array, extractName) => {
+      if (!array || !Array.isArray(array) || array.length === 0) return 'N/A'
+      const names = array.map(item => extractName(item)).filter(Boolean)
+      if (names.length === 0) return 'N/A'
+      // Use bullet point (•) as separator, with proper spacing for RTL/LTR
+      const separator = isRtl ? ' • ' : ' • '
+      return names.join(separator)
+    }
 
-    // Extract department name
-    const departmentName = userDataFromApi.departments?.[0]?.name || 'N/A'
+    // Extract all roles (handle both object and string format)
+    const roleNames = formatArrayWithBullets(
+      userDataFromApi.roles,
+      (role) => typeof role === 'string' ? role : role?.name || ''
+    )
+    // Fallback to jobTitle if no roles
+    const roleDisplay = roleNames !== 'N/A' ? roleNames : (userDataFromApi.jobTitle || 'N/A')
 
-    // Extract team name
-    const teamName = userDataFromApi.teams?.[0]?.name || 'N/A'
+    // Extract all department names
+    const departmentNames = formatArrayWithBullets(
+      userDataFromApi.departments,
+      (dept) => dept?.name || ''
+    )
 
-    // Extract team leader name
+    // Extract all team names
+    const teamNames = formatArrayWithBullets(
+      userDataFromApi.teams,
+      (team) => team?.name || ''
+    )
+
+    // Extract team leader name (from first team if available)
     const teamLeadName = userDataFromApi.teams?.[0]?.teamLeadName || null
 
     return {
@@ -124,9 +142,9 @@ const Profile = () => {
       email: userDataFromApi.email || 'N/A',
       avatar: `https://ui-avatars.com/api/?name=${userDataFromApi.firstName}+${userDataFromApi.lastName}&background=15919B&color=fff&size=80`,
       professionalInfo: {
-        role: roleName,
-        department: departmentName,
-        team: teamName,
+        role: roleDisplay,
+        department: departmentNames,
+        team: teamNames,
         shift: userShift || 'N/A',
         jobTitle: userDataFromApi.jobTitle || 'N/A',
         hireDate: userDataFromApi.hireDate ? new Date(userDataFromApi.hireDate).toLocaleDateString() : 'N/A'
@@ -148,7 +166,7 @@ const Profile = () => {
       teamLeaderAvatar: null,
       isAdmin: userDataFromApi.isAdmin || false
     }
-  }, [employeeData, userDataFromApi, userShift])
+  }, [employeeData, userDataFromApi, userShift, isRtl])
 
   const content = renderContent()
 

@@ -9,14 +9,14 @@ export default function ProfileTabs({ activeTab, onTabChange, isAdmin = false })
   
   const tabs = [
     { id: "personal", label: t("profile.personalInformation"), shortLabel: t("profile.personalInformation"), icon: <User className="w-4 h-4 sm:w-5 sm:h-5" /> },
-    { id: "professional", label: t("profile.professionalInformation") || "Professional Information", shortLabel: t("profile.professionalInformation") || "Professional", icon: <Briefcase className="w-4 h-4 sm:w-5 sm:h-5" /> },
+    { id: "professional", label: t("profile.professionalInformation"), shortLabel: t("profile.professionalInformation"), icon: <Briefcase className="w-4 h-4 sm:w-5 sm:h-5" /> },
     // Only show account tab if user is admin
     ...(isAdmin ? [{ id: "account", label: t("employees.newEmployeeForm.steps.accountAccess"), shortLabel: t("employees.newEmployeeForm.steps.accountAccess"), icon: <Lock className="w-4 h-4 sm:w-5 sm:h-5" /> }] : []),
   ]
 
   return (
     <div
-      className="flex gap-2 sm:gap-4 lg:gap-8 border-b overflow-x-auto"
+      className="flex gap-2 sm:gap-4 lg:gap-13 border-b overflow-x-auto  justify-center items-center"
       style={{ borderColor: "var(--border-color)" }}
     >
       {tabs.map((tab) => (

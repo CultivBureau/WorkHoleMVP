@@ -349,6 +349,7 @@
   "profile": {
     "profile": "الملف الشخصي",
     "personalInformation": "المعلومات الشخصية",
+    "professionalInformation": "المعلومات المهنية",
     "firstName": "الاسم الأول",
     "lastName": "اسم العائلة",
     "mobileNumber": "رقم الهاتف",
@@ -449,6 +450,10 @@
       "emergency": "إجازة طوارئ",
       "unpaid": "إجازة بدون راتب"
     },
+    "balances": "رصيد الإجازات",
+    "balancesDescription": "رصيد الإجازات المتاح لديك",
+    "days": "أيام",
+    "noAvailableBalance": "لا يوجد رصيد إجازات متاح",
     "form": {
       "step1Title": "الخطوة 1 - تفاصيل الإجازة",
       "step2Title": "الخطوة 2 - السبب والمرفقات",

@@ -25,72 +25,27 @@ const AccountAccessSection = ({ accountAccess }) => {
     : []
   
   return (
-    <div className="space-y-6 sm:space-y-8 lg:space-y-10">
-      {/* Enhanced User Credentials Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-10">
-        <div className="space-y-3 group">
-          <label 
-            className="text-xs sm:text-sm font-semibold block uppercase tracking-wide transition-colors duration-200"
-            style={{ color: 'var(--sub-text-color)' }}
-          >
-            {t("profile.emailAddress") || "Email Address"}
-          </label>
-          <div 
-            className="p-3 sm:p-4 rounded-xl transition-all duration-200 hover:shadow-sm"
-          >
-            <p 
-              className="text-sm sm:text-base font-medium break-all sm:break-normal"
-              style={{ color: 'var(--text-color)' }}
-            >
-              {accountAccess?.emailAddress || 'N/A'}
-            </p>
-          </div>
-        </div>
-        <div className="space-y-3 group">
-          <label 
-            className="text-xs sm:text-sm font-semibold block uppercase tracking-wide transition-colors duration-200"
-            style={{ color: 'var(--sub-text-color)' }}
-          >
-            {t("employees.newEmployeeForm.professionalInfo.userName") || "User Name"}
-          </label>
-          <div 
-            className="p-3 sm:p-4 rounded-xl transition-all duration-200 hover:shadow-sm"
-          >
-            <p 
-              className="text-sm sm:text-base font-medium"
-              style={{ color: 'var(--text-color)' }}
-            >
-              {accountAccess?.userName || 'N/A'}
-            </p>
-          </div>
-        </div>
-      </div>
+    <div className="space-y-6 sm:space-y-8 lg:space-y-10 max-w-4xl mx-auto">
+
       
-      {/* Permissions Section */}
+      {/* Permissions Section - Centered */}
       {permissions.length > 0 && (
         <div className="space-y-6 sm:space-y-8">
-          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-            <div className="space-y-2">
-              <h3 
-                className="text-xl sm:text-2xl font-bold"
-                style={{ color: 'var(--text-color)' }}
-              >
-                {t("roles.permissions") || "Permissions"}
-              </h3>
-              <p 
-                className="text-xs sm:text-sm font-medium"
-                style={{ color: 'var(--sub-text-color)' }}
-              >
-                {t("roles.pageDescription") || "Your assigned permissions"}
-              </p>
-            </div>
+          <div className="text-center space-y-2">
+            <h3 
+              className="text-xl sm:text-2xl font-bold"
+              style={{ color: 'var(--text-color)' }}
+            >
+              {t("roles.permissions") || "Permissions"}
+            </h3>
+
           </div>
           
           <div className="space-y-6 sm:space-y-8 lg:space-y-10">
             {Object.entries(groupedPermissions).map(([category, perms]) => (
               <div key={category} className="space-y-4 sm:space-y-5">
                 <h4 
-                  className="text-lg sm:text-xl font-bold capitalize pb-2 border-b"
+                  className="text-lg sm:text-xl font-bold capitalize pb-2 border-b text-center"
                   style={{ 
                     color: 'var(--text-color)',
                     borderColor: 'var(--divider-color)'
@@ -99,7 +54,7 @@ const AccountAccessSection = ({ accountAccess }) => {
                   {category}
                 </h4>
                 
-                <div className="flex flex-wrap gap-4 sm:gap-6 lg:gap-8">
+                <div className="flex flex-wrap gap-4 sm:gap-6 lg:gap-8 justify-center">
                   {perms.map((permission, index) => (
                     <div 
                       key={index} 
@@ -127,31 +82,29 @@ const AccountAccessSection = ({ accountAccess }) => {
         </div>
       )}
       
-      {/* Leave Balances Section */}
-      {leaveBalances.length > 0 && (
-        <div className="space-y-6 sm:space-y-8">
-          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-            <div className="space-y-2">
-              <h3 
-                className="text-xl sm:text-2xl font-bold"
-                style={{ color: 'var(--text-color)' }}
-              >
-                {t("leaves.balances") || "Leave Balances"}
-              </h3>
-              <p 
-                className="text-xs sm:text-sm font-medium"
-                style={{ color: 'var(--sub-text-color)' }}
-              >
-                {t("leaves.balancesDescription") || "Your available leave balances"}
-              </p>
-            </div>
-          </div>
-          
+      {/* Leave Balances Section - Centered */}
+      <div className="space-y-6 sm:space-y-8">
+        <div className="text-center space-y-2">
+          <h3 
+            className="text-xl sm:text-2xl font-bold"
+            style={{ color: 'var(--text-color)' }}
+          >
+            {t("leaves.balances") || "Leave Balances"}
+          </h3>
+          <p 
+            className="text-xs sm:text-sm font-medium"
+            style={{ color: 'var(--sub-text-color)' }}
+          >
+            {t("leaves.balancesDescription") || "Your available leave balances"}
+          </p>
+        </div>
+        
+        {leaveBalances.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {leaveBalances.map((balance, index) => (
               <div 
-                key={index}
-                className="p-4 sm:p-6 rounded-xl border transition-all duration-200 hover:shadow-md"
+                key={balance.leaveTypeId || index}
+                className="p-4 sm:p-6 rounded-xl border transition-all duration-200 hover:shadow-md text-center"
                 style={{ 
                   backgroundColor: 'var(--bg-color)',
                   borderColor: 'var(--border-color)'
@@ -162,7 +115,7 @@ const AccountAccessSection = ({ accountAccess }) => {
                     className="text-base sm:text-lg font-semibold"
                     style={{ color: 'var(--text-color)' }}
                   >
-                    {balance.leaveType?.name || 'Leave Type'}
+                    {balance.leaveTypeName || balance.leaveType?.name || 'Leave Type'}
                   </h4>
                   <p 
                     className="text-2xl sm:text-3xl font-bold"
@@ -174,8 +127,25 @@ const AccountAccessSection = ({ accountAccess }) => {
               </div>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="text-center py-8 sm:py-12">
+            <div 
+              className="inline-block p-6 sm:p-8 rounded-xl border"
+              style={{ 
+                backgroundColor: 'var(--bg-color)',
+                borderColor: 'var(--border-color)'
+              }}
+            >
+              <p 
+                className="text-sm sm:text-base font-medium"
+                style={{ color: 'var(--sub-text-color)' }}
+              >
+                {t("leaves.noAvailableBalance") || "No available leave balance"}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
