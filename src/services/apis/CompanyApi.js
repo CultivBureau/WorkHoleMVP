@@ -8,7 +8,7 @@ export const companyApi = createApi({
   endpoints: (builder) => ({
     getUserCompaniesByEmail: builder.mutation({
       query: (email) => ({
-        url: "/api/v1/User/GetUserCompaniesByEmail",
+        url: "/api/v1/User/GetUserCompaniesByEmail/companies",
         method: "POST",
         body: { Email: email },
       }),

@@ -113,7 +113,17 @@ const Login = () => {
         const msRoleKey = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
         let roles = decoded[msRoleKey] || [];
         const rolesArray = Array.isArray(roles) ? roles : [roles];
-        const isAdmin = rolesArray.some(r => typeof r === 'string' && r.toLowerCase() === 'admin');
+        
+        // Helper function to normalize role - handle both object format {id, name} and string format
+        const normalizeRole = (role) => {
+          if (!role) return null;
+          if (typeof role === 'string') return role.toLowerCase();
+          if (typeof role === 'object' && role?.name) return role.name.toLowerCase();
+          return null;
+        };
+        
+        const normalizedRoles = rolesArray.map(normalizeRole).filter(Boolean);
+        const isAdmin = normalizedRoles.some(r => r === 'admin');
         
         // Navigate based on role
         if (isAdmin) {
