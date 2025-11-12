@@ -1,57 +1,74 @@
-import React, { useEffect, useRef, useState, useContext } from "react"
+import React, { useEffect, useRef, useState, useContext, useMemo } from "react"
 import { Clock, ClipboardList, Coffee, BarChart3, MapPin, Loader2, AlertCircle, CheckCircle2, Timer } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
 import { useTimer } from "../../../contexts/TimerContext"
-import moment from "moment-timezone"
 import ErrorComponent from "../../Error/Error";
 import { GlobalErrorContext } from "../../../contexts/GlobalErrorContext"
+import { useClockInMutation, useClockOutMutation, useGetUserClockinLogsQuery } from "../../../services/apis/ClockinLogApi"
+import { getAuthToken } from "../../../utils/page"
+import LocationInputModal from "../LocationInputModal/LocationInputModal"
+import LateReasonModal from "../LateReasonModal/LateReasonModal"
+import { isUtcDateToday, calculateDurationFromUtc } from "../../../utils/timeUtils"
 
-// Static dashboard data
-const staticDashboardData = {
-  dailyShift: "4h 30m",
-  thisWeek: "42h 15m",
-  breaksTaken: "5h 30m",
-  breaksCount: 8,
-  totalOvertime: "2h 45m",
-  currentStatus: "Clocked In",
-  activeWorkTime: "4h 30m",
-  todayProgress: "4h 30m / 8h",
-  efficiency: 85,
-  completedShift: 56,
-  remainingTime: "3h 30m",
-  mostProductiveDay: { day: "Wednesday", time: "8h 30m" },
-  clockInTime: new Date().toISOString()
-};
+// Helper function to get user ID from token
+const deriveUserId = () => {
+  try {
+    const token = getAuthToken()
+    if (!token) return null
+    const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}")
+    if (userInfo?.userId) return userInfo.userId
+    const parts = token.split(".")
+    if (parts.length !== 3) return null
+    const payload = JSON.parse(atob(parts[1]))
+    if (payload?.sub) return payload.sub
+    if (payload?.userId) return payload.userId
+    return null
+  } catch {
+    return null
+  }
+}
 
-// Static focus time data
-const staticFocusTimeData = {
-  total: "32h",
-  average: "4h 34m",
-  days: 7
-};
+// Helper function to calculate duration in seconds from clock-in/out times
+// API returns UTC times, so we calculate duration correctly
+const calculateDuration = (clockinTime, clockoutTime) => {
+  return calculateDurationFromUtc(clockinTime, clockoutTime)
+}
+
+// Helper function to format seconds to "xh ym"
+const formatTimeFromSeconds = (seconds) => {
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  return `${h}h ${m}m`
+}
+
+// Helper function to get start of week (Monday)
+const getWeekStart = (date = new Date()) => {
+  const d = new Date(date)
+  const day = d.getDay()
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1) // Adjust when day is Sunday
+  return new Date(d.setDate(diff))
+}
 
 const MainContent = () => {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   
-  // Use static data instead of API calls
-  const data = staticDashboardData;
-  const isLoading = false;
-  const error = null;
-  const refetch = () => {};
-  const focusTimeData = staticFocusTimeData;
-  const isClockingIn = false;
-  const isClockingOut = false;
+  // Get user ID and fetch clock-in logs (fetch more for accurate calculations)
+  const userId = useMemo(() => deriveUserId(), [])
+  const { data: clockinLogsData, isLoading: isLoadingLogs, refetch: refetchLogs } = useGetUserClockinLogsQuery(
+    { userId, pageNumber: 1, pageSize: 50 }, // Fetch more logs for weekly calculations
+    { skip: !userId }
+  )
   
-  // Mock clock in/out handlers
-  const clockIn = async () => ({ data: {} });
-  const clockOut = async () => ({ data: {} });
+  // Real API mutations
+  const [clockInMutation, { isLoading: isClockingIn }] = useClockInMutation();
+  const [clockOutMutation, { isLoading: isClockingOut }] = useClockOutMutation();
   const navigate = useNavigate();
   const { setGlobalError } = useContext(GlobalErrorContext);
-  // ...existing imports...
   const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  
   // Enhanced timer context integration
   const {
     timer,
@@ -61,6 +78,176 @@ const MainContent = () => {
     displayTime,
     timer: { taskName, seconds, duration }
   } = useTimer()
+
+  // Find the most recent active clock-in (has clockinTime but no clockoutTime)
+  const activeClockIn = useMemo(() => {
+    if (!clockinLogsData) return null
+    
+    let items = []
+    if (Array.isArray(clockinLogsData)) {
+      items = clockinLogsData
+    } else if (clockinLogsData?.value && Array.isArray(clockinLogsData.value)) {
+      items = clockinLogsData.value
+    } else if (clockinLogsData?.data && Array.isArray(clockinLogsData.data)) {
+      items = clockinLogsData.data
+    } else if (clockinLogsData?.items && Array.isArray(clockinLogsData.items)) {
+      items = clockinLogsData.items
+    } else if (clockinLogsData?.results && Array.isArray(clockinLogsData.results)) {
+      items = clockinLogsData.results
+    }
+    
+    // Find today's active clock-in (has clockinTime but no clockoutTime)
+    // API returns UTC time, check if it's today in local timezone
+    return items.find(log => {
+      if (!log?.clockinTime) return false
+      // Check if clock-in date is today (in local timezone) and has no clock-out
+      return isUtcDateToday(log.clockinTime) && !log?.clockoutTime
+    }) || null
+  }, [clockinLogsData])
+
+  // Determine current status and clock-in time
+  const currentStatus = activeClockIn ? "Clocked In" : "Clocked Out"
+  const clockInTime = activeClockIn?.clockinTime || null
+
+  // Calculate metrics from clock-in logs
+  const calculatedMetrics = useMemo(() => {
+    if (!clockinLogsData) {
+      return {
+        dailyShift: "0h 0m",
+        thisWeek: "0h 0m",
+        breaksTaken: "0h 0m",
+        breaksCount: 0,
+        totalOvertime: "0h 0m",
+        mostProductiveDay: { day: "-", time: "0h 0m" },
+      }
+    }
+
+    let items = []
+    if (Array.isArray(clockinLogsData)) {
+      items = clockinLogsData
+    } else if (clockinLogsData?.value && Array.isArray(clockinLogsData.value)) {
+      items = clockinLogsData.value
+    } else if (clockinLogsData?.data && Array.isArray(clockinLogsData.data)) {
+      items = clockinLogsData.data
+    } else if (clockinLogsData?.items && Array.isArray(clockinLogsData.items)) {
+      items = clockinLogsData.items
+    } else if (clockinLogsData?.results && Array.isArray(clockinLogsData.results)) {
+      items = clockinLogsData.results
+    }
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const weekStart = getWeekStart(today)
+    weekStart.setHours(0, 0, 0, 0)
+
+    // Calculate today's hours
+    // API returns UTC time, filter by today in local timezone
+    const todayLogs = items.filter(log => {
+      if (!log?.clockinTime) return false
+      return isUtcDateToday(log.clockinTime)
+    })
+    const todaySeconds = todayLogs.reduce((sum, log) => {
+      return sum + calculateDuration(log.clockinTime, log.clockoutTime)
+    }, 0)
+    const dailyShift = formatTimeFromSeconds(todaySeconds)
+
+    // Calculate this week's hours
+    // API returns UTC time, convert to local time for comparison
+    const weekLogs = items.filter(log => {
+      if (!log?.clockinTime) return false
+      const logDate = new Date(log.clockinTime) // Convert UTC to local
+      logDate.setHours(0, 0, 0, 0)
+      return logDate >= weekStart
+    })
+    const weekSeconds = weekLogs.reduce((sum, log) => {
+      return sum + calculateDuration(log.clockinTime, log.clockoutTime)
+    }, 0)
+    const thisWeek = formatTimeFromSeconds(weekSeconds)
+
+    // Calculate overtime (hours over 8 per day)
+    // API returns UTC time, convert to local time for date grouping
+    const dailyHours = new Map()
+    items.forEach(log => {
+      if (!log?.clockinTime) return
+      const logDate = new Date(log.clockinTime) // Convert UTC to local
+      logDate.setHours(0, 0, 0, 0)
+      const dateKey = logDate.toISOString().split('T')[0]
+      const duration = calculateDuration(log.clockinTime, log.clockoutTime)
+      const hours = duration / 3600
+      dailyHours.set(dateKey, (dailyHours.get(dateKey) || 0) + hours)
+    })
+    let totalOvertimeSeconds = 0
+    dailyHours.forEach((hours, date) => {
+      if (hours > 8) {
+        totalOvertimeSeconds += (hours - 8) * 3600
+      }
+    })
+    const totalOvertime = formatTimeFromSeconds(totalOvertimeSeconds)
+
+    // Find most productive day this week
+    // API returns UTC time, convert to local time for date grouping
+    const weekDailyHours = new Map()
+    weekLogs.forEach(log => {
+      if (!log?.clockinTime) return
+      const logDate = new Date(log.clockinTime) // Convert UTC to local
+      logDate.setHours(0, 0, 0, 0)
+      const dateKey = logDate.toISOString().split('T')[0]
+      const duration = calculateDuration(log.clockinTime, log.clockoutTime)
+      const hours = duration / 3600
+      weekDailyHours.set(dateKey, (weekDailyHours.get(dateKey) || 0) + hours)
+    })
+    let maxHours = 0
+    let maxDay = "-"
+    weekDailyHours.forEach((hours, date) => {
+      if (hours > maxHours) {
+        maxHours = hours
+        const dayDate = new Date(date)
+        const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+        maxDay = dayNames[dayDate.getDay()]
+      }
+    })
+    const mostProductiveDay = {
+      day: maxDay,
+      time: formatTimeFromSeconds(maxHours * 3600)
+    }
+
+    return {
+      dailyShift,
+      thisWeek,
+      breaksTaken: "0h 0m", // No BreakLog API available
+      breaksCount: 0, // No BreakLog API available
+      totalOvertime,
+      mostProductiveDay,
+    }
+  }, [clockinLogsData])
+
+  // Dashboard data calculated from real clock-in logs
+  const data = {
+    dailyShift: calculatedMetrics.dailyShift,
+    thisWeek: calculatedMetrics.thisWeek,
+    breaksTaken: calculatedMetrics.breaksTaken,
+    breaksCount: calculatedMetrics.breaksCount,
+    totalOvertime: calculatedMetrics.totalOvertime,
+    currentStatus: currentStatus,
+    activeWorkTime: "0h 0m", // Will be calculated dynamically below
+    todayProgress: "0h 0m / 8h", // Will be calculated dynamically below
+    efficiency: 0, // Will be calculated dynamically below
+    completedShift: 0, // Will be calculated dynamically below
+    remainingTime: "0h 0m", // Will be calculated dynamically below
+    mostProductiveDay: calculatedMetrics.mostProductiveDay,
+    clockInTime: clockInTime
+  }
+  
+  // Focus time data - calculate from timer context or set to 0
+  const focusTimeData = useMemo(() => {
+    // Timer logs are stored in localStorage via TimerContext
+    // For now, return 0 since there's no API for timer logs
+    return {
+      total: "0h",
+      average: "0h 0m",
+      days: 0
+    }
+  }, [])
 
   // fallback لو البيانات مش موجودة
   const stats = data || {
@@ -80,20 +267,39 @@ const MainContent = () => {
   const [activeWorkSeconds, setActiveWorkSeconds] = useState(0)
   const timerRef = useRef(null)
   const [showLocationModal, setShowLocationModal] = useState(false)
-  const [isGettingLocation, setIsGettingLocation] = useState(false)
-  const [offices, setOffices] = useState([])
-
-  // احسب وقت البداية من الـ backend لو موجود
-  const clockInTime = data?.clockInTime // لازم backend يرجع clockInTime بصيغة ISO
+  const [showLateReasonModal, setShowLateReasonModal] = useState(false)
+  const [pendingLocation, setPendingLocation] = useState(null)
 
   useEffect(() => {
     if (stats.currentStatus === "Clocked In" && clockInTime) {
-      // استخدم توقيت القاهرة في الحساب
-      const start = moment.tz(clockInTime, "Africa/Cairo").toDate();
+      // Parse clockInTime as UTC (API returns UTC)
+      // Ensure the string is treated as UTC by adding 'Z' if it's not present
+      let utcString = clockInTime;
+      if (typeof utcString === 'string' && !utcString.endsWith('Z') && !utcString.includes('+') && !utcString.includes('-', 10)) {
+        utcString = utcString + 'Z';
+      }
+      
+      // Parse as UTC - JavaScript Date will correctly handle the conversion
+      const start = new Date(utcString);
+      
+      // Debug logging in development
+      if (import.meta.env.DEV) {
+        console.log('Timer initialization:', {
+          clockInTime,
+          utcString,
+          startUTC: start.toISOString(),
+          startLocal: start.toLocaleString(),
+          now: new Date().toLocaleString(),
+          diffSeconds: Math.floor((new Date().getTime() - start.getTime()) / 1000),
+        });
+      }
+      
       const updateTimer = () => {
-        const now = moment().tz("Africa/Cairo").toDate();
-        const diff = Math.floor((now - start) / 1000);
-        setActiveWorkSeconds(diff);
+        const now = new Date();
+        // Calculate difference in milliseconds, then convert to seconds
+        // Both dates are in the same timezone (milliseconds since epoch), so this is correct
+        const diff = Math.floor((now.getTime() - start.getTime()) / 1000);
+        setActiveWorkSeconds(Math.max(0, diff)); // Ensure non-negative
       };
       updateTimer();
       timerRef.current = setInterval(updateTimer, 1000);
@@ -256,7 +462,7 @@ const MainContent = () => {
   const hasCompletedToday = data?.todayAttendance?.clockIn && data?.todayAttendance?.clockOut
   const isAlreadyClockedIn = stats.currentStatus === "Clocked In"
 
-  // Simple handleClock function - just add confirmation for clock out
+  // Handle clock in/out with location from Google Maps URL
   const handleClock = async () => {
     // If already completed attendance today, show toast and return
     if (hasCompletedToday) {
@@ -322,77 +528,29 @@ const MainContent = () => {
       if (!confirmClockOut) return
     }
 
-    try {
-      console.log('Starting clock process...')
+    // Show location input modal
+    setShowLocationModal(true)
+  }
 
-      // احصل على الموقع الحالي
-      const location = await getCurrentLocation();
-      console.log('Got location:', location)
-
-      if (stats.currentStatus === "Clocked In") {
-        await clockOut({
-          latitude: location.latitude,
-          longitude: location.longitude
-        }).unwrap()
-
-        toast.success(
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5" />
-            <span>{isAr ? 'تم تسجيل الخروج بنجاح' : 'Successfully clocked out'}</span>
-          </div>,
-          {
-            duration: 3000,
-            style: {
-              background: '#10B981',
-              color: '#fff',
-            },
-          }
-        )
-      } else {
-        await clockIn({
-          location: "office",
-          latitude: location.latitude,
-          longitude: location.longitude
-        }).unwrap()
-
-        toast.success(
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5" />
-            <span>{isAr ? 'تم تسجيل الحضور بنجاح' : 'Successfully clocked in'}</span>
-          </div>,
-          {
-            duration: 3000,
-            style: {
-              background: '#10B981',
-              color: '#fff',
-            },
-          }
-        )
-      }
-      // Static data - no update needed
-      refetch()
-    } catch (e) {
-      console.error('Clock process error:', e)
-
-      // إذا فشل تحديد الموقع، اعرض خيارات الموقع
-      setShowLocationModal(true)
-
-      setGlobalError({
-        title: isAr ? "خطأ في تحديد الموقع" : "Location Error",
-        message: isAr
-          ? "يرجى السماح بالوصول إلى الموقع من إعدادات المتصفح أو الجهاز."
-          : "Please allow location access from your browser/device settings.",
-        errorCode: "LOC",
-        showRefresh: true,
-        showHome: false,
-        showBack: true,
-      });
+  // Handle location confirmation from modal
+  const handleLocationConfirm = (coords) => {
+    setPendingLocation(coords)
+    setShowLocationModal(false)
+    
+    // If clocking in, we'll check if late after API call
+    // If clocking out, proceed directly
+    if (stats.currentStatus === "Clocked In") {
+      handleClockOutWithLocation(coords)
+    } else {
+      // For clock in, we need to check if late first
+      handleClockInWithLocation(coords, "")
     }
   }
 
-  // دالة لتسجيل الحضور مع موقع محدد مع loading
-  const handleClockWithLocation = async (locationData) => {
-    const loadingToast = toast.loading(
+  // Handle clock in with location
+  const handleClockInWithLocation = async (coords, reason, isRetry = false) => {
+    // Only show loading toast if not a retry (retry already has pending state)
+    const loadingToast = !isRetry ? toast.loading(
       isAr ? 'جاري تسجيل الحضور...' : 'Recording attendance...',
       {
         style: {
@@ -400,64 +558,116 @@ const MainContent = () => {
           color: 'var(--text-color)',
         },
       }
-    )
+    ) : null
 
     try {
-      if (stats.currentStatus === "Clocked In") {
-        await clockOut({
-          latitude: locationData.latitude,
-          longitude: locationData.longitude
-        }).unwrap()
+      const result = await clockInMutation({
+        latitude: coords.lat,
+        longitude: coords.lng,
+        reason: reason || ""
+      }).unwrap()
 
-        toast.success(
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5" />
-            <span>{isAr ? 'تم تسجيل الخروج بنجاح' : 'Successfully clocked out'}</span>
-          </div>,
-          {
-            id: loadingToast,
-            duration: 3000,
-            style: {
-              background: '#10B981',
-              color: '#fff',
-            },
-          }
-        )
-      } else {
-        await clockIn({
-          location: "office",
-          latitude: locationData.latitude,
-          longitude: locationData.longitude
-        }).unwrap()
+      if (loadingToast) toast.dismiss(loadingToast)
 
-        toast.success(
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5" />
-            <span>{isAr ? 'تم تسجيل الحضور بنجاح' : 'Successfully clocked in'}</span>
-          </div>,
-          {
-            id: loadingToast,
-            duration: 3000,
-            style: {
-              background: '#10B981',
-              color: '#fff',
-            },
-          }
-        )
+      // Log the result to debug
+      if (import.meta.env.DEV) {
+        console.log('Clock in result:', result)
       }
-      // Static data - no update needed
-      refetch()
-      setShowLocationModal(false)
-    } catch (error) {
-      console.error('Clock with location error:', error)
 
+      // Check if late from API response - handle different response structures
+      const isLate = result?.value?.isLate || result?.isLate || result?.data?.isLate || false
+
+      // If late and no reason provided yet, show reason modal
+      if (isLate && !reason) {
+        setPendingLocation(coords)
+        setShowLateReasonModal(true)
+        return
+      }
+
+      // Success - either on time or late with reason
+      // Small delay to ensure refetch completes before showing success
+      setTimeout(() => {
+        toast.success(
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-5 h-5" />
+            <span>
+              {isLate 
+                ? (isAr ? 'تم تسجيل الحضور المتأخر بنجاح' : 'Successfully clocked in (late)')
+                : (isAr ? 'تم تسجيل الحضور بنجاح' : 'Successfully clocked in')
+              }
+            </span>
+          </div>,
+          {
+            duration: 3000,
+            style: {
+              background: '#10B981',
+              color: '#fff',
+            },
+          }
+        )
+      }, 100)
+
+      // Refetch clock-in logs to update timer (with error handling)
+      if (userId) {
+        try {
+          await refetchLogs()
+        } catch (refetchError) {
+          // Log but don't show error to user - clock-in was successful
+          if (import.meta.env.DEV) {
+            console.warn('Failed to refetch logs after clock-in:', refetchError)
+          }
+        }
+      }
+      setPendingLocation(null)
+    } catch (error) {
+      console.error('Clock in error:', error)
+      console.error('Clock in error details:', {
+        status: error?.status,
+        data: error?.data,
+        errors: error?.data?.errors,
+        validationErrors: error?.data?.errors ? Object.entries(error.data.errors).map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`).join('; ') : null,
+        coords: { lat: coords.lat, lng: coords.lng },
+      })
+      if (loadingToast) toast.dismiss(loadingToast)
+      
+      // Check if this is a late clock-in error (400 with specific error message)
+      const errorMessage = error?.data?.errorMessage || error?.data?.message || error?.data?.error || error?.data?.title || error?.message
+      const isLateError = error?.status === 400 && (
+        errorMessage?.toLowerCase().includes('late') || 
+        errorMessage?.toLowerCase().includes('reason') ||
+        error?.data?.errorMessage?.toLowerCase().includes('late')
+      )
+      
+      // If it's a late error and no reason was provided, show the late reason modal
+      if (isLateError && !reason) {
+        setPendingLocation(coords)
+        setShowLateReasonModal(true)
+        return
+      }
+      
+      // Get error message from API response
+      let displayErrorMessage = errorMessage
+      
+      // If there are validation errors, format them nicely
+      if (error?.data?.errors && typeof error.data.errors === 'object') {
+        const validationErrors = Object.entries(error.data.errors)
+          .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`)
+          .join('; ')
+        if (validationErrors) {
+          displayErrorMessage = validationErrors
+        }
+      }
+      
+      if (!displayErrorMessage) {
+        displayErrorMessage = isAr ? 'حدث خطأ في تسجيل الحضور' : 'Error recording attendance'
+      }
+      
       toast.error(
         <div className="flex items-center gap-2">
           <AlertCircle className="w-5 h-5" />
-          <span>{isAr ? 'حدث خطأ في تسجيل الحضور' : 'Error recording attendance'}</span>
+          <span>{displayErrorMessage}</span>
         </div>,
         {
-          id: loadingToast,
           duration: 4000,
           style: {
             background: '#EF4444',
@@ -468,20 +678,114 @@ const MainContent = () => {
     }
   }
 
-  // Fetch offices data when location modal is shown
-  useEffect(() => {
-    if (showLocationModal) {
-      fetch(`${baseUrl}/api/attendance/offices`, { credentials: "include" })
-        .then(res => res.json())
-        .then(setOffices)
+  // Handle late reason confirmation
+  const handleLateReasonConfirm = async (reason) => {
+    setShowLateReasonModal(false)
+    if (pendingLocation) {
+      // Retry clock-in with reason
+      await handleClockInWithLocation(pendingLocation, reason, true)
     }
-  }, [showLocationModal])
+  }
+
+  // Handle clock out with location
+  const handleClockOutWithLocation = async (coords) => {
+    const loadingToast = toast.loading(
+      isAr ? 'جاري تسجيل الخروج...' : 'Recording clock out...',
+      {
+        style: {
+          background: 'var(--card-bg)',
+          color: 'var(--text-color)',
+        },
+      }
+    )
+
+    try {
+      await clockOutMutation({
+        latitude: coords.lat,
+        longitude: coords.lng
+      }).unwrap()
+
+      toast.dismiss(loadingToast)
+      toast.success(
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="w-5 h-5" />
+          <span>{isAr ? 'تم تسجيل الخروج بنجاح' : 'Successfully clocked out'}</span>
+        </div>,
+        {
+          duration: 3000,
+          style: {
+            background: '#10B981',
+            color: '#fff',
+          },
+        }
+      )
+
+      // Refetch clock-in logs to update timer (with error handling)
+      if (userId) {
+        try {
+          await refetchLogs()
+        } catch (refetchError) {
+          // Log but don't show error to user - clock-out was successful
+          if (import.meta.env.DEV) {
+            console.warn('Failed to refetch logs after clock-out:', refetchError)
+          }
+        }
+      }
+      setPendingLocation(null)
+    } catch (error) {
+      console.error('Clock out error:', error)
+      toast.dismiss(loadingToast)
+      toast.error(
+        <div className="flex items-center gap-2">
+          <AlertCircle className="w-5 h-5" />
+          <span>{isAr ? 'حدث خطأ في تسجيل الخروج' : 'Error recording clock out'}</span>
+        </div>,
+        {
+          duration: 4000,
+          style: {
+            background: '#EF4444',
+            color: '#fff',
+          },
+        }
+      )
+    }
+  }
+
+  // Legacy function for backward compatibility (if still used elsewhere)
+  const handleClockWithLocation = async (locationData) => {
+    if (stats.currentStatus === "Clocked In") {
+      await handleClockOutWithLocation({ lat: locationData.latitude, lng: locationData.longitude })
+    } else {
+      await handleClockInWithLocation({ lat: locationData.latitude, lng: locationData.longitude }, "")
+    }
+  }
+
+  // Remove old office fetching - now using Google Maps URL input
 
   const [showError, setShowError] = useState(false)
   const [errorDetails, setErrorDetails] = useState({})
 
   return (
     <>
+      {/* Location Input Modal */}
+      <LocationInputModal
+        isOpen={showLocationModal}
+        onClose={() => setShowLocationModal(false)}
+        onConfirm={handleLocationConfirm}
+        isArabic={isAr}
+      />
+
+      {/* Late Reason Modal */}
+      <LateReasonModal
+        isOpen={showLateReasonModal}
+        onClose={() => {
+          setShowLateReasonModal(false)
+          setPendingLocation(null)
+        }}
+        onConfirm={handleLateReasonConfirm}
+        isArabic={isAr}
+      />
+
       {showError ? (
         <ErrorComponent
           {...errorDetails}
@@ -680,24 +984,22 @@ const MainContent = () => {
                   opacity: hasCompletedToday ? 0.7 : 1,
                 }}
                 onClick={handleClock}
-                disabled={isClockingIn || isClockingOut || isGettingLocation || hasCompletedToday}
+                disabled={isClockingIn || isClockingOut || hasCompletedToday}
               >
                 {hasCompletedToday ? (
                   <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                ) : (isClockingIn || isClockingOut || isGettingLocation) ? (
+                ) : (isClockingIn || isClockingOut) ? (
                   <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                 ) : (
                   <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
                 )}
                 {hasCompletedToday
                   ? (isAr ? 'تم تسجيل الحضور اليوم' : 'Completed Today')
-                  : isGettingLocation
-                    ? (isAr ? 'جاري تحديد الموقع...' : 'Getting location...')
-                    : (isClockingIn || isClockingOut)
-                      ? (isAr ? 'جاري التسجيل...' : 'Processing...')
-                      : stats.currentStatus === "Clocked In"
-                        ? (isAr ? 'إنهاء اليوم' : 'End Your Day')
-                        : (isAr ? 'بدء اليوم' : 'Start Your Day')}
+                  : (isClockingIn || isClockingOut)
+                    ? (isAr ? 'جاري التسجيل...' : 'Processing...')
+                    : stats.currentStatus === "Clocked In"
+                      ? (isAr ? 'إنهاء اليوم' : 'End Your Day')
+                      : (isAr ? 'بدء اليوم' : 'Start Your Day')}
               </button>
             </div>
           </div>
@@ -764,73 +1066,6 @@ const MainContent = () => {
             </div>
           </div>
 
-          {/* Enhanced Location Selection Modal */}
-          {showLocationModal && (
-            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-              <div
-                className="rounded-2xl p-4 sm:p-6 max-w-sm sm:max-w-md w-full shadow-2xl border animate-in slide-in-from-bottom-4 duration-300"
-                style={{
-                  backgroundColor: "var(--card-bg)",
-                  borderColor: "var(--border-color)",
-                }}
-              >
-                <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                    <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                  </div>
-                  <h3 className="text-lg sm:text-xl font-bold" style={{ color: "var(--text-color)" }}>
-                    {isAr ? 'اختر موقعك' : 'Select Your Location'}
-                  </h3>
-                </div>
-
-                <p className="text-xs sm:text-sm mb-4 sm:mb-6" style={{ color: "var(--sub-text-color)" }}>
-                  {isAr ? 'فشل في تحديد الموقع تلقائياً. يرجى اختيار موقعك:' : 'Failed to get location automatically. Please select your location:'}
-                </p>
-
-                <div className="space-y-2 sm:space-y-3">
-                  {offices.map((office) => (
-                    <button
-                      key={office._id}
-                      onClick={() => handleClockWithLocation({ latitude: office.latitude, longitude: office.longitude, name: office.name })}
-                      className="w-full p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 hover:shadow-md hover:scale-[1.02] group"
-                      style={{
-                        borderColor: "var(--border-color)",
-                        backgroundColor: "var(--bg-color)",
-                      }}
-                    >
-                      <div className="flex items-center gap-3 sm:gap-4">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <span className="text-white text-lg sm:text-xl">🏢</span>
-                        </div>
-                        <div className="text-left flex-1">
-                          <div className="font-semibold text-base sm:text-lg" style={{ color: "var(--text-color)" }}>
-                            {office.name}
-                          </div>
-                          <div className="text-[10px] sm:text-xs" style={{ color: "var(--sub-text-color)" }}>
-                            {office.latitude.toFixed(3)}°N, {office.longitude.toFixed(3)}°E
-                          </div>
-                        </div>
-                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex gap-2 sm:gap-3 mt-4 sm:mt-6">
-                  <button
-                    onClick={() => setShowLocationModal(false)}
-                    className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border rounded-xl font-medium transition-all duration-200 hover:shadow-md text-sm sm:text-base"
-                    style={{
-                      borderColor: "var(--border-color)",
-                      color: "var(--text-color)",
-                    }}
-                  >
-                    {isAr ? 'إلغاء' : 'Cancel'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       )}
     </>

@@ -47,6 +47,14 @@ export const authApi = createApi({
         url: "/api/v1/Authentication/me",
         method: "GET",
       }),
+      // Don't throw error on 404, just return empty data
+      transformErrorResponse: (response, meta, arg) => {
+        // If 404, return empty data instead of throwing
+        if (response?.status === 404) {
+          return { value: null };
+        }
+        return response;
+      },
     }),
   }),
 });

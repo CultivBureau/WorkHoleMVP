@@ -14,6 +14,10 @@ export const baseQueryWithReauth = async (args, api, extraOptions) => {
     prepareHeaders: (headers, { getState, endpoint, type }) => {
       const token = getAuthToken();
       if (token) headers.set("Authorization", `Bearer ${token}`);
+      // Set Content-Type for JSON requests
+      if (args.body && !(args.body instanceof FormData)) {
+        headers.set("Content-Type", "application/json");
+      }
       return headers;
     },
     fetchFn: async (url, options = {}) => {

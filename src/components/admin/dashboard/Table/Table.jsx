@@ -2,16 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Search, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useGetCompanyClockinLogsQuery } from '../../../../services/apis/ClockinLogApi';
+import { utcToLocalTime } from '../../../../utils/timeUtils';
+import { isWithinShiftRadius } from '../../../../utils/locationUtils';
 
 const formatTime = (isoString, locale) => {
-  if (!isoString) return "—";
-  const date = new Date(isoString);
-  if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleTimeString(locale, {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
+  // API returns UTC time, convert to local time for display
+  return utcToLocalTime(isoString, locale);
 };
 
 const AttendanceTable = () => {
@@ -57,14 +53,32 @@ const AttendanceTable = () => {
       const jobTitle = log?.user?.jobTitle || "";
       const checkInTime = formatTime(log?.clockinTime, locale);
       const isLate = log?.isLate || false;
-      const officeRemote = log?.officeRemote;
+      // API uses "office" field: true = office, false = remote/home
+      // But we also check distance as a fallback to ensure accuracy
+      let office = log?.office ?? log?.officeRemote; // Fallback to officeRemote for backward compatibility
 
-      // Determine type
+      // Double-check: if clock-in location is within shift radius, it should be office
+      if (office === false) {
+        const shiftLat = log?.shiftRule?.latitude;
+        const shiftLng = log?.shiftRule?.longitude;
+        const radiusMeters = log?.shiftRule?.radiusMeters;
+        const clockinLocation = log?.clockinLocation;
+        
+        if (clockinLocation && shiftLat && shiftLng && radiusMeters !== undefined) {
+          const withinRadius = isWithinShiftRadius(clockinLocation, shiftLat, shiftLng, radiusMeters);
+          if (withinRadius) {
+            // Location is within radius, so it should be office
+            office = true;
+          }
+        }
+      }
+
+      // Determine type: true = office, false = remote/home
       let type = "Office";
-      if (officeRemote === true) {
-        type = "Remote";
-      } else if (officeRemote === false) {
+      if (office === true) {
         type = "Office";
+      } else if (office === false) {
+        type = "Remote";
       }
 
       // Determine status

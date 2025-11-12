@@ -5,16 +5,12 @@ import { useTranslation } from "react-i18next";
 import { useLang } from "../../../../contexts/LangContext";
 import { ChevronDown, ChevronUp, Users } from "lucide-react";
 import { useGetCompanyClockinLogsQuery } from "../../../../services/apis/ClockinLogApi";
+import { utcToLocalTime, utcToLocalDate, calculateDurationFromUtc } from '../../../../utils/timeUtils';
+import { isWithinShiftRadius } from '../../../../utils/locationUtils';
 
 const formatDate = (isoString, locale) => {
-  if (!isoString) return "—";
-  const date = new Date(isoString);
-  if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleDateString(locale, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+  // API returns UTC time, convert to local date for display
+  return utcToLocalDate(isoString, locale);
 };
 
 const formatDay = (isoString, locale) => {
@@ -25,26 +21,18 @@ const formatDay = (isoString, locale) => {
 };
 
 const formatTime = (isoString, locale) => {
-  if (!isoString) return "—";
-  const date = new Date(isoString);
-  if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleTimeString(locale, {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
+  // API returns UTC time, convert to local time for display
+  return utcToLocalTime(isoString, locale);
 };
 
 const calculateDuration = (startIso, endIso) => {
+  // API returns UTC times, calculate duration correctly
   if (!startIso || !endIso) return { label: "—", minutes: 0 };
-  const start = new Date(startIso);
-  const end = new Date(endIso);
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-    return { label: "—", minutes: 0 };
-  }
-  const diffMs = end.getTime() - start.getTime();
-  if (diffMs <= 0) return { label: "—", minutes: 0 };
-  const totalMinutes = Math.floor(diffMs / 60000);
+  
+  const diffSeconds = calculateDurationFromUtc(startIso, endIso);
+  if (diffSeconds <= 0) return { label: "—", minutes: 0 };
+  
+  const totalMinutes = Math.floor(diffSeconds / 60);
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
   const labelParts = [];
@@ -62,8 +50,28 @@ const determineStatus = (log) => {
 
 const determineLocation = (log) => {
   if (!log) return "Unknown";
-  if (log.officeRemote === true) return "Work from home";
-  if (log.officeRemote === false) return "Work from office";
+  // API uses "office" field: true = office, false = remote/home
+  // But we also check distance as a fallback to ensure accuracy
+  if (log.office === true) return "Work from office";
+  if (log.office === false) {
+    // Double-check: if clock-in location is within shift radius, it should be office
+    const shiftLat = log?.shiftRule?.latitude;
+    const shiftLng = log?.shiftRule?.longitude;
+    const radiusMeters = log?.shiftRule?.radiusMeters;
+    const clockinLocation = log?.clockinLocation;
+    
+    if (clockinLocation && shiftLat && shiftLng && radiusMeters !== undefined) {
+      const withinRadius = isWithinShiftRadius(clockinLocation, shiftLat, shiftLng, radiusMeters);
+      if (withinRadius) {
+        // Location is within radius, so it should be office
+        return "Work from office";
+      }
+    }
+    return "Work from home";
+  }
+  // Fallback to officeRemote for backward compatibility
+  if (log.officeRemote === true) return "Work from office";
+  if (log.officeRemote === false) return "Work from home";
   if (log.clockinLocation || log.clockoutLocation) return "On-site";
   return "Unknown";
 };

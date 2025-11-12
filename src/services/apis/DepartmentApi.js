@@ -22,6 +22,14 @@ export const departmentApi = createApi({
           params,
         };
       },
+      // Don't throw error on 401, just return empty data
+      transformErrorResponse: (response, meta, arg) => {
+        // If 401, return empty data instead of throwing
+        if (response?.status === 401) {
+          return { value: [] };
+        }
+        return response;
+      },
       providesTags: (result) => [{ type: "Departments", id: "LIST" }],
     }),
 

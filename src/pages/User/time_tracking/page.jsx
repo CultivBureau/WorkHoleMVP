@@ -7,8 +7,6 @@ import { useLang } from "../../../contexts/LangContext";
 
 const TimeTracking = () => {
   const { isRtl } = useLang();
-  
-  // Static data - components will handle their own static data if needed
 
   return (
     <div

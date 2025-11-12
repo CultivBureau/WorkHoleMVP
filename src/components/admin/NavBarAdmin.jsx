@@ -16,6 +16,10 @@ import AvatarIcon from "../../../public/assets/navbar/Avatar.png";
 import { removeAuthToken, getAuthToken } from "../../utils/page";
 import { useLang } from "../../contexts/LangContext";
 import { useMeQuery } from "../../services/apis/AuthApi";
+import { useClockInMutation, useClockOutMutation } from "../../services/apis/ClockinLogApi";
+
+import LocationInputModal from "../Time_Tracking_Components/LocationInputModal/LocationInputModal";
+import LateReasonModal from "../Time_Tracking_Components/LateReasonModal/LateReasonModal";
 import toast from "react-hot-toast";
 
 // Static dashboard data
@@ -75,18 +79,18 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
   // Clock in/out functionality - use static data
   const dashboardData = isAuthenticated ? staticDashboardData : null;
   const refetchDashboard = () => {}; // Empty function for compatibility
-  const isClockingIn = false;
-  const isClockingOut = false;
   
-  // Mock clock in/out handlers
-  const clockIn = async () => ({ data: {} });
-  const clockOut = async () => ({ data: {} });
+  // Real API mutations
+  const [clockInMutation, { isLoading: isClockingIn }] = useClockInMutation();
+  const [clockOutMutation, { isLoading: isClockingOut }] = useClockOutMutation();
 
   const [langOpen, setLangOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [profileOpen, setProfileOpen] = useState(false); // desktop only
   const [mobileProfileOpen, setMobileProfileOpen] = useState(false);
-  const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [showLateReasonModal, setShowLateReasonModal] = useState(false);
+  const [pendingLocation, setPendingLocation] = useState(null);
 
   const langRef = useRef(null);
   const profileRef = useRef(null); // desktop only
@@ -129,35 +133,7 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
     navigate("/");
   };
 
-  // Clock in/out functionality
-  const getCurrentLocation = () => {
-    return new Promise((resolve, reject) => {
-      if (!navigator.geolocation) {
-        reject(new Error(lang === "ar" ? 'المتصفح لا يدعم تحديد الموقع' : 'Browser does not support geolocation'));
-        return;
-      }
-
-      setIsGettingLocation(true);
-
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setIsGettingLocation(false);
-          const { latitude, longitude } = position.coords;
-          resolve({ latitude, longitude });
-        },
-        (error) => {
-          setIsGettingLocation(false);
-          reject(new Error(lang === "ar" ? 'خطأ في تحديد الموقع' : 'Location error'));
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 60000
-        }
-      );
-    });
-  };
-
+  // Handle clock in/out with location from Google Maps URL
   const handleClockInOut = async () => {
     const isAr = lang === "ar";
     const currentStatus = dashboardData?.currentStatus || "Clocked Out";
@@ -227,57 +203,209 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
       if (!confirmClockOut) return;
     }
 
-    try {
-      const location = await getCurrentLocation();
+    // Show location input modal
+    setShowLocationModal(true);
+  };
 
-      if (currentStatus === "Clocked In") {
-        await clockOut({
-          latitude: location.latitude,
-          longitude: location.longitude
-        });
+  // Handle location confirmation from modal
+  const handleLocationConfirm = (coords) => {
+    setPendingLocation(coords);
+    setShowLocationModal(false);
+    
+    const isAr = lang === "ar";
+    const currentStatus = dashboardData?.currentStatus || "Clocked Out";
+    
+    if (currentStatus === "Clocked In") {
+      handleClockOutWithLocation(coords);
+    } else {
+      handleClockInWithLocation(coords, "");
+    }
+  };
 
-        toast.success(
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5" />
-            <span>{isAr ? 'تم تسجيل الخروج بنجاح' : 'Successfully clocked out'}</span>
-          </div>,
-          {
-            duration: 3000,
-            style: {
-              background: '#10B981',
-              color: '#fff',
-            },
-          }
-        );
-      } else {
-        await clockIn({
-          location: "office",
-          latitude: location.latitude,
-          longitude: location.longitude
-        });
-
-        toast.success(
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5" />
-            <span>{isAr ? 'تم تسجيل الحضور بنجاح' : 'Successfully clocked in'}</span>
-          </div>,
-          {
-            duration: 3000,
-            style: {
-              background: '#10B981',
-              color: '#fff',
-            },
-          }
-        );
+  // Handle clock in with location
+  const handleClockInWithLocation = async (coords, reason, isRetry = false) => {
+    const isAr = lang === "ar";
+    const loadingToast = !isRetry ? toast.loading(
+      isAr ? 'جاري تسجيل الحضور...' : 'Recording attendance...',
+      {
+        style: {
+          background: 'var(--card-bg)',
+          color: 'var(--text-color)',
+        },
       }
-      // Static data - no update needed
-      refetchDashboard(); // Empty function for compatibility
+    ) : null;
+
+    try {
+      const result = await clockInMutation({
+        latitude: coords.lat,
+        longitude: coords.lng,
+        reason: reason || ""
+      }).unwrap();
+
+      if (loadingToast) toast.dismiss(loadingToast);
+
+      const isLate = result?.value?.isLate || false;
+
+      if (isLate && !reason) {
+        setPendingLocation(coords);
+        setShowLateReasonModal(true);
+        return;
+      }
+
+      toast.success(
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="w-5 h-5" />
+          <span>
+            {isLate 
+              ? (isAr ? 'تم تسجيل الحضور المتأخر بنجاح' : 'Successfully clocked in (late)')
+              : (isAr ? 'تم تسجيل الحضور بنجاح' : 'Successfully clocked in')
+            }
+          </span>
+        </div>,
+        {
+          duration: 3000,
+          style: {
+            background: '#10B981',
+            color: '#fff',
+          },
+        }
+      );
+
+      refetchDashboard();
+      setPendingLocation(null);
     } catch (error) {
-      console.error('Clock process error:', error);
+      console.error('Clock in error:', error);
+      console.error('Error details:', {
+        status: error?.status,
+        statusCode: error?.statusCode,
+        data: error?.data,
+        errors: error?.data?.errors,
+        validationErrors: error?.data?.errors ? Object.entries(error.data.errors).map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`).join('; ') : null,
+        originalStatus: error?.originalStatus,
+        message: error?.message,
+        coords: { lat: coords.lat, lng: coords.lng },
+        fullError: JSON.stringify(error, null, 2)
+      });
+      if (loadingToast) toast.dismiss(loadingToast);
+      
+      // Check if this is a late clock-in error (400 with specific error message)
+      const errorMessage = error?.data?.errorMessage || error?.data?.message || error?.data?.error || error?.data?.title || error?.message;
+      const isLateError = error?.status === 400 && (
+        errorMessage?.toLowerCase().includes('late') || 
+        errorMessage?.toLowerCase().includes('reason') ||
+        error?.data?.errorMessage?.toLowerCase().includes('late')
+      );
+      
+      // If it's a late error and no reason was provided, show the late reason modal
+      if (isLateError && !reason) {
+        setPendingLocation(coords);
+        setShowLateReasonModal(true);
+        return;
+      }
+      
+      // Get error message from API response
+      let displayErrorMessage = errorMessage;
+      
+      // If there are validation errors, format them nicely
+      if (error?.data?.errors && typeof error.data.errors === 'object') {
+        const validationErrors = Object.entries(error.data.errors)
+          .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`)
+          .join('; ');
+        if (validationErrors) {
+          displayErrorMessage = validationErrors;
+        }
+      }
+      
+      if (!displayErrorMessage) {
+        displayErrorMessage = isAr ? 'حدث خطأ في تسجيل الحضور' : 'Error recording attendance';
+      }
+      
       toast.error(
         <div className="flex items-center gap-2">
           <AlertCircle className="w-5 h-5" />
-          <span>{isAr ? 'حدث خطأ في تسجيل الحضور' : 'Error recording attendance'}</span>
+          <span>{displayErrorMessage}</span>
+        </div>,
+        {
+          duration: 4000,
+          style: {
+            background: '#EF4444',
+            color: '#fff',
+          },
+        }
+      );
+    }
+  };
+
+  // Handle late reason confirmation
+  const handleLateReasonConfirm = async (reason) => {
+    setShowLateReasonModal(false);
+    if (pendingLocation) {
+      await handleClockInWithLocation(pendingLocation, reason, true);
+    }
+  };
+
+  // Handle clock out with location
+  const handleClockOutWithLocation = async (coords) => {
+    const isAr = lang === "ar";
+    const loadingToast = toast.loading(
+      isAr ? 'جاري تسجيل الخروج...' : 'Recording clock out...',
+      {
+        style: {
+          background: 'var(--card-bg)',
+          color: 'var(--text-color)',
+        },
+      }
+    );
+
+    try {
+      await clockOutMutation({
+        latitude: coords.lat,
+        longitude: coords.lng
+      }).unwrap();
+
+      toast.dismiss(loadingToast);
+      toast.success(
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="w-5 h-5" />
+          <span>{isAr ? 'تم تسجيل الخروج بنجاح' : 'Successfully clocked out'}</span>
+        </div>,
+        {
+          duration: 3000,
+          style: {
+            background: '#10B981',
+            color: '#fff',
+          },
+        }
+      );
+
+      refetchDashboard();
+      setPendingLocation(null);
+    } catch (error) {
+      console.error('Clock out error:', error);
+      console.error('Clock out error details:', {
+        status: error?.status,
+        statusCode: error?.statusCode,
+        data: error?.data,
+        originalStatus: error?.originalStatus,
+        message: error?.message,
+        coords: { lat: coords.lat, lng: coords.lng },
+        fullError: JSON.stringify(error, null, 2)
+      });
+      toast.dismiss(loadingToast);
+      
+      // Get error message from API response - try multiple possible locations
+      const errorMessage = 
+        error?.data?.message || 
+        error?.data?.error || 
+        error?.data?.title ||
+        error?.data?.errors?.join?.(' ') ||
+        error?.message || 
+        (isAr ? 'حدث خطأ في تسجيل الخروج' : 'Error recording clock out');
+      
+      toast.error(
+        <div className="flex items-center gap-2">
+          <AlertCircle className="w-5 h-5" />
+          <span>{errorMessage}</span>
         </div>,
         {
           duration: 4000,
@@ -398,7 +526,7 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
           {/* Clock In/Out Button */}
           <button
             onClick={handleClockInOut}
-            disabled={isClockingIn || isClockingOut || isGettingLocation || hasCompletedToday}
+            disabled={isClockingIn || isClockingOut || hasCompletedToday}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-200 border text-xs font-semibold min-w-[80px] justify-center"
             style={{
               borderColor: hasCompletedToday
@@ -419,7 +547,7 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
               cursor: hasCompletedToday ? "not-allowed" : "pointer",
             }}
           >
-            {(isClockingIn || isClockingOut || isGettingLocation) ? (
+            {(isClockingIn || isClockingOut) ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
               <Clock className="w-4 h-4" />
@@ -671,7 +799,7 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
           {/* Clock In/Out Button */}
           <button
             onClick={handleClockInOut}
-            disabled={isClockingIn || isClockingOut || isGettingLocation || hasCompletedToday}
+            disabled={isClockingIn || isClockingOut || hasCompletedToday}
             className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl transition-all duration-200 border font-semibold text-sm"
             style={{
               borderColor: hasCompletedToday
@@ -692,7 +820,7 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
               cursor: hasCompletedToday ? "not-allowed" : "pointer",
             }}
           >
-            {(isClockingIn || isClockingOut || isGettingLocation) ? (
+            {(isClockingIn || isClockingOut) ? (
               <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
             ) : (
               <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -915,6 +1043,25 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
           </div>
         </div>
       </div>
+
+      {/* Location Input Modal */}
+      <LocationInputModal
+        isOpen={showLocationModal}
+        onClose={() => setShowLocationModal(false)}
+        onConfirm={handleLocationConfirm}
+        isArabic={lang === "ar"}
+      />
+
+      {/* Late Reason Modal */}
+      <LateReasonModal
+        isOpen={showLateReasonModal}
+        onClose={() => {
+          setShowLateReasonModal(false);
+          setPendingLocation(null);
+        }}
+        onConfirm={handleLateReasonConfirm}
+        isArabic={lang === "ar"}
+      />
     </nav>
   );
 };

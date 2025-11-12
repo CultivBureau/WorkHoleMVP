@@ -6,6 +6,7 @@ import EditShiftPopup from "./edit-shift-popup";
 import { useGetAllShiftsQuery, useDeleteShiftMutation, useUpdateShiftMutation } from "../../../services/apis/ShiftApi";
 import { getCompanyId } from "../../../utils/page";
 import toast from "react-hot-toast";
+import { formatWorkDays } from "../../../utils/workDayUtils";
 
 export default function AllShifts() {
     const { t, i18n } = useTranslation();
@@ -203,56 +204,11 @@ export default function AllShifts() {
         return time;
     };
 
-    // Format work days for display
-    // workDays can be either:
-    // 1. An array of numbers (1-7) - legacy format
-    // 2. A single number representing bit flags (Saturday=1, Sunday=2, Monday=4, Tuesday=8, Wednesday=16, Thursday=32, Friday=64)
-    const formatWorkDays = (workDays) => {
-        if (!workDays) return '-';
-
-        // Bit flag values for each day
-        const dayFlags = {
-            1: t('shifts.days.saturday', 'Saturday'),    // 1 << 0 = 1
-            2: t('shifts.days.sunday', 'Sunday'),          // 1 << 1 = 2
-            4: t('shifts.days.monday', 'Monday'),          // 1 << 2 = 4
-            8: t('shifts.days.tuesday', 'Tuesday'),        // 1 << 3 = 8
-            16: t('shifts.days.wednesday', 'Wednesday'),   // 1 << 4 = 16
-            32: t('shifts.days.thursday', 'Thursday'),     // 1 << 5 = 32
-            64: t('shifts.days.friday', 'Friday'),         // 1 << 6 = 64
-        };
-
-        // If workDays is an array, treat as legacy format (1-7)
-        if (Array.isArray(workDays)) {
-            if (workDays.length === 0) return '-';
-            // Legacy mapping for array format
-            const legacyDayNames = {
-                1: t('shifts.days.monday', 'Monday'),
-                2: t('shifts.days.tuesday', 'Tuesday'),
-                3: t('shifts.days.wednesday', 'Wednesday'),
-                4: t('shifts.days.thursday', 'Thursday'),
-                5: t('shifts.days.friday', 'Friday'),
-                6: t('shifts.days.saturday', 'Saturday'),
-                7: t('shifts.days.sunday', 'Sunday'),
-            };
-            return workDays.map(day => legacyDayNames[day]).filter(Boolean).join(', ');
-        }
-
-        // If workDays is a number, treat as bit flag
-        if (typeof workDays === 'number') {
-            if (workDays === 0) return '-';
-
-            const selectedDays = [];
-            // Check each bit flag
-            Object.keys(dayFlags).map(Number).forEach(flag => {
-                if ((workDays & flag) === flag) {
-                    selectedDays.push(dayFlags[flag]);
-                }
-            });
-
-            return selectedDays.length > 0 ? selectedDays.join(', ') : '-';
-        }
-
-        return '-';
+    // Format work days for display using utility function
+    // workDays should be an array of enum values (1-7) matching WorkDay enum
+    // Saturday=1, Sunday=2, Monday=3, Tuesday=4, Wednesday=5, Thursday=6, Friday=7
+    const formatWorkDaysDisplay = (workDays) => {
+        return formatWorkDays(workDays, t);
     };
 
     // Filter shifts by search term (applied after status filtering)
@@ -475,7 +431,7 @@ export default function AllShifts() {
                                                     {t('shifts.details.workingDays', 'Working Days')}
                                                 </p>
                                                 <p className="text-sm font-semibold text-[var(--text-color)] line-clamp-2">
-                                                    {formatWorkDays(shift.workDays)}
+                                                    {formatWorkDaysDisplay(shift.workDays)}
                                                 </p>
                                             </div>
                                         </div>

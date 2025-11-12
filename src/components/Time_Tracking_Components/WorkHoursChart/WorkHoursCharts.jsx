@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { ChevronDown } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { Bar } from "react-chartjs-2"
@@ -13,17 +13,42 @@ import {
   Tooltip,
   Legend,
 } from "chart.js"
+import { useGetUserClockinLogsQuery } from "../../../services/apis/ClockinLogApi"
+import { getAuthToken } from "../../../utils/page"
 
-// Static work hours chart data
-const staticWorkHoursChart = [
-  { label: "Mon", hours: 8 },
-  { label: "Tue", hours: 7.5 },
-  { label: "Wed", hours: 8.5 },
-  { label: "Thu", hours: 8 },
-  { label: "Fri", hours: 7 },
-  { label: "Sat", hours: 6 },
-  { label: "Sun", hours: 0 }
-];
+// Helper function to get user ID from token
+const deriveUserId = () => {
+  try {
+    const token = getAuthToken()
+    if (!token) return null
+    const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}")
+    if (userInfo?.userId) return userInfo.userId
+    const parts = token.split(".")
+    if (parts.length !== 3) return null
+    const payload = JSON.parse(atob(parts[1]))
+    if (payload?.sub) return payload.sub
+    if (payload?.userId) return payload.userId
+    return null
+  } catch {
+    return null
+  }
+}
+
+// Helper function to calculate duration in seconds from clock-in/out times
+const calculateDuration = (clockinTime, clockoutTime) => {
+  if (!clockinTime) return 0
+  const start = new Date(clockinTime)
+  const end = clockoutTime ? new Date(clockoutTime) : new Date()
+  return Math.max(0, Math.floor((end - start) / 1000))
+}
+
+// Helper function to get start of week (Monday)
+const getWeekStart = (date = new Date()) => {
+  const d = new Date(date)
+  const day = d.getDay()
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1) // Adjust when day is Sunday
+  return new Date(d.setDate(diff))
+}
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
@@ -45,9 +70,75 @@ const WorkHoursCharts = () => {
   // Filter state for week/month
   const [filter, setFilter] = useState("week")
   
-  // Use static data instead of API call
-  const data = { workHoursChart: staticWorkHoursChart };
-  const isLoading = false;
+  // Get user ID and fetch clock-in logs
+  const userId = useMemo(() => deriveUserId(), [])
+  const { data: clockinLogsData, isLoading } = useGetUserClockinLogsQuery(
+    { userId, pageNumber: 1, pageSize: 50 },
+    { skip: !userId }
+  )
+
+  // Calculate work hours chart data from clock-in logs
+  const workHoursChart = useMemo(() => {
+    if (!clockinLogsData || filter === "month") {
+      // For month view, return empty for now (can be implemented later)
+      return [
+        { label: "Mon", hours: 0 },
+        { label: "Tue", hours: 0 },
+        { label: "Wed", hours: 0 },
+        { label: "Thu", hours: 0 },
+        { label: "Fri", hours: 0 },
+        { label: "Sat", hours: 0 },
+        { label: "Sun", hours: 0 }
+      ]
+    }
+
+    let items = []
+    if (Array.isArray(clockinLogsData)) {
+      items = clockinLogsData
+    } else if (clockinLogsData?.value && Array.isArray(clockinLogsData.value)) {
+      items = clockinLogsData.value
+    } else if (clockinLogsData?.data && Array.isArray(clockinLogsData.data)) {
+      items = clockinLogsData.data
+    } else if (clockinLogsData?.items && Array.isArray(clockinLogsData.items)) {
+      items = clockinLogsData.items
+    } else if (clockinLogsData?.results && Array.isArray(clockinLogsData.results)) {
+      items = clockinLogsData.results
+    }
+
+    // Get week start
+    const today = new Date()
+    const weekStart = getWeekStart(today)
+    weekStart.setHours(0, 0, 0, 0)
+
+    // Group logs by day of week
+    const dayHours = new Map()
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+    
+    items.forEach(log => {
+      if (!log?.clockinTime) return
+      const logDate = new Date(log.clockinTime)
+      logDate.setHours(0, 0, 0, 0)
+      
+      // Only include logs from this week
+      if (logDate >= weekStart) {
+        const dayOfWeek = dayNames[logDate.getDay()]
+        const duration = calculateDuration(log.clockinTime, log.clockoutTime)
+        const hours = duration / 3600
+        dayHours.set(dayOfWeek, (dayHours.get(dayOfWeek) || 0) + hours)
+      }
+    })
+
+    // Return in order: Mon, Tue, Wed, Thu, Fri, Sat, Sun
+    return [
+      { label: "Mon", hours: dayHours.get("Mon") || 0 },
+      { label: "Tue", hours: dayHours.get("Tue") || 0 },
+      { label: "Wed", hours: dayHours.get("Wed") || 0 },
+      { label: "Thu", hours: dayHours.get("Thu") || 0 },
+      { label: "Fri", hours: dayHours.get("Fri") || 0 },
+      { label: "Sat", hours: dayHours.get("Sat") || 0 },
+      { label: "Sun", hours: dayHours.get("Sun") || 0 }
+    ]
+  }, [clockinLogsData, filter])
 
   // Theme reactivity: update chart colors when theme changes
   const [chartColors, setChartColors] = useState({
@@ -80,10 +171,7 @@ const WorkHoursCharts = () => {
     return () => observer.disconnect()
   }, [])
 
-  // استخدم workHoursChart مباشرة من الريسبونس
-  const workHoursChart = data?.workHoursChart || []
-
-  // عرف chartData ليكون نفس workHoursChart
+  // Use workHoursChart directly from useMemo
   const chartData = workHoursChart
   const dayLabels = chartData.map((item) => item.label)
 

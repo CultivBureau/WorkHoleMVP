@@ -4,6 +4,7 @@ import { X, Eye, Edit } from 'lucide-react';
 import { useUpdateShiftMutation, useGetShiftByIdQuery } from '../../../services/apis/ShiftApi';
 import { getCompanyId } from '../../../utils/page';
 import toast from 'react-hot-toast';
+import { dayNamesToEnumValues, enumValuesToDayNames } from '../../../utils/workDayUtils';
 
 const EditShiftPopup = ({ isOpen, onClose, shiftId, mode = 'edit', onSave }) => {
     const { t, i18n } = useTranslation();
@@ -18,25 +19,15 @@ const EditShiftPopup = ({ isOpen, onClose, shiftId, mode = 'edit', onSave }) => 
 
     const shift = shiftData?.value || shiftData;
 
-    // Map day numbers to names (1=Monday, 2=Tuesday, ..., 7=Sunday)
-    const dayNumberToName = {
-        1: 'monday',
-        2: 'tuesday',
-        3: 'wednesday',
-        4: 'thursday',
-        5: 'friday',
-        6: 'saturday',
-        7: 'sunday',
-    };
-
+    // Days of week matching backend WorkDay enum (Saturday=1, Sunday=2, Monday=3, Tuesday=4, Wednesday=5, Thursday=6, Friday=7)
     const daysOfWeek = [
-        { value: 'saturday', label: t('shifts.days.saturday', 'Saturday'), bitFlag: 1 },
-        { value: 'sunday', label: t('shifts.days.sunday', 'Sunday'), bitFlag: 2 },
-        { value: 'monday', label: t('shifts.days.monday', 'Monday'), bitFlag: 4 },
-        { value: 'tuesday', label: t('shifts.days.tuesday', 'Tuesday'), bitFlag: 8 },
-        { value: 'wednesday', label: t('shifts.days.wednesday', 'Wednesday'), bitFlag: 16 },
-        { value: 'thursday', label: t('shifts.days.thursday', 'Thursday'), bitFlag: 32 },
-        { value: 'friday', label: t('shifts.days.friday', 'Friday'), bitFlag: 64 },
+        { value: 'saturday', label: t('shifts.days.saturday', 'Saturday'), enumValue: 1 },
+        { value: 'sunday', label: t('shifts.days.sunday', 'Sunday'), enumValue: 2 },
+        { value: 'monday', label: t('shifts.days.monday', 'Monday'), enumValue: 3 },
+        { value: 'tuesday', label: t('shifts.days.tuesday', 'Tuesday'), enumValue: 4 },
+        { value: 'wednesday', label: t('shifts.days.wednesday', 'Wednesday'), enumValue: 5 },
+        { value: 'thursday', label: t('shifts.days.thursday', 'Thursday'), enumValue: 6 },
+        { value: 'friday', label: t('shifts.days.friday', 'Friday'), enumValue: 7 },
     ];
 
     const [formData, setFormData] = useState({
@@ -53,57 +44,14 @@ const EditShiftPopup = ({ isOpen, onClose, shiftId, mode = 'edit', onSave }) => 
         workDays: [],
     });
 
-    // Map bit flag values to day names (Saturday=1, Sunday=2, Monday=4, Tuesday=8, Wednesday=16, Thursday=32, Friday=64)
-    const bitFlagToDayName = {
-        1: 'saturday',    // 1 << 0
-        2: 'sunday',      // 1 << 1
-        4: 'monday',      // 1 << 2
-        8: 'tuesday',     // 1 << 3
-        16: 'wednesday',  // 1 << 4
-        32: 'thursday',   // 1 << 5
-        64: 'friday',     // 1 << 6
-    };
-
-    // Map day names to bit flag values
-    const dayNameToBitFlag = {
-        'saturday': 1,    // 1 << 0
-        'sunday': 2,      // 1 << 1
-        'monday': 4,      // 1 << 2
-        'tuesday': 8,     // 1 << 3
-        'wednesday': 16,  // 1 << 4
-        'thursday': 32,   // 1 << 5
-        'friday': 64,     // 1 << 6
-    };
 
     // Pre-populate form when shift data is loaded
     useEffect(() => {
         if (shift && isOpen) {
-            // Convert workDays from bit flag to day names
-            // workDays can be either:
-            // 1. An array of numbers (legacy format)
-            // 2. A single number representing bit flags
-            let workDaysNames = [];
-            
-            if (Array.isArray(shift.workDays)) {
-                // Legacy format: array of numbers (1-7)
-                const legacyDayNumberToName = {
-                    1: 'monday',
-                    2: 'tuesday',
-                    3: 'wednesday',
-                    4: 'thursday',
-                    5: 'friday',
-                    6: 'saturday',
-                    7: 'sunday',
-                };
-                workDaysNames = (shift.workDays || []).map(dayNum => legacyDayNumberToName[dayNum] || null).filter(Boolean);
-            } else if (typeof shift.workDays === 'number' && shift.workDays > 0) {
-                // Bit flag format: decode the flags
-                Object.keys(bitFlagToDayName).map(Number).forEach(flag => {
-                    if ((shift.workDays & flag) === flag) {
-                        workDaysNames.push(bitFlagToDayName[flag]);
-                    }
-                });
-            }
+            // Convert workDays from enum values to day names
+            // workDays should be an array of enum values (1-7) matching WorkDay enum
+            // Saturday=1, Sunday=2, Monday=3, Tuesday=4, Wednesday=5, Thursday=6, Friday=7
+            const workDaysNames = enumValuesToDayNames(shift.workDays);
             
             // Convert time from HH:MM:SS to HH:MM for input
             const formatTimeFromHHMMSS = (time) => {
@@ -208,11 +156,9 @@ const EditShiftPopup = ({ isOpen, onClose, shiftId, mode = 'edit', onSave }) => 
             return;
         }
 
-        // Convert workDays from day names to an array of bit flag values
-        // API expects an array like [1, 2, 4] instead of a single combined bit flag
-        const workDaysArray = formData.workDays
-            .map(dayName => dayNameToBitFlag[dayName])
-            .filter(flag => flag !== undefined && flag !== null);
+        // Convert workDays from day names to an array of enum values
+        // API expects an array like [1, 2, 3] matching WorkDay enum (Saturday=1, Sunday=2, Monday=3, etc.)
+        const workDaysArray = dayNamesToEnumValues(formData.workDays);
 
         // Format startTime and endTime to HH:MM:SS (add :00 seconds if not present)
         const formatTimeToHHMMSS = (time) => {

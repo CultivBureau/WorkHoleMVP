@@ -5,6 +5,8 @@ import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useGetUserClockinLogsQuery } from "../../services/apis/ClockinLogApi"
 import { getAuthToken, getUserInfo } from "../../utils/page"
+import { utcToLocalTime, utcToLocalDate, calculateDurationFromUtc, isUtcDateToday } from '../../utils/timeUtils'
+import { isWithinShiftRadius } from '../../utils/locationUtils'
 
 const deriveUserId = () => {
   const userInfo = getUserInfo()
@@ -28,10 +30,8 @@ const deriveUserId = () => {
 }
 
 const formatDate = (iso, locale) => {
-  if (!iso) return "—"
-  const date = new Date(iso)
-  if (Number.isNaN(date.getTime())) return "—"
-  return date.toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" })
+  // API returns UTC time, convert to local date for display
+  return utcToLocalDate(iso, locale)
 }
 
 const formatDay = (iso, locale) => {
@@ -42,20 +42,18 @@ const formatDay = (iso, locale) => {
 }
 
 const formatTime = (iso, locale) => {
-  if (!iso) return "—"
-  const date = new Date(iso)
-  if (Number.isNaN(date.getTime())) return "—"
-  return date.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit", hour12: true })
+  // API returns UTC time, convert to local time for display
+  return utcToLocalTime(iso, locale)
 }
 
 const calculateDuration = (startIso, endIso) => {
+  // API returns UTC times, calculate duration correctly
   if (!startIso || !endIso) return { label: "0h", minutes: 0 }
-  const start = new Date(startIso)
-  const end = new Date(endIso)
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end <= start) {
-    return { label: "0h", minutes: 0 }
-  }
-  const diffMinutes = Math.floor((end - start) / 60000)
+  
+  const diffSeconds = calculateDurationFromUtc(startIso, endIso)
+  if (diffSeconds <= 0) return { label: "0h", minutes: 0 }
+  
+  const diffMinutes = Math.floor(diffSeconds / 60)
   const hours = Math.floor(diffMinutes / 60)
   const minutes = diffMinutes % 60
   const parts = []
@@ -71,8 +69,28 @@ const deriveStatus = (log) => {
 }
 
 const deriveLocation = (log) => {
-  if (log?.officeRemote === true) return "home"
-  if (log?.officeRemote === false) return "office"
+  // API uses "office" field: true = office, false = remote/home
+  // But we also check distance as a fallback to ensure accuracy
+  if (log?.office === true) return "office"
+  if (log?.office === false) {
+    // Double-check: if clock-in location is within shift radius, it should be office
+    const shiftLat = log?.shiftRule?.latitude
+    const shiftLng = log?.shiftRule?.longitude
+    const radiusMeters = log?.shiftRule?.radiusMeters
+    const clockinLocation = log?.clockinLocation
+    
+    if (clockinLocation && shiftLat && shiftLng && radiusMeters !== undefined) {
+      const withinRadius = isWithinShiftRadius(clockinLocation, shiftLat, shiftLng, radiusMeters)
+      if (withinRadius) {
+        // Location is within radius, so it should be office
+        return "office"
+      }
+    }
+    return "home"
+  }
+  // Fallback to officeRemote for backward compatibility
+  if (log?.officeRemote === true) return "office"
+  if (log?.officeRemote === false) return "home"
   return "unknown"
 }
 
@@ -295,15 +313,11 @@ const AttendanceTable = () => {
 	)
 
 	// دالة لتحويل الوقت من ISO إلى صيغة 12 ساعة
+	// Use utcToLocalTime to ensure correct UTC to local time conversion
 	const formatTo12Hour = (timeIso) => {
 		if (!timeIso) return "—"
-		const date = new Date(timeIso)
-		if (Number.isNaN(date.getTime())) return "—"
-		return date.toLocaleTimeString(locale, {
-			hour: "numeric",
-			minute: "2-digit",
-			hour12: true,
-		})
+		// Use the utcToLocalTime utility which handles UTC conversion correctly
+		return formatTime(timeIso, locale)
 	}
 
 	// Clock in/out handlers - disabled for static data
