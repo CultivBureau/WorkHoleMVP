@@ -135,7 +135,7 @@ const DashboardAdmin = () => {
             {/* Right Section - Departments and Recent Activity */}
             <div className="w-full xl:w-[27%] h-max  flex justify-center items-center flex-col gap-4">
               <Departments />
-              <RecentActivity />
+              {/* <RecentActivity /> */}
             </div>
           </section>
         </main>

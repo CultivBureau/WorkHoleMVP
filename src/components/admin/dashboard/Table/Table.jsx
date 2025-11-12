@@ -1,96 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Search, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useGetCompanyClockinLogsQuery } from '../../../../services/apis/ClockinLogApi';
 
-// Sample employee data matching the image (keeping only first 8 for better fit)
-const employeeData = [
-  {
-    id: 1,
-    name: "Leasie Watson",
-    designation: "Team Lead - Design",
-    type: "Office",
-    checkInTime: "09:27 AM",
-    status: "On Time",
-    avatar: "/assets/AdminDashboard/avatar.svg",
-  },
-  {
-    id: 2,
-    name: "Darlene Robertson",
-    designation: "Web Designer",
-    type: "Office",
-    checkInTime: "10:15 AM",
-    status: "Late",
-    avatar: "/assets/AdminDashboard/avatar.svg",
-  },
-  {
-    id: 3,
-    name: "Jacob Jones",
-    designation: "Medical Assistant",
-    type: "Remote",
-    checkInTime: "10:24 AM",
-    status: "Late",
-    avatar: "/assets/AdminDashboard/avatar.svg",
-  },
-  {
-    id: 4,
-    name: "Kathryn Murphy",
-    designation: "Marketing Coordinator",
-    type: "Office",
-    checkInTime: "09:10 AM",
-    status: "On Time",
-    avatar: "/assets/AdminDashboard/avatar.svg",
-  },
-  {
-    id: 5,
-    name: "Leslie Alexander",
-    designation: "Data Analyst",
-    type: "Office",
-    checkInTime: "09:15 AM",
-    status: "On Time",
-    avatar: "/assets/AdminDashboard/avatar.svg",
-  },
-  {
-    id: 6,
-    name: "Ronald Richards",
-    designation: "Python Developer",
-    type: "Remote",
-    checkInTime: "09:29 AM",
-    status: "On Time",
-    avatar: "/assets/AdminDashboard/avatar.svg",
-  },
-  {
-    id: 7,
-    name: "Guy Hawkins",
-    designation: "UI/UX Design",
-    type: "Remote",
-    checkInTime: "09:29 AM",
-    status: "On Time",
-    avatar: "/assets/AdminDashboard/avatar.svg",
-  },
-  {
-    id: 8,
-    name: "Albert Flores",
-    designation: "React JS",
-    type: "Remote",
-    checkInTime: "09:29 AM",
-    status: "On Time",
-    avatar: "/assets/AdminDashboard/avatar.svg",
-  },
-  // Add more mock data for pagination demonstration
-  ...Array.from({ length: 12 }, (_, i) => ({
-    id: i + 9,
-    name: `Employee ${i + 9}`,
-    designation: ["Team Lead", "Developer", "Designer", "Manager"][i % 4],
-    type: ["Office", "Remote"][i % 2],
-    checkInTime: `0${8 + (i % 3)}:${15 + (i % 3) * 10} AM`,
-    status: ["On Time", "Late"][i % 2],
-    avatar: "/assets/AdminDashboard/avatar.svg",
-  }))
-];
+const formatTime = (isoString, locale) => {
+  if (!isoString) return "—";
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleTimeString(locale, {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
 
 const AttendanceTable = () => {
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === "ar";
+  const locale = isArabic ? "ar-EG" : "en-US";
 
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('All');
@@ -99,15 +26,73 @@ const AttendanceTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6; // Show 6 items per page like employees table
 
-  // Filter data
-  const filteredEmployees = employeeData.filter(employee => {
-    return (
-      employee.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (roleFilter === "All" || employee.designation.includes(roleFilter)) &&
-      (locationFilter === "All" || employee.type === locationFilter) &&
-      (statusFilter === "All Status" || employee.status === statusFilter)
-    );
+  // Fetch company clock-in logs
+  const { data, isLoading, isError, error, refetch } = useGetCompanyClockinLogsQuery({
+    pageNumber: currentPage,
+    pageSize: 20, // Fetch more to allow client-side filtering
   });
+
+  // Map API data to table format
+  const employeeData = useMemo(() => {
+    if (!data) return [];
+
+    let items = [];
+    if (Array.isArray(data)) {
+      items = data;
+    } else if (data?.value && Array.isArray(data.value)) {
+      items = data.value;
+    } else if (data?.data && Array.isArray(data.data)) {
+      items = data.data;
+    } else if (data?.items && Array.isArray(data.items)) {
+      items = data.items;
+    } else if (data?.results && Array.isArray(data.results)) {
+      items = data.results;
+    }
+
+    return items.map((log) => {
+      const userFirstName = log?.user?.firstName || "";
+      const userLastName = log?.user?.lastName || "";
+      const username = log?.user?.userName || "";
+      const fullName = `${userFirstName} ${userLastName}`.trim() || username || t("adminDashboard.table.unknownEmployee", "Unknown Employee");
+      const jobTitle = log?.user?.jobTitle || "";
+      const checkInTime = formatTime(log?.clockinTime, locale);
+      const isLate = log?.isLate || false;
+      const officeRemote = log?.officeRemote;
+
+      // Determine type
+      let type = "Office";
+      if (officeRemote === true) {
+        type = "Remote";
+      } else if (officeRemote === false) {
+        type = "Office";
+      }
+
+      // Determine status
+      const status = isLate ? "Late" : "On Time";
+
+      return {
+        id: log?.id,
+        name: fullName,
+        designation: jobTitle || t("adminDashboard.table.noRole", "No Role"),
+        type: type,
+        checkInTime: checkInTime,
+        status: status,
+        avatar: null,
+      };
+    });
+  }, [data, locale, t]);
+
+  // Filter data
+  const filteredEmployees = useMemo(() => {
+    return employeeData.filter(employee => {
+      return (
+        employee.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        (roleFilter === "All" || employee.designation.toLowerCase().includes(roleFilter.toLowerCase())) &&
+        (locationFilter === "All" || employee.type === locationFilter) &&
+        (statusFilter === "All Status" || employee.status === statusFilter)
+      );
+    });
+  }, [employeeData, searchTerm, roleFilter, locationFilter, statusFilter]);
 
   // Pagination
   const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
@@ -238,47 +223,77 @@ const AttendanceTable = () => {
                 </tr>
               </thead>
               <tbody>
-                {paginatedEmployees.map((employee, index) => (
-                  <tr
-                    key={employee.id}
-                    className={`hover:bg-[var(--hover-color)] transition-colors ${index !== paginatedEmployees.length - 1 ? 'border-b border-[var(--border-color)]' : ''}`}
-                  >
-                    <td className="py-3 px-4">
-                      <div className={`flex items-center gap-2.5 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                        <div className="w-7 h-7 rounded-full bg-[var(--bg-color)] border border-[var(--border-color)] flex items-center justify-center overflow-hidden">
-                          {employee.avatar ? (
-                            <img
-                              src={employee.avatar}
-                              alt={employee.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <span className="text-[var(--sub-text-color)] text-xs font-medium">
-                              {employee.name.split(' ').map(n => n[0]).join('')}
-                            </span>
-                          )}
-                        </div>
-                        <span className={`font-medium text-[var(--text-color)] text-sm ${isArabic ? 'text-right' : 'text-left'}`}>{employee.name}</span>
-                      </div>
-                    </td>
-                    <td className={`py-3 px-4 text-[var(--text-color)] text-sm ${isArabic ? 'text-right' : 'text-left'}`}>{employee.designation}</td>
-                    <td className={`py-3 px-4 text-[var(--text-color)] text-sm ${isArabic ? 'text-right' : 'text-left'}`}>{employee.type}</td>
-                    <td className={`py-3 px-4 text-[var(--text-color)] text-sm ${isArabic ? 'text-right' : 'text-left'}`}>{employee.checkInTime}</td>
-                    <td className={`py-3 px-4 ${isArabic ? 'text-right' : 'text-left'}`}>
-                      <span
-                        className={`inline-flex px-2.5 py-1 text-center rounded-full text-xs font-medium ${employee.status === "On Time"
-                          ? "bg-[#3FC28A1A] text-[var(--success-color)]"
-                          : "bg-[#F45B691A] text-[var(--error-color)]"
-                          }`}
-                      >
-                        {employee.status === "On Time"
-                          ? t("adminDashboard.table.onTime", "On Time")
-                          : t("adminDashboard.table.late", "Late")
-                        }
-                      </span>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-[var(--sub-text-color)]">
+                      {t("adminDashboard.table.loading", "Loading attendance records...")}
                     </td>
                   </tr>
-                ))}
+                ) : isError ? (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center">
+                      <div className="flex flex-col items-center gap-2 text-[var(--sub-text-color)]">
+                        <span>{t("adminDashboard.table.errorLoading", "Failed to load attendance records")}</span>
+                        {error && (
+                          <span className="text-xs text-[var(--sub-text-color)]/80">
+                            {error?.data?.message || error?.message || "An error occurred"}
+                          </span>
+                        )}
+                        <button onClick={() => refetch()} className="btn-secondary text-xs px-3 py-1">
+                          {t("adminDashboard.table.retry", "Retry")}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ) : paginatedEmployees.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-[var(--sub-text-color)]">
+                      {t("adminDashboard.table.noRecords", "No attendance records found")}
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedEmployees.map((employee, index) => (
+                    <tr
+                      key={employee.id}
+                      className={`hover:bg-[var(--hover-color)] transition-colors ${index !== paginatedEmployees.length - 1 ? 'border-b border-[var(--border-color)]' : ''}`}
+                    >
+                      <td className="py-3 px-4">
+                        <div className={`flex items-center gap-2.5 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                          <div className="w-7 h-7 rounded-full bg-[var(--bg-color)] border border-[var(--border-color)] flex items-center justify-center overflow-hidden">
+                            {employee.avatar ? (
+                              <img
+                                src={employee.avatar}
+                                alt={employee.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-[var(--sub-text-color)] text-xs font-medium">
+                                {employee.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                              </span>
+                            )}
+                          </div>
+                          <span className={`font-medium text-[var(--text-color)] text-sm ${isArabic ? 'text-right' : 'text-left'}`}>{employee.name}</span>
+                        </div>
+                      </td>
+                      <td className={`py-3 px-4 text-[var(--text-color)] text-sm ${isArabic ? 'text-right' : 'text-left'}`}>{employee.designation}</td>
+                      <td className={`py-3 px-4 text-[var(--text-color)] text-sm ${isArabic ? 'text-right' : 'text-left'}`}>{employee.type}</td>
+                      <td className={`py-3 px-4 text-[var(--text-color)] text-sm ${isArabic ? 'text-right' : 'text-left'}`}>{employee.checkInTime}</td>
+                      <td className={`py-3 px-4 ${isArabic ? 'text-right' : 'text-left'}`}>
+                        <span
+                          className={`inline-flex px-2.5 py-1 text-center rounded-full text-xs font-medium ${employee.status === "On Time"
+                            ? "bg-[#3FC28A1A] text-[var(--success-color)]"
+                            : "bg-[#F45B691A] text-[var(--error-color)]"
+                            }`}
+                        >
+                          {employee.status === "On Time"
+                            ? t("adminDashboard.table.onTime", "On Time")
+                            : t("adminDashboard.table.late", "Late")
+                          }
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -287,53 +302,72 @@ const AttendanceTable = () => {
         {/* Mobile Cards */}
         <div className="md:hidden">
           <div className={`${isArabic ? 'text-right' : 'text-left'}`}>
-            {paginatedEmployees.map((employee, index) => (
-              <div
-                key={employee.id}
-                className={`p-4 hover:bg-[var(--hover-color)] transition-colors ${index !== paginatedEmployees.length - 1 ? 'border-b border-[var(--border-color)]' : ''}`}
-              >
-                <div className={`flex items-center gap-3 mb-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                  <div className="w-10 h-10 rounded-full bg-[var(--bg-color)] border border-[var(--border-color)] flex items-center justify-center overflow-hidden">
-                    {employee.avatar ? (
-                      <img
-                        src={employee.avatar}
-                        alt={employee.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-[var(--sub-text-color)] text-xs font-medium">
-                        {employee.name.split(' ').map(n => n[0]).join('')}
-                      </span>
-                    )}
-                  </div>
-                  <div className={`flex-1 ${isArabic ? 'text-right' : 'text-left'}`}>
-                    <h3 className="font-medium text-[var(--text-color)] text-sm">{employee.name}</h3>
-                    <p className="text-[var(--sub-text-color)] text-xs">{employee.designation}</p>
-                  </div>
-                  <span
-                    className={`inline-flex px-2.5 py-1 text-center rounded-full text-xs font-medium ${employee.status === "On Time"
-                      ? "bg-[#3FC28A1A] text-[var(--success-color)]"
-                      : "bg-[#F45B691A] text-[var(--error-color)]"
-                      }`}
-                  >
-                    {employee.status === "On Time"
-                      ? t("adminDashboard.table.onTime", "On Time")
-                      : t("adminDashboard.table.late", "Late")
-                    }
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className={isArabic ? 'text-right' : 'text-left'}>
-                    <span className="text-[var(--sub-text-color)]">{t("adminDashboard.table.type", "Type")}: </span>
-                    <span className="text-[var(--text-color)]">{employee.type}</span>
-                  </div>
-                  <div className={isArabic ? 'text-right' : 'text-left'}>
-                    <span className="text-[var(--sub-text-color)]">{t("adminDashboard.table.checkInTime", "Check In")}: </span>
-                    <span className="text-[var(--text-color)]">{employee.checkInTime}</span>
-                  </div>
+            {isLoading ? (
+              <div className="p-4 text-center text-[var(--sub-text-color)]">
+                {t("adminDashboard.table.loading", "Loading attendance records...")}
+              </div>
+            ) : isError ? (
+              <div className="p-4 text-center">
+                <div className="flex flex-col items-center gap-2 text-[var(--sub-text-color)]">
+                  <span>{t("adminDashboard.table.errorLoading", "Failed to load attendance records")}</span>
+                  <button onClick={() => refetch()} className="btn-secondary text-xs px-3 py-1">
+                    {t("adminDashboard.table.retry", "Retry")}
+                  </button>
                 </div>
               </div>
-            ))}
+            ) : paginatedEmployees.length === 0 ? (
+              <div className="p-4 text-center text-[var(--sub-text-color)]">
+                {t("adminDashboard.table.noRecords", "No attendance records found")}
+              </div>
+            ) : (
+              paginatedEmployees.map((employee, index) => (
+                <div
+                  key={employee.id}
+                  className={`p-4 hover:bg-[var(--hover-color)] transition-colors ${index !== paginatedEmployees.length - 1 ? 'border-b border-[var(--border-color)]' : ''}`}
+                >
+                  <div className={`flex items-center gap-3 mb-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                    <div className="w-10 h-10 rounded-full bg-[var(--bg-color)] border border-[var(--border-color)] flex items-center justify-center overflow-hidden">
+                      {employee.avatar ? (
+                        <img
+                          src={employee.avatar}
+                          alt={employee.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-[var(--sub-text-color)] text-xs font-medium">
+                          {employee.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                        </span>
+                      )}
+                    </div>
+                    <div className={`flex-1 ${isArabic ? 'text-right' : 'text-left'}`}>
+                      <h3 className="font-medium text-[var(--text-color)] text-sm">{employee.name}</h3>
+                      <p className="text-[var(--sub-text-color)] text-xs">{employee.designation}</p>
+                    </div>
+                    <span
+                      className={`inline-flex px-2.5 py-1 text-center rounded-full text-xs font-medium ${employee.status === "On Time"
+                        ? "bg-[#3FC28A1A] text-[var(--success-color)]"
+                        : "bg-[#F45B691A] text-[var(--error-color)]"
+                        }`}
+                    >
+                      {employee.status === "On Time"
+                        ? t("adminDashboard.table.onTime", "On Time")
+                        : t("adminDashboard.table.late", "Late")
+                      }
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className={isArabic ? 'text-right' : 'text-left'}>
+                      <span className="text-[var(--sub-text-color)]">{t("adminDashboard.table.type", "Type")}: </span>
+                      <span className="text-[var(--text-color)]">{employee.type}</span>
+                    </div>
+                    <div className={isArabic ? 'text-right' : 'text-left'}>
+                      <span className="text-[var(--sub-text-color)]">{t("adminDashboard.table.checkInTime", "Check In")}: </span>
+                      <span className="text-[var(--text-color)]">{employee.checkInTime}</span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 

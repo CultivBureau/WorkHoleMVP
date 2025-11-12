@@ -11,6 +11,7 @@ import { leaveTypeApi } from "../services/apis/LeaveTypeApi";
 import { leaveBalanceApi } from "../services/apis/LeaveBalanceApi";
 import { permissionApi } from "../services/apis/PermissionApi";
 import { breakApi } from "../services/apis/BreakApi";
+import { clockinLogApi } from "../services/apis/ClockinLogApi";
 
 export const store = configureStore({
   reducer: {
@@ -23,6 +24,7 @@ export const store = configureStore({
     [userApi.reducerPath]: userApi.reducer,
     [leaveApi.reducerPath]: leaveApi.reducer,
     [leaveTypeApi.reducerPath]: leaveTypeApi.reducer,
+    [clockinLogApi.reducerPath]: clockinLogApi.reducer,
     [leaveBalanceApi.reducerPath]: leaveBalanceApi.reducer,
     [permissionApi.reducerPath]: permissionApi.reducer,
     [breakApi.reducerPath]: breakApi.reducer,
@@ -40,6 +42,7 @@ export const store = configureStore({
       userApi.middleware,
       leaveApi.middleware,
       leaveTypeApi.middleware,
+      clockinLogApi.middleware,
       leaveBalanceApi.middleware,
       permissionApi.middleware,
       breakApi.middleware,

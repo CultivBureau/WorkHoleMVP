@@ -1,167 +1,85 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useTranslation } from "react-i18next";
 import { useLang } from "../../../../contexts/LangContext";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Users } from "lucide-react";
+import { useGetCompanyClockinLogsQuery } from "../../../../services/apis/ClockinLogApi";
 
-// Sample employee data matching the image
-const employeeData = [
-  {
-    id: 1,
-    name: "Darlene Robertson",
-    avatar: "/assets/AdminDashboard/avatar.svg",
-    date: "29 July 2023",
-    dateSort: new Date("2023-07-29"),
-    checkIn: "09:00 AM",
-    checkInSort: "09:00",
-    checkOut: "05:00 PM",
-    checkOutSort: "17:00",
-    workHours: "10h 2m",
-    workHoursSort: 602, // in minutes
-    status: "Present",
-    location: "Work from office",
-  },
-  {
-    id: 2,
-    name: "Cody Fisher",
-    avatar: "/assets/AdminDashboard/avatar.svg",
-    date: "29 July 2023",
-    dateSort: new Date("2023-07-29"),
-    checkIn: "00:00 AM",
-    checkInSort: "00:00",
-    checkOut: "00:00 PM",
-    checkOutSort: "00:00",
-    workHours: "0m",
-    workHoursSort: 0,
-    status: "Absent",
-    location: "------",
-  },
-  {
-    id: 3,
-    name: "Savannah Nguyen",
-    avatar: "/assets/AdminDashboard/avatar.svg",
-    date: "28 July 2023",
-    dateSort: new Date("2023-07-28"),
-    checkIn: "09:30 AM",
-    checkInSort: "09:30",
-    checkOut: "05:00 PM",
-    checkOutSort: "17:00",
-    workHours: "8h 30m",
-    workHoursSort: 510,
-    status: "Late arrival",
-    location: "Work from office",
-  },
-  {
-    id: 4,
-    name: "Marvin McKinney",
-    avatar: "/assets/AdminDashboard/avatar.svg",
-    date: "28 July 2023",
-    dateSort: new Date("2023-07-28"),
-    checkIn: "08:55 AM",
-    checkInSort: "08:55",
-    checkOut: "06:00 PM",
-    checkOutSort: "18:00",
-    workHours: "10h 5m",
-    workHoursSort: 605,
-    status: "Present",
-    location: "Work from home",
-  },
-  {
-    id: 5,
-    name: "Jacob Jones",
-    avatar: "/assets/AdminDashboard/avatar.svg",
-    date: "27 July 2023",
-    dateSort: new Date("2023-07-27"),
-    checkIn: "09:15 AM",
-    checkInSort: "09:15",
-    checkOut: "05:00 PM",
-    checkOutSort: "17:00",
-    workHours: "10h 2m",
-    workHoursSort: 602,
-    status: "Late arrival",
-    location: "Work from office",
-  },
-  {
-    id: 6,
-    name: "Kristin Watson",
-    avatar: "/assets/AdminDashboard/avatar.svg",
-    date: "27 July 2023",
-    dateSort: new Date("2023-07-27"),
-    checkIn: "00:00 AM",
-    checkInSort: "00:00",
-    checkOut: "00:00 PM",
-    checkOutSort: "00:00",
-    workHours: "0m",
-    workHoursSort: 0,
-    status: "Absent",
-    location: "------",
-  },
-  {
-    id: 7,
-    name: "Devon Lane",
-    avatar: "/assets/AdminDashboard/avatar.svg",
-    date: "26 July 2023",
-    dateSort: new Date("2023-07-26"),
-    checkIn: "08:45 AM",
-    checkInSort: "08:45",
-    checkOut: "05:30 PM",
-    checkOutSort: "17:30",
-    workHours: "10h 2m",
-    workHoursSort: 602,
-    status: "Present",
-    location: "Work from home",
-  },
-  {
-    id: 8,
-    name: "Arlene McCoy",
-    avatar: "/assets/AdminDashboard/avatar.svg",
-    date: "26 July 2023",
-    dateSort: new Date("2023-07-26"),
-    checkIn: "09:10 AM",
-    checkInSort: "09:10",
-    checkOut: "05:15 PM",
-    checkOutSort: "17:15",
-    workHours: "10h 2m",
-    workHoursSort: 602,
-    status: "Present",
-    location: "Work from home",
-  },
-  {
-    id: 9,
-    name: "Eleanor Pena",
-    avatar: "/assets/AdminDashboard/avatar.svg",
-    date: "25 July 2023",
-    dateSort: new Date("2023-07-25"),
-    checkIn: "09:00 AM",
-    checkInSort: "09:00",
-    checkOut: "05:00 PM",
-    checkOutSort: "17:00",
-    workHours: "10h 2m",
-    workHoursSort: 602,
-    status: "Present",
-    location: "Work from home",
-  },
-  {
-    id: 10,
-    name: "Cameron Williamson",
-    avatar: "/assets/AdminDashboard/avatar.svg",
-    date: "25 July 2023",
-    dateSort: new Date("2023-07-25"),
-    checkIn: "09:25 AM",
-    checkInSort: "09:25",
-    checkOut: "05:00 PM",
-    checkOutSort: "17:00",
-    workHours: "9h 35m",
-    workHoursSort: 575,
-    status: "Late arrival",
-    location: "Work from office",
-  },
-]
+const formatDate = (isoString, locale) => {
+  if (!isoString) return "—";
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString(locale, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
+const formatDay = (isoString, locale) => {
+  if (!isoString) return "—";
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString(locale, { weekday: "long" });
+};
+
+const formatTime = (isoString, locale) => {
+  if (!isoString) return "—";
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleTimeString(locale, {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
+
+const calculateDuration = (startIso, endIso) => {
+  if (!startIso || !endIso) return { label: "—", minutes: 0 };
+  const start = new Date(startIso);
+  const end = new Date(endIso);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    return { label: "—", minutes: 0 };
+  }
+  const diffMs = end.getTime() - start.getTime();
+  if (diffMs <= 0) return { label: "—", minutes: 0 };
+  const totalMinutes = Math.floor(diffMs / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  const labelParts = [];
+  if (hours > 0) labelParts.push(`${hours}h`);
+  if (minutes > 0) labelParts.push(`${minutes}m`);
+  const label = labelParts.length > 0 ? labelParts.join(" ") : "0m";
+  return { label, minutes: totalMinutes };
+};
+
+const determineStatus = (log) => {
+  if (!log?.clockinTime && !log?.clockoutTime) return "Absent";
+  if (log?.isLate) return "Late arrival";
+  return "Present";
+};
+
+const determineLocation = (log) => {
+  if (!log) return "Unknown";
+  if (log.officeRemote === true) return "Work from home";
+  if (log.officeRemote === false) return "Work from office";
+  if (log.clockinLocation || log.clockoutLocation) return "On-site";
+  return "Unknown";
+};
+
+const getInitials = (name = "") => {
+  if (!name) return "--";
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("");
+};
 
 const AttendanceTable = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { isRtl } = useLang();
+  const locale = i18n.language === "ar" ? "ar-EG" : "en-US";
 
   // Filter states
   const [sortBy, setSortBy] = useState("newest")
@@ -178,6 +96,70 @@ const AttendanceTable = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
 
+  // Fetch company clock-in logs
+  const { data, isLoading, isError, error, refetch } = useGetCompanyClockinLogsQuery({
+    pageNumber: currentPage,
+    pageSize: itemsPerPage,
+  })
+
+  // Map API data to table format
+  const companyLogs = useMemo(() => {
+    if (!data) return []
+
+    let items = []
+    if (Array.isArray(data)) {
+      items = data
+    } else if (data?.value && Array.isArray(data.value)) {
+      items = data.value
+    } else if (data?.data && Array.isArray(data.data)) {
+      items = data.data
+    } else if (data?.items && Array.isArray(data.items)) {
+      items = data.items
+    } else if (data?.results && Array.isArray(data.results)) {
+      items = data.results
+    }
+
+    return items.map((log) => {
+      const userFirstName = log?.user?.firstName || ""
+      const userLastName = log?.user?.lastName || ""
+      const username = log?.user?.userName || ""
+      const fullName = `${userFirstName} ${userLastName}`.trim() || username || t("adminAttendance.table.unknownUser", "Unknown Employee")
+
+      const primaryDateIso = log?.clockinTime || log?.clockoutTime || log?.createdAt || log?.updatedAt
+      const dateObject = primaryDateIso ? new Date(primaryDateIso) : null
+      const dateSort = dateObject && !Number.isNaN(dateObject.getTime()) ? dateObject : new Date(0)
+
+      const checkIn = formatTime(log?.clockinTime, locale)
+      const checkOut = formatTime(log?.clockoutTime, locale)
+      const timeDiff = calculateDuration(log?.clockinTime, log?.clockoutTime)
+      const status = determineStatus(log)
+      const location = determineLocation(log)
+      const shiftName = log?.shiftRule?.name || "—"
+
+      return {
+        id: log?.id,
+        name: fullName,
+        avatar: null,
+        date: formatDate(primaryDateIso, locale),
+        dateSort,
+        checkIn,
+        checkInSort: log?.clockinTime ? new Date(log.clockinTime).getTime() : 0,
+        checkOut,
+        checkOutSort: log?.clockoutTime ? new Date(log.clockoutTime).getTime() : 0,
+        workHours: timeDiff.label,
+        workHoursSort: timeDiff.minutes,
+        status,
+        location,
+        email: log?.user?.email || "—",
+        reason: log?.reason || "",
+        clockinLocation: log?.clockinLocation || "",
+        clockoutLocation: log?.clockoutLocation || "",
+        shiftName,
+        raw: log,
+      }
+    })
+  }, [data, locale, t])
+
   // Handle table column sorting
   const handleTableSort = (column) => {
     if (tableSortColumn === column) {
@@ -190,7 +172,7 @@ const AttendanceTable = () => {
 
   // Filter and sort data
   const filteredAndSortedData = useMemo(() => {
-    let filtered = [...employeeData]
+    let filtered = [...companyLogs]
 
     // Apply filters
     if (statusFilter !== "all") {
@@ -206,6 +188,7 @@ const AttendanceTable = () => {
       filtered = filtered.filter(employee => {
         if (locationFilter === "office") return employee.location === "Work from office"
         if (locationFilter === "home") return employee.location === "Work from home"
+        if (locationFilter === "onsite") return employee.location === "On-site"
         return true
       })
     }
@@ -273,6 +256,14 @@ const AttendanceTable = () => {
             aVal = a.location.toLowerCase()
             bVal = b.location.toLowerCase()
             break
+          case 'shift':
+            aVal = (a.shiftName || "").toLowerCase()
+            bVal = (b.shiftName || "").toLowerCase()
+            break
+          case 'reason':
+            aVal = (a.reason || "").toLowerCase()
+            bVal = (b.reason || "").toLowerCase()
+            break
           default:
             return 0
         }
@@ -286,16 +277,29 @@ const AttendanceTable = () => {
     }
 
     return filtered
-  }, [sortBy, locationFilter, statusFilter, dateFromFilter, dateToFilter, tableSortColumn, tableSortDirection])
+  }, [companyLogs, sortBy, locationFilter, statusFilter, dateFromFilter, dateToFilter, tableSortColumn, tableSortDirection])
 
   // Pagination
-  const totalPages = Math.ceil(filteredAndSortedData.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const endIndex = startIndex + itemsPerPage
-  const currentData = filteredAndSortedData.slice(startIndex, endIndex)
+  const totalCount =
+    data?.totalCount ??
+    data?.total ??
+    data?.pagination?.total ??
+    (Array.isArray(data?.value) ? data.value.length : 0)
+
+  const reportedTotalPages = data?.totalPages ?? data?.pagination?.totalPages
+  const hasMoreFromApi = Array.isArray(companyLogs) && companyLogs.length === itemsPerPage
+  const totalPages =
+    reportedTotalPages ??
+    (totalCount
+      ? Math.max(1, Math.ceil(totalCount / itemsPerPage))
+      : hasMoreFromApi
+      ? currentPage + 1
+      : currentPage)
+
+  const currentData = filteredAndSortedData
 
   // Reset current page when filters change
-  useState(() => {
+  useEffect(() => {
     setCurrentPage(1)
   }, [sortBy, locationFilter, statusFilter, dateFromFilter, dateToFilter])
 
@@ -320,38 +324,36 @@ const AttendanceTable = () => {
   }
 
   const getLocationBadge = (location) => {
-    if (location === "------") {
-      return <span className="text-[var(--sub-text-color-2)] text-sm">------</span>
+    const baseClasses = "px-3 py-1 rounded-full text-xs font-medium inline-block border";
+    switch (location) {
+      case "Work from office":
+        return (
+          <span className={`${baseClasses} bg-[var(--accent-color)]/10 text-[var(--accent-color)]/70 border-[var(--accent-color)]/30`}>
+            {t("adminAttendance.table.location.workFromOffice", "Work from office")}
+          </span>
+        );
+      case "Work from home":
+        return (
+          <span className={`${baseClasses} bg-[var(--sub-text-color)]/10 text-[var(--sub-text-color)]/70 border-[var(--border-color)]/50`}>
+            {t("adminAttendance.table.location.workFromHome", "Work from home")}
+          </span>
+        );
+      case "On-site":
+        return (
+          <span className={`${baseClasses} bg-blue-500/10 text-blue-600 border-blue-400/40`}>
+            {t("adminAttendance.table.location.onsiteBadge", "On-site")}
+          </span>
+        );
+      default:
+        return <span className="text-[var(--sub-text-color-2)] text-sm">—</span>;
     }
-    const isOffice = location === "Work from office"
-    const baseClasses = "px-3 py-1 rounded-full text-xs font-medium inline-block border"
-    return (
-      <span
-        className={`${baseClasses} ${isOffice
-          ? "bg-[var(--accent-color)]/10 text-[var(--accent-color)]/70 border-[var(--accent-color)]/30"
-          : "bg-[var(--sub-text-color)]/10 text-[var(--sub-text-color)]/70 border-[var(--border-color)]/50"
-          }`}
-      >
-        {isOffice
-          ? t("adminAttendance.table.location.workFromOffice", "Work from office")
-          : t("adminAttendance.table.location.workFromHome", "Work from home")
-        }
-      </span>
-    )
-  }
+  };
 
   const getTimeStyle = (status, time) => {
-    if (status === "Absent" && time.includes("00:00")) {
+    if (status === "Absent" && typeof time === "string" && time.includes("00:00")) {
       return "text-[var(--error-color)] text-sm"
     }
     return "text-[var(--text-color)] text-sm"
-  }
-
-  const getInitials = (name) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
   }
 
   const getSortIcon = (column) => {
@@ -404,6 +406,9 @@ const AttendanceTable = () => {
                 </option>
                 <option value="home">
                   {t("adminAttendance.table.location.home", "Home")}
+                </option>
+                <option value="onsite">
+                  {t("adminAttendance.table.location.onsite", "On-site")}
                 </option>
               </select>
             </div>
@@ -516,7 +521,7 @@ const AttendanceTable = () => {
                 className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors"
               >
                 <div className="flex items-center gap-1">
-                  {t("adminAttendance.table.columns.checkIn", "Check-in")}
+                  {t("adminAttendance.table.columns.clockIn", "Clock in")}
                   {getSortIcon('checkIn')}
                 </div>
               </th>
@@ -525,7 +530,7 @@ const AttendanceTable = () => {
                 className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors"
               >
                 <div className="flex items-center gap-1">
-                  {t("adminAttendance.table.columns.checkOut", "Check-out")}
+                  {t("adminAttendance.table.columns.clockOut", "Clock out")}
                   {getSortIcon('checkOut')}
                 </div>
               </th>
@@ -556,10 +561,68 @@ const AttendanceTable = () => {
                   {getSortIcon('location')}
                 </div>
               </th>
+              <th
+                onClick={() => handleTableSort('shift')}
+                className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors"
+              >
+                <div className="flex items-center gap-1">
+                  {t("adminAttendance.table.columns.shift", "Shift")}
+                  {getSortIcon('shift')}
+                </div>
+              </th>
+              <th
+                onClick={() => handleTableSort('reason')}
+                className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors"
+              >
+                <div className="flex items-center gap-1">
+                  {t("adminAttendance.table.columns.reason", "Reason")}
+                  {getSortIcon('reason')}
+                </div>
+              </th>
             </tr>
           </thead>
           <tbody className="bg-[var(--table-bg)]">
-            {currentData.map((employee, index) => (
+            {isLoading ? (
+              <tr>
+                <td colSpan={9} className="py-16 px-6 text-center text-[var(--sub-text-color)]">
+                  {t("adminAttendance.table.loading", "Loading attendance records...")}
+                </td>
+              </tr>
+            ) : isError ? (
+              <tr>
+                <td colSpan={9} className="py-16 px-6">
+                  <div className="flex flex-col items-center gap-3 text-[var(--sub-text-color)]">
+                    <span>{t("adminAttendance.table.errorLoading", "Failed to load attendance records")}</span>
+                    {error && (
+                      <span className="text-sm text-[var(--sub-text-color)]/80">
+                        {error?.data?.message || error?.message || "An error occurred"}
+                      </span>
+                    )}
+                    <button onClick={() => refetch()} className="btn-secondary">
+                      {t("adminAttendance.table.retry", "Retry")}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ) : filteredAndSortedData.length === 0 ? (
+              <tr>
+                <td colSpan={9} className="py-16 px-6">
+                  <div className="flex flex-col items-center gap-4 text-[var(--sub-text-color)]">
+                    <Users className="h-12 w-12 opacity-60" />
+                    <div className="text-lg font-medium text-[var(--text-color)]">
+                      {t("adminAttendance.table.emptyTitle", "No clock-in logs yet")}
+                    </div>
+                    <div className="text-sm text-center max-w-md">
+                      {t("adminAttendance.table.emptyDescription", "When team members start clocking in, their activity will appear here.")}
+                    </div>
+                    <button onClick={() => refetch()} className="btn-secondary">
+                      {t("adminAttendance.table.refresh", "Refresh")}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              currentData.map((employee, index) => (
               <tr key={employee.id} className="border-b border-[var(--border-color)] hover:bg-[var(--hover-color)] transition-colors">
                 <td className="py-4 px-6">
                   <div className="flex items-center gap-3">
@@ -576,7 +639,12 @@ const AttendanceTable = () => {
                         </span>
                       )}
                     </div>
-                    <span className="font-medium text-[var(--text-color)] text-sm">{employee.name}</span>
+                    <div className="flex flex-col">
+                      <span className="font-medium text-[var(--text-color)] text-sm">{employee.name}</span>
+                      <span className="text-xs text-[var(--sub-text-color)]">
+                        {employee.email || t("adminAttendance.table.noEmail", "No email")}
+                      </span>
+                    </div>
                   </div>
                 </td>
                 <td className="py-4 px-6 text-gray-500 text-sm">{employee.date}</td>
@@ -589,8 +657,15 @@ const AttendanceTable = () => {
                 <td className="py-4 px-6 text-gray-500 text-sm font-medium">{employee.workHours}</td>
                 <td className="py-4 px-6">{getStatusBadge(employee.status)}</td>
                 <td className="py-4 px-6">{getLocationBadge(employee.location)}</td>
+                <td className="py-4 px-6 text-sm text-[var(--text-color)]">{employee.shiftName}</td>
+                <td className="py-4 px-6 text-sm text-[var(--text-color)]">
+                  {employee.reason
+                    ? employee.reason
+                    : <span className="text-[var(--sub-text-color)]">—</span>}
+                </td>
               </tr>
-            ))}
+            ))
+            )}
           </tbody>
         </table>
       </div>

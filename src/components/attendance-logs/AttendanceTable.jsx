@@ -3,24 +3,83 @@
 import { useState, useMemo, useEffect } from "react"
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
 import { useTranslation } from "react-i18next"
-// Static attendance stats data
-const staticAttendanceData = {
-  attendanceLogs: [
-    { date: "2024-01-15", day: "Monday", checkInTime: "09:00", checkOutTime: "17:30", workHours: "8h 30m", status: "present", location: "office", officeName: "Main Office" },
-    { date: "2024-01-14", day: "Sunday", checkInTime: "09:15", checkOutTime: "17:00", workHours: "7h 45m", status: "late", location: "office", officeName: "Main Office" },
-    { date: "2024-01-13", day: "Saturday", checkInTime: "08:45", checkOutTime: "17:15", workHours: "8h 30m", status: "present", location: "home", officeName: "Remote" },
-    { date: "2024-01-12", day: "Friday", checkInTime: null, checkOutTime: null, workHours: "0h", status: "absent", location: null, officeName: null },
-    { date: "2024-01-11", day: "Thursday", checkInTime: "09:05", checkOutTime: "17:20", workHours: "8h 15m", status: "present", location: "office", officeName: "Main Office" },
-    { date: "2024-01-10", day: "Wednesday", checkInTime: "08:50", checkOutTime: "17:00", workHours: "8h 10m", status: "present", location: "office", officeName: "Main Office" },
-    { date: "2024-01-09", day: "Tuesday", checkInTime: "09:20", checkOutTime: "17:10", workHours: "7h 50m", status: "late", location: "office", officeName: "Main Office" },
-    { date: "2024-01-08", day: "Monday", checkInTime: "09:00", checkOutTime: "17:30", workHours: "8h 30m", status: "present", location: "office", officeName: "Main Office" }
-  ],
-  pagination: { page: 1, limit: 8, total: 20, totalPages: 3 }
-};
+import { useGetUserClockinLogsQuery } from "../../services/apis/ClockinLogApi"
+import { getAuthToken, getUserInfo } from "../../utils/page"
+
+const deriveUserId = () => {
+  const userInfo = getUserInfo()
+  if (userInfo?.id) return userInfo.id
+  if (userInfo?.userId) return userInfo.userId
+  const msKey = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+  if (userInfo?.[msKey]) return userInfo[msKey]
+
+  const token = getAuthToken()
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]))
+      if (payload?.sub) return payload.sub
+      if (payload?.nameid) return payload.nameid
+      if (payload?.userId) return payload.userId
+    } catch {
+      return null
+    }
+  }
+  return null
+}
+
+const formatDate = (iso, locale) => {
+  if (!iso) return "—"
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return "—"
+  return date.toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" })
+}
+
+const formatDay = (iso, locale) => {
+  if (!iso) return "—"
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return "—"
+  return date.toLocaleDateString(locale, { weekday: "long" })
+}
+
+const formatTime = (iso, locale) => {
+  if (!iso) return "—"
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return "—"
+  return date.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit", hour12: true })
+}
+
+const calculateDuration = (startIso, endIso) => {
+  if (!startIso || !endIso) return { label: "0h", minutes: 0 }
+  const start = new Date(startIso)
+  const end = new Date(endIso)
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end <= start) {
+    return { label: "0h", minutes: 0 }
+  }
+  const diffMinutes = Math.floor((end - start) / 60000)
+  const hours = Math.floor(diffMinutes / 60)
+  const minutes = diffMinutes % 60
+  const parts = []
+  if (hours > 0) parts.push(`${hours}h`)
+  if (minutes > 0) parts.push(`${minutes}m`)
+  return { label: parts.length ? parts.join(" ") : "0h", minutes: diffMinutes }
+}
+
+const deriveStatus = (log) => {
+  if (!log?.clockinTime && !log?.clockoutTime) return "absent"
+  if (log?.isLate) return "late"
+  return "present"
+}
+
+const deriveLocation = (log) => {
+  if (log?.officeRemote === true) return "home"
+  if (log?.officeRemote === false) return "office"
+  return "unknown"
+}
 
 const AttendanceTable = () => {
 	const { t, i18n } = useTranslation()
 	const isArabic = i18n.language === "ar"
+	const locale = isArabic ? "ar-EG" : "en-US"
 
 	const [sortBy, setSortBy] = useState("newest")
 	const [location, setLocation] = useState("all")
@@ -30,13 +89,82 @@ const AttendanceTable = () => {
 	const [currentPage, setCurrentPage] = useState(1)
 	const pageSize = 8
 
-	// Use static data instead of API call
-	const data = staticAttendanceData;
-	const isLoading = false;
-	const refetch = () => {}; // Empty function for compatibility
-	
-	const attendanceLogs = data?.attendanceLogs || []
-	const pagination = data?.pagination || { page: 1, limit: pageSize, total: 0, totalPages: 1 }
+	useEffect(() => {
+		setCurrentPage(1)
+	}, [sortBy, location, status, dateFrom, dateTo])
+
+	const userId = useMemo(() => deriveUserId(), [])
+	const {
+		data,
+		isLoading,
+		isError,
+		error,
+		refetch,
+	} = useGetUserClockinLogsQuery(
+		{ userId, pageNumber: currentPage, pageSize },
+		{ skip: !userId }
+	)
+
+	const attendanceLogs = useMemo(() => {
+		if (!data) return []
+
+		let items = []
+		if (Array.isArray(data)) {
+			items = data
+		} else if (data?.value && Array.isArray(data.value)) {
+			items = data.value
+		} else if (data?.data && Array.isArray(data.data)) {
+			items = data.data
+		} else if (data?.items && Array.isArray(data.items)) {
+			items = data.items
+		} else if (data?.results && Array.isArray(data.results)) {
+			items = data.results
+		}
+
+		return items.map((log) => {
+			const primaryDateIso = log?.clockinTime || log?.clockoutTime || log?.createdAt || log?.updatedAt
+			const dateObj = primaryDateIso ? new Date(primaryDateIso) : null
+			const duration = calculateDuration(log?.clockinTime, log?.clockoutTime)
+			const statusValue = deriveStatus(log)
+			const locationValue = deriveLocation(log)
+
+			return {
+				id: log?.id,
+				dateIso: primaryDateIso,
+				dateSort: dateObj && !Number.isNaN(dateObj.getTime()) ? dateObj : new Date(0),
+				dayLabel: formatDay(primaryDateIso, locale),
+				checkInIso: log?.clockinTime || null,
+				checkOutIso: log?.clockoutTime || null,
+				workHoursLabel: duration.label,
+				workMinutes: duration.minutes,
+				status: statusValue,
+				location: locationValue,
+				officeName: log?.company?.name || log?.shiftRule?.name || null,
+			}
+		})
+	}, [data, locale])
+
+	const pagination = useMemo(() => {
+		const total = data?.totalCount ?? data?.total ?? data?.pagination?.total ?? attendanceLogs.length
+		const totalPages =
+			data?.totalPages ??
+			data?.pagination?.totalPages ??
+			(total ? Math.max(1, Math.ceil(total / pageSize)) : (attendanceLogs.length === pageSize ? currentPage + 1 : currentPage))
+
+		return {
+			page: currentPage,
+			limit: pageSize,
+			total,
+			totalPages,
+		}
+	}, [attendanceLogs.length, currentPage, data, pageSize])
+
+	useEffect(() => {
+		if (pagination.totalPages && currentPage > pagination.totalPages) {
+			setCurrentPage(Math.max(1, pagination.totalPages))
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [pagination.totalPages])
 
 	// Client-side filters (on current page only)
 	const filtered = useMemo(() => {
@@ -51,17 +179,18 @@ const AttendanceTable = () => {
 		}
 		if (dateFrom) {
 			const from = new Date(dateFrom)
-			result = result.filter((r) => new Date(r.date) >= from)
+			result = result.filter((r) => r.dateSort >= from)
 		}
 		if (dateTo) {
 			const to = new Date(dateTo)
-			result = result.filter((r) => new Date(r.date) <= to)
+			to.setHours(23, 59, 59, 999)
+			result = result.filter((r) => r.dateSort <= to)
 		}
 		// Sort
 		result.sort((a, b) =>
 			sortBy === "newest"
-				? new Date(b.date) - new Date(a.date)
-				: new Date(a.date) - new Date(b.date)
+				? b.dateSort - a.dateSort
+				: a.dateSort - b.dateSort
 		)
 		return result
 	}, [attendanceLogs, location, status, dateFrom, dateTo, sortBy])
@@ -165,18 +294,16 @@ const AttendanceTable = () => {
 		</div>
 	)
 
-	// دالة لتحويل الوقت من "HH:mm" لـ "h:mm AM/PM"
-	const formatTo12Hour = (timeStr) => {
-		if (!timeStr || typeof timeStr !== "string") return "—";
-		const [hour, minute] = timeStr.split(":");
-		const date = new Date();
-		date.setHours(Number(hour));
-		date.setMinutes(Number(minute));
-		return date.toLocaleTimeString(i18n.language === "ar" ? "ar-EG" : "en-US", {
+	// دالة لتحويل الوقت من ISO إلى صيغة 12 ساعة
+	const formatTo12Hour = (timeIso) => {
+		if (!timeIso) return "—"
+		const date = new Date(timeIso)
+		if (Number.isNaN(date.getTime())) return "—"
+		return date.toLocaleTimeString(locale, {
 			hour: "numeric",
 			minute: "2-digit",
 			hour12: true,
-		});
+		})
 	}
 
 	// Clock in/out handlers - disabled for static data
@@ -300,6 +427,22 @@ const AttendanceTable = () => {
 							<tr>
 								<td colSpan={8} className="text-center py-8">{t("attendanceTable.loading")}</td>
 							</tr>
+						) : isError ? (
+							<tr>
+								<td colSpan={8} className="text-center py-8">
+									<div className="flex flex-col items-center gap-2">
+										<span>{t("attendanceTable.errorLoading", "Failed to load attendance logs")}</span>
+										{error && (
+											<span className="text-sm text-[var(--sub-text-color)]">
+												{error?.data?.message || error?.message || "An error occurred"}
+											</span>
+										)}
+										<button onClick={() => refetch()} className="btn-secondary">
+											{t("attendanceTable.retry", "Retry")}
+										</button>
+									</div>
+								</td>
+							</tr>
 						) : filtered.length === 0 ? (
 							<tr>
 								<td colSpan={8} className="text-center py-8">{t("attendanceTable.noData")}</td>
@@ -325,23 +468,23 @@ const AttendanceTable = () => {
 								>
 									<td className={`px-6 py-4 text-sm font-medium ${isArabic ? 'text-right' : 'text-left'}`}
 										style={{ color: 'var(--table-text)' }}>
-										{record.date}
+										{formatDate(record.dateIso, locale)}
 									</td>
 									<td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
 										style={{ color: 'var(--table-text)' }}>
-										{record.day}
+										{record.dayLabel}
 									</td>
 									<td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
 										style={{ color: 'var(--table-text)' }}>
-										{formatTo12Hour(record.checkInTime)}
+										{formatTo12Hour(record.checkInIso)}
 									</td>
 									<td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
 										style={{ color: 'var(--table-text)' }}>
-										{formatTo12Hour(record.checkOutTime)}
+										{formatTo12Hour(record.checkOutIso)}
 									</td>
 									<td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
 										style={{ color: 'var(--table-text)' }}>
-										{record.workHours}
+										{record.workHoursLabel}
 									</td>
 									<td className={`px-6 py-4 ${isArabic ? 'text-right' : 'text-left'}`}>
 										{getStatusBadge(record.status)}
