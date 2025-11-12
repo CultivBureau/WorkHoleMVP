@@ -19,6 +19,7 @@ const CompanyDetailsCard = () => {
 
   const { data: companyData, isLoading, error, refetch } = useGetCompanyByIdQuery(companyId, {
     skip: !companyId,
+    refetchOnMountOrArgChange: true,
   });
 
   const [updateCompanyDetails, { isLoading: isUpdating }] = useUpdateCompanyDetailsMutation();

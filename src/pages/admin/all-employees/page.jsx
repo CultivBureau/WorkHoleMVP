@@ -4,11 +4,12 @@ import StatusCards from "../../../components/admin/all-employees/status-cards";
 import EmployeesTable from "../../../components/admin/all-employees/table";
 import Loading from "../../../components/Loading/Loading";
 import { useGetAllUsersQuery } from "../../../services/apis/UserApi";
-
+import { PermissionGuard } from "../../../components/common/PermissionGuard";
+import { useTranslation } from "react-i18next";
 const AllEmployees = () => {
   // Fetch users data at the page level to check loading state (initial load only)
   const { isLoading: isLoadingUsers, data: initialData } = useGetAllUsersQuery({ pageNumber: 1, pageSize: 100 });
-  
+  const { t } = useTranslation();
   // Only show loading on initial load (when there's no data yet)
   const isInitialLoading = isLoadingUsers && !initialData;
 

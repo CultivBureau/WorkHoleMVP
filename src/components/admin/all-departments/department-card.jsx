@@ -20,6 +20,10 @@ export default function DepartmentCard({ department, onDelete, canUpdate = true,
     const canAssignSupervisor = useHasPermission('Department.AssignSupervisor');
     const canRemoveSupervisor = useHasPermission('Department.RemoveSupervisor');
     
+    // Permission checks for Team actions - only show teams if user has Team.View
+    const canViewTeams = useHasPermission('Team.View');
+    const canViewMembers = useHasPermission('Team.ViewMembers');
+    
     // Determine if department is inactive/deleted based on API status field
     // Check multiple possible field names: status === false, status === 'Inactive', isDeleted === true, etc.
     const isInactive = React.useMemo(() => {
@@ -48,9 +52,9 @@ export default function DepartmentCard({ department, onDelete, canUpdate = true,
     );
     const supervisor = supervisorResp?.value || supervisorResp?.data || supervisorResp || null;
     
-    // Fetch teams for this department using GetTeamsByDepartment API
+    // Fetch teams for this department using GetTeamsByDepartment API - only if user has permission
     const { data: teamsData, isLoading: isLoadingTeams } = useGetTeamsByDepartmentQuery(department.id, {
-        skip: !department?.id
+        skip: !department?.id || !canViewTeams
     });
     
     // Parse teams from API response
@@ -74,15 +78,18 @@ export default function DepartmentCard({ department, onDelete, canUpdate = true,
         }) : [];
     }, [teamsData]);
 
-    // Helper component to fetch and display team member count
+    // Helper component to fetch and display team member count - only if user has permission
     function TeamMemberCount({ team }) {
         const { t } = useTranslation();
         const teamId = team?.id;
         const teamLeadId = team?.teamLeadId;
         
-        // Fetch team users/members
+        // Permission check for viewing members
+        const canViewMembers = useHasPermission('Team.ViewMembers');
+        
+        // Fetch team users/members - only if user has permission
         const { data: teamUsersData, isLoading: isLoadingMembers } = useGetTeamUsersQuery(teamId, {
-            skip: !teamId
+            skip: !teamId || !canViewMembers
         });
         
         // Parse team users - extract userIds from response
@@ -215,14 +222,19 @@ export default function DepartmentCard({ department, onDelete, canUpdate = true,
     };
 
     const handleCardClick = () => {
-        navigate(`/pages/admin/all-teams?departmentId=${department.id}`);
+        // Only navigate to teams page if user has Team.View permission
+        if (canViewTeams) {
+            navigate(`/pages/admin/all-teams?departmentId=${department.id}`);
+        }
     };
 
     return (
         <div
-            className="bg-[var(--bg-color)] rounded-xl p-6 border border-[var(--border-color)] hover:shadow-lg transition-all duration-300 cursor-pointer relative"
+            className={`bg-[var(--bg-color)] rounded-xl p-6 border border-[var(--border-color)] transition-all duration-300 relative ${
+                canViewTeams ? 'hover:shadow-lg cursor-pointer' : 'cursor-default'
+            }`}
             dir={isArabic ? "rtl" : "ltr"}
-            onClick={handleCardClick}
+            onClick={canViewTeams ? handleCardClick : undefined}
         >
             {/* Department Header */}
             <div className={`flex items-start justify-between mb-4 ${isArabic ? 'flex-row-reverse' : ''}`}>
@@ -252,24 +264,26 @@ export default function DepartmentCard({ department, onDelete, canUpdate = true,
 
                 {/* Avatars and Three Dot Menu */}
                 <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                    {/* Member Avatars */}
-                    <div className={`flex items-center ${isArabic ? 'flex-row-reverse' : ''}`}>
-                        {department.memberAvatars?.slice(0, 3).map((avatar, index) => (
-                            <img
-                                key={index}
-                                src={avatar}
-                                alt={`Member ${index + 1}`}
-                                className="w-8 h-8 rounded-full border-2 border-[var(--bg-color)]"
-                                style={{ marginLeft: isArabic ? '0' : index > 0 ? '-8px' : '0', marginRight: isArabic ? index > 0 ? '-8px' : '0' : '0' }}
-                            />
-                        ))}
-                        {department.totalMembers > 3 && (
-                            <div className="w-8 h-8 rounded-full bg-[var(--container-color)] border-2 border-[var(--bg-color)] flex items-center justify-center text-xs font-medium text-[var(--sub-text-color)]"
-                                style={{ marginLeft: isArabic ? '0' : '-8px', marginRight: isArabic ? '-8px' : '0' }}>
-                                +{department.totalMembers - 3}
-                            </div>
-                        )}
-                    </div>
+                    {/* Member Avatars - Only show if user has Team.ViewMembers permission */}
+                    {canViewMembers && (
+                        <div className={`flex items-center ${isArabic ? 'flex-row-reverse' : ''}`}>
+                            {department.memberAvatars?.slice(0, 3).map((avatar, index) => (
+                                <img
+                                    key={index}
+                                    src={avatar}
+                                    alt={`Member ${index + 1}`}
+                                    className="w-8 h-8 rounded-full border-2 border-[var(--bg-color)]"
+                                    style={{ marginLeft: isArabic ? '0' : index > 0 ? '-8px' : '0', marginRight: isArabic ? index > 0 ? '-8px' : '0' : '0' }}
+                                />
+                            ))}
+                            {department.totalMembers > 3 && (
+                                <div className="w-8 h-8 rounded-full bg-[var(--container-color)] border-2 border-[var(--bg-color)] flex items-center justify-center text-xs font-medium text-[var(--sub-text-color)]"
+                                    style={{ marginLeft: isArabic ? '0' : '-8px', marginRight: isArabic ? '-8px' : '0' }}>
+                                    +{department.totalMembers - 3}
+                                </div>
+                            )}
+                        </div>
+                    )}
                     {/* Status Indicator */}
                     <div className={`relative ${isArabic ? 'left-1' : 'right-1'}`}>
                         <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${isInactive ? 'bg-red-100 dark:bg-red-900/30' : 'bg-green-100 dark:bg-green-900/30'}`}>
@@ -326,63 +340,70 @@ export default function DepartmentCard({ department, onDelete, canUpdate = true,
                     )}
                 </div>
             </div>
-            <hr className="border-[var(--border-color)] my-4" />
-            {/* Teams Count */}
-            <div className={`flex items-center mb-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                <span className="text-sm text-[var(--sub-text-color)]">
+            {/* Teams Section - Only show if user has Team.View permission */}
+            {canViewTeams && (
+                <>
+                    <hr className="border-[var(--border-color)] my-4" />
+                    {/* Teams Count */}
+                    <div className={`flex items-center mb-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                        <span className="text-sm text-[var(--sub-text-color)]">
+                            {isLoadingTeams ? (
+                                <span>Loading teams...</span>
+                            ) : (
+                                <>
+                                    {teams.length} {t("allDepartments.departmentCard.teams", "Teams")}
+                                </>
+                            )}
+                        </span>
+                    </div>
+
+                    {/* Teams List */}
                     {isLoadingTeams ? (
-                        <span>Loading teams...</span>
-                    ) : (
-                        <>
-                            {teams.length} {t("allDepartments.departmentCard.teams", "Teams")}
-                        </>
-                    )}
-                </span>
-            </div>
-
-            {/* Teams List */}
-            {isLoadingTeams ? (
-                <div className="space-y-3">
-                    <div className="text-xs text-[var(--sub-text-color)] p-3 text-center">Loading teams...</div>
-                </div>
-            ) : teams.length > 0 ? (
-                <div className="space-y-3">
-                    {teams.slice(0, 4).map((team) => (
-                        <div
-                            key={team.id}
-                            className={`flex items-center justify-between p-3 bg-[var(--bg-color)] rounded-lg hover:bg-[var(--hover-color)] transition-colors cursor-pointer ${isArabic ? 'flex-row-reverse' : ''}`}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/pages/admin/all-teams?departmentId=${department.id}`);
-                            }}
-                        >
-                            <div className={`flex items-center gap-3 flex-1 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                                <div className="w-10 h-10 bg-[var(--menu-active-bg)] rounded-full flex items-center justify-center flex-shrink-0">
-                                    <img src={GroupDepartmentIcon} alt="Team" className="w-7 h-7" />
-                                </div>
-                                <div className={`flex-1 ${isArabic ? 'text-right' : 'text-left'}`}>
-                                    <p className="text-sm font-medium text-[var(--text-color)]">
-                                        {team.name}
-                                    </p>
-                                    {team.teamLeader && (
-                                        <p className="text-xs text-[var(--sub-text-color)] mt-0.5">
-                                            {t("allDepartments.departmentCard.leadBy", "Lead by")} <span className="text-[var(--text-color)] font-medium">{team.teamLeader}</span>
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                                <TeamMemberCount team={team} />
-                                <ChevronRight size={14} className={`text-[var(--sub-text-color)] flex-shrink-0 ${isArabic ? 'rotate-180' : ''}`} />
-                            </div>
+                        <div className="space-y-3">
+                            <div className="text-xs text-[var(--sub-text-color)] p-3 text-center">Loading teams...</div>
                         </div>
-                    ))}
-                </div>
-            ) : (
-                <div className="space-y-3">
-                    <div className="text-xs text-[var(--sub-text-color)] p-3 text-center">No teams yet</div>
-                </div>
+                    ) : teams.length > 0 ? (
+                        <div className="space-y-3">
+                            {teams.slice(0, 4).map((team) => (
+                                <div
+                                    key={team.id}
+                                    className={`flex items-center justify-between p-3 bg-[var(--bg-color)] rounded-lg hover:bg-[var(--hover-color)] transition-colors cursor-pointer ${isArabic ? 'flex-row-reverse' : ''}`}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (canViewTeams) {
+                                            navigate(`/pages/admin/all-teams?departmentId=${department.id}`);
+                                        }
+                                    }}
+                                >
+                                    <div className={`flex items-center gap-3 flex-1 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                        <div className="w-10 h-10 bg-[var(--menu-active-bg)] rounded-full flex items-center justify-center flex-shrink-0">
+                                            <img src={GroupDepartmentIcon} alt="Team" className="w-7 h-7" />
+                                        </div>
+                                        <div className={`flex-1 ${isArabic ? 'text-right' : 'text-left'}`}>
+                                            <p className="text-sm font-medium text-[var(--text-color)]">
+                                                {team.name}
+                                            </p>
+                                            {team.teamLeader && (
+                                                <p className="text-xs text-[var(--sub-text-color)] mt-0.5">
+                                                    {t("allDepartments.departmentCard.leadBy", "Lead by")} <span className="text-[var(--text-color)] font-medium">{team.teamLeader}</span>
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                                        {canViewMembers && <TeamMemberCount team={team} />}
+                                        <ChevronRight size={14} className={`text-[var(--sub-text-color)] flex-shrink-0 ${isArabic ? 'rotate-180' : ''}`} />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            <div className="text-xs text-[var(--sub-text-color)] p-3 text-center">No teams yet</div>
+                        </div>
+                    )}
+                </>
             )}
 
         </div>

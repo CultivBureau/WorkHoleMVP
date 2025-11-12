@@ -20,6 +20,7 @@ export default function EditDepartmentForm() {
     const canGetSupervisor = useHasPermission('Department.GetSupervisor');
     
     // Permission checks for Team actions
+    const canViewTeams = useHasPermission('Team.View');
     const canCreateTeam = useHasPermission('Team.Create');
     const canUpdateTeam = useHasPermission('Team.Update');
     const canDeleteTeam = useHasPermission('Team.Delete');
@@ -31,7 +32,7 @@ export default function EditDepartmentForm() {
     const allSteps = [
         { label: t("departments.editDepartmentForm.steps.departmentInfo"), icon: Building2, key: 'info' },
         { label: t("departments.editDepartmentForm.steps.assignSupervisor"), icon: UserCheck, key: 'supervisor', requiresPermission: canAssignSupervisor || canRemoveSupervisor },
-        { label: t("departments.editDepartmentForm.steps.setupTeams"), icon: Users, key: 'teams' },
+        { label: t("departments.editDepartmentForm.steps.setupTeams"), icon: Users, key: 'teams', requiresPermission: canViewTeams },
         { label: t("departments.editDepartmentForm.steps.reviewAndSave"), icon: Eye, key: 'review' },
     ];
     
@@ -427,9 +428,13 @@ function EditSetupTeamsStep({
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
     
-    // Fetch teams from API
+    // Permission check for viewing teams
+    const canViewTeams = useHasPermission('Team.View');
+    const canViewMembers = useHasPermission('Team.ViewMembers');
+    
+    // Fetch teams from API - only if user has permission
     const { data: teamsData, isLoading: isLoadingTeams, refetch: refetchTeams } = useGetTeamsByDepartmentQuery(departmentData.id, {
-        skip: !departmentData?.id
+        skip: !departmentData?.id || !canViewTeams
     });
     
     const teams = useMemo(() => {
@@ -1058,9 +1063,11 @@ function EditSetupTeamsStep({
                                             )}
                                         </div>
                                     </div>
-                                    <div className="text-sm text-[var(--sub-text-color)] mt-2">
-                                        {team.teamMembers || team.memberCount || 0} {t("departments.editDepartmentForm.setupTeams.members", "Members")}
-                                    </div>
+                                    {canViewMembers && (
+                                        <div className="text-sm text-[var(--sub-text-color)] mt-2">
+                                            {team.teamMembers || team.memberCount || 0} {t("departments.editDepartmentForm.setupTeams.members", "Members")}
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}
@@ -1087,6 +1094,10 @@ function EditReviewStep({ departmentData, onBack, selectedUser, onSubmit, isSubm
     const isArabic = i18n.language === "ar";
     const navigate = useNavigate();
     const [isCompleted, setIsCompleted] = useState(false);
+    
+    // Permission checks
+    const canViewTeams = useHasPermission('Team.View');
+    const canViewMembers = useHasPermission('Team.ViewMembers');
     const handleSubmit = async () => {
         try {
             await onSubmit();
@@ -1158,36 +1169,40 @@ function EditReviewStep({ departmentData, onBack, selectedUser, onSubmit, isSubm
                 </div>
             </div>
 
-            {/* Teams */}
-            <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-[var(--text-color)]">Teams</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {departmentData.teams.map((team, index) => {
-                        const teamId = team.id || `team-${index}`;
-                        return (
-                        <div key={teamId} className="p-4 bg-[var(--container-color)] rounded-lg border border-[var(--border-color)] flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 gradient-bg rounded-full flex items-center justify-center">
-                                    <Users className="text-white" size={20} />
+            {/* Teams - Only show if user has Team.View permission */}
+            {canViewTeams && (
+                <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-[var(--text-color)]">Teams</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {departmentData.teams.map((team, index) => {
+                            const teamId = team.id || `team-${index}`;
+                            return (
+                            <div key={teamId} className="p-4 bg-[var(--container-color)] rounded-lg border border-[var(--border-color)] flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 gradient-bg rounded-full flex items-center justify-center">
+                                        <Users className="text-white" size={20} />
+                                    </div>
+                                    <div>
+                                        <div className="text-[var(--text-color)] font-medium">{team.name}</div>
+                                        <div className="text-[var(--sub-text-color)] text-sm">{team.description}</div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <div className="text-[var(--text-color)] font-medium">{team.name}</div>
-                                    <div className="text-[var(--sub-text-color)] text-sm">{team.description}</div>
-                                </div>
+                                {canViewMembers && (
+                                    <span className="text-[var(--sub-text-color)] text-sm">
+                                        {(() => {
+                                            // Count members: team leader (1) + employees (selectedEmployees.length)
+                                            const teamLeaderCount = team.teamLeader ? 1 : 0;
+                                            const employeesCount = team.selectedEmployees?.length || 0;
+                                            return (teamLeaderCount + employeesCount) || team.members || 0;
+                                        })()} {t("departments.editDepartmentForm.setupTeams.members")}
+                                    </span>
+                                )}
                             </div>
-                            <span className="text-[var(--sub-text-color)] text-sm">
-                                {(() => {
-                                    // Count members: team leader (1) + employees (selectedEmployees.length)
-                                    const teamLeaderCount = team.teamLeader ? 1 : 0;
-                                    const employeesCount = team.selectedEmployees?.length || 0;
-                                    return (teamLeaderCount + employeesCount) || team.members || 0;
-                                })()} {t("departments.editDepartmentForm.setupTeams.members")}
-                            </span>
-                        </div>
-                        );
-                    })}
+                            );
+                        })}
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Action Buttons */}
             <div className={`flex ${isArabic ? 'justify-start' : 'justify-end'} gap-3 pt-6`}>
