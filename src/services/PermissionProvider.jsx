@@ -109,6 +109,14 @@ export const PermissionProvider = ({ children }) => {
       return ROLE_PERMISSIONS_MAP.employee || [];
     }
 
+    // Helper function to normalize role - handle both object format {id, name} and string format
+    const normalizeRole = (role) => {
+      if (!role) return null;
+      if (typeof role === 'string') return role.toLowerCase();
+      if (typeof role === 'object' && role?.name) return role.name.toLowerCase();
+      return null;
+    };
+    
     // Determine role from API response or cookie
     let roles = [];
     if (userData?.roles) {
@@ -120,10 +128,9 @@ export const PermissionProvider = ({ children }) => {
     }
     
     const roleArray = Array.isArray(roles) ? roles : [roles];
-    const userRole = roleArray[0].name?.toLowerCase() || "employee";
-    const isAdminRole = roleArray.some(
-      (r) => typeof r === "string" && r.toLowerCase() === "admin"
-    );
+    const normalizedRoles = roleArray.map(normalizeRole).filter(Boolean);
+    const userRole = normalizedRoles[0] || "employee";
+    const isAdminRole = normalizedRoles.some((r) => r === "admin");
 
     // Get permissions based on role
     let permissions = [];
@@ -159,6 +166,14 @@ export const PermissionProvider = ({ children }) => {
     // Also get user info from cookies (decoded token) as fallback
     const userInfoFromCookie = getUserInfo();
     
+    // Helper function to normalize role - handle both object format {id, name} and string format
+    const normalizeRole = (role) => {
+      if (!role) return null;
+      if (typeof role === 'string') return role.toLowerCase();
+      if (typeof role === 'object' && role?.name) return role.name.toLowerCase();
+      return null;
+    };
+    
     // Determine role from API response or cookie
     let roles = [];
     if (userData?.roles) {
@@ -170,10 +185,9 @@ export const PermissionProvider = ({ children }) => {
     }
     
     const roleArray = Array.isArray(roles) ? roles : [roles];
-    const userRole = roleArray[0].name?.toLowerCase() || "employee";
-    const isAdminRole = roleArray.some(
-      (r) => typeof r === "string" && r.toLowerCase() === "admin"
-    );
+    const normalizedRoles = roleArray.map(normalizeRole).filter(Boolean);
+    const userRole = normalizedRoles[0] || "employee";
+    const isAdminRole = normalizedRoles.some((r) => r === "admin");
     
     // If no user data AND no cookie data, return minimal context with basic permissions
     // This prevents unauthorized errors during initial load
