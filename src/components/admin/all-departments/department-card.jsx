@@ -5,14 +5,20 @@ import { ChevronRight, Edit, Trash2, MoreVertical, RotateCcw } from "lucide-reac
 import GroupDepartmentIcon from '/assets/groupDepartments.svg';
 import { useGetDepartmentSupervisorQuery, useDeleteDepartmentMutation, useRestoreDepartmentMutation } from "../../../services/apis/DepartmentApi";
 import { useGetTeamsByDepartmentQuery, useGetTeamUsersQuery } from "../../../services/apis/TeamApi";
+import { useHasPermission } from "../../../hooks/useHasPermission";
 
-export default function DepartmentCard({ department, onDelete }) {
+export default function DepartmentCard({ department, onDelete, canUpdate = true, canDelete = true, canRestore = true }) {
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const isArabic = i18n.language === "ar";
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [deleteDepartment, { isLoading: isDeleting }] = useDeleteDepartmentMutation();
     const [restoreDepartment, { isLoading: isRestoring }] = useRestoreDepartmentMutation();
+    
+    // Permission checks for Department actions
+    const canViewSupervisor = useHasPermission('Department.GetSupervisor');
+    const canAssignSupervisor = useHasPermission('Department.AssignSupervisor');
+    const canRemoveSupervisor = useHasPermission('Department.RemoveSupervisor');
     
     // Determine if department is inactive/deleted based on API status field
     // Check multiple possible field names: status === false, status === 'Inactive', isDeleted === true, etc.
@@ -35,7 +41,11 @@ export default function DepartmentCard({ department, onDelete }) {
         return false;
     }, [department?.status, department?.isDeleted, department?.deleted]);
     
-    const { data: supervisorResp, isLoading: isSupervisorLoading } = useGetDepartmentSupervisorQuery(department.id, { skip: !department?.id || !department?.supervisorId });
+    // Only fetch supervisor if user has permission to view supervisor
+    const { data: supervisorResp, isLoading: isSupervisorLoading } = useGetDepartmentSupervisorQuery(
+        department.id, 
+        { skip: !department?.id || !department?.supervisorId || !canViewSupervisor }
+    );
     const supervisor = supervisorResp?.value || supervisorResp?.data || supervisorResp || null;
     
     // Fetch teams for this department using GetTeamsByDepartment API
@@ -221,20 +231,22 @@ export default function DepartmentCard({ department, onDelete }) {
                         <h3 className="text-lg font-semibold text-[var(--text-color)]">
                             {department.name}
                         </h3>
-                        {/* Supervisor */}
-                        <div className="mt-1 text-xs text-[var(--sub-text-color)]">
-                            <span className="mr-1">Supervisor:</span>
-                            {isSupervisorLoading ? (
-                                <span>Loading...</span>
-                            ) : supervisor ? (
-                                <span className="text-[var(--text-color)] font-medium">
-                                    {`${supervisor.firstName || ''} ${supervisor.lastName || ''}`.trim() || supervisor.email || '-'}
-                                    {supervisor.jobTitle && <span className="text-[var(--sub-text-color)] ml-1">({supervisor.jobTitle})</span>}
-                                </span>
-                            ) : (
-                                <span className="text-[var(--sub-text-color)]">None</span>
-                            )}
-                        </div>
+                        {/* Supervisor - Only show if user has permission to view supervisor */}
+                        {canViewSupervisor && (
+                            <div className="mt-1 text-xs text-[var(--sub-text-color)]">
+                                <span className="mr-1">Supervisor:</span>
+                                {isSupervisorLoading ? (
+                                    <span>Loading...</span>
+                                ) : supervisor ? (
+                                    <span className="text-[var(--text-color)] font-medium">
+                                        {`${supervisor.firstName || ''} ${supervisor.lastName || ''}`.trim() || supervisor.email || '-'}
+                                        {supervisor.jobTitle && <span className="text-[var(--sub-text-color)] ml-1">({supervisor.jobTitle})</span>}
+                                    </span>
+                                ) : (
+                                    <span className="text-[var(--sub-text-color)]">None</span>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -267,46 +279,51 @@ export default function DepartmentCard({ department, onDelete }) {
                             </span>
                         </div>
                     </div>
-                    {/* Three Dot Menu */}
-                    <div className="relative">
-                        <button
-                            onClick={handleMenuToggle}
-                            className="p-2 hover:bg-[var(--hover-color)] rounded-lg transition-colors"
-                        >
-                            <MoreVertical className="text-[var(--sub-text-color)]" size={16} />
-                        </button>
+                    {/* Three Dot Menu - Only show if user has any action permissions */}
+                    {(canUpdate || canDelete || canRestore) && (
+                        <div className="relative">
+                            <button
+                                onClick={handleMenuToggle}
+                                className="p-2 hover:bg-[var(--hover-color)] rounded-lg transition-colors"
+                            >
+                                <MoreVertical className="text-[var(--sub-text-color)]" size={16} />
+                            </button>
 
-                        {isMenuOpen && (
-                            <div className={`absolute top-full mt-1 w-32 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg z-10 ${isArabic ? 'right-0' : 'left-0'}`}>
-                                <button
-                                    onClick={handleEditDepartment}
-                                    className="w-full px-3 py-2 text-left hover:bg-[var(--hover-color)] transition-colors flex items-center gap-2 text-[var(--text-color)]"
-                                >
-                                    <Edit size={14} />
-                                    <span>Edit</span>
-                                </button>
-                                {!isInactive ? (
-                                    <button
-                                        onClick={handleDeleteDepartment}
-                                        disabled={isDeleting}
-                                        className="w-full px-3 py-2 text-left hover:bg-[var(--hover-color)] transition-colors flex items-center gap-2 text-red-500 disabled:opacity-50"
-                                    >
-                                        <Trash2 size={14} />
-                                        <span>{isDeleting ? 'Deleting...' : 'Delete'}</span>
-                                    </button>
-                                ) : (
-                                    <button
-                                        onClick={handleRestoreDepartment}
-                                        disabled={isRestoring}
-                                        className="w-full px-3 py-2 text-left hover:bg-[var(--hover-color)] transition-colors flex items-center gap-2 text-[var(--text-color)] disabled:opacity-50"
-                                    >
-                                        <RotateCcw size={14} />
-                                        <span>{isRestoring ? 'Restoring...' : 'Restore'}</span>
-                                    </button>
-                                )}
-                            </div>
-                        )}
-                    </div>
+                            {isMenuOpen && (
+                                <div className={`absolute top-full mt-1 w-32 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg z-10 ${isArabic ? 'right-0' : 'left-0'}`}>
+                                    {canUpdate && (
+                                        <button
+                                            onClick={handleEditDepartment}
+                                            className="w-full px-3 py-2 text-left hover:bg-[var(--hover-color)] transition-colors flex items-center gap-2 text-[var(--text-color)]"
+                                        >
+                                            <Edit size={14} />
+                                            <span>Edit</span>
+                                        </button>
+                                    )}
+                                    {!isInactive && canDelete && (
+                                        <button
+                                            onClick={handleDeleteDepartment}
+                                            disabled={isDeleting}
+                                            className="w-full px-3 py-2 text-left hover:bg-[var(--hover-color)] transition-colors flex items-center gap-2 text-red-500 disabled:opacity-50"
+                                        >
+                                            <Trash2 size={14} />
+                                            <span>{isDeleting ? 'Deleting...' : 'Delete'}</span>
+                                        </button>
+                                    )}
+                                    {isInactive && canRestore && (
+                                        <button
+                                            onClick={handleRestoreDepartment}
+                                            disabled={isRestoring}
+                                            className="w-full px-3 py-2 text-left hover:bg-[var(--hover-color)] transition-colors flex items-center gap-2 text-[var(--text-color)] disabled:opacity-50"
+                                        >
+                                            <RotateCcw size={14} />
+                                            <span>{isRestoring ? 'Restoring...' : 'Restore'}</span>
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
             <hr className="border-[var(--border-color)] my-4" />

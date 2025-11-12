@@ -19,7 +19,7 @@ const BreakAdmin = () => {
 
   return (
     <PermissionGuard 
-      backendPermissions={["Break.View", "Break.Create", "Break.Update", "Break.Delete", "Break.Restore"]}
+      backendPermissions={["Break.View"]}
       loadingFallback={
         <div className="flex items-center justify-center min-h-screen" style={{ background: "var(--bg-all)" }}>
           <span className="text-[var(--sub-text-color)]">{t('common.loading') || 'Loading...'}</span>

@@ -4,6 +4,7 @@ import { getCompanyId } from "../../../utils/page";
 import { useTranslation } from "react-i18next";
 import { Edit, Save, X, Upload, File, Calendar, Clock } from "lucide-react";
 import toast from "react-hot-toast";
+import { useHasPermission } from "../../../hooks/useHasPermission";
 
 const CompanyDetailsCard = () => {
   const { t, i18n } = useTranslation();
@@ -12,6 +13,9 @@ const CompanyDetailsCard = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [companyName, setCompanyName] = useState("");
   const [attachments, setAttachments] = useState([]);
+  
+  // Permission checks
+  const canUpdateCompany = useHasPermission('Company.Update');
 
   const { data: companyData, isLoading, error, refetch } = useGetCompanyByIdQuery(companyId, {
     skip: !companyId,

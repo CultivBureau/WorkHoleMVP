@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import NavBarAdmin from "../../../components/admin/NavBarAdmin";
 import SideBarAdmin from "../../../components/admin/SideBarAdmin";
 import { useTranslation } from "react-i18next";
+import { PermissionGuard } from "../../../components/common/PermissionGuard";
 import {
   Calendar,
   CheckCircle,
@@ -37,6 +38,15 @@ const LeavesAdmin = () => {
   const permissions = usePermissions();
   const backendPermissions = getPermissions() || [];
   const [showLeaveTypesModal, setShowLeaveTypesModal] = useState(false);
+
+  // Check if user has View permission (required to access page)
+  const hasViewPermission = hasBackendPermission(backendPermissions, [
+    "LeaveRequest.View",
+    "LeaveRequest.ViewTeams",
+    "LeaveRequest.Review",
+    "LeaveRequest.Confirm",
+    "LeaveRequest.Override",
+  ]);
 
   // Check if user has Team Lead permissions (ViewTeams OR Review)
   const hasTeamLeadPermissions = hasBackendPermission(backendPermissions, [
@@ -77,30 +87,15 @@ const LeavesAdmin = () => {
     },
   ]
 
-  // Show access denied if user has no permissions
-  if (!hasTeamLeadPermissions && !hasHrPermissions) {
-    return (
-      <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
-        <NavBarAdmin/>
-        <div className="flex flex-1 min-h-0">
-          <SideBarAdmin />
-          <main className="flex-1 overflow-auto p-6 bg-[var(--bg-all)] flex items-center justify-center">
-            <div className="text-center">
-              <AlertTriangle className="h-16 w-16 text-[var(--warning-color)] mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-[var(--text-color)] mb-2">
-                {t("adminLeaves.accessDenied.title", "Access Denied")}
-              </h2>
-              <p className="text-[var(--sub-text-color)]">
-                {t("adminLeaves.accessDenied.message", "You don't have permission to view leave requests.")}
-              </p>
-            </div>
-          </main>
-        </div>
-      </div>
-    );
-  }
-
   return (
+    <PermissionGuard 
+      backendPermissions={["LeaveRequest.View", "LeaveRequest.ViewTeams", "LeaveRequest.Review", "LeaveRequest.Confirm", "LeaveRequest.Override"]}
+      loadingFallback={
+        <div className="flex items-center justify-center min-h-screen" style={{ background: "var(--bg-all)" }}>
+          <span className="text-[var(--sub-text-color)]">{t('common.loading') || 'Loading...'}</span>
+        </div>
+      }
+    >
     <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
       <NavBarAdmin/>
       <div className="flex flex-1 min-h-0">
@@ -153,6 +148,7 @@ const LeavesAdmin = () => {
         </main>
       </div>
     </div>
+    </PermissionGuard>
   );
 };
 

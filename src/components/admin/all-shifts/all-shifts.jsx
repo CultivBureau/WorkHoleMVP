@@ -8,6 +8,7 @@ import ConfirmDialog from "./confirm-dialog";
 import { useGetAllShiftsQuery, useDeleteShiftMutation, useUpdateShiftMutation } from "../../../services/apis/ShiftApi";
 import { getCompanyId } from "../../../utils/page";
 import toast from "react-hot-toast";
+import { useHasPermission } from "../../../hooks/useHasPermission";
 
 export default function AllShifts() {
     const { t, i18n } = useTranslation();
@@ -30,6 +31,13 @@ export default function AllShifts() {
 
     const [deleteShift, { isLoading: isDeleting }] = useDeleteShiftMutation();
     const [updateShift, { isLoading: isRestoring }] = useUpdateShiftMutation();
+    
+    // Permission checks
+    const canCreate = useHasPermission('Shift.Create');
+    const canUpdate = useHasPermission('Shift.Update');
+    const canDelete = useHasPermission('Shift.Delete');
+    const canRestore = useHasPermission('Shift.Restore');
+    const canAssignUsers = useHasPermission(['ShiftAssignment.AssignUser', 'ShiftAssignment.View']);
 
     // Convert statusFilter string to number for API
     // API spec: status values are 0, 1, 2
@@ -351,13 +359,15 @@ export default function AllShifts() {
                                 </select>
                             </div>
 
-                            <button
-                                onClick={handleAddNewShift}
-                                className="btn-primary flex items-center gap-2"
-                            >
-                                <Plus size={16} />
-                                <span className="hidden sm:inline">{t("shifts.addNewShift", "Add New Shift")}</span>
-                            </button>
+                            {canCreate && (
+                                <button
+                                    onClick={handleAddNewShift}
+                                    className="btn-primary flex items-center gap-2"
+                                >
+                                    <Plus size={16} />
+                                    <span className="hidden sm:inline">{t("shifts.addNewShift", "Add New Shift")}</span>
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -409,18 +419,19 @@ export default function AllShifts() {
                                             </div>
                                         </div>
 
-                                        {/* Actions Menu */}
-                                        <div className={`${isArabic ? 'mr-2' : 'ml-2'} flex-shrink-0`} ref={el => menuRefs.current[shift.id] = el}>
-                                            <button
-                                                onClick={() => setOpenMenuId(isMenuOpen ? null : shift.id)}
-                                                className="p-2 rounded-lg hover:bg-[var(--hover-color)] transition-colors opacity-0 group-hover:opacity-100"
-                                                style={{ color: 'var(--sub-text-color)' }}
-                                            >
-                                                <MoreVertical className="w-5 h-5" />
-                                            </button>
+                                        {/* Actions Menu - Only show if user has any action permissions */}
+                                        {(canUpdate || canDelete || canRestore || canAssignUsers) && (
+                                            <div className={`${isArabic ? 'mr-2' : 'ml-2'} flex-shrink-0`} ref={el => menuRefs.current[shift.id] = el}>
+                                                <button
+                                                    onClick={() => setOpenMenuId(isMenuOpen ? null : shift.id)}
+                                                    className="p-2 rounded-lg hover:bg-[var(--hover-color)] transition-colors opacity-0 group-hover:opacity-100"
+                                                    style={{ color: 'var(--sub-text-color)' }}
+                                                >
+                                                    <MoreVertical className="w-5 h-5" />
+                                                </button>
 
-                                            {/* Dropdown Menu */}
-                                            {isMenuOpen && (
+                                                {/* Dropdown Menu */}
+                                                {isMenuOpen && (
                                                 <div className={`absolute ${isArabic ? 'left-0' : 'right-0'} top-16 mt-2 w-48 rounded-xl shadow-2xl border z-50`}
                                                     style={{
                                                         backgroundColor: 'var(--bg-color)',
@@ -438,25 +449,29 @@ export default function AllShifts() {
                                                         </button>
                                                         {isActive && (
                                                             <>
-                                                            <button
-                                                                onClick={() => handleEditShift(shift.id)}
-                                                                className={`w-full px-4 py-2.5 text-sm hover:bg-[var(--hover-color)] flex items-center gap-3 transition-colors ${isArabic ? 'flex-row-reverse text-right' : 'text-left'}`}
-                                                                style={{ color: 'var(--text-color)' }}
-                                                            >
-                                                                <Edit className="w-4 h-4" />
-                                                                {t('shifts.actions.edit', 'Edit')}
-                                                            </button>
-                                                                <button
-                                                                    onClick={() => handleAssignUsers(shift.id)}
-                                                                    className={`w-full px-4 py-2.5 text-sm hover:bg-[var(--hover-color)] flex items-center gap-3 transition-colors ${isArabic ? 'flex-row-reverse text-right' : 'text-left'}`}
-                                                                    style={{ color: 'var(--text-color)' }}
-                                                                >
-                                                                    <Users className="w-4 h-4" />
-                                                                    {t('shifts.actions.manageAssignments', 'Manage Assignments')}
-                                                                </button>
+                                                                {canUpdate && (
+                                                                    <button
+                                                                        onClick={() => handleEditShift(shift.id)}
+                                                                        className={`w-full px-4 py-2.5 text-sm hover:bg-[var(--hover-color)] flex items-center gap-3 transition-colors ${isArabic ? 'flex-row-reverse text-right' : 'text-left'}`}
+                                                                        style={{ color: 'var(--text-color)' }}
+                                                                    >
+                                                                        <Edit className="w-4 h-4" />
+                                                                        {t('shifts.actions.edit', 'Edit')}
+                                                                    </button>
+                                                                )}
+                                                                {canAssignUsers && (
+                                                                    <button
+                                                                        onClick={() => handleAssignUsers(shift.id)}
+                                                                        className={`w-full px-4 py-2.5 text-sm hover:bg-[var(--hover-color)] flex items-center gap-3 transition-colors ${isArabic ? 'flex-row-reverse text-right' : 'text-left'}`}
+                                                                        style={{ color: 'var(--text-color)' }}
+                                                                    >
+                                                                        <Users className="w-4 h-4" />
+                                                                        {t('shifts.actions.manageAssignments', 'Manage Assignments')}
+                                                                    </button>
+                                                                )}
                                                             </>
                                                         )}
-                                                        {isActive ? (
+                                                        {isActive && canDelete && (
                                                             <button
                                                                 onClick={() => handleDeleteShift(shift.id)}
                                                                 disabled={isDeleting}
@@ -466,7 +481,8 @@ export default function AllShifts() {
                                                                 <Trash2 className="w-4 h-4" />
                                                                 {t('shifts.actions.delete', 'Delete')}
                                                             </button>
-                                                        ) : (
+                                                        )}
+                                                        {!isActive && canRestore && (
                                                             <button
                                                                 onClick={() => handleRestoreShift(shift)}
                                                                 disabled={isRestoring}
@@ -479,8 +495,9 @@ export default function AllShifts() {
                                                         )}
                                                     </div>
                                                 </div>
-                                            )}
-                                        </div>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Shift Details */}

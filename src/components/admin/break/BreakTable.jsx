@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next"
 import { useGetAllBreaksQuery, useDeleteBreakMutation } from "../../../services/apis/BreakApi"
 import BreakForm from "./BreakForm"
 import toast from "react-hot-toast"
+import { useHasPermission } from "../../../hooks/useHasPermission"
 
 const BreakTable = () => {
     const { t, i18n } = useTranslation();
@@ -14,6 +15,12 @@ const BreakTable = () => {
     // Fetch breaks from API
     const { data: breaksResponse, isLoading, error, refetch } = useGetAllBreaksQuery({ pageNumber: 1, pageSize: 100 });
     const [deleteBreak] = useDeleteBreakMutation();
+    
+    // Permission checks
+    const canCreate = useHasPermission('Break.Create');
+    const canUpdate = useHasPermission('Break.Update');
+    const canDelete = useHasPermission('Break.Delete');
+    const canRestore = useHasPermission('Break.Restore');
 
     const [searchTerm, setSearchTerm] = useState("")
     const [statusFilter, setStatusFilter] = useState(t('breaks.filters.allStatus') || 'All Status')
@@ -197,13 +204,15 @@ const BreakTable = () => {
                         </div>
 
                         {/* Add New Button */}
-                        <button
-                            onClick={handleAddNew}
-                            className={`flex items-center gap-2 h-8 px-3 bg-[var(--accent-color)] text-white rounded-md text-[12px] font-medium hover:opacity-90 transition-opacity ${isArabic ? 'flex-row-reverse' : ''}`}
-                        >
-                            <Plus className="w-4 h-4" />
-                            <span>{t('breaks.addNew') || 'Add New'}</span>
-                        </button>
+                        {canCreate && (
+                            <button
+                                onClick={handleAddNew}
+                                className={`flex items-center gap-2 h-8 px-3 bg-[var(--accent-color)] text-white rounded-md text-[12px] font-medium hover:opacity-90 transition-opacity ${isArabic ? 'flex-row-reverse' : ''}`}
+                            >
+                                <Plus className="w-4 h-4" />
+                                <span>{t('breaks.addNew') || 'Add New'}</span>
+                            </button>
+                        )}
                     </div>
 
                     {/* Pagination Info */}
@@ -278,22 +287,26 @@ const BreakTable = () => {
                                         </td>
                                         <td className="py-4 px-6">
                                             <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                                                <button
-                                                    onClick={() => handleEdit(breakItem)}
-                                                    className="p-2 text-[var(--accent-color)] hover:bg-[var(--hover-color)] rounded-lg transition-colors"
-                                                    aria-label={t('breaks.actions.edit') || 'Edit'}
-                                                    title={t('breaks.actions.edit') || 'Edit'}
-                                                >
-                                                    <Edit className="w-4 h-4" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(breakItem)}
-                                                    className="p-2 text-[var(--error-color)] hover:bg-[var(--hover-color)] rounded-lg transition-colors"
-                                                    aria-label={t('breaks.actions.delete') || 'Delete'}
-                                                    title={t('breaks.actions.delete') || 'Delete'}
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
+                                                {canUpdate && (
+                                                    <button
+                                                        onClick={() => handleEdit(breakItem)}
+                                                        className="p-2 text-[var(--accent-color)] hover:bg-[var(--hover-color)] rounded-lg transition-colors"
+                                                        aria-label={t('breaks.actions.edit') || 'Edit'}
+                                                        title={t('breaks.actions.edit') || 'Edit'}
+                                                    >
+                                                        <Edit className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                                {canDelete && (
+                                                    <button
+                                                        onClick={() => handleDelete(breakItem)}
+                                                        className="p-2 text-[var(--error-color)] hover:bg-[var(--hover-color)] rounded-lg transition-colors"
+                                                        aria-label={t('breaks.actions.delete') || 'Delete'}
+                                                        title={t('breaks.actions.delete') || 'Delete'}
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>

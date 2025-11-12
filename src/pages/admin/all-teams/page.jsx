@@ -2,10 +2,22 @@ import React from 'react';
 import SideBarAdmin from '../../../components/admin/SideBarAdmin';
 import NavBarAdmin from '../../../components/admin/NavBarAdmin';
 import AllTeamsComponent from '../../../components/admin/all-departments/all-teams/all-teams';
+import { PermissionGuard } from '../../../components/common/PermissionGuard';
+import { useTranslation } from 'react-i18next';
 
 const AllTeamsPage = () => {
+  const { t } = useTranslation();
+  
   return (
-    <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
+    <PermissionGuard 
+      backendPermissions={["Team.View"]}
+      loadingFallback={
+        <div className="flex items-center justify-center min-h-screen" style={{ background: "var(--bg-all)" }}>
+          <span className="text-[var(--sub-text-color)]">{t('common.loading') || 'Loading...'}</span>
+        </div>
+      }
+    >
+      <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
       {/* Navigation Bar */}
       <NavBarAdmin />
 
@@ -29,6 +41,7 @@ const AllTeamsPage = () => {
         </main>
       </div>
     </div>
+    </PermissionGuard>
   );
 };
 

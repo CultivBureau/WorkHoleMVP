@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { hasBackendPermission } from "./permissionMapping";
 import { getPermissions } from "./page";
+import { getPageViewPermission } from "../config/pagePermissions";
 
 // Permission to menu item mapping for admin pages
 // These are the additional menu items that appear for custom roles based on permissions
@@ -100,7 +101,19 @@ export const getAdminMenuItemsByPermissions = () => {
 };
 
 /**
+ * Extract View permission from backend permissions array
+ * @param {string[]} backendPermissions - Array of permission codes
+ * @returns {string|null} - View permission code or null
+ */
+const getViewPermission = (backendPermissions) => {
+  if (!backendPermissions || backendPermissions.length === 0) return null;
+  // Find permission ending with .View
+  return backendPermissions.find(perm => perm.endsWith('.View')) || null;
+};
+
+/**
  * Check if user has permission for a menu item based on backend permission codes
+ * For page access, we only require View permission (not all permissions)
  * @param {Object} menuItem - Menu item object with backendPermissions array
  * @returns {boolean}
  */
@@ -110,6 +123,15 @@ export const hasMenuItemPermission = (menuItem) => {
   }
   
   const userPermissions = getPermissions() || [];
+  
+  // For page access, only check if user has View permission
+  // Individual actions within the page will check specific permissions
+  const viewPermission = getViewPermission(menuItem.backendPermissions);
+  if (viewPermission) {
+    return hasBackendPermission(userPermissions, [viewPermission]);
+  }
+  
+  // If no View permission found, check if user has any of the permissions
   return hasBackendPermission(userPermissions, menuItem.backendPermissions);
 };
 

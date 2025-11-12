@@ -1,10 +1,22 @@
 import NavBarAdmin from "../../../components/admin/NavBarAdmin";
 import SideBarAdmin from "../../../components/admin/SideBarAdmin";
 import CompanyDetailsCard from "../../../components/admin/company/company-details-card";
+import { PermissionGuard } from "../../../components/common/PermissionGuard";
+import { useTranslation } from "react-i18next";
 
 const Company = () => {
+  const { t } = useTranslation();
+  
   return (
-    <div className="flex h-screen w-full flex-col" style={{ background: "var(--bg-all)" }}>
+    <PermissionGuard 
+      backendPermissions={["Company.View"]}
+      loadingFallback={
+        <div className="flex items-center justify-center min-h-screen" style={{ background: "var(--bg-all)" }}>
+          <span className="text-[var(--sub-text-color)]">{t('common.loading') || 'Loading...'}</span>
+        </div>
+      }
+    >
+      <div className="flex h-screen w-full flex-col" style={{ background: "var(--bg-all)" }}>
       <NavBarAdmin />
 
       <div className="flex flex-1 min-h-0">
@@ -32,6 +44,7 @@ const Company = () => {
         </main>
       </div>
     </div>
+    </PermissionGuard>
   );
 };
 

@@ -312,13 +312,9 @@ function App() {
                     path="/pages/admin/all-departments"
                     element={
                       <ProtectedRoute>
-                        <PermissionGuard
-                          permissions={["editCompanySettings"]}
-                        >
-                          <Suspense fallback={<Loading />}>
-                            <AllDepartments />
-                          </Suspense>
-                        </PermissionGuard>
+                        <Suspense fallback={<Loading />}>
+                          <AllDepartments />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />
@@ -368,13 +364,9 @@ function App() {
                     path="/pages/admin/Roles&Permissions"
                     element={
                       <ProtectedRoute>
-                        <PermissionGuard
-                          permissions={["assignRoles"]}
-                        >
-                          <Suspense fallback={<Loading />}>
-                            <RolesAndPermissions />
-                          </Suspense>
-                        </PermissionGuard>
+                        <Suspense fallback={<Loading />}>
+                          <RolesAndPermissions />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />

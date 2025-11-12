@@ -2,10 +2,22 @@ import NavBarAdmin from "../../../components/admin/NavBarAdmin";
 import SideBarAdmin from "../../../components/admin/SideBarAdmin";
 import StatusCards from "../../../components/admin/all-employees/status-cards";
 import EmployeesTable from "../../../components/admin/all-employees/table";
+import { PermissionGuard } from "../../../components/common/PermissionGuard";
+import { useTranslation } from "react-i18next";
 
 const AllEmployees = () => {
+  const { t } = useTranslation();
+  
   return (
-    <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
+    <PermissionGuard 
+      backendPermissions={["User.View"]}
+      loadingFallback={
+        <div className="flex items-center justify-center min-h-screen" style={{ background: "var(--bg-all)" }}>
+          <span className="text-[var(--sub-text-color)]">{t('common.loading') || 'Loading...'}</span>
+        </div>
+      }
+    >
+      <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
       {/* Navigation Bar */}
       <NavBarAdmin />
 
@@ -31,6 +43,7 @@ const AllEmployees = () => {
         </main>
       </div>
     </div>
+    </PermissionGuard>
   );
 };
 

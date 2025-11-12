@@ -7,11 +7,16 @@ import EditRole from "./edit_role"
 import { useTranslation } from "react-i18next"
 import { useGetAllRolesQuery, useDeleteRoleMutation } from "../../../services/apis/RoleApi"
 import toast from "react-hot-toast"
+import { useHasPermission } from "../../../hooks/useHasPermission"
 
 const RolesTable = ({ onRoleSelect }) => {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
     const navigate = useNavigate();
+    
+    // Permission checks
+    const canUpdateRole = useHasPermission('Role.Update');
+    const canDeleteRole = useHasPermission('Role.Delete');
 
     // Fetch roles from API
     const { data: rolesResponse, isLoading, error, refetch } = useGetAllRolesQuery({ pageNumber: 1, pageSize: 100 });
@@ -182,30 +187,36 @@ const RolesTable = ({ onRoleSelect }) => {
                 <td className={`py-4 px-6 text-[var(--text-color)] text-sm font-medium ${isArabic ? 'text-right' : 'text-left'}`}>{role.users}</td>
                 <td className={`py-4 px-6 ${isArabic ? 'text-right' : 'text-left'}`}>{getStatusBadge(role.status)}</td>
                 <td className="py-4 px-6" onClick={(e) => e.stopPropagation()}>
-                    <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleEditRole(role);
-                            }}
-                            className="p-2 text-[var(--accent-color)] hover:bg-[var(--hover-color)] rounded-lg transition-colors"
-                            aria-label={t('employees.actions.edit')}
-                            title={t('employees.actions.edit')}
-                        >
-                            <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteRole(role);
-                            }}
-                            className="p-2 text-[var(--error-color)] hover:bg-[var(--hover-color)] rounded-lg transition-colors"
-                            aria-label={t('employees.actions.delete')}
-                            title={t('employees.actions.delete')}
-                        >
-                            <Trash2 className="w-4 h-4" />
-                        </button>
-                    </div>
+                    {(canUpdateRole || canDeleteRole) && (
+                        <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                            {canUpdateRole && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleEditRole(role);
+                                    }}
+                                    className="p-2 text-[var(--accent-color)] hover:bg-[var(--hover-color)] rounded-lg transition-colors"
+                                    aria-label={t('employees.actions.edit')}
+                                    title={t('employees.actions.edit')}
+                                >
+                                    <Edit className="w-4 h-4" />
+                                </button>
+                            )}
+                            {canDeleteRole && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteRole(role);
+                                    }}
+                                    className="p-2 text-[var(--error-color)] hover:bg-[var(--hover-color)] rounded-lg transition-colors"
+                                    aria-label={t('employees.actions.delete')}
+                                    title={t('employees.actions.delete')}
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            )}
+                        </div>
+                    )}
                 </td>
             </tr>
         ));
