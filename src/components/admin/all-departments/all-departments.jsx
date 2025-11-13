@@ -5,6 +5,7 @@ import { Search, Plus, Filter } from "lucide-react";
 import DepartmentCard from "./department-card";
 import { useGetAllDepartmentsQuery } from "../../../services/apis/DepartmentApi";
 import { useGetTeamsByDepartmentQuery } from "../../../services/apis/TeamApi";
+import { useHasPermission } from "../../../hooks/useHasPermission";
 
 export default function AllDepartments() {
     const { t, i18n } = useTranslation();
@@ -12,6 +13,12 @@ export default function AllDepartments() {
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("active"); // "active" or "inactive" - default to "active"
     const navigate = useNavigate();
+    
+    // Permission checks
+    const canCreate = useHasPermission('Department.Create');
+    const canUpdate = useHasPermission('Department.Update');
+    const canDelete = useHasPermission('Department.Delete');
+    const canRestore = useHasPermission('Department.Restore');
 
     const handleAddNewDepartment = () => {
         navigate('/pages/admin/new-department');
@@ -140,13 +147,15 @@ export default function AllDepartments() {
                             </select>
                         </div>
                         
-                        <button 
-                            onClick={handleAddNewDepartment}
-                            className="btn-primary flex items-center gap-2"
-                        >
-                            <Plus size={16} />
-                            <span className="hidden sm:inline">{t("allDepartments.search.addNewDepartment")}</span>
-                        </button>
+                        {canCreate && (
+                            <button 
+                                onClick={handleAddNewDepartment}
+                                className="btn-primary flex items-center gap-2"
+                            >
+                                <Plus size={16} />
+                                <span className="hidden sm:inline">{t("allDepartments.search.addNewDepartment")}</span>
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
@@ -171,6 +180,9 @@ export default function AllDepartments() {
                         <DepartmentCard 
                             key={department.id} 
                             department={department} 
+                            canUpdate={canUpdate}
+                            canDelete={canDelete}
+                            canRestore={canRestore}
                             onDelete={(departmentId) => {
                                 // Refetch departments after deletion
                                 refetch();

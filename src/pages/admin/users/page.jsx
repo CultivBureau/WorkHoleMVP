@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import NavBarAdmin from "../../../components/admin/NavBarAdmin";
 import SideBarAdmin from "../../../components/admin/SideBarAdmin";
 import { useTranslation } from "react-i18next";
+import { PermissionGuard } from "../../../components/common/PermissionGuard";
 import {
   Users,
   Plus,
@@ -347,12 +348,20 @@ const UsersAdmin = () => {
   };
 
   return (
-    <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
-      {/* Navigation Bar */}
-      <NavBarAdmin
-        onMobileSidebarToggle={toggleMobileSidebar}
-        isMobileSidebarOpen={isMobileSidebarOpen}
-      />
+    <PermissionGuard 
+      backendPermissions={["User.View"]}
+      loadingFallback={
+        <div className="flex items-center justify-center min-h-screen" style={{ background: "var(--bg-all)" }}>
+          <span className="text-[var(--sub-text-color)]">{t('common.loading') || 'Loading...'}</span>
+        </div>
+      }
+    >
+      <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
+        {/* Navigation Bar */}
+        <NavBarAdmin
+          onMobileSidebarToggle={toggleMobileSidebar}
+          isMobileSidebarOpen={isMobileSidebarOpen}
+        />
 
       {/* Content Area */}
       <div className="flex flex-1 min-h-0">
@@ -1565,6 +1574,7 @@ const UsersAdmin = () => {
         </div>
       )}
     </div>
+    </PermissionGuard>
   );
 };
 

@@ -5,7 +5,18 @@ import { ChevronRight, Users, Edit, Trash2, MoreVertical } from "lucide-react";
 import TeamDetailsPopup from "./team-details/team-details-popup";
 import TeamMemberItem from "./team-member-item";
 
-export default function TeamCard({ team, onEdit, onDelete }) {
+export default function TeamCard({ 
+    team, 
+    onEdit, 
+    onDelete,
+    canUpdate = true,
+    canDelete = true,
+    canRestore = true,
+    canViewMembers = true,
+    canAddMember = true,
+    canUpdateMember = true,
+    canRemoveMember = true
+}) {
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const isArabic = i18n.language === "ar";
@@ -71,34 +82,40 @@ export default function TeamCard({ team, onEdit, onDelete }) {
                         </div>
                     )}
 
-                    {/* Three Dot Menu */}
-                    <div className="relative">
-                        <button
-                            onClick={handleMenuToggle}
-                            className="p-2 hover:bg-[var(--hover-color)] rounded-lg transition-colors"
-                        >
-                            <MoreVertical className="text-[var(--sub-text-color)]" size={16} />
-                        </button>
+                    {/* Three Dot Menu - Only show if user has any action permissions */}
+                    {(canUpdate || canDelete || canRestore) && (
+                        <div className="relative">
+                            <button
+                                onClick={handleMenuToggle}
+                                className="p-2 hover:bg-[var(--hover-color)] rounded-lg transition-colors"
+                            >
+                                <MoreVertical className="text-[var(--sub-text-color)]" size={16} />
+                            </button>
 
-                        {isMenuOpen && (
-                            <div className={`absolute top-full mt-1 w-32 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg z-10 ${isArabic ? 'right-0' : 'left-0'}`}>
-                                <button
-                                    onClick={handleEditTeam}
-                                    className="w-full px-3 py-2 text-left hover:bg-[var(--hover-color)] transition-colors flex items-center gap-2 text-[var(--text-color)]"
-                                >
-                                    <Edit size={14} />
-                                    <span>Edit</span>
-                                </button>
-                                <button
-                                    onClick={handleDeleteTeam}
-                                    className="w-full px-3 py-2 text-left hover:bg-[var(--hover-color)] transition-colors flex items-center gap-2 text-red-500"
-                                >
-                                    <Trash2 size={14} />
-                                    <span>Delete</span>
-                                </button>
-                            </div>
-                        )}
-                    </div>
+                            {isMenuOpen && (
+                                <div className={`absolute top-full mt-1 w-32 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg z-10 ${isArabic ? 'right-0' : 'left-0'}`}>
+                                    {canUpdate && (
+                                        <button
+                                            onClick={handleEditTeam}
+                                            className="w-full px-3 py-2 text-left hover:bg-[var(--hover-color)] transition-colors flex items-center gap-2 text-[var(--text-color)]"
+                                        >
+                                            <Edit size={14} />
+                                            <span>Edit</span>
+                                        </button>
+                                    )}
+                                    {canDelete && (
+                                        <button
+                                            onClick={handleDeleteTeam}
+                                            className="w-full px-3 py-2 text-left hover:bg-[var(--hover-color)] transition-colors flex items-center gap-2 text-red-500"
+                                        >
+                                            <Trash2 size={14} />
+                                            <span>Delete</span>
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -138,29 +155,39 @@ export default function TeamCard({ team, onEdit, onDelete }) {
                 </>
             )}
 
-            {/* Team Members List */}
-            {team.isLoadingMembers ? (
-                <div className="space-y-3">
-                    <div className="text-xs text-[var(--sub-text-color)] p-3">Loading members...</div>
-                </div>
-            ) : team.memberUserIds && team.memberUserIds.length > 0 ? (
-                <div className="space-y-3">
-                    {team.memberUserIds.slice(0, 3).map((userId) => (
-                        <TeamMemberItem 
-                            key={userId} 
-                            userId={userId} 
-                            isArabic={isArabic}
-                        />
-                    ))}
-                    {team.memberUserIds.length > 3 && (
-                        <div className="text-xs text-[var(--sub-text-color)] text-center p-2">
-                            +{team.memberUserIds.length - 3} more members
-                        </div>
-                    )}
-                </div>
+            {/* Team Members List - Only show if user has permission to view members */}
+            {canViewMembers ? (
+                team.isLoadingMembers ? (
+                    <div className="space-y-3">
+                        <div className="text-xs text-[var(--sub-text-color)] p-3">Loading members...</div>
+                    </div>
+                ) : team.memberUserIds && team.memberUserIds.length > 0 ? (
+                    <div className="space-y-3">
+                        {team.memberUserIds.slice(0, 3).map((userId) => (
+                            <TeamMemberItem 
+                                key={userId} 
+                                userId={userId} 
+                                isArabic={isArabic}
+                                canUpdateMember={canUpdateMember}
+                                canRemoveMember={canRemoveMember}
+                            />
+                        ))}
+                        {team.memberUserIds.length > 3 && (
+                            <div className="text-xs text-[var(--sub-text-color)] text-center p-2">
+                                +{team.memberUserIds.length - 3} more members
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <div className="space-y-3">
+                        <div className="text-xs text-[var(--sub-text-color)] p-3 text-center">No members yet</div>
+                    </div>
+                )
             ) : (
                 <div className="space-y-3">
-                    <div className="text-xs text-[var(--sub-text-color)] p-3 text-center">No members yet</div>
+                    <div className="text-xs text-[var(--sub-text-color)] p-3 text-center">
+                        {t("allTeams.teamCard.noPermissionViewMembers", "You don't have permission to view team members")}
+                    </div>
                 </div>
             )}
 

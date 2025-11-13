@@ -47,6 +47,13 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
 
   // Extract user data from API response (value wrapper)
   const userData = meResponse?.value || null;
+  
+  // Extract role name - handle both object format {id, name} and string format
+  const firstRole = userData?.roles?.[0];
+  const roleName = firstRole 
+    ? (typeof firstRole === 'string' ? firstRole : firstRole?.name || '')
+    : null;
+  
   const user = userData ? {
     id: userData.id,
     firstName: userData.firstName || "",
@@ -54,7 +61,7 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
     userName: userData.userName || "",
     email: userData.email || "",
     jobTitle: userData.jobTitle || "",
-    role: userData.roles?.[0] || userData.jobTitle || "Employee", // Use first role or jobTitle
+    role: roleName || userData.jobTitle || "Employee", // Use first role name or jobTitle
     roles: userData.roles || [],
     profileImage: null, // API response doesn't include profileImage
   } : (isAuthenticated ? {

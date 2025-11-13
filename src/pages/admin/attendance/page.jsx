@@ -3,6 +3,7 @@ import NavBarAdmin from "../../../components/admin/NavBarAdmin";
 import SideBarAdmin from "../../../components/admin/SideBarAdmin";
 import ClockinAdmin from "../../../components/admin/clockinAdmin";
 import { useTranslation } from "react-i18next";
+import { PermissionGuard } from "../../../components/common/PermissionGuard";
 import {
   Users,
   UserCheck,
@@ -211,9 +212,17 @@ const AttendanceAdmin = () => {
   }
 
   return (
-    <div className="w-full h-screen flex flex-col bg-[var(--bg-color)]">
-      <NavBarAdmin
-      />
+    <PermissionGuard 
+      backendPermissions={["ClockinLog.View"]}
+      loadingFallback={
+        <div className="flex items-center justify-center min-h-screen" style={{ background: "var(--bg-all)" }}>
+          <span className="text-[var(--sub-text-color)]">{t('common.loading') || 'Loading...'}</span>
+        </div>
+      }
+    >
+      <div className="w-full h-screen flex flex-col bg-[var(--bg-color)]">
+        <NavBarAdmin
+        />
       <div className="flex flex-1 min-h-0">
         <SideBarAdmin />
         {/* Main Content */}
@@ -238,6 +247,7 @@ const AttendanceAdmin = () => {
       </div>
 
     </div>
+    </PermissionGuard>
   );
 };
 

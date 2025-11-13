@@ -14,7 +14,7 @@ const RolesAndPermissions = () => {
 
   return (
     <PermissionGuard 
-      backendPermissions={["Role.View", "Role.Create", "Role.Update", "Role.ViewPermissions"]}
+      backendPermissions={["Role.View"]}
       loadingFallback={
         <div className="flex items-center justify-center min-h-screen" style={{ background: "var(--bg-all)" }}>
           <span className="text-[var(--sub-text-color)]">{t('common.loading') || 'Loading...'}</span>

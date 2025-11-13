@@ -119,6 +119,7 @@ export const FRONTEND_TO_BACKEND_MAPPING = {
   ],
   viewEmployeeProfiles: [
     "User.View",
+    "User.Profile.ViewAll",
   ],
   deactivateEmployees: [
     "User.Delete",
@@ -294,18 +295,76 @@ export const convertBackendToFrontendPermissions = (backendCodes) => {
 
 /**
  * Check if user has a specific backend permission code
- * @param {string[]} backendCodes - Array of backend permission codes
+ * Handles both string arrays and object arrays with 'code' property
+ * @param {string[]|Object[]} backendCodes - Array of backend permission codes (strings or objects with 'code' property)
  * @param {string|string[]} requiredPermissions - Required backend permission code(s)
  * @returns {boolean}
  */
 export const hasBackendPermission = (backendCodes, requiredPermissions) => {
-  if (!backendCodes || !Array.isArray(backendCodes)) return false;
-  if (!requiredPermissions) return false;
+  // Handle null/undefined cases
+  if (!backendCodes) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[hasBackendPermission] backendCodes is null or undefined');
+    }
+    return false;
+  }
+  
+  // Ensure backendCodes is an array
+  const codesArray = Array.isArray(backendCodes) ? backendCodes : [backendCodes];
+  
+  if (!requiredPermissions) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[hasBackendPermission] requiredPermissions is null or undefined');
+    }
+    return false;
+  }
   
   const requiredArray = Array.isArray(requiredPermissions) 
     ? requiredPermissions 
     : [requiredPermissions];
   
-  return requiredArray.some(perm => backendCodes.includes(perm));
+  // Extract permission codes from backendCodes (handle both string and object formats)
+  const permissionCodes = codesArray.map(perm => {
+    // If it's already a string, return it (trimmed)
+    if (typeof perm === 'string') return perm.trim();
+    // If it's an object with a 'code' property, extract it
+    if (typeof perm === 'object' && perm !== null) {
+      if (perm.code && typeof perm.code === 'string') return perm.code.trim();
+      // Also check for nested structures
+      if (perm.value && typeof perm.value === 'string') return perm.value.trim();
+    }
+    return null;
+  }).filter(Boolean); // Remove null values
+  
+  // Normalize required permissions (trim and ensure strings)
+  const normalizedRequired = requiredArray.map(perm => 
+    typeof perm === 'string' ? perm.trim() : String(perm).trim()
+  );
+  
+  // Debug logging in development - only log if match is false or if it's a critical permission check
+  const hasMatch = normalizedRequired.some(perm => permissionCodes.includes(perm));
+  const isCriticalCheck = normalizedRequired.some(perm => 
+    perm.includes('Department.View') || perm.includes('Role.View') || perm.includes('Shift.View') ||
+    perm.includes('Company.View') || perm.includes('User.View')
+  );
+  
+  if (process.env.NODE_ENV === 'development' && (!hasMatch || isCriticalCheck)) {
+    console.log('[hasBackendPermission]', {
+      required: requiredArray,
+      normalizedRequired: normalizedRequired,
+      extractedCodes: permissionCodes,
+      match: hasMatch,
+      detailedMatch: normalizedRequired.map(req => ({
+        required: req,
+        found: permissionCodes.includes(req),
+        exactMatch: permissionCodes.find(p => p === req),
+        similarMatches: permissionCodes.filter(p => p.toLowerCase().includes(req.toLowerCase()) || req.toLowerCase().includes(p.toLowerCase()))
+      })),
+      allUserPermissions: permissionCodes // Show all for debugging
+    });
+  }
+  
+  // Check if any required permission exists in the user's permissions (case-sensitive exact match)
+  return normalizedRequired.some(perm => permissionCodes.includes(perm));
 };
 

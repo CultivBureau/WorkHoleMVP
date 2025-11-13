@@ -2,6 +2,18 @@ import React, { useEffect } from "react";
 import NavBarAdmin from "../../../components/admin/NavBarAdmin";
 import SideBarAdmin from "../../../components/admin/SideBarAdmin";
 import { useTranslation } from "react-i18next";
+import { PermissionGuard } from "../../../components/common/PermissionGuard";
+import {
+  Users,
+  UserCheck,
+  Clock,
+  Calendar,
+  Coffee,
+  AlertTriangle,
+  Activity,
+  MapPin,
+} from "lucide-react";
+
 import { useNavigate } from "react-router-dom";
 import Card from "../../../components/Time_Tracking_Components/Stats/Card";
 import Table from "../../../components/admin/dashboard/Table/Table";
@@ -43,9 +55,17 @@ const DashboardAdmin = () => {
   ]
 
   return (
-    <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
-      {/* Navigation Bar */}
-      <NavBarAdmin />
+    <PermissionGuard 
+      backendPermissions={[]} // Dashboard accessible to all authenticated users
+      loadingFallback={
+        <div className="flex items-center justify-center min-h-screen" style={{ background: "var(--bg-all)" }}>
+          <span className="text-[var(--sub-text-color)]">{t('common.loading') || 'Loading...'}</span>
+        </div>
+      }
+    >
+      <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
+        {/* Navigation Bar */}
+        <NavBarAdmin />
 
       {/* Content Area */}
       <div className="flex flex-1 min-h-0">
@@ -123,6 +143,7 @@ const DashboardAdmin = () => {
         </main>
       </div>
     </div>
+    </PermissionGuard>
   );
 };
 

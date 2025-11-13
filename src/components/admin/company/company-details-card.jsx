@@ -4,6 +4,7 @@ import { getCompanyId } from "../../../utils/page";
 import { useTranslation } from "react-i18next";
 import { Edit, Save, X, Upload, File, Calendar, Clock } from "lucide-react";
 import toast from "react-hot-toast";
+import { useHasPermission } from "../../../hooks/useHasPermission";
 
 const CompanyDetailsCard = () => {
   const { t, i18n } = useTranslation();
@@ -12,9 +13,13 @@ const CompanyDetailsCard = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [companyName, setCompanyName] = useState("");
   const [attachments, setAttachments] = useState([]);
+  
+  // Permission checks
+  const canUpdateCompany = useHasPermission('Company.Update');
 
   const { data: companyData, isLoading, error, refetch } = useGetCompanyByIdQuery(companyId, {
     skip: !companyId,
+    refetchOnMountOrArgChange: true,
   });
 
   const [updateCompanyDetails, { isLoading: isUpdating }] = useUpdateCompanyDetailsMutation();
@@ -241,7 +246,7 @@ const CompanyDetailsCard = () => {
   };
 
   return (
-    <div className="w-full space-y-8">
+    <div className="w-full space-y-6">
       {/* Hero Header Section */}
       <section
         className="rounded-3xl border overflow-hidden"
@@ -259,25 +264,24 @@ const CompanyDetailsCard = () => {
           }}
         />
         
-        <div className="px-8 py-10 sm:px-12 sm:py-12">
-          <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+        <div className="px-6 py-6 sm:px-8 sm:py-8">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             {/* Left Content */}
-            <div className="flex-1 space-y-6">
-              <div className="space-y-3">
-                <label
-                  className="text-xs font-bold uppercase tracking-wider flex items-center gap-2"
-                  style={{ color: "var(--sub-text-color)" }}
-                >
-                  <div className="w-1 h-4 rounded-full" style={{ background: "var(--accent-color)" }} />
-                  {t("company.companyName", "Company Name")}
-                </label>
-
-                {isEditing ? (
+            <div className="flex-1 space-y-3">
+              {isEditing ? (
+                <div className="space-y-1.5">
+                  <label
+                    className="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5"
+                    style={{ color: "var(--sub-text-color)" }}
+                  >
+                    <div className="w-0.5 h-2.5 rounded-full" style={{ background: "var(--accent-color)" }} />
+                    {t("company.companyName", "Company Name")}
+                  </label>
                   <input
                     type="text"
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
-                    className="form-input text-3xl font-bold w-full border-2 rounded-xl px-4 py-3 transition-all duration-200 focus:ring-4"
+                    className="form-input text-xl sm:text-2xl font-bold w-full border-2 rounded-lg px-3 py-2 transition-all duration-200 focus:ring-2"
                     placeholder={t("company.enterName", "Enter company name")}
                     style={{
                       background: "var(--container-color)",
@@ -285,9 +289,11 @@ const CompanyDetailsCard = () => {
                       borderColor: "var(--accent-color)",
                     }}
                   />
-                ) : (
+                </div>
+              ) : (
+                <div className="flex flex-wrap items-center gap-2">
                   <h2
-                    className="text-4xl sm:text-5xl font-black text-start tracking-tight"
+                    className="text-2xl sm:text-3xl font-black text-start tracking-tight"
                     style={{ 
                       color: "var(--text-color)",
                       lineHeight: "1.1"
@@ -295,111 +301,85 @@ const CompanyDetailsCard = () => {
                   >
                     {company.name}
                   </h2>
-                )}
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3">
-                <span
-                  className={`inline-flex items-center gap-2.5 rounded-xl px-5 py-2.5 font-bold text-sm shadow-sm transition-all duration-200 hover:scale-105 ${
-                    company.status
-                      ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white"
-                      : "bg-gradient-to-r from-rose-500 to-rose-600 text-white"
-                  }`}
-                >
-                  <span className="w-2.5 h-2.5 rounded-full bg-white shadow-lg animate-pulse" />
-                  {company.status ? t("company.active", "Active") : t("company.inactive", "Inactive")}
-                </span>
-
-                <span
-                  className="inline-flex items-center gap-2.5 rounded-xl px-5 py-2.5 font-bold text-sm shadow-sm border-2 transition-all duration-200 hover:scale-105"
-                  style={{
-                    background: "linear-gradient(135deg, var(--container-color) 0%, var(--bg-color) 100%)",
-                    borderColor: "var(--accent-color)",
-                    color: "var(--accent-color)",
-                  }}
-                >
-                  <Calendar className="w-4 h-4" />
-                  {getPlanTypeName(company.planType)} Plan
-                </span>
-
-                {daysRemaining !== null && (
+                  
                   <span
-                    className={`inline-flex items-center gap-2.5 rounded-xl px-5 py-2.5 font-bold text-sm shadow-sm transition-all duration-200 hover:scale-105 ${
-                      daysRemaining > 0
-                        ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white"
-                        : "bg-gradient-to-r from-rose-500 to-red-600 text-white"
+                    className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1 font-bold text-xs shadow-sm ${
+                      company.status
+                        ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white"
+                        : "bg-gradient-to-r from-rose-500 to-rose-600 text-white"
                     }`}
                   >
-                    <Clock className="w-4 h-4" />
-                    {daysRemaining > 0
-                      ? t("company.daysRemaining", {
-                          defaultValue: "{{count}} days left",
-                          count: daysRemaining,
-                        })
-                      : t("company.expired", "Expired")}
+                    <span className="w-1.5 h-1.5 rounded-full bg-white shadow-sm animate-pulse" />
+                    {company.status ? t("company.active", "Active") : t("company.inactive", "Inactive")}
                   </span>
-                )}
-              </div>
+
+
+
+               
+                </div>
+              )}
             </div>
 
-            {/* Right Action Buttons */}
-            <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:min-w-[240px]">
-              {isEditing ? (
-                <>
+            {/* Right Action Buttons - Only show if user has update permission */}
+            {canUpdateCompany && (
+              <div className="flex flex-row gap-2 sm:flex-row lg:min-w-[200px] lg:justify-end">
+                {isEditing ? (
+                  <>
+                    <button
+                      onClick={handleSave}
+                      disabled={isUpdating}
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-bold text-xs shadow-md transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                      style={{
+                        background: "linear-gradient(135deg, #15919B 0%, #09D1C7 100%)",
+                        color: "white",
+                      }}
+                    >
+                      <Save className="w-4 h-4" />
+                      {isUpdating ? t("company.saving", "Saving...") : t("company.save", "Save")}
+                    </button>
+                    <button
+                      onClick={handleCancel}
+                      disabled={isUpdating}
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-bold text-xs border transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{
+                        background: "var(--container-color)",
+                        borderColor: "var(--border-color)",
+                        color: "var(--text-color)",
+                      }}
+                    >
+                      <X className="w-4 h-4" />
+                      {t("company.cancel", "Cancel")}
+                    </button>
+                  </>
+                ) : (
                   <button
-                    onClick={handleSave}
-                    disabled={isUpdating}
-                    className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl font-bold text-sm shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    onClick={handleEdit}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-bold text-xs shadow-md transition-all duration-200 hover:scale-105"
                     style={{
                       background: "linear-gradient(135deg, #15919B 0%, #09D1C7 100%)",
                       color: "white",
                     }}
                   >
-                    <Save className="w-5 h-5" />
-                    {isUpdating ? t("company.saving", "Saving...") : t("company.save", "Save Changes")}
+                    <Edit className="w-4 h-4" />
+                    {t("company.edit", "Edit")}
                   </button>
-                  <button
-                    onClick={handleCancel}
-                    disabled={isUpdating}
-                    className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl font-bold text-sm border-2 transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{
-                      background: "var(--container-color)",
-                      borderColor: "var(--border-color)",
-                      color: "var(--text-color)",
-                    }}
-                  >
-                    <X className="w-5 h-5" />
-                    {t("company.cancel", "Cancel")}
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={handleEdit}
-                  className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl font-bold text-sm shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl"
-                  style={{
-                    background: "linear-gradient(135deg, #15919B 0%, #09D1C7 100%)",
-                    color: "white",
-                  }}
-                >
-                  <Edit className="w-5 h-5" />
-                  {t("company.edit", "Edit Details")}
-                </button>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
         {/* Stats Grid */}
-        <div className="px-8 pb-10 sm:px-12 sm:pb-12">
-          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="px-6 pb-6 sm:px-8 sm:pb-8 border-t" style={{ borderColor: "var(--border-color)" }}>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 pt-6">
             <SummaryCard
               label={t("company.planStart", "Plan Start")}
-              icon={<Calendar className="w-5 h-5" />}
+              icon={<Calendar className="w-3.5 h-3.5" />}
               value={formatDate(company.startPlanDate)}
             />
             <SummaryCard
               label={t("company.planEnd", "Plan End")}
-              icon={<Calendar className="w-5 h-5" />}
+              icon={<Calendar className="w-3.5 h-3.5" />}
               value={formatDate(company.endPlanDate)}
               hint={
                 daysRemaining !== null
@@ -414,13 +394,13 @@ const CompanyDetailsCard = () => {
               hintTone={daysRemaining !== null && daysRemaining <= 0 ? "error" : "default"}
             />
             <SummaryCard
-              label={t("company.planTier", "Current Tier")}
-              icon={<Upload className="w-5 h-5 rotate-90" />}
+              label={t("company.planTier", "Current Plan")}
+              icon={<Upload className="w-3.5 h-3.5 rotate-90" />}
               value={getPlanTypeName(company.planType)}
             />
             <SummaryCard
               label={t("company.companyId", "Company ID")}
-              icon={<File className="w-5 h-5" />}
+              icon={<File className="w-3.5 h-3.5" />}
               value={company.id}
               isMono
             />
@@ -428,30 +408,30 @@ const CompanyDetailsCard = () => {
         </div>
       </section>
 
-      <div className="grid gap-8 lg:grid-cols-3">
+      <div className="grid gap-5 lg:grid-cols-3">
         {/* Attachments Section */}
         <section
-          className="rounded-3xl border p-8 lg:col-span-3 overflow-hidden w-full"
+          className="rounded-2xl border p-5 lg:col-span-3 overflow-hidden w-full"
           style={{
             background: "var(--bg-color)",
             borderColor: "var(--border-color)",
             boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
           }}
         >
-          <div className="flex flex-col gap-4 pb-6 sm:flex-row sm:items-center sm:justify-between border-b-2" style={{ borderColor: "var(--border-color)" }}>
-            <div className="space-y-1">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl" style={{ background: "linear-gradient(135deg, #15919B 0%, #09D1C7 100%)" }}>
-                  <File className="w-5 h-5 text-white" />
+          <div className="flex flex-col gap-2 pb-4 sm:flex-row sm:items-center sm:justify-between border-b" style={{ borderColor: "var(--border-color)" }}>
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg" style={{ background: "linear-gradient(135deg, #15919B 0%, #09D1C7 100%)" }}>
+                  <File className="w-3.5 h-3.5 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold" style={{ color: "var(--text-color)" }}>
-                  {t("company.attachments", "Company Attachments")}
+                <h3 className="text-lg font-bold" style={{ color: "var(--text-color)" }}>
+                  {t("company.attachments", "Attachments")}
                 </h3>
               </div>
-              <p className="text-sm font-medium pl-14 text-start" style={{ color: "var(--sub-text-color)" }}>
+              <p className="text-xs font-medium pl-9 text-start" style={{ color: "var(--sub-text-color)" }}>
                 {attachments.length > 0
-                  ? t("company.attachmentsSubtitle", "Manage documents and credentials")
-                  : t("company.attachmentsEmpty", "No documents uploaded yet")}
+                  ? t("company.attachmentsSubtitle", "Manage documents")
+                  : t("company.attachmentsEmpty", "No documents yet")}
               </p>
             </div>
 
@@ -460,27 +440,27 @@ const CompanyDetailsCard = () => {
 
           {attachments.length === 0 ? (
             <div
-              className="flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed py-16 mt-8"
+              className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-8 mt-4"
               style={{ borderColor: "var(--border-color)" }}
             >
-              <div className="p-4 rounded-2xl" style={{ background: "var(--container-color)" }}>
-                <File className="w-12 h-12" style={{ color: "var(--sub-text-color)" }} />
+              <div className="p-2 rounded-lg" style={{ background: "var(--container-color)" }}>
+                <File className="w-8 h-8" style={{ color: "var(--sub-text-color)" }} />
               </div>
-              <div className="text-center space-y-1">
-                <p className="text-base font-semibold" style={{ color: "var(--text-color)" }}>
-                  {t("company.noAttachments", "No attachments available")}
+              <div className="text-center space-y-0.5">
+                <p className="text-xs font-semibold" style={{ color: "var(--text-color)" }}>
+                  {t("company.noAttachments", "No attachments")}
                 </p>
-                <p className="text-sm" style={{ color: "var(--sub-text-color)" }}>
+                <p className="text-[10px]" style={{ color: "var(--sub-text-color)" }}>
                   Upload documents to get started
                 </p>
               </div>
             </div>
           ) : (
-            <div className="space-y-5 mt-8">
+            <div className="space-y-3 mt-4">
               {attachments.map((attachment, index) => (
                 <article
                   key={index}
-                  className="rounded-2xl border-2 p-6 transition-all duration-200 hover:shadow-lg"
+                  className="rounded-lg border p-4 transition-all duration-200 hover:shadow-sm"
                   style={{
                     background: "var(--container-color)",
                     borderColor: "var(--border-color)",
@@ -496,16 +476,7 @@ const CompanyDetailsCard = () => {
 
                         {isEditing ? (
                           <div className="flex flex-wrap items-center gap-3">
-                            <span
-                              className="inline-flex min-h-[40px] items-center rounded-xl px-5 py-2 text-sm font-semibold border-2"
-                              style={{
-                                background: "var(--bg-color)",
-                                color: "var(--text-color)",
-                                borderColor: "var(--border-color)"
-                              }}
-                            >
-                              {attachment.file?.name || attachment.fileName || t("company.noFile", "No file selected")}
-                            </span>
+             
                             <label className="cursor-pointer">
                               <input
                                 type="file"
@@ -624,27 +595,27 @@ const CompanyDetailsCard = () => {
 const SummaryCard = ({ label, value, icon, hint, hintTone = "default", isMono = false }) => {
   return (
     <div
-      className="rounded-2xl border-2 p-6 transition-all duration-200 hover:shadow-xl hover:scale-105"
+      className="rounded-lg border p-3 transition-all duration-200 hover:shadow-md hover:scale-[1.01]"
       style={{
         background: "var(--container-color)",
         borderColor: "var(--border-color)",
       }}
     >
-      <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-wider mb-4" style={{ color: "var(--sub-text-color)" }}>
-        <div className="p-2 rounded-lg" style={{ background: "var(--bg-color)" }}>
+      <div className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider mb-2" style={{ color: "var(--sub-text-color)" }}>
+        <div className="p-1 rounded" style={{ background: "var(--bg-color)" }}>
           {icon}
         </div>
         {label}
       </div>
       <p
-        className={`text-xl font-black ${isMono ? "font-mono text-base" : ""}`}
+        className={`text-base font-bold ${isMono ? "font-mono text-xs" : ""}`}
         style={{ color: "var(--text-color)" }}
       >
         {value}
       </p>
       {hint && (
         <p
-          className="mt-3 text-xs font-bold px-3 py-1.5 rounded-lg inline-block"
+          className="mt-1.5 text-[9px] font-bold px-2 py-0.5 rounded inline-block"
           style={{
             background:
               hintTone === "error"
@@ -670,20 +641,20 @@ const SummaryCard = ({ label, value, icon, hint, hintTone = "default", isMono = 
 const MetaItem = ({ label, value, isMono = false, accent = "default" }) => {
   const toneMap = {
     default: {
-      badge: "border-2",
+      badge: "border",
       bg: "var(--bg-color)",
       color: "var(--text-color)",
       borderColor: "var(--border-color)",
     },
     success: {
-      badge: "shadow-md",
-      bg: "linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%)",
+      badge: "shadow-sm",
+      bg: "linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%)",
       color: "#10b981",
       borderColor: "#10b981",
     },
     warning: {
-      badge: "shadow-md",
-      bg: "linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.15) 100%)",
+      badge: "shadow-sm",
+      bg: "linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.1) 100%)",
       color: "#f59e0b",
       borderColor: "#f59e0b",
     },
@@ -692,13 +663,13 @@ const MetaItem = ({ label, value, isMono = false, accent = "default" }) => {
   const tone = toneMap[accent] || toneMap.default;
 
   return (
-    <div className="flex flex-col gap-3 p-4 rounded-xl border-2 transition-all duration-200 hover:shadow-md" style={{ borderColor: "var(--border-color)", background: "var(--container-color)" }}>
-      <span className="text-xs font-bold uppercase tracking-wider flex items-center gap-2" style={{ color: "var(--sub-text-color)" }}>
-        <div className="w-1 h-3 rounded-full" style={{ background: "var(--accent-color)" }} />
+    <div className="flex flex-col gap-1.5 p-2.5 rounded-lg border transition-all duration-200 hover:shadow-sm" style={{ borderColor: "var(--border-color)", background: "var(--container-color)" }}>
+      <span className="text-[9px] font-bold uppercase tracking-wider flex items-center gap-1" style={{ color: "var(--sub-text-color)" }}>
+        <div className="w-0.5 h-2 rounded-full" style={{ background: "var(--accent-color)" }} />
         {label}
       </span>
       <span
-        className={`inline-flex items-center rounded-xl px-4 py-2.5 text-sm font-bold ${tone.badge}`}
+        className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-bold ${tone.badge}`}
         style={{ 
           background: tone.bg,
           color: tone.color,

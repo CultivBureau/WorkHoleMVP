@@ -31,6 +31,7 @@
     "new_department": "قسم جديد",
     "break": "إدارة الاستراحات",
     "shifts": "الورديات",
+    "admin_shifts": "الورديات",
     "all_teams": "جميع الفرق",
     "admin_new_department": "قسم جديد",
     "admin_new_role": "دور جديد",
@@ -349,6 +350,7 @@
   "profile": {
     "profile": "الملف الشخصي",
     "personalInformation": "المعلومات الشخصية",
+    "professionalInformation": "المعلومات المهنية",
     "firstName": "الاسم الأول",
     "lastName": "اسم العائلة",
     "mobileNumber": "رقم الهاتف",
@@ -449,6 +451,10 @@
       "emergency": "إجازة طوارئ",
       "unpaid": "إجازة بدون راتب"
     },
+    "balances": "رصيد الإجازات",
+    "balancesDescription": "رصيد الإجازات المتاح لديك",
+    "days": "أيام",
+    "noAvailableBalance": "لا يوجد رصيد إجازات متاح",
     "form": {
       "step1Title": "الخطوة 1 - تفاصيل الإجازة",
       "step2Title": "الخطوة 2 - السبب والمرفقات",
@@ -1020,7 +1026,9 @@
       "loadRolesFailed": "فشل تحميل الأدوار",
       "updateFailed": "فشل تحديث الدور",
       "deleteFailed": "فشل حذف الدور"
-    }
+    },
+    "noPermissionToViewPermissions": "لا يوجد صلاحية لعرض الصلاحيات",
+    "noPermissionToViewPermissionsDesc": "ليس لديك صلاحية لعرض الصلاحيات. لا يزال بإمكانك إنشاء دور، لكن لن تتمكن من تعيين الصلاحيات له."
   },
   "adminDashboard": {
     "cards": {
@@ -1592,7 +1600,10 @@
       "view": "عرض التفاصيل",
       "edit": "تعديل",
       "delete": "حذف",
-      "restore": "استعادة"
+      "restore": "استعادة",
+      "assignUsers": "تعيين المستخدمين",
+      "updateAssignments": "تحديث التعيينات",
+      "manageAssignments": "إدارة التعيينات"
     },
     "location": {
       "enabled": "الموقع مطلوب"
@@ -1616,12 +1627,18 @@
     "resultsPlural": "",
     "resultsSingular": "",
     "delete": {
+      "title": "حذف الوردية",
       "confirm": "هل أنت متأكد من رغبتك في حذف هذه الوردية؟",
+      "confirmButton": "حذف",
+      "cancel": "إلغاء",
       "success": "تم حذف الوردية بنجاح",
       "error": "فشل حذف الوردية"
     },
     "restore": {
+      "title": "استعادة الوردية",
       "confirm": "هل أنت متأكد من رغبتك في استعادة هذه الوردية؟",
+      "confirmButton": "استعادة",
+      "cancel": "إلغاء",
       "success": "تم استعادة الوردية بنجاح",
       "error": "فشل استعادة الوردية"
     },
@@ -1682,6 +1699,59 @@
     },
     "viewShift": {
       "title": "عرض تفاصيل الوردية"
+    },
+    "assignUsers": {
+      "title": "تعيين المستخدمين للوردية",
+      "updateTitle": "تحديث تعيينات الوردية",
+      "shiftName": "الوردية",
+      "effectiveFrom": "ساري من",
+      "effectiveTo": "ساري حتى",
+      "searchPlaceholder": "ابحث عن المستخدمين بالاسم أو البريد الإلكتروني...",
+      "selectedCount": "تم اختيار {{count}} مستخدم",
+      "selectAll": "تحديد الكل",
+      "deselectAll": "إلغاء تحديد الكل",
+      "loadingUsers": "جاري تحميل المستخدمين...",
+      "noUsersFound": "لم يتم العثور على مستخدمين يطابقون البحث",
+      "noUsers": "لا يوجد مستخدمون متاحون",
+      "noUsersSelected": "يرجى اختيار مستخدم واحد على الأقل",
+      "effectiveFromRequired": "تاريخ السريان من مطلوب",
+      "effectiveToRequired": "تاريخ السريان حتى مطلوب",
+      "invalidDateRange": "يجب أن يكون تاريخ السريان حتى بعد تاريخ السريان من",
+      "assign": "تعيين المستخدمين",
+      "assigning": "جاري التعيين...",
+      "assignSuccess": "تم تعيين المستخدمين للوردية بنجاح!",
+      "assignError": "فشل تعيين المستخدمين للوردية",
+      "update": "تحديث التعيينات",
+      "updating": "جاري التحديث...",
+      "updateSuccess": "تم تحديث تعيينات الوردية بنجاح!",
+      "updateError": "فشل تحديث تعيينات الوردية",
+      "cancel": "إلغاء",
+      "filterDepartment": "القسم",
+      "filterTeam": "الفريق",
+      "allDepartments": "جميع الأقسام",
+      "allTeams": "جميع الفرق",
+      "currentlyAssigned": "معين حاليًا: {{count}} مستخدم",
+      "unselectToRemove": "قم بإلغاء التحديد لإزالة",
+      "assigned": "معين",
+      "alreadyAssigned": "معين بالفعل لهذه الوردية",
+      "manageTitle": "إدارة تعيينات الوردية",
+      "assignedUsers": "المستخدمون المعينون",
+      "searchAssigned": "ابحث عن المستخدمين المعينين...",
+      "noAssignedFound": "لم يتم العثور على مستخدمين معينين يطابقون البحث",
+      "noAssignedUsers": "لا يوجد مستخدمون معينون لهذه الوردية",
+      "remove": "إزالة",
+      "removeTitle": "إزالة المستخدم من الوردية",
+      "removeConfirm": "هل أنت متأكد من رغبتك في إزالة هذا المستخدم من الوردية؟",
+      "removeSuccess": "تم إزالة المستخدم من الوردية بنجاح",
+      "removeError": "فشل إزالة المستخدم من الوردية",
+      "addUsers": "إضافة مستخدمين للوردية",
+      "allUsersAssigned": "جميع المستخدمين معينون بالفعل لهذه الوردية",
+      "adding": "جاري الإضافة...",
+      "addSelected": "إضافة المستخدمين المحددين ({{count}})",
+      "addSuccess": "تم إضافة المستخدمين للوردية بنجاح!",
+      "addError": "فشل إضافة المستخدمين للوردية",
+      "close": "إغلاق",
+      "totalAssigned": "{{count}} مستخدم معين"
     }
   },
   "leaveTypes": {

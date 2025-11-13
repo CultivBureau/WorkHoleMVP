@@ -5,6 +5,7 @@ import { Building2, Users, UserCheck, Eye, ChevronDown, X, Plus, Check, Save, Ed
 import { useGetDepartmentByIdQuery, useGetDepartmentSupervisorQuery, useUpdateDepartmentMutation } from "../../../../services/apis/DepartmentApi";
 import { useGetAllRolesQuery, useGetRoleUsersQuery } from "../../../../services/apis/RoleApi";
 import { useCreateTeamMutation, useAddUsersToTeamMutation, useGetTeamsByDepartmentQuery, useUpdateTeamMutation, useDeleteTeamMutation, useUpdateUsersInTeamMutation, useGetTeamUsersQuery } from "../../../../services/apis/TeamApi";
+import { useHasPermission } from "../../../../hooks/useHasPermission";
 
 export default function EditDepartmentForm() {
     const { t, i18n } = useTranslation();
@@ -12,13 +13,31 @@ export default function EditDepartmentForm() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [step, setStep] = useState(0);
+    
+    // Permission checks for Department actions
+    const canAssignSupervisor = useHasPermission('Department.AssignSupervisor');
+    const canRemoveSupervisor = useHasPermission('Department.RemoveSupervisor');
+    const canGetSupervisor = useHasPermission('Department.GetSupervisor');
+    
+    // Permission checks for Team actions
+    const canViewTeams = useHasPermission('Team.View');
+    const canCreateTeam = useHasPermission('Team.Create');
+    const canUpdateTeam = useHasPermission('Team.Update');
+    const canDeleteTeam = useHasPermission('Team.Delete');
+    const canAddMember = useHasPermission('Team.AddMember');
+    const canUpdateMember = useHasPermission('Team.UpdateMember');
+    const canRemoveMember = useHasPermission('Team.RemoveMember');
 
-    const steps = [
-        { label: t("departments.editDepartmentForm.steps.departmentInfo"), icon: Building2 },
-        { label: t("departments.editDepartmentForm.steps.assignSupervisor"), icon: UserCheck },
-        { label: t("departments.editDepartmentForm.steps.setupTeams"), icon: Users },
-        { label: t("departments.editDepartmentForm.steps.reviewAndSave"), icon: Eye },
+    // Filter steps based on permissions
+    const allSteps = [
+        { label: t("departments.editDepartmentForm.steps.departmentInfo"), icon: Building2, key: 'info' },
+        { label: t("departments.editDepartmentForm.steps.assignSupervisor"), icon: UserCheck, key: 'supervisor', requiresPermission: canAssignSupervisor || canRemoveSupervisor },
+        { label: t("departments.editDepartmentForm.steps.setupTeams"), icon: Users, key: 'teams', requiresPermission: canViewTeams },
+        { label: t("departments.editDepartmentForm.steps.reviewAndSave"), icon: Eye, key: 'review' },
     ];
+    
+    // Only show steps user has permission for
+    const steps = allSteps.filter(step => !step.requiresPermission || step.requiresPermission);
 
     const [departmentData, setDepartmentData] = useState({ id, name: "", description: "", supervisorId: null, teams: [] });
     
@@ -32,9 +51,9 @@ export default function EditDepartmentForm() {
         return departmentResponse?.value || departmentResponse?.data || departmentResponse || null;
     }, [departmentResponse]);
 
-    // Fetch supervisor data if supervisorId exists
+    // Fetch supervisor data if supervisorId exists AND user has permission to view supervisor
     const { data: supervisorResponse } = useGetDepartmentSupervisorQuery(id, {
-        skip: !id || !foundDepartment?.supervisorId
+        skip: !id || !foundDepartment?.supervisorId || !canGetSupervisor
     });
     const supervisorData = supervisorResponse?.value || supervisorResponse?.data || supervisorResponse || null;
 
@@ -182,7 +201,7 @@ export default function EditDepartmentForm() {
                 {/* Step Content */}
                 <div className="mt-8">
                     {step === 0 && <EditDepartmentInfoStep departmentData={departmentData} setDepartmentData={setDepartmentData} onNext={() => setStep(1)} />}
-                    {step === 1 && (
+                    {step === 1 && (canAssignSupervisor || canRemoveSupervisor) && (
                         <EditAssignSupervisorStep
                             departmentData={departmentData}
                             setDepartmentData={setDepartmentData}
@@ -201,9 +220,24 @@ export default function EditDepartmentForm() {
                             supervisorSearchTerm={supervisorSearchTerm}
                             setSupervisorSearchTerm={setSupervisorSearchTerm}
                             filteredSupervisorUsers={filteredSupervisorUsers}
+                            canAssignSupervisor={canAssignSupervisor}
+                            canRemoveSupervisor={canRemoveSupervisor}
                         />
                     )}
-                    {step === 2 && <EditSetupTeamsStep departmentData={departmentData} setDepartmentData={setDepartmentData} onNext={() => setStep(3)} onBack={() => setStep(1)} />}
+                    {step === 2 && (
+                        <EditSetupTeamsStep 
+                            departmentData={departmentData} 
+                            setDepartmentData={setDepartmentData} 
+                            onNext={() => setStep(3)} 
+                            onBack={() => setStep(1)}
+                            canCreateTeam={canCreateTeam}
+                            canUpdateTeam={canUpdateTeam}
+                            canDeleteTeam={canDeleteTeam}
+                            canAddMember={canAddMember}
+                            canUpdateMember={canUpdateMember}
+                            canRemoveMember={canRemoveMember}
+                        />
+                    )}
                     {step === 3 && <EditReviewStep departmentData={departmentData} selectedUser={selectedUser} onBack={() => setStep(2)} onSubmit={async () => {
                         const supervisorId = selectedUser?.id || selectedUser?.userId || selectedUser?.userID || selectedUser?.UserId || departmentData.supervisorId;
                         const body = {
@@ -294,6 +328,8 @@ function EditAssignSupervisorStep({
     supervisorSearchTerm,
     setSupervisorSearchTerm,
     filteredSupervisorUsers,
+    canAssignSupervisor = true,
+    canRemoveSupervisor = true,
 }) {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
@@ -377,13 +413,28 @@ function EditAssignSupervisorStep({
 }
 
 // Step 3: Edit Setup Teams
-function EditSetupTeamsStep({ departmentData, setDepartmentData, onNext, onBack }) {
+function EditSetupTeamsStep({ 
+    departmentData, 
+    setDepartmentData, 
+    onNext, 
+    onBack,
+    canCreateTeam = true,
+    canUpdateTeam = true,
+    canDeleteTeam = true,
+    canAddMember = true,
+    canUpdateMember = true,
+    canRemoveMember = true,
+}) {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
     
-    // Fetch teams from API
+    // Permission check for viewing teams
+    const canViewTeams = useHasPermission('Team.View');
+    const canViewMembers = useHasPermission('Team.ViewMembers');
+    
+    // Fetch teams from API - only if user has permission
     const { data: teamsData, isLoading: isLoadingTeams, refetch: refetchTeams } = useGetTeamsByDepartmentQuery(departmentData.id, {
-        skip: !departmentData?.id
+        skip: !departmentData?.id || !canViewTeams
     });
     
     const teams = useMemo(() => {
@@ -946,8 +997,8 @@ function EditSetupTeamsStep({ departmentData, setDepartmentData, onNext, onBack 
                 </div>
             )}
 
-            {/* Add New Team Button */}
-            {!showAddTeam && (
+            {/* Add New Team Button - Only show if user has permission */}
+            {!showAddTeam && canCreateTeam && (
                 <button
                     type="button"
                     className="btn-primary flex items-center gap-2"
@@ -991,26 +1042,32 @@ function EditSetupTeamsStep({ departmentData, setDepartmentData, onNext, onBack 
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <button 
-                                                className="p-2 hover:bg-[var(--hover-color)] rounded-lg transition-colors"
-                                                onClick={() => openEditModal(team)}
-                                                title="Edit team"
-                                            >
-                                                <Edit className="text-[var(--sub-text-color)]" size={16} />
-                                            </button>
-                                            <button 
-                                                className="p-2 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                                                onClick={() => handleDeleteTeam(team.id)}
-                                                disabled={isDeletingTeam}
-                                                title="Delete team"
-                                            >
-                                                <Trash2 className="text-red-500" size={16} />
-                                            </button>
+                                            {canUpdateTeam && (
+                                                <button 
+                                                    className="p-2 hover:bg-[var(--hover-color)] rounded-lg transition-colors"
+                                                    onClick={() => openEditModal(team)}
+                                                    title="Edit team"
+                                                >
+                                                    <Edit className="text-[var(--sub-text-color)]" size={16} />
+                                                </button>
+                                            )}
+                                            {canDeleteTeam && (
+                                                <button 
+                                                    className="p-2 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                                                    onClick={() => handleDeleteTeam(team.id)}
+                                                    disabled={isDeletingTeam}
+                                                    title="Delete team"
+                                                >
+                                                    <Trash2 className="text-red-500" size={16} />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
-                                    <div className="text-sm text-[var(--sub-text-color)] mt-2">
-                                        {team.teamMembers || team.memberCount || 0} {t("departments.editDepartmentForm.setupTeams.members", "Members")}
-                                    </div>
+                                    {canViewMembers && (
+                                        <div className="text-sm text-[var(--sub-text-color)] mt-2">
+                                            {team.teamMembers || team.memberCount || 0} {t("departments.editDepartmentForm.setupTeams.members", "Members")}
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}
@@ -1037,6 +1094,10 @@ function EditReviewStep({ departmentData, onBack, selectedUser, onSubmit, isSubm
     const isArabic = i18n.language === "ar";
     const navigate = useNavigate();
     const [isCompleted, setIsCompleted] = useState(false);
+    
+    // Permission checks
+    const canViewTeams = useHasPermission('Team.View');
+    const canViewMembers = useHasPermission('Team.ViewMembers');
     const handleSubmit = async () => {
         try {
             await onSubmit();
@@ -1108,36 +1169,40 @@ function EditReviewStep({ departmentData, onBack, selectedUser, onSubmit, isSubm
                 </div>
             </div>
 
-            {/* Teams */}
-            <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-[var(--text-color)]">Teams</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {departmentData.teams.map((team, index) => {
-                        const teamId = team.id || `team-${index}`;
-                        return (
-                        <div key={teamId} className="p-4 bg-[var(--container-color)] rounded-lg border border-[var(--border-color)] flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 gradient-bg rounded-full flex items-center justify-center">
-                                    <Users className="text-white" size={20} />
+            {/* Teams - Only show if user has Team.View permission */}
+            {canViewTeams && (
+                <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-[var(--text-color)]">Teams</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {departmentData.teams.map((team, index) => {
+                            const teamId = team.id || `team-${index}`;
+                            return (
+                            <div key={teamId} className="p-4 bg-[var(--container-color)] rounded-lg border border-[var(--border-color)] flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 gradient-bg rounded-full flex items-center justify-center">
+                                        <Users className="text-white" size={20} />
+                                    </div>
+                                    <div>
+                                        <div className="text-[var(--text-color)] font-medium">{team.name}</div>
+                                        <div className="text-[var(--sub-text-color)] text-sm">{team.description}</div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <div className="text-[var(--text-color)] font-medium">{team.name}</div>
-                                    <div className="text-[var(--sub-text-color)] text-sm">{team.description}</div>
-                                </div>
+                                {canViewMembers && (
+                                    <span className="text-[var(--sub-text-color)] text-sm">
+                                        {(() => {
+                                            // Count members: team leader (1) + employees (selectedEmployees.length)
+                                            const teamLeaderCount = team.teamLeader ? 1 : 0;
+                                            const employeesCount = team.selectedEmployees?.length || 0;
+                                            return (teamLeaderCount + employeesCount) || team.members || 0;
+                                        })()} {t("departments.editDepartmentForm.setupTeams.members")}
+                                    </span>
+                                )}
                             </div>
-                            <span className="text-[var(--sub-text-color)] text-sm">
-                                {(() => {
-                                    // Count members: team leader (1) + employees (selectedEmployees.length)
-                                    const teamLeaderCount = team.teamLeader ? 1 : 0;
-                                    const employeesCount = team.selectedEmployees?.length || 0;
-                                    return (teamLeaderCount + employeesCount) || team.members || 0;
-                                })()} {t("departments.editDepartmentForm.setupTeams.members")}
-                            </span>
-                        </div>
-                        );
-                    })}
+                            );
+                        })}
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Action Buttons */}
             <div className={`flex ${isArabic ? 'justify-start' : 'justify-end'} gap-3 pt-6`}>

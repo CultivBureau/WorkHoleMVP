@@ -91,13 +91,57 @@ export const shiftApi = createApi({
       ],
     }),
 
-    // Assign shift to a user
+    // Assign shift to a user (legacy endpoint)
     assignUserShift: builder.mutation({
       query: (body) => ({
         url: "/api/v1/Shift/AssignUser/assignments",
         method: "POST",
         body,
       }),
+    }),
+
+    // Assign users to a shift (new endpoint)
+    assignUsersToShift: builder.mutation({
+      query: (body) => ({
+        url: "/api/Shift/assignments",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [
+        { type: "Shifts", id: "LIST" },
+        { type: "Shifts", id: "ALL-ASSIGNMENTS" },
+      ],
+    }),
+
+    // Update shift assignments (update users assigned to a shift)
+    updateShiftAssignments: builder.mutation({
+      query: ({ shiftId, ...body }) => ({
+        url: `/api/Shift/assignments/${shiftId}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: [{ type: "Shifts", id: "LIST" }],
+    }),
+
+    // Get all assignments (for all shifts) - filter by shiftId on client side
+    getAllShiftAssignments: builder.query({
+      query: () => ({
+        url: `/api/Shift/assignments`,
+        method: "GET",
+      }),
+      providesTags: (result) => [{ type: "Shifts", id: "ALL-ASSIGNMENTS" }],
+    }),
+
+    // Delete a single assignment (remove user from shift)
+    deleteShiftAssignment: builder.mutation({
+      query: ({ assignmentId }) => ({
+        url: `/api/Shift/assignments/${assignmentId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: () => [
+        { type: "Shifts", id: "LIST" },
+        { type: "Shifts", id: "ALL-ASSIGNMENTS" },
+      ],
     }),
   }),
 });
@@ -110,5 +154,9 @@ export const {
   useDeleteShiftMutation,
   useRestoreShiftMutation,
   useAssignUserShiftMutation,
+  useAssignUsersToShiftMutation,
+  useUpdateShiftAssignmentsMutation,
+  useGetAllShiftAssignmentsQuery,
+  useDeleteShiftAssignmentMutation,
 } = shiftApi;
 

@@ -4,14 +4,22 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { useGetAllPermissionsQuery } from '../../../services/apis/PermissionApi';
 import { useCreateRoleMutation } from '../../../services/apis/RoleApi';
+import { useHasPermission } from '../../../hooks/useHasPermission';
 
 const NewRoleForm = () => {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
     const navigate = useNavigate();
 
-    // Fetch permissions from API
-    const { data: permissionsData, isLoading: permissionsLoading, error: permissionsError } = useGetAllPermissionsQuery();
+    // Permission checks
+    const canViewRolePermissions = useHasPermission('Role.ViewPermissions');
+    const canViewAllPermissions = useHasPermission('Permission.View');
+    const canViewPermissions = canViewRolePermissions || canViewAllPermissions;
+
+    // Fetch permissions from API - only if user has permission to view permissions
+    const { data: permissionsData, isLoading: permissionsLoading, error: permissionsError } = useGetAllPermissionsQuery(undefined, {
+        skip: !canViewPermissions
+    });
     const [createRole, { isLoading: isSubmitting }] = useCreateRoleMutation();
 
     const [formData, setFormData] = useState({
@@ -287,7 +295,7 @@ const NewRoleForm = () => {
                                 {t('roles.permissionsDescription')}
                             </p>
                         </div>
-                        {!permissionsLoading && !permissionsError && (
+                        {canViewPermissions && !permissionsLoading && !permissionsError && (
                             <div className="px-4 py-2 rounded-lg" style={{ background: "var(--container-color)" }}>
                                 <span className="text-sm font-bold gradient-text">
                                     {formData.selectedPermissionIds.length}
@@ -299,7 +307,31 @@ const NewRoleForm = () => {
                         )}
                     </div>
 
-                    {permissionsLoading && (
+                    {/* Show message if user doesn't have permission to view permissions */}
+                    {!canViewPermissions && (
+                        <div className="py-12">
+                            <div className="rounded-xl p-6 border-2" style={{ 
+                                background: "var(--bg-color)",
+                                borderColor: "var(--border-color)"
+                            }}>
+                                <div className="flex flex-col items-center justify-center gap-4">
+                                    <svg className="w-12 h-12 text-[var(--sub-text-color)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                    <div className="text-center">
+                                        <p className="text-lg font-semibold text-[var(--text-color)] mb-2">
+                                            {t('roles.noPermissionToViewPermissions') || 'No Permission to View Permissions'}
+                                        </p>
+                                        <p className="text-sm text-[var(--sub-text-color)]">
+                                            {t('roles.noPermissionToViewPermissionsDesc') || 'You do not have permission to view permissions. You can still create a role, but you will not be able to assign permissions to it.'}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {canViewPermissions && permissionsLoading && (
                         <div className="py-12">
                             <div className="flex flex-col items-center justify-center gap-4">
                                 <div className="w-16 h-16 rounded-full border-4 border-t-[var(--accent-color)] border-r-transparent border-b-transparent border-l-transparent animate-spin"></div>
@@ -310,7 +342,7 @@ const NewRoleForm = () => {
                         </div>
                     )}
 
-                    {permissionsError && (
+                    {canViewPermissions && permissionsError && (
                         <div className="py-12">
                             <div className="rounded-xl p-6 border-2 border-red-500" style={{ background: "var(--bg-color)" }}>
                                 <div className="flex items-center gap-3 justify-center">
@@ -325,7 +357,7 @@ const NewRoleForm = () => {
                         </div>
                     )}
 
-                    {!permissionsLoading && !permissionsError && (
+                    {canViewPermissions && !permissionsLoading && !permissionsError && (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                             {Object.keys(groupedPermissions).map(category => (
                                 <div 
@@ -427,7 +459,7 @@ const NewRoleForm = () => {
                             </button>
                             <button
                                 type="submit"
-                                disabled={isSubmitting || permissionsLoading}
+                                disabled={isSubmitting || (canViewPermissions && permissionsLoading)}
                                 className="btn-primary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 dir={isArabic ? 'rtl' : 'ltr'}
                             >

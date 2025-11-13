@@ -1,16 +1,19 @@
-import React from 'react';
-import SideBarAdmin from '../../../components/admin/SideBarAdmin';
-import NavBarAdmin from '../../../components/admin/NavBarAdmin';
-import AllTeamsComponent from '../../../components/admin/all-departments/all-teams/all-teams';
-import { PermissionGuard } from '../../../components/common/PermissionGuard';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
+import { useParams, useNavigate } from "react-router-dom";
+import NavBarAdmin from "../../../../components/admin/NavBarAdmin";
+import SideBarAdmin from "../../../../components/admin/SideBarAdmin";
+import ShiftAssignmentsComponent from "../../../../components/admin/all-shifts/shift-assignments";
+import { PermissionGuard } from "../../../../components/common/PermissionGuard";
 
-const AllTeamsPage = () => {
-  const { t } = useTranslation();
-  
+const ShiftAssignments = () => {
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === "ar";
+  const { shiftId } = useParams();
+  const navigate = useNavigate();
+
   return (
     <PermissionGuard 
-      backendPermissions={["Team.View"]}
+      backendPermissions={["ShiftAssignment.View", "ShiftAssignment.AssignUser"]}
       loadingFallback={
         <div className="flex items-center justify-center min-h-screen" style={{ background: "var(--bg-all)" }}>
           <span className="text-[var(--sub-text-color)]">{t('common.loading') || 'Loading...'}</span>
@@ -26,16 +29,15 @@ const AllTeamsPage = () => {
         {/* Sidebar */}
         <SideBarAdmin />
 
-
         {/* Main Content */}
         <main className="flex-1 overflow-auto p-4" style={{ background: "var(--bg-all)" }}>
           <div
             className="h-max rounded-2xl border border-gray-200"
             style={{ background: "var(--bg-color)" }}
           >
-            {/* All Teams content */}
+            {/* Shift Assignments content */}
             <div className="w-full h-max p-6">
-               <AllTeamsComponent />
+              <ShiftAssignmentsComponent shiftId={shiftId} onBack={() => navigate('/pages/admin/shifts')} />
             </div>
           </div>
         </main>
@@ -45,4 +47,5 @@ const AllTeamsPage = () => {
   );
 };
 
-export default AllTeamsPage;
+export default ShiftAssignments;
+

@@ -2,13 +2,22 @@ import { useTranslation } from "react-i18next";
 import NavBarAdmin from "../../../components/admin/NavBarAdmin";
 import SideBarAdmin from "../../../components/admin/SideBarAdmin";
 import NewDepartmentForm from "../../../components/admin/new-department/form";
+import { PermissionGuard } from "../../../components/common/PermissionGuard";
 
 const NewDepartment = () => {
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === "ar";
 
   return (
-    <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
+    <PermissionGuard 
+      backendPermissions={["Department.Create"]}
+      loadingFallback={
+        <div className="flex items-center justify-center min-h-screen" style={{ background: "var(--bg-all)" }}>
+          <span className="text-[var(--sub-text-color)]">{t('common.loading') || 'Loading...'}</span>
+        </div>
+      }
+    >
+      <div className="w-full h-screen flex flex-col" style={{ background: "var(--bg-all)" }}>
       {/* Navigation Bar */}
       <NavBarAdmin />
 
@@ -31,6 +40,7 @@ const NewDepartment = () => {
         </main>
       </div>
     </div>
+    </PermissionGuard>
   );
 };
 

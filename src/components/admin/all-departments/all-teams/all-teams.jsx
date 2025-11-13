@@ -8,6 +8,7 @@ import AddTeamModal from "./add-team";
 import EditTeamModal from "./edit-team";
 import { useGetTeamsByDepartmentQuery, useDeleteTeamMutation } from "../../../../services/apis/TeamApi";
 import { useTeamDetails } from "./useTeamDetails";
+import { useHasPermission } from "../../../../hooks/useHasPermission";
 
 export default function AllTeams() {
     const { t, i18n } = useTranslation();
@@ -20,6 +21,16 @@ export default function AllTeams() {
     const location = useLocation();
     const params = new URLSearchParams(location.search);
     const departmentId = params.get('departmentId');
+    
+    // Permission checks for Team actions
+    const canCreateTeam = useHasPermission('Team.Create');
+    const canUpdateTeam = useHasPermission('Team.Update');
+    const canDeleteTeam = useHasPermission('Team.Delete');
+    const canRestoreTeam = useHasPermission('Team.Restore');
+    const canViewMembers = useHasPermission('Team.ViewMembers');
+    const canAddMember = useHasPermission('Team.AddMember');
+    const canUpdateMember = useHasPermission('Team.UpdateMember');
+    const canRemoveMember = useHasPermission('Team.RemoveMember');
 
     // Fetch teams from API
     const { data: teamsData, isLoading, isError, refetch } = useGetTeamsByDepartmentQuery(departmentId, {
@@ -161,13 +172,15 @@ export default function AllTeams() {
 
                 {/* Action Buttons */}
                 <div className={` ${isArabic ? 'flex-row-reverse' : ''}`}>
-                    <button 
-                        onClick={handleAddNewTeam}
-                        className="btn-primary flex items-center gap-2"
-                    >
-                        <Plus size={16} />
-                        <span className="hidden sm:inline">{t("allTeams.search.addNewTeam")}</span>
-                    </button>
+                    {canCreateTeam && (
+                        <button 
+                            onClick={handleAddNewTeam}
+                            className="btn-primary flex items-center gap-2"
+                        >
+                            <Plus size={16} />
+                            <span className="hidden sm:inline">{t("allTeams.search.addNewTeam")}</span>
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -193,6 +206,13 @@ export default function AllTeams() {
                             team={team} 
                             onEdit={handleEditTeam}
                             onDelete={handleDeleteTeam}
+                            canUpdate={canUpdateTeam}
+                            canDelete={canDeleteTeam}
+                            canRestore={canRestoreTeam}
+                            canViewMembers={canViewMembers}
+                            canAddMember={canAddMember}
+                            canUpdateMember={canUpdateMember}
+                            canRemoveMember={canRemoveMember}
                         />
                     ))
                 ) : (

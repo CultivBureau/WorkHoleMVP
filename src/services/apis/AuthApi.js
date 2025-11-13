@@ -44,7 +44,7 @@ export const authApi = createApi({
     }),
     me: builder.query({
       query: () => ({
-        url: "/api/v1/Authentication/me",
+        url: "/api/v1/User/GetUserProfile/me",
         method: "GET",
       }),
       // Don't throw error on 404, just return empty data

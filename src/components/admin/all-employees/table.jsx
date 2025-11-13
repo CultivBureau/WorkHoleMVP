@@ -7,6 +7,7 @@ import EditEmployeePopup from "./edit-employee";
 import { useGetAllUsersQuery } from "../../../services/apis/UserApi";
 import { useGetAllDepartmentsQuery } from "../../../services/apis/DepartmentApi";
 import { useGetAllRolesQuery } from "../../../services/apis/RoleApi";
+import { useHasPermission } from "../../../hooks/useHasPermission";
 
 const EmployeesTable = () => {
     const { t, i18n } = useTranslation();
@@ -22,6 +23,12 @@ const EmployeesTable = () => {
     const [selectedEmployee, setSelectedEmployee] = useState(null);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const joinDateInputRef = useRef(null);
+    
+    // Permission checks
+    const canCreate = useHasPermission('User.Create');
+    const canUpdate = useHasPermission('User.Update');
+    const canDelete = useHasPermission('User.Delete');
+    const canViewAllProfiles = useHasPermission('User.Profile.ViewAll');
 
     // Responsive items per page based on screen size and view mode
     const getItemsPerPage = () => {
@@ -235,26 +242,32 @@ const EmployeesTable = () => {
     // Enhanced Action buttons for table
     const ActionButtons = ({ employee }) => (
         <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
-            <button
-                className="p-2 rounded-lg hover:bg-[var(--hover-color)] transition-all hover:scale-110"
-                title={t("employees.actions.view", "View")}
-                onClick={(e) => { e.stopPropagation(); handleViewEmployee(employee); }}
-            >
-                <Eye className="w-5 h-5" style={{ color: 'var(--accent-color)' }} />
-            </button>
-            <button
-                className="p-2 rounded-lg hover:bg-[var(--hover-color)] transition-all hover:scale-110"
-                title={t("employees.actions.edit", "Edit")}
-                onClick={(e) => { e.stopPropagation(); setSelectedEmployee(employee); setIsEditOpen(true); }}
-            >
-                <Edit className="w-5 h-5" style={{ color: 'var(--accent-color)' }} />
-            </button>
-            <button
-                className="p-2 rounded-lg hover:bg-red-50 transition-all hover:scale-110"
-                title={t("employees.actions.delete", "Delete")}
-            >
-                <Trash2 className="w-5 h-5" style={{ color: 'var(--error-color)' }} />
-            </button>
+            {canViewAllProfiles && (
+                <button
+                    className="p-2 rounded-lg hover:bg-[var(--hover-color)] transition-all hover:scale-110"
+                    title={t("employees.actions.view", "View")}
+                    onClick={(e) => { e.stopPropagation(); handleViewEmployee(employee); }}
+                >
+                    <Eye className="w-5 h-5" style={{ color: 'var(--accent-color)' }} />
+                </button>
+            )}
+            {canUpdate && (
+                <button
+                    className="p-2 rounded-lg hover:bg-[var(--hover-color)] transition-all hover:scale-110"
+                    title={t("employees.actions.edit", "Edit")}
+                    onClick={(e) => { e.stopPropagation(); setSelectedEmployee(employee); setIsEditOpen(true); }}
+                >
+                    <Edit className="w-5 h-5" style={{ color: 'var(--accent-color)' }} />
+                </button>
+            )}
+            {canDelete && (
+                <button
+                    className="p-2 rounded-lg hover:bg-red-50 transition-all hover:scale-110"
+                    title={t("employees.actions.delete", "Delete")}
+                >
+                    <Trash2 className="w-5 h-5" style={{ color: 'var(--error-color)' }} />
+                </button>
+            )}
         </div>
     );
 
@@ -460,17 +473,19 @@ const EmployeesTable = () => {
                         </div>
 
                         {/* Add New Employee Button */}
-                        <button
-                            onClick={handleAddNewEmployee}
-                            className="gradient-bg flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-white transition-all duration-200 hover:shadow-lg"
-                            style={{
-                                border: '1px solid var(--accent-color)'
-                            }}
-                        >
-                            <Plus className="w-3 h-3 md:w-4 md:h-4" />
-                            <span className="hidden sm:inline">{t("employees.addNew", "Add New Employee")}</span>
-                            <span className="sm:hidden">{t("employees.add", "Add")}</span>
-                        </button>
+                        {canCreate && (
+                            <button
+                                onClick={handleAddNewEmployee}
+                                className="gradient-bg flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-white transition-all duration-200 hover:shadow-lg"
+                                style={{
+                                    border: '1px solid var(--accent-color)'
+                                }}
+                            >
+                                <Plus className="w-3 h-3 md:w-4 md:h-4" />
+                                <span className="hidden sm:inline">{t("employees.addNew", "Add New Employee")}</span>
+                                <span className="sm:hidden">{t("employees.add", "Add")}</span>
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
@@ -541,6 +556,9 @@ const EmployeesTable = () => {
                                             onCardClick={() => handleViewEmployee(employee)}
                                             onView={() => handleViewEmployee(employee)}
                                             onEdit={() => { setSelectedEmployee(employee); setIsEditOpen(true); }}
+                                            canViewAllProfiles={canViewAllProfiles}
+                                            canUpdate={canUpdate}
+                                            canDelete={canDelete}
                                             className="h-full"
                                         />
                                     ) : (
@@ -627,21 +645,27 @@ const EmployeesTable = () => {
                                             style={{ color: 'white', minWidth: '100px' }}>
                                             {t("employees.table.status", "Status")}
                                         </th>
-                                        <th className={`px-4 md:px-6 py-4 text-xs font-bold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
-                                            style={{ color: 'white', minWidth: '120px' }}>
-                                            {t("employees.table.action", "Action")}
-                                        </th>
+                                        {/* Actions column - Only show if user has any action permissions */}
+                                        {(canViewAllProfiles || canUpdate || canDelete) && (
+                                            <th className={`px-4 md:px-6 py-4 text-xs font-bold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+                                                style={{ color: 'white', minWidth: '120px' }}>
+                                                {t("employees.table.action", "Action")}
+                                            </th>
+                                        )}
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {paginatedEmployees.map((employee) => (
                                         <tr
                                             key={employee.id}
-                                            className="transition-all duration-300 cursor-pointer group border-b-2"
+                                            className={`transition-all duration-300 group border-b-2 ${
+                                                canViewAllProfiles ? 'cursor-pointer' : 'cursor-default'
+                                            }`}
                                             style={{
                                                 borderColor: 'var(--border-color)',
                                                 backgroundColor: 'var(--bg-color)'
                                             }}
+                                            onClick={canViewAllProfiles ? () => handleViewEmployee(employee) : undefined}
                                             onMouseEnter={(e) => {
                                                 e.currentTarget.style.backgroundColor = 'var(--hover-color)';
                                             }}
@@ -819,10 +843,12 @@ const EmployeesTable = () => {
                                                 </span>
                                             </td>
 
-                                            {/* Actions */}
-                                            <td className={`px-4 md:px-6 py-5 ${isArabic ? 'text-right' : 'text-left'}`}>
-                                                <ActionButtons employee={employee} />
-                                            </td>
+                                            {/* Actions - Only show if user has any action permissions */}
+                                            {(canViewAllProfiles || canUpdate || canDelete) && (
+                                                <td className={`px-4 md:px-6 py-5 ${isArabic ? 'text-right' : 'text-left'}`}>
+                                                    <ActionButtons employee={employee} />
+                                                </td>
+                                            )}
                                         </tr>
                                     ))}
                                 </tbody>

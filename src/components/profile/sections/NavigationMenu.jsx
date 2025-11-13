@@ -9,7 +9,6 @@ export default function NavigationMenu({ activeSection, onSectionChange }) {
   const sections = [
     { id: "profile", label: t("profile.profile"), icon: User },
     { id: "attendance", label: t("aside.all_attendance"), icon: CalendarCheck },
-    { id: "projects", label: t("aside.projects"), icon: FileText },
     { id: "leave", label: t("aside.leaves"), icon: ClipboardList },
   ]
 

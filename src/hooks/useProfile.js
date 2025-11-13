@@ -16,8 +16,6 @@ export const useProfile = (isRtl) => {
         return { type: "profile", activeTab, setActiveTab }
       case "attendance":
         return { type: "table", config: tableConfig.attendance, data: userData.attendance }
-      case "projects":
-        return { type: "table", config: tableConfig.projects, data: userData.projects }
       case "leave":
         return { type: "table", config: tableConfig.leave, data: userData.leaveRequests }
       default:

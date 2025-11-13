@@ -50,6 +50,7 @@ const AssignRoleUsers = lazy(() => import("./pages/admin/assign-role-users/page"
 const AdminTeamWallet = lazy(() => import("./pages/admin/TeamWallet/page"));
 const Company = lazy(() => import("./pages/admin/company/page"));
 const AllShifts = lazy(() => import("./pages/admin/shifts/page"));
+const ShiftAssignments = lazy(() => import("./pages/admin/shifts/assignments/page"));
 
 function App() {
   useTokenRefresh();
@@ -263,13 +264,9 @@ function App() {
                     path="/pages/admin/company"
                     element={
                       <ProtectedRoute>
-                        <PermissionGuard
-                          permissions={["editCompanySettings"]}
-                        >
-                          <Suspense fallback={<Loading />}>
-                            <Company />
-                          </Suspense>
-                        </PermissionGuard>
+                        <Suspense fallback={<Loading />}>
+                          <Company />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />
@@ -279,6 +276,16 @@ function App() {
                       <ProtectedRoute>
                         <Suspense fallback={<Loading />}>
                           <AllShifts />
+                        </Suspense>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/pages/admin/shifts/:shiftId/assignments"
+                    element={
+                      <ProtectedRoute>
+                        <Suspense fallback={<Loading />}>
+                          <ShiftAssignments />
                         </Suspense>
                       </ProtectedRoute>
                     }
@@ -301,13 +308,9 @@ function App() {
                     path="/pages/admin/all-departments"
                     element={
                       <ProtectedRoute>
-                        <PermissionGuard
-                          permissions={["editCompanySettings"]}
-                        >
-                          <Suspense fallback={<Loading />}>
-                            <AllDepartments />
-                          </Suspense>
-                        </PermissionGuard>
+                        <Suspense fallback={<Loading />}>
+                          <AllDepartments />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />
@@ -357,13 +360,9 @@ function App() {
                     path="/pages/admin/Roles&Permissions"
                     element={
                       <ProtectedRoute>
-                        <PermissionGuard
-                          permissions={["assignRoles"]}
-                        >
-                          <Suspense fallback={<Loading />}>
-                            <RolesAndPermissions />
-                          </Suspense>
-                        </PermissionGuard>
+                        <Suspense fallback={<Loading />}>
+                          <RolesAndPermissions />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />
