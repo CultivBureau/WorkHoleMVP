@@ -11,7 +11,6 @@ import AccountAccessSection from "../components/profile/sections/AccountAccessSe
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
 import { useMeQuery } from "../services/apis/AuthApi"
-import { useGetAllShiftAssignmentsQuery } from "../services/apis/ShiftApi"
 import { useGetUserProfileClockInLogsQuery } from "../services/apis/ClockinLogApi"
 import { useGetUserProfileByIdQuery } from "../services/apis/UserApi"
 import Loading from "../components/Loading/Loading"
@@ -42,10 +41,6 @@ const Profile = () => {
   const { data: meResponse, isLoading: isLoadingUser } = useMeQuery()
   const userDataFromApi = meResponse?.value || null
   
-  // Fetch shift assignments to get user's shift
-  const { data: assignmentsData } = useGetAllShiftAssignmentsQuery()
-  const allAssignments = assignmentsData?.value || assignmentsData || []
-  
   const {
     fieldLabels,
     activeTab,
@@ -68,17 +63,15 @@ const Profile = () => {
     { skip: !userIdForAttendance || activeSection !== 'attendance' }
   )
 
-  // Get user's shift from assignments (for both own profile and employee profile)
+  // Get user's shift from /me endpoint (for own profile) or employee profile API
   const userShift = useMemo(() => {
-    // Determine which user ID to use
-    const userId = isAdminView && employeeData?.id ? employeeData.id : userDataFromApi?.id
-    if (!userId || !Array.isArray(allAssignments)) return null
-    const userAssignment = allAssignments.find(
-      assignment => assignment.userId === userId
-    )
-    // Check both possible structures
-    return userAssignment?.shiftRule?.name || userAssignment?.shift?.name || null
-  }, [allAssignments, userDataFromApi?.id, employeeData?.id, isAdminView])
+    if (isAdminView && employeeData) {
+      // For employee profile (admin view), check if shift is in employeeData
+      return employeeData.shift?.name || null
+    }
+    // For own profile, get shift from /me endpoint
+    return userDataFromApi?.shift?.name || null
+  }, [userDataFromApi?.shift?.name, employeeData?.shift?.name, isAdminView])
 
   // Helper function to format arrays with bullet points (respects RTL/LTR)
   const formatArrayWithBullets = useMemo(() => {
