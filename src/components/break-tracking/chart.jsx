@@ -1,17 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronDown } from "lucide-react";
-
-// Static break dashboard data
-const staticBreakDashboard = {
-  breakTypeUsage: [
-    { type: "Lunch", total: "45 min", count: 15 },
-    { type: "Coffee", total: "30 min", count: 10 },
-    { type: "Personal", total: "15 min", count: 5 },
-    { type: "Prayer", total: "10 min", count: 3 },
-    { type: "Toilet", total: "8 min", count: 2 }
-  ]
-};
 
 // Types translation keys
 const breakTypeKeys = {
@@ -26,17 +15,12 @@ const breakTypeKeys = {
 // لون موحد لكل البارات
 const unifiedColor = "#75C8CF";
 
-const BreakTypeChart = () => {
+const BreakTypeChart = ({ data = [], isLoading = false }) => {
   const { t, i18n } = useTranslation();
   const [filter, setFilter] = useState("week");
   
-  // Use static data instead of API call
-  const dashboard = staticBreakDashboard;
-  const isLoading = false;
-
-  // Static breakTypeUsage data
-  const breakData = dashboard?.breakTypeUsage || [];
-  const timeValues = breakData.map(b => parseInt(b.total.replace(" min", "")) || 0);
+  const breakData = useMemo(() => data, [data]);
+  const timeValues = breakData.map(b => parseInt(b.total?.toString().replace(" min", "")) || 0);
   const maxTime = Math.max(...timeValues, 10);
 
   const isArabic = i18n.language === "ar";
@@ -170,7 +154,7 @@ const BreakTypeChart = () => {
         {/* Bars */}
         <div className={`absolute ${isArabic ? 'right-8 sm:right-10 md:right-12' : 'left-8 sm:left-10 md:left-12'} ${isArabic ? 'left-0' : 'right-0'} top-0 h-full flex items-end justify-between px-1 sm:px-2 md:px-4`}>
           {(isArabic ? [...breakData].reverse() : breakData).map((breakItem, index) => {
-            const time = parseInt(breakItem.total.replace(" min", "")) || 0;
+            const time = parseInt(breakItem.total?.toString().replace(" min", "")) || 0;
             const count = breakItem.count || 0;
             const height = maxTime > 0 ? (time / maxTime) * 100 : 0;
             const breakTypeKey = breakTypeKeys[breakItem.type] || breakItem.type;
@@ -232,7 +216,15 @@ const BreakTypeChart = () => {
             {t('breakChart.totalTime', 'Total Time')}: {timeValues.reduce((sum, time) => sum + time, 0)}m
           </span>
           <span className="font-medium text-center sm:text-right truncate">
-            {t('breakChart.mostUsed', 'Most Used')}: {breakData.reduce((a, b) => (parseInt(a.total) > parseInt(b.total) ? a : b), breakData[0])?.type || "N/A"}
+            {t('breakChart.mostUsed', 'Most Used')}: {
+              breakData.length > 0
+                ? (breakData.reduce((a, b) => {
+                    const totalA = parseInt(a.total?.toString().replace(' min', '')) || 0;
+                    const totalB = parseInt(b.total?.toString().replace(' min', '')) || 0;
+                    return totalA >= totalB ? a : b;
+                  }, breakData[0]).type || 'N/A')
+                : 'N/A'
+            }
           </span>
         </div>
       </div>

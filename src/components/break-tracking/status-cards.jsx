@@ -1,27 +1,13 @@
-import { TrendingUp, TrendingDown } from "lucide-react";
 import Card from "../Time_Tracking_Components/Stats/Card";
 import { useTranslation } from "react-i18next";
 
-// Static break dashboard data
-const staticBreakDashboard = {
-  todaysBreakTime: "1h 15m",
-  mostUsedBreak: "Lunch",
-  avgBreakPerDay: "1h 30m",
-  breaksOverLimit: 2
-};
-
-const AttendanceStats = () => {
+const AttendanceStats = ({ stats, isLoading = false }) => {
   const { t } = useTranslation();
-  
-  // Use static data instead of API call
-  const dashboard = staticBreakDashboard;
-  const isLoading = false;
-  
-  // Static values
-  const todaysBreakTime = dashboard?.todaysBreakTime || "--";
-  const mostUsedBreakType = dashboard?.mostUsedBreak || "--";
-  const avgBreakPerDay = dashboard?.avgBreakPerDay || "--";
-  const breaksOverLimit = dashboard?.breaksOverLimit ?? "--";
+
+  const todaysBreakTime = stats?.todaysBreakTime ?? "--";
+  const mostUsedBreakType = stats?.mostUsedBreak ?? "--";
+  const avgBreakPerDay = stats?.avgBreakPerDay ?? "--";
+  const breaksOverLimit = stats?.breaksOverLimit ?? "--";
 
   const statsData = [
     {

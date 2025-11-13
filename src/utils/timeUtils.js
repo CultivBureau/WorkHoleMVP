@@ -12,6 +12,49 @@ export const getCurrentUtcTime = () => {
 };
 
 /**
+ * Normalize a UTC ISO string to ensure it is treated as UTC
+ * Adds 'Z' suffix if no timezone information is present
+ * @param {string} utcIsoString
+ * @returns {string|null}
+ */
+const normalizeUtcIsoString = (utcIsoString) => {
+  if (typeof utcIsoString !== "string") return null;
+  const trimmed = utcIsoString.trim();
+  if (!trimmed) return null;
+
+  const hasTimezone =
+    trimmed.endsWith("Z") ||
+    /[+-]\d{2}:?\d{2}$/.test(trimmed) ||
+    trimmed.match(/[+-]\d{2}$/);
+
+  if (hasTimezone) {
+    return trimmed;
+  }
+
+  return `${trimmed}Z`;
+};
+
+/**
+ * Safely parse a UTC ISO string into a Date object
+ * @param {string} utcIsoString
+ * @returns {Date|null}
+ */
+const parseUtcDate = (utcIsoString) => {
+  if (!utcIsoString) return null;
+
+  const normalized = normalizeUtcIsoString(utcIsoString);
+  const date = normalized ? new Date(normalized) : new Date(utcIsoString);
+
+  if (Number.isNaN(date.getTime())) {
+    // Final fallback
+    const fallbackDate = new Date(utcIsoString);
+    return Number.isNaN(fallbackDate.getTime()) ? null : fallbackDate;
+  }
+
+  return date;
+};
+
+/**
  * Convert UTC ISO string to local time string for display
  * @param {string} utcIsoString - UTC time as ISO string
  * @param {string} locale - Locale string (e.g., 'en-US', 'ar-EG')
@@ -21,27 +64,8 @@ export const getCurrentUtcTime = () => {
 export const utcToLocalTime = (utcIsoString, locale = 'en-US', options = {}) => {
   if (!utcIsoString) return "—";
   
-  // Ensure the string is treated as UTC by adding 'Z' if it's not present
-  // This handles cases where the API returns UTC time without the 'Z' suffix
-  let utcString = utcIsoString;
-  if (typeof utcString === 'string' && !utcString.endsWith('Z') && !utcString.includes('+') && !utcString.includes('-', 10)) {
-    // If it's an ISO string without timezone info, assume it's UTC
-    utcString = utcString.endsWith('Z') ? utcString : utcString + 'Z';
-  }
-  
-  const date = new Date(utcString);
-  if (Number.isNaN(date.getTime())) {
-    // Fallback: try parsing as-is
-    const fallbackDate = new Date(utcIsoString);
-    if (Number.isNaN(fallbackDate.getTime())) return "—";
-    const fallbackOptions = {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-      ...options
-    };
-    return fallbackDate.toLocaleTimeString(locale, fallbackOptions);
-  }
+  const date = parseUtcDate(utcIsoString);
+  if (!date) return "—";
   
   const defaultOptions = {
     hour: "numeric",
@@ -52,9 +76,10 @@ export const utcToLocalTime = (utcIsoString, locale = 'en-US', options = {}) => 
   
   // Debug logging in development
   if (typeof window !== 'undefined' && import.meta.env?.DEV) {
+    const normalized = normalizeUtcIsoString(utcIsoString);
     console.log('UTC to Local Time Conversion:', {
       input: utcIsoString,
-      processed: utcString,
+      processed: normalized || utcIsoString,
       localTime: date.toLocaleTimeString(locale, defaultOptions),
       utcHours: date.getUTCHours(),
       localHours: date.getHours(),
@@ -75,8 +100,8 @@ export const utcToLocalTime = (utcIsoString, locale = 'en-US', options = {}) => 
 export const utcToLocalDate = (utcIsoString, locale = 'en-US', options = {}) => {
   if (!utcIsoString) return "—";
   
-  const date = new Date(utcIsoString);
-  if (Number.isNaN(date.getTime())) return "—";
+  const date = parseUtcDate(utcIsoString);
+  if (!date) return "—";
   
   const defaultOptions = {
     year: "numeric",
@@ -97,8 +122,8 @@ export const utcToLocalDate = (utcIsoString, locale = 'en-US', options = {}) => 
 export const utcToLocalDateTime = (utcIsoString, locale = 'en-US') => {
   if (!utcIsoString) return "—";
   
-  const date = new Date(utcIsoString);
-  if (Number.isNaN(date.getTime())) return "—";
+  const date = parseUtcDate(utcIsoString);
+  if (!date) return "—";
   
   return date.toLocaleString(locale, {
     year: "numeric",
@@ -119,10 +144,14 @@ export const utcToLocalDateTime = (utcIsoString, locale = 'en-US') => {
 export const calculateDurationFromUtc = (startUtcIso, endUtcIso = null) => {
   if (!startUtcIso) return 0;
   
-  const start = new Date(startUtcIso);
-  const end = endUtcIso ? new Date(endUtcIso) : new Date();
+  const start = parseUtcDate(startUtcIso);
+  const end = endUtcIso ? parseUtcDate(endUtcIso) : new Date();
   
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+  if (!start || Number.isNaN(start.getTime())) {
+    return 0;
+  }
+
+  if (!end || Number.isNaN(end.getTime())) {
     return 0;
   }
   
@@ -137,8 +166,8 @@ export const calculateDurationFromUtc = (startUtcIso, endUtcIso = null) => {
 export const isUtcDateToday = (utcIsoString) => {
   if (!utcIsoString) return false;
   
-  const utcDate = new Date(utcIsoString);
-  if (Number.isNaN(utcDate.getTime())) return false;
+  const utcDate = parseUtcDate(utcIsoString);
+  if (!utcDate) return false;
   
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -147,5 +176,24 @@ export const isUtcDateToday = (utcIsoString) => {
   localDate.setHours(0, 0, 0, 0);
   
   return localDate.getTime() === today.getTime();
+};
+
+/**
+ * Get the user's device locale
+ * @returns {string} Locale string (e.g., 'en-US', 'ar-EG')
+ */
+export const getDeviceLocale = () => {
+  if (typeof window === 'undefined') return 'en-US';
+  
+  // Try to get locale from browser
+  const browserLocale = navigator.language || navigator.userLanguage || 'en-US';
+  
+  // Check if Arabic is preferred
+  const storedLang = localStorage.getItem('lang');
+  if (storedLang === 'ar') {
+    return 'ar-EG'; // Arabic (Egypt)
+  }
+  
+  return browserLocale;
 };
 

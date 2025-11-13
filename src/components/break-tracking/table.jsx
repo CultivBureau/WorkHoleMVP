@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { utcToLocalTime, getDeviceLocale } from "../../utils/timeUtils";
 // Static break stats data
 const staticBreakStats = {
   breaks: [
@@ -16,34 +17,51 @@ const staticBreakStats = {
   }
 };
 
-const BreakHistoryTable = () => {
+const BreakHistoryTable = ({
+  logs = [],
+  isLoading = false,
+  page = 1,
+  pageSize = 10,
+  hasNextPage = false,
+  onPageChange,
+}) => {
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === "ar";
   const [sortBy, setSortBy] = useState("newest");
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedType, setSelectedType] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(page);
 
-  // Use static data instead of API call
-  const statsData = staticBreakStats;
-  const isLoading = false;
-  const refetch = () => {}; // Empty function for compatibility
+  useEffect(() => {
+    setCurrentPage(page);
+  }, [page]);
 
-  const breaks = statsData?.breaks || [];
-  const pagination = statsData?.pagination || { page: 1, limit: 4, total: 0, totalPages: 1 };
-  const availableFilters = statsData?.availableFilters || { dates: [], types: [] };
-
+  const breaks = logs;
+ 
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedDate, selectedType, sortBy]);
 
-  // Format time
-  const formatLocalTime = (dateString) => {
-    if (!dateString) return "--";
-    const date = new Date(dateString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  // Format time - convert UTC to local timezone using timeUtils
+  const formatLocalTime = (utcIsoString) => {
+    if (!utcIsoString) return "--";
+    const locale = getDeviceLocale();
+    return utcToLocalTime(utcIsoString, locale, {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
+
+  // Options for filters derived from logs
+  const availableFilters = useMemo(() => {
+    const dates = Array.from(new Set(breaks.map((record) => record.date))).filter(Boolean);
+    const types = Array.from(new Set(breaks.map((record) => record.breakType))).filter(Boolean);
+    return {
+      dates,
+      types,
+    };
+  }, [breaks]);
 
   // Table filter fields
   const SelectField = ({ value, onChange, options, label }) => (
@@ -127,7 +145,7 @@ const BreakHistoryTable = () => {
           </div>
 
           <div className="text-sm font-medium" style={{ color: 'var(--sub-text-color)' }}>
-            {isLoading ? "..." : `${breaks.length} ${t("breakHistoryTable.of")} ${pagination.total || 0} ${t("breakHistoryTable.entries")}`}
+            {isLoading ? "..." : `${breaks.length} ${t("breakHistoryTable.entries")}`}
           </div>
         </div>
       </div>
@@ -193,7 +211,7 @@ const BreakHistoryTable = () => {
                 >
                   <td className={`px-6 py-4 text-sm font-medium ${isArabic ? 'text-right' : 'text-left'}`}
                     style={{ color: 'var(--table-text)' }}>
-                    {record.date}
+                    {record.date || "--"}
                   </td>
                   <td className={`px-6 py-4 text-sm font-medium ${isArabic ? 'text-right' : 'text-left'}`}
                     style={{ color: '#75C8CF' }}>
@@ -201,7 +219,7 @@ const BreakHistoryTable = () => {
                   </td>
                   <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
                     style={{ color: 'var(--sub-text-color)' }}>
-                    {record.duration}
+                    {record.durationLabel}
                   </td>
                   <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
                     style={{ color: 'var(--sub-text-color)' }}>
@@ -232,13 +250,16 @@ const BreakHistoryTable = () => {
         style={{ borderColor: 'var(--divider-color)' }}
       >
         <div className="text-sm font-medium" style={{ color: 'var(--sub-text-color)' }}>
-          {t("breakHistoryTable.page")} {pagination.page || 1} {t("breakHistoryTable.of")} {pagination.totalPages || 1}
-          ({pagination.total || 0} {t("breakHistoryTable.totalEntries")})
+          {t("breakHistoryTable.page")} {currentPage} {t("breakHistoryTable.of")} {hasNextPage ? `${currentPage + 1}+` : currentPage}
         </div>
         <div className={`flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
           <button
-            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-            disabled={pagination.page === 1}
+            onClick={() => {
+              const nextPage = Math.max(1, currentPage - 1);
+              setCurrentPage(nextPage);
+              onPageChange?.(nextPage);
+            }}
+            disabled={currentPage === 1}
             className="p-2 rounded-xl border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               borderColor: 'var(--border-color)',
@@ -249,8 +270,12 @@ const BreakHistoryTable = () => {
             {<ChevronLeft className="w-4 h-4" style={{ color: 'var(--sub-text-color)' }} />}
           </button>
           <button
-            onClick={() => setCurrentPage(Math.min(pagination.totalPages || 1, currentPage + 1))}
-            disabled={pagination.page === (pagination.totalPages || 1)}
+            onClick={() => {
+              const nextPage = currentPage + 1;
+              setCurrentPage(nextPage);
+              onPageChange?.(nextPage);
+            }}
+            disabled={!hasNextPage}
             className="p-2 rounded-xl border transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               borderColor: 'var(--border-color)',

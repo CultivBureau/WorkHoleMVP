@@ -1,5 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "./baseQuery";
+import { getCurrentUtcTime } from "../../utils/timeUtils";
 
 export const breakApi = createApi({
   reducerPath: "breakApi",
@@ -56,6 +57,52 @@ export const breakApi = createApi({
       }),
       invalidatesTags: ["Break"],
     }),
+
+    // Get break logs for a specific user
+    getUserBreakLogs: builder.query({
+      query: ({ userId, pageNumber = 1, pageSize = 10 }) => ({
+        url: `/api/BreakLog/user/${userId}`,
+        method: "GET",
+        params: {
+          pageNumber,
+          pageSize,
+        },
+      }),
+      providesTags: ["Break"],
+    }),
+
+    // Start a break for the current user
+    startBreak: builder.mutation({
+      query: ({ breakId, utcDateTime }) => {
+        // Ensure UTC time is sent
+        const utcTime = utcDateTime || getCurrentUtcTime();
+        return {
+          url: "/api/BreakLog/start",
+          method: "POST",
+          body: {
+            breakId,
+            utcDateTime: utcTime,
+          },
+        };
+      },
+      invalidatesTags: ["Break"],
+    }),
+
+    // End the current break for the user
+    endBreak: builder.mutation({
+      query: ({ utcDateTime }) => {
+        // Ensure UTC time is sent
+        const utcTime = utcDateTime || getCurrentUtcTime();
+        return {
+          url: "/api/BreakLog/end",
+          method: "PUT",
+          body: {
+            utcDateTime: utcTime,
+          },
+        };
+      },
+      invalidatesTags: ["Break"],
+    }),
   }),
 });
 
@@ -65,5 +112,8 @@ export const {
   useCreateBreakMutation,
   useUpdateBreakMutation,
   useDeleteBreakMutation,
+  useGetUserBreakLogsQuery,
+  useStartBreakMutation,
+  useEndBreakMutation,
 } = breakApi;
 

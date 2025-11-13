@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import CustomPopup from '../ui/custom-popup';
-import DigitalNumber from '../ui/DigitalNumber';
-// Static break types data
-const staticBreakTypes = [
-  { name: "Lunch", duration: 45 },
-  { name: "Coffee", duration: 15 },
-  { name: "Personal", duration: 10 },
-  { name: "Prayer", duration: 10 }
-];
+import CustomPopup from "../ui/custom-popup";
+import DigitalNumber from "../ui/DigitalNumber";
+import { calculateDurationFromUtc } from "../../utils/timeUtils";
 
-const BreakTime = ({ breakDashboard, refetch }) => {
+const BreakTime = ({
+    breakOptions = [],
+    activeBreakLog,
+    onStartBreak,
+    onEndBreak,
+    isStarting = false,
+    isEnding = false,
+    isLoadingBreakOptions = false,
+}) => {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
 
@@ -21,101 +23,97 @@ const BreakTime = ({ breakDashboard, refetch }) => {
         document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
     }, [i18n]);
 
-    // Use static data instead of API hooks
-    const breakTypes = staticBreakTypes;
-    const starting = false;
-    const stopping = false;
-    const breakDashboardData = breakDashboard || {};
-    const refetchDashboard = () => {};
-    
-    // Mock mutation handlers - disabled for static data
-    const startBreak = async () => ({ data: {} });
-    const stopBreak = async () => ({ data: {} });
-
-    // UI state
+    const [selectedBreakId, setSelectedBreakId] = useState("");
     const [time, setTime] = useState(new Date());
-    const [isBreakActive, setIsBreakActive] = useState(false);
     const [breakStartTime, setBreakStartTime] = useState(null);
     const [breakDuration, setBreakDuration] = useState(0);
-    const [selectedReason, setSelectedReason] = useState("");
     const [showPopup, setShowPopup] = useState(false);
+    const [popupMessage, setPopupMessage] = useState(
+        t("breakTime.selectBreakReasonFirst", "Please select a break reason first!")
+    );
 
-    // Restore break state from localStorage
-    useEffect(() => {
-        const active = localStorage.getItem("breakActive") === "1";
-        const start = localStorage.getItem("breakStartTime");
-        const reason = localStorage.getItem("breakReason");
-        if (active && start) {
-            setIsBreakActive(true);
-            setBreakStartTime(new Date(start));
-            setSelectedReason(reason || "");
-        }
-    }, []);
+    const isBreakActive = useMemo(() => Boolean(activeBreakLog && !activeBreakLog.endBreak), [activeBreakLog]);
 
-    // Persist break state to localStorage
+    // when break options change, default select first available
     useEffect(() => {
-        if (isBreakActive && breakStartTime) {
-            localStorage.setItem("breakActive", "1");
-            localStorage.setItem("breakStartTime", breakStartTime.toISOString());
-            localStorage.setItem("breakReason", selectedReason);
+        if (breakOptions.length > 0) {
+            setSelectedBreakId((prev) => prev || breakOptions[0]?.id || "");
         } else {
-            localStorage.removeItem("breakActive");
-            localStorage.removeItem("breakStartTime");
-            localStorage.removeItem("breakReason");
+            setSelectedBreakId("");
         }
-    }, [isBreakActive, breakStartTime, selectedReason]);
+    }, [breakOptions]);
 
-    // Timer effect
+    // update break start time when active break changes
     useEffect(() => {
+        if (isBreakActive && activeBreakLog?.startBreak) {
+            // Store UTC ISO string directly
+            setBreakStartTime(activeBreakLog.startBreak);
+            // Reset duration when break becomes active
+            setBreakDuration(0);
+        } else {
+            setBreakStartTime(null);
+            setBreakDuration(0);
+        }
+    }, [activeBreakLog, isBreakActive]);
+
+    // Timer effect - calculate elapsed time from break start using UTC
+    useEffect(() => {
+        if (!isBreakActive || !breakStartTime) {
+            setBreakDuration(0);
+            return;
+        }
+
+        // Calculate initial duration immediately using timeUtils
+        const calculateDuration = () => {
+            const duration = calculateDurationFromUtc(breakStartTime);
+            setBreakDuration(duration);
+        };
+
+        // Calculate immediately
+        calculateDuration();
+
+        // Then update every second
         const timer = setInterval(() => {
             setTime(new Date());
-            if (isBreakActive && breakStartTime) {
-                const currentTime = new Date();
-                const duration = Math.floor((currentTime - breakStartTime) / 1000);
-                setBreakDuration(duration);
-            }
+            calculateDuration();
         }, 1000);
+
         return () => clearInterval(timer);
     }, [isBreakActive, breakStartTime]);
 
-    // Reason options from API
-    const reasonOptions = [
-        { value: "", label: t('breakTime.selectReason') },
-        ...breakTypes.map((type) => ({
-            value: type.name,
-            label: t(`breakTime.reasons.${type.name}`, type.name),
-        })),
-    ];
-
-    // Start/Stop break integration
-    const handleStartBreak = async () => {
-        if (!selectedReason) {
+    const handleToggleBreak = async () => {
+        try {
+            if (isBreakActive) {
+                await onEndBreak?.();
+            } else {
+                if (!selectedBreakId) {
+                    setPopupMessage(
+                        t("breakTime.selectBreakReasonFirst", "Please select a break reason first!")
+                    );
+                    setShowPopup(true);
+                    return;
+                }
+                await onStartBreak?.(selectedBreakId);
+            }
+        } catch (error) {
+            setPopupMessage(
+                error?.data?.errorMessage ||
+                t("common.somethingWentWrong", "Something went wrong. Please try again.")
+            );
             setShowPopup(true);
-            return;
-        }
-        if (!isBreakActive) {
-            try {
-                await startBreak(selectedReason);
-                setIsBreakActive(true);
-                setBreakStartTime(new Date());
-                setBreakDuration(0);
-                if (refetch) refetch(); // Json static data - no update needed
-            } catch (err) {
-                setShowPopup(true);
-            }
-        } else {
-            try {
-                await stopBreak();
-                setIsBreakActive(false);
-                setBreakStartTime(null);
-                setBreakDuration(0);
-                setSelectedReason("");
-                if (refetch) refetch(); // Static data - no update needed
-            } catch (err) {
-                setShowPopup(true);
-            }
         }
     };
+
+    const selectedBreakOption = useMemo(() => {
+        if (isBreakActive && activeBreakLog?.break?.id) {
+            return {
+                id: activeBreakLog.break.id,
+                name: activeBreakLog.break.name,
+                duration: activeBreakLog.break.duration,
+            };
+        }
+        return breakOptions.find((option) => option.id === selectedBreakId) || null;
+    }, [activeBreakLog, breakOptions, isBreakActive, selectedBreakId]);
 
     // Timer display
     const timerMinutes = Math.floor(breakDuration / 60).toString().padStart(2, "0");
@@ -126,17 +124,15 @@ const BreakTime = ({ breakDashboard, refetch }) => {
     const minuteAngle = time.getMinutes() * 6 + time.getSeconds() * 0.1 - 90;
     const hourAngle = (time.getHours() % 12) * 30 + time.getMinutes() * 0.5 - 90;
 
-    // احسب مدة البريك من نوع البريك المختار
-    const selectedTypeObj = breakTypes.find((type) => type.name === selectedReason);
-    const breakTypeDuration = selectedTypeObj ? selectedTypeObj.duration : 0; // بالدقائق
+    const breakTypeDuration = selectedBreakOption?.duration || 0;
 
-    // احسب الوقت المتبقي
+    // Calculate remaining time - ensure it's never negative
     const remainingSeconds = isBreakActive && breakStartTime && breakTypeDuration
-        ? breakTypeDuration * 60 - breakDuration
+        ? Math.max(0, (breakTypeDuration * 60) - breakDuration)
         : breakTypeDuration * 60;
 
     const remainingMinutes = Math.max(Math.floor(remainingSeconds / 60), 0);
-    const remainingSecs = Math.max(remainingSeconds % 60, 0);
+    const remainingSecs = Math.max(Math.floor(remainingSeconds % 60), 0);
 
     return (
         <div className="rounded-2xl shadow-xl border p-6 h-full flex flex-col backdrop-blur-sm transition-all duration-300 hover:shadow-2xl group"
@@ -157,25 +153,30 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                     {/* Select Reason - Always 50% width */}
                     <div className="relative group/select flex-1">
                         <select
-                            value={selectedReason}
-                            onChange={(e) => setSelectedReason(e.target.value)}
-                            disabled={isBreakActive}
+                            value={isBreakActive ? selectedBreakOption?.id || "" : selectedBreakId}
+                            onChange={(e) => setSelectedBreakId(e.target.value)}
+                            disabled={isBreakActive || isLoadingBreakOptions}
                             className="w-full border-2 rounded-xl font-semibold px-2 sm:px-2 lg:px-2 xl:px-2 py-2 sm:py-2.5 lg:py-2 xl:py-2.5 pr-8 sm:pr-10 lg:pr-8 xl:pr-10 text-xs sm:text-sm lg:text-xs xl:text-sm gradient-text appearance-none backdrop-blur-sm transition-all duration-300 hover:border-opacity-80 focus:ring-2 focus:ring-opacity-20 focus:scale-[1.02] h-[36px] sm:h-[42px] lg:h-[36px] xl:h-[42px]"
                             style={{
                                 borderColor: 'var(--accent-color)',
                                 backgroundColor: 'var(--bg-color)',
-                                opacity: isBreakActive ? 0.6 : 1,
+                                opacity: isBreakActive || isLoadingBreakOptions ? 0.6 : 1,
                                 boxShadow: '0 4px 15px rgba(0, 0, 0, 0.08)',
                                 focusRingColor: 'var(--accent-color)'
                             }}
                         >
-                            {reasonOptions.map((option) => (
+                            {!isBreakActive && (
+                                <option value="">
+                                    {t("breakTime.selectReason", "Select Break Reason")}
+                                </option>
+                            )}
+                            {(isBreakActive && selectedBreakOption ? [selectedBreakOption] : breakOptions).map((option) => (
                                 <option
-                                    key={option.value}
-                                    value={option.value}
+                                    key={option.id}
+                                    value={option.id}
                                     style={{ color: 'var(--sub-text-color)' }}
                                 >
-                                    {option.label}
+                                    {t(`breakTime.reasons.${option.name}`, option.name)}
                                 </option>
                             ))}
                         </select>
@@ -194,7 +195,7 @@ const BreakTime = ({ breakDashboard, refetch }) => {
 
                     {/* Start Break Button - Always 50% width */}
                     <button
-                        onClick={handleStartBreak}
+                        onClick={handleToggleBreak}
                         className="flex-1 text-white px-3 sm:px-4 lg:px-3 xl:px-4 py-2 sm:py-2.5 lg:py-2 xl:py-2.5 rounded-xl text-xs sm:text-sm lg:text-xs xl:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all duration-300 transform hover:scale-105 hover:shadow-xl active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed group/btn h-[36px] sm:h-[42px] lg:h-[36px] xl:h-[42px]"
                         style={{
                             background: isBreakActive
@@ -204,7 +205,7 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                                 ? '0 8px 25px rgba(239, 68, 68, 0.4)'
                                 : '0 8px 25px rgba(21, 145, 155, 0.4)'
                         }}
-                        disabled={starting || stopping}
+                        disabled={isStarting || isEnding || isLoadingBreakOptions}
                     >
                         <img
                             src="/assets/clock.svg"
@@ -212,7 +213,7 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                             className="w-3 h-3 sm:w-4 sm:h-4 lg:w-3 lg:h-3 xl:w-4 xl:h-4 transition-transform duration-300 group-hover/btn:rotate-12"
                         />
                         <span>
-                            {(starting || stopping) ? (
+                            {(isStarting || isEnding) ? (
                                 <span className="animate-pulse">Loading...</span>
                             ) : (
                                 isBreakActive ? t('breakTime.endBreak', 'End Break') : t('breakTime.startBreak', 'Start Break')
@@ -409,7 +410,7 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                 isOpen={showPopup}
                 onClose={() => setShowPopup(false)}
                 title={t("breakTime.reasonRequired", "Break Reason Required")}
-                message={t("breakTime.selectBreakReasonFirst", "Please select a break reason first!")}
+                message={popupMessage}
                 type="warning"
             />
         </div>
