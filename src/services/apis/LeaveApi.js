@@ -120,6 +120,20 @@ export const leaveApi = createApi({
         method: "GET",
       }),
       providesTags: ["LeaveRequests"],
+    // Get user leave logs (for profile page)
+    getUserLeaveLogs: builder.query({
+      query: ({ userId, pageNumber = 1, pageSize = 20 }) => ({
+        url: `/api/v1/LeaveRequest/GetUserLeaveLogs/logs/${userId}`,
+        method: "GET",
+        params: {
+          pageNumber,
+          pageSize,
+        },
+      }),
+      providesTags: (result, error, { userId }) => [
+        { type: "LeaveRequests", id: `USER_LOGS_${userId}` },
+        { type: "LeaveRequests", id: "MY_LIST" },
+      ],
     }),
   }),
 });
@@ -133,5 +147,6 @@ export const {
   useGetMyLeaveRequestsQuery,
   useSubmitLeaveRequestMutation,
   useGetLeaveStatisticsQuery,
+  useGetUserLeaveLogsQuery,
 } = leaveApi;
 
