@@ -1,9 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { useLang } from '../../../../contexts/LangContext';
 
 const RecentActivity = () => {
   const { t } = useTranslation();
-  const { isRtl } = useLang();
 
   const recentActivity = [
     {

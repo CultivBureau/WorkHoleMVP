@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useGetCompanyClockinLogsQuery } from '../../../../services/apis/ClockinLogApi';
 import { utcToLocalTime } from '../../../../utils/timeUtils';
@@ -20,12 +20,27 @@ const AttendanceTable = () => {
   const [locationFilter, setLocationFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [currentPage, setCurrentPage] = useState(1);
+  const [tableSortColumn, setTableSortColumn] = useState(null);
+  const [tableSortDirection, setTableSortDirection] = useState('asc');
   const itemsPerPage = 6; // Show 6 items per page like employees table
+
+  // Get today's date at midnight for filtering
+  const getTodayStart = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  };
+
+  const getTodayEnd = () => {
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    return today;
+  };
 
   // Fetch company clock-in logs
   const { data, isLoading, isError, error, refetch } = useGetCompanyClockinLogsQuery({
     pageNumber: currentPage,
-    pageSize: 20, // Fetch more to allow client-side filtering
+    pageSize: 100, // Fetch more to filter today's records
   });
 
   // Map API data to table format
@@ -45,14 +60,28 @@ const AttendanceTable = () => {
       items = data.results;
     }
 
-    return items.map((log) => {
+    // Filter for today's records only
+    const todayStart = getTodayStart();
+    const todayEnd = getTodayEnd();
+
+    const todayItems = items.filter((log) => {
+      const clockinDate = log?.clockinTime ? new Date(log.clockinTime) : null;
+      const clockoutDate = log?.clockoutTime ? new Date(log.clockoutTime) : null;
+      const primaryDate = clockinDate || clockoutDate || new Date(log?.createdAt) || new Date(log?.updatedAt);
+      
+      return primaryDate >= todayStart && primaryDate <= todayEnd;
+    });
+
+    return todayItems.map((log) => {
       const userFirstName = log?.user?.firstName || "";
       const userLastName = log?.user?.lastName || "";
       const username = log?.user?.userName || "";
       const fullName = `${userFirstName} ${userLastName}`.trim() || username || t("adminDashboard.table.unknownEmployee", "Unknown Employee");
       const jobTitle = log?.user?.jobTitle || "";
       const checkInTime = formatTime(log?.clockinTime, locale);
+      const checkInSort = log?.clockinTime ? new Date(log.clockinTime).getTime() : 0;
       const isLate = log?.isLate || false;
+      
       // API uses "office" field: true = office, false = remote/home
       // But we also check distance as a fallback to ensure accuracy
       let office = log?.office ?? log?.officeRemote; // Fallback to officeRemote for backward compatibility
@@ -87,18 +116,33 @@ const AttendanceTable = () => {
       return {
         id: log?.id,
         name: fullName,
+        nameSort: fullName.toLowerCase(),
         designation: jobTitle || t("adminDashboard.table.noRole", "No Role"),
+        designationSort: (jobTitle || "").toLowerCase(),
         type: type,
+        typeSort: type.toLowerCase(),
         checkInTime: checkInTime,
+        checkInSort: checkInSort,
         status: status,
+        statusSort: status.toLowerCase(),
         avatar: null,
       };
     });
   }, [data, locale, t]);
 
+  // Handle table column sorting
+  const handleTableSort = (column) => {
+    if (tableSortColumn === column) {
+      setTableSortDirection(tableSortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setTableSortColumn(column);
+      setTableSortDirection('asc');
+    }
+  };
+
   // Filter data
   const filteredEmployees = useMemo(() => {
-    return employeeData.filter(employee => {
+    let filtered = employeeData.filter(employee => {
       return (
         employee.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
         (roleFilter === "All" || employee.designation.toLowerCase().includes(roleFilter.toLowerCase())) &&
@@ -106,7 +150,47 @@ const AttendanceTable = () => {
         (statusFilter === "All Status" || employee.status === statusFilter)
       );
     });
-  }, [employeeData, searchTerm, roleFilter, locationFilter, statusFilter]);
+
+    // Apply table column sort
+    if (tableSortColumn) {
+      filtered.sort((a, b) => {
+        let aVal, bVal;
+
+        switch (tableSortColumn) {
+          case 'name':
+            aVal = a.nameSort;
+            bVal = b.nameSort;
+            break;
+          case 'designation':
+            aVal = a.designationSort;
+            bVal = b.designationSort;
+            break;
+          case 'type':
+            aVal = a.typeSort;
+            bVal = b.typeSort;
+            break;
+          case 'checkInTime':
+            aVal = a.checkInSort;
+            bVal = b.checkInSort;
+            break;
+          case 'status':
+            aVal = a.statusSort;
+            bVal = b.statusSort;
+            break;
+          default:
+            return 0;
+        }
+
+        if (tableSortDirection === 'asc') {
+          return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+        } else {
+          return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
+        }
+      });
+    }
+
+    return filtered;
+  }, [employeeData, searchTerm, roleFilter, locationFilter, statusFilter, tableSortColumn, tableSortDirection]);
 
   // Pagination
   const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
@@ -117,6 +201,24 @@ const AttendanceTable = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, roleFilter, locationFilter, statusFilter]);
+
+  const getSortIcon = (column) => {
+    if (tableSortColumn !== column) {
+      return <ChevronDown className="h-3 w-3 text-gray-400" />;
+    }
+    return tableSortDirection === 'asc'
+      ? <ChevronUp className="h-3 w-3 text-[var(--accent-color)]" />
+      : <ChevronDown className="h-3 w-3 text-[var(--accent-color)]" />;
+  };
+
+  const getInitials = (name = "") => {
+    if (!name) return "--";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .substring(0, 2);
+  };
 
   return (
     <div className="w-full p-2 sm:p-4" dir={isArabic ? "rtl" : "ltr"}>
@@ -215,45 +317,75 @@ const AttendanceTable = () => {
       <div className="bg-[var(--bg-color)] rounded-2xl border border-[var(--border-color)] overflow-hidden">
         {/* Desktop Table */}
         <div className="hidden md:block">
-          <div className="overflow-x-auto" style={{ height: 'calc(100% - 60px)' }}>
+          <div className="overflow-x-auto">
             <table className="w-full">
-              <thead>
-                <tr className="bg-[var(--bg-color)]">
-                  <th className={`text-[var(--sub-text-color)] font-medium text-xs py-3 px-4 ${isArabic ? 'text-right' : 'text-left'}`}>
-                    {t("adminDashboard.table.employeeName", "Employee Name")}
+              <thead className="bg-[var(--table-header-bg)]">
+                <tr>
+                  <th
+                    onClick={() => handleTableSort('name')}
+                    className="text-[var(--sub-text-color)] font-medium text-xs py-2.5 px-4 border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors text-center"
+                  >
+                    <div className="flex items-center justify-center gap-1">
+                      {t("adminDashboard.table.employeeName", "Employee Name")}
+                      {getSortIcon('name')}
+                    </div>
                   </th>
-                  <th className={`text-[var(--sub-text-color)] font-medium text-xs py-3 px-4 ${isArabic ? 'text-right' : 'text-left'}`}>
-                    {t("employees.table.role", "Role")}
+                  <th
+                    onClick={() => handleTableSort('designation')}
+                    className="text-[var(--sub-text-color)] font-medium text-xs py-2.5 px-4 border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors text-center"
+                  >
+                    <div className="flex items-center justify-center gap-1">
+                      {t("employees.table.role", "Role")}
+                      {getSortIcon('designation')}
+                    </div>
                   </th>
-                  <th className={`text-[var(--sub-text-color)] font-medium text-xs py-3 px-4 ${isArabic ? 'text-right' : 'text-left'}`}>
-                    {t("adminDashboard.table.type", "Type")}
+                  <th
+                    onClick={() => handleTableSort('type')}
+                    className="text-[var(--sub-text-color)] font-medium text-xs py-2.5 px-4 border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors text-center"
+                  >
+                    <div className="flex items-center justify-center gap-1">
+                      {t("adminDashboard.table.type", "Type")}
+                      {getSortIcon('type')}
+                    </div>
                   </th>
-                  <th className={`text-[var(--sub-text-color)] font-medium text-xs py-3 px-4 ${isArabic ? 'text-right' : 'text-left'}`}>
-                    {t("adminDashboard.table.checkInTime", "Check In Time")}
+                  <th
+                    onClick={() => handleTableSort('checkInTime')}
+                    className="text-[var(--sub-text-color)] font-medium text-xs py-2.5 px-4 border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors text-center"
+                  >
+                    <div className="flex items-center justify-center gap-1">
+                      {t("adminDashboard.table.checkInTime", "Check In Time")}
+                      {getSortIcon('checkInTime')}
+                    </div>
                   </th>
-                  <th className={`text-[var(--sub-text-color)] font-medium text-xs py-3 px-4 ${isArabic ? 'text-right' : 'text-left'}`}>
-                    {t("adminDashboard.table.status", "Status")}
+                  <th
+                    onClick={() => handleTableSort('status')}
+                    className="text-[var(--sub-text-color)] font-medium text-xs py-2.5 px-4 border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors text-center"
+                  >
+                    <div className="flex items-center justify-center gap-1">
+                      {t("adminDashboard.table.status", "Status")}
+                      {getSortIcon('status')}
+                    </div>
                   </th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="bg-[var(--table-bg)]">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={5} className="py-8 text-center text-[var(--sub-text-color)]">
+                    <td colSpan={5} className="py-16 px-6 text-center text-[var(--sub-text-color)]">
                       {t("adminDashboard.table.loading", "Loading attendance records...")}
                     </td>
                   </tr>
                 ) : isError ? (
                   <tr>
-                    <td colSpan={5} className="py-8 text-center">
-                      <div className="flex flex-col items-center gap-2 text-[var(--sub-text-color)]">
+                    <td colSpan={5} className="py-16 px-6">
+                      <div className="flex flex-col items-center gap-3 text-[var(--sub-text-color)]">
                         <span>{t("adminDashboard.table.errorLoading", "Failed to load attendance records")}</span>
                         {error && (
-                          <span className="text-xs text-[var(--sub-text-color)]/80">
+                          <span className="text-sm text-[var(--sub-text-color)]/80">
                             {error?.data?.message || error?.message || "An error occurred"}
                           </span>
                         )}
-                        <button onClick={() => refetch()} className="btn-secondary text-xs px-3 py-1">
+                        <button onClick={() => refetch()} className="btn-secondary">
                           {t("adminDashboard.table.retry", "Retry")}
                         </button>
                       </div>
@@ -261,19 +393,30 @@ const AttendanceTable = () => {
                   </tr>
                 ) : paginatedEmployees.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-8 text-center text-[var(--sub-text-color)]">
-                      {t("adminDashboard.table.noRecords", "No attendance records found")}
+                    <td colSpan={5} className="py-16 px-6">
+                      <div className="flex flex-col items-center gap-4 text-[var(--sub-text-color)]">
+                        <Users className="h-12 w-12 opacity-60" />
+                        <div className="text-lg font-medium text-[var(--text-color)]">
+                          {t("adminDashboard.table.noRecordsToday", "No attendance records for today")}
+                        </div>
+                        <div className="text-sm text-center max-w-md">
+                          {t("adminDashboard.table.noRecordsTodayDescription", "When team members clock in today, their activity will appear here.")}
+                        </div>
+                        <button onClick={() => refetch()} className="btn-secondary">
+                          {t("adminDashboard.table.refresh", "Refresh")}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ) : (
-                  paginatedEmployees.map((employee, index) => (
+                  paginatedEmployees.map((employee) => (
                     <tr
                       key={employee.id}
-                      className={`hover:bg-[var(--hover-color)] transition-colors ${index !== paginatedEmployees.length - 1 ? 'border-b border-[var(--border-color)]' : ''}`}
+                      className="border-b border-[var(--border-color)] hover:bg-[var(--hover-color)] transition-colors"
                     >
                       <td className="py-3 px-4">
-                        <div className={`flex items-center gap-2.5 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                          <div className="w-7 h-7 rounded-full bg-[var(--bg-color)] border border-[var(--border-color)] flex items-center justify-center overflow-hidden">
+                        <div className="flex items-center justify-center gap-2.5">
+                          <div className="w-8 h-8 rounded-full bg-[var(--container-color)] border border-[var(--border-color)] flex items-center justify-center overflow-hidden flex-shrink-0">
                             {employee.avatar ? (
                               <img
                                 src={employee.avatar}
@@ -282,21 +425,21 @@ const AttendanceTable = () => {
                               />
                             ) : (
                               <span className="text-[var(--sub-text-color)] text-xs font-medium">
-                                {employee.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                                {getInitials(employee.name)}
                               </span>
                             )}
                           </div>
-                          <span className={`font-medium text-[var(--text-color)] text-sm ${isArabic ? 'text-right' : 'text-left'}`}>{employee.name}</span>
+                          <span className="font-medium text-[var(--text-color)] text-sm">{employee.name}</span>
                         </div>
                       </td>
-                      <td className={`py-3 px-4 text-[var(--text-color)] text-sm ${isArabic ? 'text-right' : 'text-left'}`}>{employee.designation}</td>
-                      <td className={`py-3 px-4 text-[var(--text-color)] text-sm ${isArabic ? 'text-right' : 'text-left'}`}>{employee.type}</td>
-                      <td className={`py-3 px-4 text-[var(--text-color)] text-sm ${isArabic ? 'text-right' : 'text-left'}`}>{employee.checkInTime}</td>
-                      <td className={`py-3 px-4 ${isArabic ? 'text-right' : 'text-left'}`}>
+                      <td className="py-3 px-4 text-[var(--text-color)] text-sm text-center">{employee.designation}</td>
+                      <td className="py-3 px-4 text-[var(--text-color)] text-sm text-center">{employee.type}</td>
+                      <td className="py-3 px-4 text-[var(--text-color)] text-sm text-center">{employee.checkInTime}</td>
+                      <td className="py-3 px-4 text-center">
                         <span
-                          className={`inline-flex px-2.5 py-1 text-center rounded-full text-xs font-medium ${employee.status === "On Time"
-                            ? "bg-[#3FC28A1A] text-[var(--success-color)]"
-                            : "bg-[#F45B691A] text-[var(--error-color)]"
+                          className={`inline-flex px-3 py-1 text-center rounded-full text-xs font-medium border ${employee.status === "On Time"
+                            ? "bg-[var(--success-color)]/10 text-[var(--success-color)]/70 border-[var(--success-color)]/30"
+                            : "bg-[var(--warning-color)]/10 text-[var(--warning-color)]/70 border-[var(--warning-color)]/30"
                             }`}
                         >
                           {employee.status === "On Time"
@@ -330,8 +473,19 @@ const AttendanceTable = () => {
                 </div>
               </div>
             ) : paginatedEmployees.length === 0 ? (
-              <div className="p-4 text-center text-[var(--sub-text-color)]">
-                {t("adminDashboard.table.noRecords", "No attendance records found")}
+              <div className="p-8 text-center">
+                <div className="flex flex-col items-center gap-4 text-[var(--sub-text-color)]">
+                  <Users className="h-12 w-12 opacity-60" />
+                  <div className="text-base font-medium text-[var(--text-color)]">
+                    {t("adminDashboard.table.noRecordsToday", "No attendance records for today")}
+                  </div>
+                  <div className="text-sm text-center">
+                    {t("adminDashboard.table.noRecordsTodayDescription", "When team members clock in today, their activity will appear here.")}
+                  </div>
+                  <button onClick={() => refetch()} className="btn-secondary text-xs px-3 py-1">
+                    {t("adminDashboard.table.refresh", "Refresh")}
+                  </button>
+                </div>
               </div>
             ) : (
               paginatedEmployees.map((employee, index) => (
@@ -340,7 +494,7 @@ const AttendanceTable = () => {
                   className={`p-4 hover:bg-[var(--hover-color)] transition-colors ${index !== paginatedEmployees.length - 1 ? 'border-b border-[var(--border-color)]' : ''}`}
                 >
                   <div className={`flex items-center gap-3 mb-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                    <div className="w-10 h-10 rounded-full bg-[var(--bg-color)] border border-[var(--border-color)] flex items-center justify-center overflow-hidden">
+                    <div className="w-10 h-10 rounded-full bg-[var(--container-color)] border border-[var(--border-color)] flex items-center justify-center overflow-hidden flex-shrink-0">
                       {employee.avatar ? (
                         <img
                           src={employee.avatar}
@@ -349,7 +503,7 @@ const AttendanceTable = () => {
                         />
                       ) : (
                         <span className="text-[var(--sub-text-color)] text-xs font-medium">
-                          {employee.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                          {getInitials(employee.name)}
                         </span>
                       )}
                     </div>
@@ -358,9 +512,9 @@ const AttendanceTable = () => {
                       <p className="text-[var(--sub-text-color)] text-xs">{employee.designation}</p>
                     </div>
                     <span
-                      className={`inline-flex px-2.5 py-1 text-center rounded-full text-xs font-medium ${employee.status === "On Time"
-                        ? "bg-[#3FC28A1A] text-[var(--success-color)]"
-                        : "bg-[#F45B691A] text-[var(--error-color)]"
+                      className={`inline-flex px-3 py-1 text-center rounded-full text-xs font-medium border ${employee.status === "On Time"
+                        ? "bg-[var(--success-color)]/10 text-[var(--success-color)]/70 border-[var(--success-color)]/30"
+                        : "bg-[var(--warning-color)]/10 text-[var(--warning-color)]/70 border-[var(--warning-color)]/30"
                         }`}
                     >
                       {employee.status === "On Time"

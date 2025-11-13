@@ -1,31 +1,14 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useEffect } from "react";
 import NavBarAdmin from "../../../components/admin/NavBarAdmin";
 import SideBarAdmin from "../../../components/admin/SideBarAdmin";
-import Aside from "../../../components/side-menu/side-menu";
 import { useTranslation } from "react-i18next";
-import {
-  Users,
-  UserCheck,
-  Clock,
-  Calendar,
-  Coffee,
-  AlertTriangle,
-  Activity,
-  MapPin,
-} from "lucide-react";
-
 import { useNavigate } from "react-router-dom";
-import { useLang } from "../../../contexts/LangContext";
 import Card from "../../../components/Time_Tracking_Components/Stats/Card";
 import Table from "../../../components/admin/dashboard/Table/Table";
 import Departments from "../../../components/admin/dashboard/Departments/Departments";
-import RecentActivity from "../../../components/admin/dashboard/RecentActivity/RecentActivity";
 
 const DashboardAdmin = () => {
-  const { lang, isRtl } = useLang();
   const { t, i18n } = useTranslation();
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-
   const navigate = useNavigate();
 
   // Sync language from localStorage
@@ -92,7 +75,7 @@ const DashboardAdmin = () => {
                 {/* add new employee button */}
                 <button
                   onClick={() => navigate('/pages/admin/new-employee')}
-                  className="flex-shrink-0 w-auto min-w-[150px] lg:min-w-[170px] cursor-pointer h-[40px] text-[9px] sm:text-[10px] bg-[var(--bg-color)] border border-[var(--border-color)] font-semibold gradient-text flex justify-center items-center gap-2 text-white rounded-md transition-all duration-200 hover:shadow-md hover:scale-[1.02] hover:border-[var(--accent-color)] active:scale-[0.98] active:shadow-sm"
+                  className="flex-shrink-0 w-auto min-w-[150px] lg:min-w-[170px] cursor-pointer h-[40px] text-[11px] sm:text-[12px] bg-[var(--bg-color)] border border-[var(--border-color)] font-semibold gradient-text flex justify-center items-center gap-2 text-white rounded-md transition-all duration-200 hover:shadow-md hover:scale-[1.02] hover:border-[var(--accent-color)] active:scale-[0.98] active:shadow-sm"
                 >
                   <img src="/assets/AdminDashboard/add.svg" alt="add" className="transition-transform duration-200 group-hover:scale-110 w-3 h-3 sm:w-4 sm:h-4" />
                   <span className="truncate">{t("adminDashboard.buttons.addNewEmployee", "Add New Employee")}</span>
@@ -101,7 +84,7 @@ const DashboardAdmin = () => {
                 {/* approve requests button */}
                 <button
                   onClick={() => navigate('/pages/admin/leaves')}
-                  className="flex-shrink-0 w-auto min-w-[150px] lg:min-w-[170px] h-[40px] text-[9px] sm:text-[10px] cursor-pointer bg-[var(--bg-color)] border border-[var(--border-color)] font-semibold gradient-text flex justify-center items-center gap-2 text-white rounded-md transition-all duration-200 hover:shadow-md hover:scale-[1.02] hover:border-[var(--accent-color)] active:scale-[0.98] active:shadow-sm"
+                  className="flex-shrink-0 w-auto min-w-[150px] lg:min-w-[170px] h-[40px] text-[11px] sm:text-[12px] cursor-pointer bg-[var(--bg-color)] border border-[var(--border-color)] font-semibold gradient-text flex justify-center items-center gap-2 text-white rounded-md transition-all duration-200 hover:shadow-md hover:scale-[1.02] hover:border-[var(--accent-color)] active:scale-[0.98] active:shadow-sm"
                 >
                   <img src="/assets/AdminDashboard/approve.svg" alt="approve" className="transition-transform duration-200 group-hover:scale-110 w-3 h-3 sm:w-4 sm:h-4" />
                   <span className="truncate">{t("adminDashboard.buttons.approveRequests", "Approve Requests")}</span>
@@ -110,7 +93,7 @@ const DashboardAdmin = () => {
                 {/* view attendance button */}
                 <button
                   onClick={() => navigate('/pages/admin/attendance')}
-                  className="flex-shrink-0 w-auto min-w-[150px] lg:min-w-[170px] h-[40px] text-[9px] sm:text-[10px] cursor-pointer bg-[var(--bg-color)] border border-[var(--border-color)] font-semibold gradient-text flex justify-center items-center gap-2 text-white rounded-md transition-all duration-200 hover:shadow-md hover:scale-[1.02] hover:border-[var(--accent-color)] active:scale-[0.98] active:shadow-sm"
+                  className="flex-shrink-0 w-auto min-w-[150px] lg:min-w-[170px] h-[40px] text-[11px] sm:text-[12px] cursor-pointer bg-[var(--bg-color)] border border-[var(--border-color)] font-semibold gradient-text flex justify-center items-center gap-2 text-white rounded-md transition-all duration-200 hover:shadow-md hover:scale-[1.02] hover:border-[var(--accent-color)] active:scale-[0.98] active:shadow-sm"
                 >
                   <img src="/assets/AdminDashboard/view.svg" alt="view" className="transition-transform duration-200 group-hover:scale-110 w-3 h-3 sm:w-4 sm:h-4" />
                   <span className="truncate">{t("adminDashboard.buttons.viewAttendance", "View Attendance")}</span>
@@ -119,7 +102,7 @@ const DashboardAdmin = () => {
                 {/* manage roles, permissions button */}
                 <button
                   onClick={() => navigate('/pages/admin/Roles&Permissions')}
-                  className="flex-shrink-0 w-auto min-w-[150px] lg:min-w-[170px] h-[40px] text-[9px] sm:text-[10px] cursor-pointer bg-[var(--bg-color)] border border-[var(--border-color)] font-semibold gradient-text flex justify-center items-center gap-2 text-white rounded-md transition-all duration-200 hover:shadow-md hover:scale-[1.02] hover:border-[var(--accent-color)] active:scale-[0.98] active:shadow-sm"
+                  className="flex-shrink-0 w-auto min-w-[150px] lg:min-w-[170px] h-[40px] text-[11px] sm:text-[12px] cursor-pointer bg-[var(--bg-color)] border border-[var(--border-color)] font-semibold gradient-text flex justify-center items-center gap-2 text-white rounded-md transition-all duration-200 hover:shadow-md hover:scale-[1.02] hover:border-[var(--accent-color)] active:scale-[0.98] active:shadow-sm"
                 >
                   <img src="/assets/AdminDashboard/manage.svg" alt="manage" className="transition-transform duration-200 group-hover:scale-110 w-3 h-3 sm:w-4 sm:h-4" />
                   <span className="truncate text-center">{t("adminDashboard.buttons.manageRolesPermissions", "Manage Roles, Permissions")}</span>
@@ -127,7 +110,7 @@ const DashboardAdmin = () => {
               </div>
 
               {/* Table Section */}
-              <div className="w-full h-max flex justify-center items-center mt-2">
+              <div className="w-full h-max flex justify-center items-center ">
                 <Table />
               </div>
             </div>
@@ -135,7 +118,6 @@ const DashboardAdmin = () => {
             {/* Right Section - Departments and Recent Activity */}
             <div className="w-full xl:w-[27%] h-max  flex justify-center items-center flex-col gap-4">
               <Departments />
-              {/* <RecentActivity /> */}
             </div>
           </section>
         </main>

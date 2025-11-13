@@ -177,7 +177,7 @@
       "addNewEmployee": "Add New Employee",
       "approveRequests": "Approve Requests",
       "viewAttendance": "View Attendance",
-      "manageRolesPermissions": "Manage Roles, Permissions"
+      "manageRolesPermissions": "Manage Permissions"
     },
     "table": {
       "attendanceOverview": "Attendance Overview",
@@ -190,7 +190,7 @@
       "viewAll": "View All",
       "employeeName": "Employee Name",
       "type": "Type",
-      "checkInTime": "Check In Time",
+      "checkInTime": "Clock In",
       "office": "Office",
       "remote": "Remote",
       "onTime": "On Time",

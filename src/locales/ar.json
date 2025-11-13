@@ -1033,7 +1033,7 @@
       "addNewEmployee": "إضافة موظف جديد",
       "approveRequests": "موافقة على الطلبات",
       "viewAttendance": "مشاهدة الحضور",
-      "manageRolesPermissions": "إدارة الأدوار والصلاحيات"
+      "manageRolesPermissions": "إدارة الصلاحيات"
     },
     "table": {
       "attendanceOverview": "نظرة عامة على الحضور",
@@ -1046,7 +1046,7 @@
       "viewAll": "عرض الكل",
       "employeeName": "اسم الموظف",
       "type": "النوع",
-      "checkInTime": "وقت تسجيل الدخول",
+      "checkInTime": "تسجيل الدخول",
       "office": "مكتب",
       "remote": "عن بعد",
       "onTime": "في الوقت المحدد",
