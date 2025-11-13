@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
@@ -16,22 +16,16 @@ import AvatarIcon from "../../../public/assets/navbar/Avatar.png";
 import { removeAuthToken, getAuthToken } from "../../utils/page";
 import { useLang } from "../../contexts/LangContext";
 import { useMeQuery } from "../../services/apis/AuthApi";
-import { useClockInMutation, useClockOutMutation } from "../../services/apis/ClockinLogApi";
+import {
+  useClockInMutation,
+  useClockOutMutation,
+  useGetUserClockinLogsQuery,
+} from "../../services/apis/ClockinLogApi";
 
 import LocationInputModal from "../Time_Tracking_Components/LocationInputModal/LocationInputModal";
 import LateReasonModal from "../Time_Tracking_Components/LateReasonModal/LateReasonModal";
 import toast from "react-hot-toast";
-
-// Static dashboard data
-const staticDashboardData = {
-  currentStatus: "Clocked In",
-  todayAttendance: {
-    clockIn: "09:00 AM",
-    clockOut: null,
-    workedHours: "4h 30m",
-    status: "Present"
-  }
-};
+import { isUtcDateToday } from "../../utils/timeUtils";
 
 const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
   const { t, i18n } = useTranslation();
@@ -83,13 +77,22 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
     removeAuthToken();
   };
 
-  // Clock in/out functionality - use static data
-  const dashboardData = isAuthenticated ? staticDashboardData : null;
-  const refetchDashboard = () => {}; // Empty function for compatibility
-  
   // Real API mutations
   const [clockInMutation, { isLoading: isClockingIn }] = useClockInMutation();
   const [clockOutMutation, { isLoading: isClockingOut }] = useClockOutMutation();
+
+  const userId = userData?.id || null;
+  const isArabic = lang === "ar";
+
+  const {
+    data: userLogsData,
+    isLoading: logsLoading,
+    isFetching: logsFetching,
+    refetch: refetchLogs,
+  } = useGetUserClockinLogsQuery(
+    { userId, pageNumber: 1, pageSize: 50 },
+    { skip: !isAuthenticated || !userId }
+  );
 
   const [langOpen, setLangOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -102,6 +105,59 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
   const langRef = useRef(null);
   const profileRef = useRef(null); // desktop only
   const mobileProfileRef = useRef(null);
+
+  const attendanceLogs = useMemo(() => {
+    if (!userLogsData) return [];
+    const raw =
+      userLogsData?.value ||
+      userLogsData?.data ||
+      userLogsData?.items ||
+      userLogsData?.results ||
+      userLogsData ||
+      [];
+    return Array.isArray(raw) ? raw : [];
+  }, [userLogsData]);
+
+  const todayLogs = useMemo(
+    () =>
+      attendanceLogs.filter((log) =>
+        isUtcDateToday(log?.clockinTime || log?.clockoutTime)
+      ),
+    [attendanceLogs]
+  );
+
+  const sortedTodayLogs = useMemo(() => {
+    return [...todayLogs].sort((a, b) => {
+      const getSortValue = (entry) =>
+        new Date(entry?.clockinTime || entry?.clockoutTime || 0).getTime();
+      return getSortValue(b) - getSortValue(a);
+    });
+  }, [todayLogs]);
+
+  const activeClockIn = useMemo(
+    () => sortedTodayLogs.find((log) => log?.clockinTime && !log?.clockoutTime) || null,
+    [sortedTodayLogs]
+  );
+
+  const hasCompletedToday = useMemo(
+    () =>
+      sortedTodayLogs.some(
+        (log) => log?.clockinTime && log?.clockoutTime && isUtcDateToday(log.clockinTime)
+      ),
+    [sortedTodayLogs]
+  );
+
+  const currentStatus = activeClockIn ? "Clocked In" : "Clocked Out";
+
+  const refetchDashboard = useCallback(async () => {
+    try {
+      await refetchLogs();
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.warn("Failed to refetch attendance logs:", error);
+      }
+    }
+  }, [refetchLogs]);
 
   // Update time every second
   useEffect(() => {
@@ -142,16 +198,12 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
 
   // Handle clock in/out with location from Google Maps URL
   const handleClockInOut = async () => {
-    const isAr = lang === "ar";
-    const currentStatus = dashboardData?.currentStatus || "Clocked Out";
-    const hasCompletedToday = dashboardData?.todayAttendance?.clockIn && dashboardData?.todayAttendance?.clockOut;
-
     // If already completed attendance today, show toast and return
     if (hasCompletedToday) {
       toast(
         <div className="flex items-center gap-3">
           <CheckCircle2 className="w-5 h-5 text-green-500" />
-          <span>{isAr ? 'لقد سجلت الحضور والانصراف لهذا اليوم بالفعل' : 'You already clocked in today'}</span>
+          <span>{isArabic ? 'لقد سجلت الحضور والانصراف لهذا اليوم بالفعل' : 'You already clocked in today'}</span>
         </div>,
         {
           duration: 3000,
@@ -173,7 +225,7 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
             <AlertCircle className="w-5 h-5 text-amber-500" />
             <div>
               <div className="font-medium text-gray-900">
-                {isAr ? 'هل أنت متأكد من تسجيل الخروج؟' : 'Are you sure you want to clock out?'}
+                {isArabic ? 'هل أنت متأكد من تسجيل الخروج؟' : 'Are you sure you want to clock out?'}
               </div>
             </div>
             <div className="flex gap-2">
@@ -184,7 +236,7 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
                 }}
                 className="px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600"
               >
-                {isAr ? 'نعم' : 'Yes'}
+                {isArabic ? 'نعم' : 'Yes'}
               </button>
               <button
                 onClick={() => {
@@ -193,7 +245,7 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
                 }}
                 className="px-3 py-1 bg-gray-300 text-gray-700 rounded text-sm hover:bg-gray-400"
               >
-                {isAr ? 'لا' : 'No'}
+                {isArabic ? 'لا' : 'No'}
               </button>
             </div>
           </div>
@@ -219,9 +271,6 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
     setPendingLocation(coords);
     setShowLocationModal(false);
     
-    const isAr = lang === "ar";
-    const currentStatus = dashboardData?.currentStatus || "Clocked Out";
-    
     if (currentStatus === "Clocked In") {
       handleClockOutWithLocation(coords);
     } else {
@@ -231,9 +280,8 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
 
   // Handle clock in with location
   const handleClockInWithLocation = async (coords, reason, isRetry = false) => {
-    const isAr = lang === "ar";
     const loadingToast = !isRetry ? toast.loading(
-      isAr ? 'جاري تسجيل الحضور...' : 'Recording attendance...',
+      isArabic ? 'جاري تسجيل الحضور...' : 'Recording attendance...',
       {
         style: {
           background: 'var(--card-bg)',
@@ -264,8 +312,8 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
           <CheckCircle2 className="w-5 h-5" />
           <span>
             {isLate 
-              ? (isAr ? 'تم تسجيل الحضور المتأخر بنجاح' : 'Successfully clocked in (late)')
-              : (isAr ? 'تم تسجيل الحضور بنجاح' : 'Successfully clocked in')
+              ? (isArabic ? 'تم تسجيل الحضور المتأخر بنجاح' : 'Successfully clocked in (late)')
+              : (isArabic ? 'تم تسجيل الحضور بنجاح' : 'Successfully clocked in')
             }
           </span>
         </div>,
@@ -324,7 +372,7 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
       }
       
       if (!displayErrorMessage) {
-        displayErrorMessage = isAr ? 'حدث خطأ في تسجيل الحضور' : 'Error recording attendance';
+        displayErrorMessage = isArabic ? 'حدث خطأ في تسجيل الحضور' : 'Error recording attendance';
       }
       
       toast.error(
@@ -488,9 +536,6 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
 
   const { time, date } = formatDateTime();
 
-  // Check if user has completed attendance today
-  const hasCompletedToday = dashboardData?.todayAttendance?.clockIn && dashboardData?.todayAttendance?.clockOut;
-
   // Dynamic greeting based on time
   const getGreeting = () => {
     const hour = currentTime.getHours();
@@ -533,28 +578,28 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
           {/* Clock In/Out Button */}
           <button
             onClick={handleClockInOut}
-            disabled={isClockingIn || isClockingOut || hasCompletedToday}
+            disabled={isClockingIn || isClockingOut || hasCompletedToday || logsLoading || logsFetching}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-200 border text-xs font-semibold min-w-[80px] justify-center"
             style={{
               borderColor: hasCompletedToday
                 ? "#9CA3AF"
-                : dashboardData?.currentStatus === "Clocked In"
+                : currentStatus === "Clocked In"
                   ? "#EF4444"
                   : "var(--accent-color)",
               backgroundColor: hasCompletedToday
                 ? "#F3F4F6"
-                : dashboardData?.currentStatus === "Clocked In"
+                : currentStatus === "Clocked In"
                   ? "#FEF2F2"
                   : "var(--accent-color)",
               color: hasCompletedToday
                 ? "#9CA3AF"
-                : dashboardData?.currentStatus === "Clocked In"
+                : currentStatus === "Clocked In"
                   ? "#EF4444"
                   : "#fff",
               cursor: hasCompletedToday ? "not-allowed" : "pointer",
             }}
           >
-            {(isClockingIn || isClockingOut) ? (
+            {(isClockingIn || isClockingOut || logsLoading || logsFetching) ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
               <Clock className="w-4 h-4" />
@@ -562,7 +607,7 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
             <span className="text-xs">
               {hasCompletedToday
                 ? (lang === "ar" ? "مكتمل" : "Done")
-                : dashboardData?.currentStatus === "Clocked In"
+                : currentStatus === "Clocked In"
                   ? (lang === "ar" ? "خروج" : "Out")
                   : (lang === "ar" ? "دخول" : "In")}
             </span>
@@ -806,28 +851,28 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
           {/* Clock In/Out Button */}
           <button
             onClick={handleClockInOut}
-            disabled={isClockingIn || isClockingOut || hasCompletedToday}
+            disabled={isClockingIn || isClockingOut || hasCompletedToday || logsLoading || logsFetching}
             className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl transition-all duration-200 border font-semibold text-sm"
             style={{
               borderColor: hasCompletedToday
                 ? "#9CA3AF"
-                : dashboardData?.currentStatus === "Clocked In"
+                : currentStatus === "Clocked In"
                   ? "#EF4444"
                   : "var(--accent-color)",
               backgroundColor: hasCompletedToday
                 ? "#F3F4F6"
-                : dashboardData?.currentStatus === "Clocked In"
+                : currentStatus === "Clocked In"
                   ? "#FEF2F2"
                   : "var(--accent-color)",
               color: hasCompletedToday
                 ? "#9CA3AF"
-                : dashboardData?.currentStatus === "Clocked In"
+                : currentStatus === "Clocked In"
                   ? "#EF4444"
                   : "#fff",
               cursor: hasCompletedToday ? "not-allowed" : "pointer",
             }}
           >
-            {(isClockingIn || isClockingOut) ? (
+            {(isClockingIn || isClockingOut || logsLoading || logsFetching) ? (
               <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
             ) : (
               <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -835,7 +880,7 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
             <span>
               {hasCompletedToday
                 ? (lang === "ar" ? "مكتمل اليوم" : "Completed Today")
-                : dashboardData?.currentStatus === "Clocked In"
+                : currentStatus === "Clocked In"
                   ? (lang === "ar" ? "تسجيل خروج" : "Clock Out")
                   : (lang === "ar" ? "تسجيل دخول" : "Clock In")}
             </span>
