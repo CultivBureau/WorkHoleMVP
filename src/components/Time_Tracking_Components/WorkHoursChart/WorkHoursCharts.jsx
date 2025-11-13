@@ -15,6 +15,7 @@ import {
 } from "chart.js"
 import { useGetUserClockinLogsQuery } from "../../../services/apis/ClockinLogApi"
 import { getAuthToken } from "../../../utils/page"
+import { calculateDurationFromUtc } from "../../../utils/timeUtils"
 
 // Helper function to get user ID from token
 const deriveUserId = () => {
@@ -34,12 +35,35 @@ const deriveUserId = () => {
   }
 }
 
+// Ensure API timestamps without explicit timezone are treated as UTC
+const normalizeUtcString = (value) => {
+  if (!value) return null
+
+  if (value instanceof Date) {
+    return value.toISOString()
+  }
+
+  if (typeof value !== "string") {
+    return null
+  }
+
+  const trimmed = value.trim()
+
+  // If it's an ISO string without timezone info, assume it's UTC by appending 'Z'
+  if (!trimmed.endsWith("Z") && !trimmed.includes("+") && !trimmed.includes("-", 10)) {
+    return `${trimmed}Z`
+  }
+
+  return trimmed
+}
+
 // Helper function to calculate duration in seconds from clock-in/out times
 const calculateDuration = (clockinTime, clockoutTime) => {
-  if (!clockinTime) return 0
-  const start = new Date(clockinTime)
-  const end = clockoutTime ? new Date(clockoutTime) : new Date()
-  return Math.max(0, Math.floor((end - start) / 1000))
+  const startUtc = normalizeUtcString(clockinTime)
+  if (!startUtc) return 0
+
+  const endUtc = clockoutTime ? normalizeUtcString(clockoutTime) : null
+  return calculateDurationFromUtc(startUtc, endUtc)
 }
 
 // Helper function to get start of week (Monday)
@@ -116,7 +140,12 @@ const WorkHoursCharts = () => {
     
     items.forEach(log => {
       if (!log?.clockinTime) return
-      const logDate = new Date(log.clockinTime)
+
+      const normalizedClockIn = normalizeUtcString(log.clockinTime)
+      if (!normalizedClockIn) return
+
+      const logDate = new Date(normalizedClockIn)
+      if (Number.isNaN(logDate.getTime())) return
       logDate.setHours(0, 0, 0, 0)
       
       // Only include logs from this week
