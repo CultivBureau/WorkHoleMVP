@@ -12,7 +12,7 @@ import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
 import { useMeQuery } from "../services/apis/AuthApi"
 import { useGetAllShiftAssignmentsQuery } from "../services/apis/ShiftApi"
-import { useGetUserProfileClockInLogsQuery } from "../services/apis/ClockInApi"
+import { useGetUserProfileClockInLogsQuery } from "../services/apis/ClockinLogApi"
 import { useGetUserProfileByIdQuery } from "../services/apis/UserApi"
 import Loading from "../components/Loading/Loading"
 

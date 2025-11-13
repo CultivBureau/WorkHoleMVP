@@ -115,6 +115,26 @@ export const clockinLogApi = createApi({
       providesTags: (result, error, id) => [{ type: "ClockinLogs", id }],
     }),
 
+    // Get clock-in logs for user profile
+    getUserProfileClockInLogs: builder.query({
+      query: ({ userId, pageNumber = 1, pageSize = 20 } = {}) => {
+        const params = {
+          pageNumber,
+          pageSize,
+        };
+        return {
+          url: `/api/ClockinLogs/user/profile/${userId}`,
+          method: "GET",
+          params,
+        };
+      },
+      providesTags: (result, error, { userId }) => [
+        { type: "ClockinLogs", id: `user-profile-${userId}` },
+        { type: "ClockinLogs", id: "USER_LIST" },
+        { type: "ClockinLogs", id: "LIST" },
+      ],
+    }),
+
     clockIn: builder.mutation({
       query: ({ latitude, longitude, reason }) => {
         // Ensure latitude and longitude are valid numbers
@@ -238,6 +258,7 @@ export const {
   useGetTeamClockinLogsQuery,
   useGetUserClockinLogsQuery,
   useGetClockinLogByIdQuery,
+  useGetUserProfileClockInLogsQuery,
   useClockInMutation,
   useClockOutMutation,
 } = clockinLogApi;
