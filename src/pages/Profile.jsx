@@ -407,12 +407,18 @@ const Profile = () => {
       // Get status text
       const status = getStatusText(log.status)
       
+      // Extract reviewer name from API response
+      // Handle cases where reviewerName might be null, empty string, or just whitespace
+      const reviewerName = log.reviewerName 
+        ? log.reviewerName.trim() || 'N/A'
+        : 'N/A'
+      
       return {
         id: log.id,
         date,
         duration,
         days: log.totalDays || 0,
-        reportingManager: 'N/A', // Not available in API response
+        reportingManager: reviewerName,
         status
       }
     })
