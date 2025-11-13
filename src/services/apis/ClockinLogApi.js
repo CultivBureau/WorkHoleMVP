@@ -42,6 +42,71 @@ export const clockinLogApi = createApi({
       ],
     }),
 
+    getDepartmentClockinLogs: builder.query({
+      query: () => ({
+        url: "/api/ClockinLogs/department",
+        method: "GET",
+      }),
+      transformResponse: (response) => {
+        if (!response) return [];
+
+        if (Array.isArray(response)) {
+          return response;
+        }
+
+        if (Array.isArray(response?.value)) {
+          return response.value;
+        }
+
+        if (Array.isArray(response?.data)) {
+          return response.data;
+        }
+
+        return [];
+      },
+      providesTags: [{ type: "ClockinLogs", id: "DEPARTMENT_LIST" }],
+    }),
+
+    getTeamClockinLogs: builder.query({
+      query: (teamId) => {
+        if (!teamId) {
+          throw new Error("Team ID is required");
+        }
+        return {
+          url: `/api/ClockinLogs/team/${teamId}`,
+          method: "GET",
+        };
+      },
+      transformResponse: (response) => {
+        if (!response) return [];
+
+        if (Array.isArray(response)) {
+          return response;
+        }
+
+        if (Array.isArray(response?.value)) {
+          return response.value;
+        }
+
+        if (Array.isArray(response?.data)) {
+          return response.data;
+        }
+
+        return [];
+      },
+      transformErrorResponse: (response, meta, arg) => {
+        if (response?.status === 404) {
+          console.warn(`Team clock-in logs not found for teamId: ${arg}`);
+          return [];
+        }
+        return response;
+      },
+      providesTags: (result, error, teamId) => [
+        { type: "ClockinLogs", id: `TEAM_${teamId || "UNKNOWN"}` },
+        { type: "ClockinLogs", id: "TEAM_LIST" },
+      ],
+    }),
+
     getClockinLogById: builder.query({
       query: (id) => ({
         url: `/api/ClockinLogs/${id}`,
@@ -169,6 +234,8 @@ export const clockinLogApi = createApi({
 
 export const {
   useGetCompanyClockinLogsQuery,
+  useGetDepartmentClockinLogsQuery,
+  useGetTeamClockinLogsQuery,
   useGetUserClockinLogsQuery,
   useGetClockinLogByIdQuery,
   useClockInMutation,

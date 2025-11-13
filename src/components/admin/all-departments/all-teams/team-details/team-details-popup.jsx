@@ -1,7 +1,9 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { X, Users, User, Search, Calendar } from 'lucide-react';
 import { useGetTeamUsersQuery } from '../../../../../services/apis/TeamApi';
+import { useGetTeamClockinLogsQuery } from '../../../../../services/apis/ClockinLogApi';
 import { useTranslation } from 'react-i18next';
+import { utcToLocalDate, utcToLocalTime } from '../../../../../utils/timeUtils';
 
 const TeamDetailsPopup = ({ isOpen, onClose, team }) => {
     const { t, i18n } = useTranslation();
@@ -13,6 +15,16 @@ const TeamDetailsPopup = ({ isOpen, onClose, team }) => {
     // Fetch team members - always call hooks at the top level
     const { data: teamUsersData } = useGetTeamUsersQuery(team?.id, {
         skip: !team?.id || !isOpen
+    });
+
+    const {
+        data: teamAttendanceData,
+        isLoading: attendanceLoading,
+        isError: attendanceError,
+        error: attendanceErrorDetails,
+        refetch: refetchAttendance,
+    } = useGetTeamClockinLogsQuery(team?.id, {
+        skip: !team?.id || !isOpen,
     });
 
     // Parse team members - extract user objects from API response
@@ -63,6 +75,77 @@ const TeamDetailsPopup = ({ isOpen, onClose, team }) => {
             avatar: leader.avatar || leader.profilePicture,
         };
     }, [team]);
+
+    const attendanceSearchLower = attendanceSearchTerm.trim().toLowerCase();
+    const locale = i18n.language === 'ar' ? 'ar-EG' : 'en-US';
+
+    const parseLocalDateKey = (isoString) => {
+        if (!isoString) return null;
+        let value = isoString;
+        if (typeof value === 'string' && !value.endsWith('Z') && !value.includes('+') && !value.includes('-', 10)) {
+            value = value + 'Z';
+        }
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return null;
+        const year = date.getFullYear();
+        const month = `${date.getMonth() + 1}`.padStart(2, '0');
+        const day = `${date.getDate()}`.padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    const teamAttendanceLogs = useMemo(() => {
+        if (!teamAttendanceData) return [];
+
+        const rawLogs =
+            teamAttendanceData?.value ||
+            teamAttendanceData?.data ||
+            teamAttendanceData?.items ||
+            teamAttendanceData ||
+            [];
+
+        if (!Array.isArray(rawLogs)) return [];
+
+        return rawLogs.map((log, index) => {
+            const user = log?.user || log?.User || {};
+            const userId = log?.userId || user?.id || `log-${index}`;
+            const firstName = user?.firstName || '';
+            const lastName = user?.lastName || '';
+            const fullName = (firstName || lastName)
+                ? `${firstName || ''} ${lastName || ''}`.trim()
+                : user?.userName || user?.email || t('teamDetails.unknownMember', 'Unknown Member');
+
+            const clockInDate = log?.clockinTime ? utcToLocalDate(log.clockinTime, locale) : '—';
+            const clockInTime = log?.clockinTime ? utcToLocalTime(log.clockinTime, locale) : '—';
+            const clockOutTime = log?.clockoutTime ? utcToLocalTime(log.clockoutTime, locale) : '—';
+            const localDateKey = parseLocalDateKey(log?.clockinTime) || parseLocalDateKey(log?.clockoutTime);
+
+            return {
+                id: log?.id || `${userId}-${index}`,
+                userId,
+                name: fullName,
+                email: user?.email || user?.userName || '',
+                dateDisplay: clockInDate,
+                dateKey: localDateKey,
+                clockInTime,
+                clockOutTime,
+            };
+        });
+    }, [teamAttendanceData, locale, t]);
+
+    const filteredAttendanceLogs = useMemo(() => {
+        return teamAttendanceLogs.filter((log) => {
+            const matchesSearch =
+                !attendanceSearchLower ||
+                log.name?.toLowerCase().includes(attendanceSearchLower) ||
+                log.email?.toLowerCase().includes(attendanceSearchLower);
+
+            const matchesDate = selectedDate
+                ? log.dateKey === selectedDate
+                : true;
+
+            return matchesSearch && matchesDate;
+        });
+    }, [teamAttendanceLogs, attendanceSearchLower, selectedDate]);
 
     // Filter members based on search term
     const filteredMembers = useMemo(() => {
@@ -219,9 +302,10 @@ const TeamDetailsPopup = ({ isOpen, onClose, team }) => {
                                     {filteredMembers.length === 0 ? (
                                         <div className="text-center py-8 text-[var(--sub-text-color)]">
                                             <Users size={48} className="mx-auto mb-2 opacity-50" />
-                                            <p>{memberSearchTerm
-                                                ? t('teamDetails.noMembersFound', 'No members found matching your search')
-                                                : t('teamDetails.noMembers', 'No members in this team yet')}
+                                            <p>
+                                                {memberSearchTerm
+                                                    ? t('teamDetails.noMembersFound', 'No members found matching your search')
+                                                    : t('teamDetails.noMembers', 'No members in this team yet')}
                                             </p>
                                         </div>
                                     ) : (
@@ -304,7 +388,6 @@ const TeamDetailsPopup = ({ isOpen, onClose, team }) => {
                             </div>
 
                             {/* Attendance Table */}
-                            {/* TODO: Integrate with Attendance API when available */}
                             <div className="rounded-lg border border-[var(--border-color)] overflow-hidden">
                                 <table className="w-full">
                                     <thead className="bg-[var(--container-color)]">
@@ -329,14 +412,64 @@ const TeamDetailsPopup = ({ isOpen, onClose, team }) => {
                                 <div className="max-h-[500px] overflow-y-auto">
                                     <table className="w-full">
                                         <tbody className="bg-[var(--bg-color)] divide-y divide-[var(--border-color)]">
-                                            {/* Empty State - Will be replaced with actual data when Attendance API is integrated */}
-                                            <tr>
-                                                <td colSpan="4" className="py-12 px-4 text-center text-[var(--sub-text-color)]">
-                                                    <Calendar size={48} className="mx-auto mb-3 opacity-50" />
-                                                    <p className="font-medium mb-1">{t('teamDetails.noAttendance', 'No attendance records found')}</p>
-                                                    <p className="text-xs">{t('teamDetails.attendanceNote', 'Attendance data will appear here once team members check in')}</p>
-                                                </td>
-                                            </tr>
+                                            {attendanceLoading ? (
+                                                <tr>
+                                                    <td colSpan="4" className="py-8 px-4 text-center text-[var(--sub-text-color)] text-sm">
+                                                        {t('teamDetails.loadingAttendance', 'Loading attendance records...')}
+                                                    </td>
+                                                </tr>
+                                            ) : attendanceError ? (
+                                                <tr>
+                                                    <td colSpan="4" className="py-8 px-4 text-center text-[var(--error-color)] text-sm space-y-2">
+                                                        <p>{t('teamDetails.attendanceError', 'Failed to load attendance records')}</p>
+                                                        <button
+                                                            onClick={() => refetchAttendance()}
+                                                            className="px-3 py-1 text-xs border border-[var(--border-color)] rounded hover:bg-[var(--hover-color)] transition-colors"
+                                                        >
+                                                            {t('teamDetails.retry', 'Retry')}
+                                                        </button>
+                                                        {attendanceErrorDetails?.data?.message && (
+                                                            <p className="text-[10px] text-[var(--sub-text-color)]">
+                                                                {attendanceErrorDetails.data.message}
+                                                            </p>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ) : filteredAttendanceLogs.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan="4" className="py-12 px-4 text-center text-[var(--sub-text-color)]">
+                                                        <Calendar size={48} className="mx-auto mb-3 opacity-50" />
+                                                        <p className="font-medium mb-1">{t('teamDetails.noAttendance', 'No attendance records found')}</p>
+                                                        <p className="text-xs">
+                                                            {attendanceSearchTerm || selectedDate
+                                                                ? t('teamDetails.adjustFilters', 'Try adjusting your search or date filters')
+                                                                : t('teamDetails.attendanceNote', 'Attendance data will appear here once team members check in')}
+                                                        </p>
+                                                    </td>
+                                                </tr>
+                                            ) : (
+                                                filteredAttendanceLogs.map((log) => (
+                                                    <tr key={log.id} className="hover:bg-[var(--hover-color)]/50 transition-colors">
+                                                        <td className={`${isRtl ? 'text-right' : 'text-left'} py-3 px-4 text-sm text-[var(--text-color)]`}>
+                                                            <div className="flex flex-col">
+                                                                <span className="font-medium">{log.name}</span>
+                                                                {log.email && (
+                                                                    <span className="text-xs text-[var(--sub-text-color)]">{log.email}</span>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                        <td className={`${isRtl ? 'text-right' : 'text-left'} py-3 px-4 text-sm text-[var(--text-color)]`}>
+                                                            {log.dateDisplay}
+                                                        </td>
+                                                        <td className={`${isRtl ? 'text-right' : 'text-left'} py-3 px-4 text-sm text-[var(--text-color)]`}>
+                                                            {log.clockInTime}
+                                                        </td>
+                                                        <td className={`${isRtl ? 'text-right' : 'text-left'} py-3 px-4 text-sm text-[var(--text-color)]`}>
+                                                            {log.clockOutTime}
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )}
                                         </tbody>
                                     </table>
                                 </div>

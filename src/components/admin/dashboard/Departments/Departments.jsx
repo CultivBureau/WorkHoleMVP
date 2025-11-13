@@ -1,49 +1,40 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useLang } from '../../../../contexts/LangContext';
 import DepartmentCard from './Card';
+import { useGetDepartmentClockinLogsQuery } from '../../../../services/apis/ClockinLogApi';
 
 const Departments = () => {
   const { t } = useTranslation();
-  const { isRtl } = useLang();
   const navigate = useNavigate();
 
-  // Sample department data
-  const departments = [
-    {
-      id: 1,
-      departmentName: "Department Development",
-      memberCount: 20,
-      presentCount: 18,
-      absentCount: 2,
-      percentage: 94.6
-    },
-    {
-      id: 2,
-      departmentName: "Department Development",
-      memberCount: 20,
-      presentCount: 18,
-      absentCount: 2,
-      percentage: 94.6
-    },
-    {
-      id: 3,
-      departmentName: "Department Development",
-      memberCount: 20,
-      presentCount: 18,
-      absentCount: 2,
-      percentage: 94.6
-    },
-    {
-      id: 4,
-      departmentName: "Department Development",
-      memberCount: 20,
-      presentCount: 18,
-      absentCount: 2,
-      percentage: 94.6
-    }
-  ];
+  const { data, isLoading, isError, error, refetch } = useGetDepartmentClockinLogsQuery();
+
+  const departments = useMemo(() => {
+    if (!data || !Array.isArray(data)) return [];
+
+    return data.map((dept, index) => {
+      const totalMembers = Number(dept?.departmentMembers) || 0;
+      const presentToday = Number(dept?.presentToday) || 0;
+      const absentToday = Number(dept?.absentToday) || 0;
+      const safePositiveMembers = totalMembers > 0 ? totalMembers : presentToday + absentToday;
+      const percentage = safePositiveMembers
+        ? Math.min(
+            100,
+            Math.max(0, ((presentToday / safePositiveMembers) * 100))
+          )
+        : 0;
+
+      return {
+        id: dept?.department?.id || `${dept?.departmentName || 'dept'}-${index}`,
+        departmentName: dept?.departmentName || dept?.department?.name || t("adminDashboard.departments.unknownDepartment", "Unknown Department"),
+        memberCount: safePositiveMembers,
+        presentCount: presentToday,
+        absentCount: absentToday,
+        percentage: Math.round(percentage * 10) / 10,
+      };
+    });
+  }, [data, t]);
 
   const handleViewAllDepartments = () => {
     navigate('/pages/admin/all-departments');
@@ -63,16 +54,39 @@ const Departments = () => {
         </button>
       </div>
       <div className="w-full space-y-2 sm:space-y-3">
-        {departments.slice(0, 4).map((dept) => (
-          <DepartmentCard
-            key={dept.id}
-            departmentName={dept.departmentName}
-            memberCount={dept.memberCount}
-            presentCount={dept.presentCount}
-            absentCount={dept.absentCount}
-            percentage={dept.percentage}
-          />
-        ))}
+        {isLoading ? (
+          <div className="w-full py-6 text-center text-[var(--sub-text-color)] text-[11px]">
+            {t("adminDashboard.departments.loading", "Loading department attendance...")}
+          </div>
+        ) : isError ? (
+          <div className="w-full py-6 text-center text-[11px] text-[var(--error-color)] space-y-2">
+            <p>{t("adminDashboard.departments.error", "Failed to load department attendance data")}</p>
+            <button
+              onClick={() => refetch()}
+              className="px-3 py-1 text-[10px] border border-[var(--border-color)] rounded hover:bg-[var(--hover-color)] transition-colors"
+            >
+              {t("adminDashboard.departments.retry", "Retry")}
+            </button>
+            {error?.data?.message && (
+              <p className="text-[9px] text-[var(--sub-text-color)]">{error.data.message}</p>
+            )}
+          </div>
+        ) : departments.length === 0 ? (
+          <div className="w-full py-6 text-center text-[var(--sub-text-color)] text-[11px]">
+            {t("adminDashboard.departments.empty", "No department attendance data available")}
+          </div>
+        ) : (
+          departments.slice(0, 4).map((dept) => (
+            <DepartmentCard
+              key={dept.id}
+              departmentName={dept.departmentName}
+              memberCount={dept.memberCount}
+              presentCount={dept.presentCount}
+              absentCount={dept.absentCount}
+              percentage={dept.percentage}
+            />
+          ))
+        )}
       </div>
     </div>
   );

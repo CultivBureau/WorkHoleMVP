@@ -21,12 +21,21 @@ const LateReasonModal = ({ isOpen, onClose, onConfirm, isArabic }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div
-        className={`bg-[var(--bg-color)] rounded-xl border border-[var(--border-color)] shadow-xl w-full max-w-md ${
-          isArabic ? "rtl" : "ltr"
-        }`}
-      >
+    <>
+      {/* Backdrop with blur */}
+      <div 
+        className="fixed inset-0 z-[9998] bg-black/40 backdrop-blur-sm"
+        onClick={handleClose}
+      />
+      
+      {/* Modal */}
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pointer-events-none">
+        <div
+          className={`pointer-events-auto bg-[var(--bg-color)] rounded-xl border border-[var(--border-color)] shadow-2xl w-full max-w-md animate-popup-scale ${
+            isArabic ? "rtl" : "ltr"
+          }`}
+          onClick={(e) => e.stopPropagation()}
+        >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-[var(--border-color)]">
           <div className="flex items-center gap-2">
@@ -83,6 +92,7 @@ const LateReasonModal = ({ isOpen, onClose, onConfirm, isArabic }) => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
