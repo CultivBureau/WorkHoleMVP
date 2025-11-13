@@ -79,6 +79,15 @@ export const userApi = createApi({
       }),
       providesTags: (result, error, userId) => [{ type: "User", id: `profile-${userId}` }],
     }),
+
+    // Get user statistics
+    getUserStatistics: builder.query({
+      query: () => ({
+        url: "/api/v1/User/GetUserStatistics/statistics",
+        method: "GET",
+      }),
+      providesTags: ["User"],
+    }),
   }),
 });
 
@@ -90,5 +99,6 @@ export const {
   useGetUserByIdQuery,
   useGetUsersByIdsQuery,
   useGetUserProfileByIdQuery,
+  useGetUserStatisticsQuery,
 } = userApi;
 

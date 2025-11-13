@@ -112,6 +112,15 @@ export const leaveApi = createApi({
         { type: "LeaveRequests", id: "TEAM_LEAD_LIST" },
       ],
     }),
+
+    // Get leave request statistics
+    getLeaveStatistics: builder.query({
+      query: () => ({
+        url: "/api/v1/LeaveRequest/GetStatistics/statistics",
+        method: "GET",
+      }),
+      providesTags: ["LeaveRequests"],
+    }),
   }),
 });
 
@@ -123,5 +132,6 @@ export const {
   useHrOverrideMutation,
   useGetMyLeaveRequestsQuery,
   useSubmitLeaveRequestMutation,
+  useGetLeaveStatisticsQuery,
 } = leaveApi;
 

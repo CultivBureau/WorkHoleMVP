@@ -105,6 +105,31 @@ const MainContent = () => {
     }) || null
   }, [clockinLogsData])
 
+  // Check if user has completed attendance today (has both clock-in and clock-out for today)
+  const hasCompletedToday = useMemo(() => {
+    if (!clockinLogsData) return false
+    
+    let items = []
+    if (Array.isArray(clockinLogsData)) {
+      items = clockinLogsData
+    } else if (clockinLogsData?.value && Array.isArray(clockinLogsData.value)) {
+      items = clockinLogsData.value
+    } else if (clockinLogsData?.data && Array.isArray(clockinLogsData.data)) {
+      items = clockinLogsData.data
+    } else if (clockinLogsData?.items && Array.isArray(clockinLogsData.items)) {
+      items = clockinLogsData.items
+    } else if (clockinLogsData?.results && Array.isArray(clockinLogsData.results)) {
+      items = clockinLogsData.results
+    }
+    
+    // Check if there's a log entry for today with both clock-in and clock-out
+    return items.some(log => {
+      if (!log?.clockinTime || !log?.clockoutTime) return false
+      // Check if clock-in date is today (in local timezone) and has clock-out
+      return isUtcDateToday(log.clockinTime) && !!log.clockoutTime
+    })
+  }, [clockinLogsData])
+
   // Determine current status and clock-in time
   const currentStatus = activeClockIn ? "Clocked In" : "Clocked Out"
   const clockInTime = activeClockIn?.clockinTime || null
@@ -458,8 +483,6 @@ const MainContent = () => {
     })
   }
 
-  // Simple check if user completed attendance today
-  const hasCompletedToday = data?.todayAttendance?.clockIn && data?.todayAttendance?.clockOut
   const isAlreadyClockedIn = stats.currentStatus === "Clocked In"
 
   // Handle clock in/out with location from Google Maps URL
@@ -976,12 +999,15 @@ const MainContent = () => {
               )}
 
               <button
-                className="w-full text-white cursor-pointer font-medium py-2 sm:py-3 px-4 sm:px-6 rounded-xl sm:rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base"
+                className={`w-full text-white font-medium py-2 sm:py-3 px-4 sm:px-6 rounded-xl sm:rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base ${
+                  hasCompletedToday 
+                    ? 'cursor-not-allowed opacity-70' 
+                    : 'cursor-pointer hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]'
+                }`}
                 style={{
                   background: hasCompletedToday
                     ? 'linear-gradient(135deg, #6B7280 0%, #9CA3AF 100%)'
                     : `linear-gradient(135deg, var(--accent-hover) 0%, var(--accent-color) 100%)`,
-                  opacity: hasCompletedToday ? 0.7 : 1,
                 }}
                 onClick={handleClock}
                 disabled={isClockingIn || isClockingOut || hasCompletedToday}
@@ -994,7 +1020,7 @@ const MainContent = () => {
                   <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
                 )}
                 {hasCompletedToday
-                  ? (isAr ? 'تم تسجيل الحضور اليوم' : 'Completed Today')
+                  ? (isAr ? 'تم إكمال اليوم' : 'Completed Day')
                   : (isClockingIn || isClockingOut)
                     ? (isAr ? 'جاري التسجيل...' : 'Processing...')
                     : stats.currentStatus === "Clocked In"

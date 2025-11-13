@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import NavBarAdmin from "../../../components/admin/NavBarAdmin";
 import SideBarAdmin from "../../../components/admin/SideBarAdmin";
 import { useTranslation } from "react-i18next";
@@ -23,30 +23,19 @@ import {
   Settings,
 } from "lucide-react";
 
-import { useLang } from "../../../contexts/LangContext";
 import Card from "../../../components/Time_Tracking_Components/Stats/Card";
 import TeamLeadLeavesTable from "../../../components/admin/leaves/LeavesTable/TeamLeadLeavesTable";
 import HrLeavesTable from "../../../components/admin/leaves/LeavesTable/HrLeavesTable";
 import LeaveTypesModal from "../../../components/admin/leaves/LeaveTypesModal";
-import { usePermissions } from "../../../services/PermissionProvider";
 import { hasBackendPermission } from "../../../utils/permissionMapping";
 import { getPermissions } from "../../../utils/page";
+import { useGetLeaveStatisticsQuery } from "../../../services/apis/LeaveApi";
 
 const LeavesAdmin = () => {
-  const { lang, isRtl } = useLang();
   const { t } = useTranslation();
-  const permissions = usePermissions();
   const backendPermissions = getPermissions() || [];
   const [showLeaveTypesModal, setShowLeaveTypesModal] = useState(false);
-
-  // Check if user has View permission (required to access page)
-  const hasViewPermission = hasBackendPermission(backendPermissions, [
-    "LeaveRequest.View",
-    "LeaveRequest.ViewTeams",
-    "LeaveRequest.Review",
-    "LeaveRequest.Confirm",
-    "LeaveRequest.Override",
-  ]);
+  const { data: statsData, isLoading: isLoadingStats } = useGetLeaveStatisticsQuery();
 
   // Check if user has Team Lead permissions (ViewTeams OR Review)
   const hasTeamLeadPermissions = hasBackendPermission(backendPermissions, [
@@ -64,28 +53,34 @@ const LeavesAdmin = () => {
   const showHrView = hasHrPermissions;
   const showTeamLeadView = hasTeamLeadPermissions && !hasHrPermissions;
 
-  const cardData = [
-    {
-      title: t("adminLeaves.cards.totalLeaveRequests"),
-      value: 20,
-      icon: <img src="/assets/AdminDashboard/total.svg" alt="employees" />
-    },
-    {
-      title: t("adminLeaves.cards.pendingApprovals"),
-      value: 12,
-      icon: <img src="/assets/AdminDashboard/leavee.svg" alt="attendance" />
-    },
-    {
-      title: t("adminLeaves.cards.approvedLeaves"),
-      value: 4,
-      icon: <img src="/assets/AdminDashboard/app.svg" alt="absent" />
-    },
-    {
-      title: t("adminLeaves.cards.rejectedRequests"),
-      value: 4,
-      icon: <img src="/assets/AdminDashboard/task.svg" alt="late" />
-    },
-  ]
+  // Extract statistics from API response
+  const stats = statsData?.value || {};
+
+  // Helper function to convert camelCase to Title Case
+  const formatHeader = (key) => {
+    return key
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/^./, str => str.toUpperCase())
+      .trim();
+  };
+
+  // Dynamically create cards from API response fields
+  const iconMap = {
+    totalRequests: <img src="/assets/AdminDashboard/total.svg" alt="Total Requests" />,
+    pendingApprovals: <img src="/assets/AdminDashboard/leavee.svg" alt="Pending Approvals" />,
+    approvedRequests: <img src="/assets/AdminDashboard/app.svg" alt="Approved Requests" />,
+    rejectedRequests: <img src="/assets/AdminDashboard/task.svg" alt="Rejected Requests" />,
+  };
+
+  const cardData = Object.entries(stats).map(([key, value]) => ({
+    title: formatHeader(key),
+    value: isLoadingStats ? "..." : (value ?? 0).toString(),
+    icon: iconMap[key] || <img src="/assets/AdminDashboard/total.svg" alt={formatHeader(key)} />
+  }));
+
+  const gridColsClass = cardData.length === 1 ? "lg:grid-cols-1" : 
+                        cardData.length === 2 ? "lg:grid-cols-2" : 
+                        cardData.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4";
 
   return (
     <PermissionGuard 
@@ -103,7 +98,7 @@ const LeavesAdmin = () => {
         {/* Main Content */}
         <main className="flex-1 overflow-auto p-6 bg-[var(--bg-all)]">
           {/* Stats Cards - Responsive Grid */}
-          <div className="w-full h-max grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-5">
+          <div className={`w-full h-max grid grid-cols-1 sm:grid-cols-2 ${gridColsClass} gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-5`}>
             {cardData.map((card, index) => (
               <Card
                 key={index}

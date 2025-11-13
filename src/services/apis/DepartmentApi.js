@@ -105,6 +105,15 @@ export const departmentApi = createApi({
       }),
       invalidatesTags: ["Departments"],
     }),
+
+    // Get department statistics
+    getDepartmentStatistics: builder.query({
+      query: () => ({
+        url: "/api/v1/Department/GetStatistics/statistics",
+        method: "GET",
+      }),
+      providesTags: ["Departments"],
+    }),
   }),
   tagTypes: ["Departments"],
 });
@@ -119,5 +128,6 @@ export const {
   useGetDepartmentSupervisorQuery,
   useAssignSupervisorMutation,
   useRemoveSupervisorMutation,
+  useGetDepartmentStatisticsQuery,
 } = departmentApi;
 

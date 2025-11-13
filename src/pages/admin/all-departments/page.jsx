@@ -36,7 +36,7 @@ const AllDepartments = () => {
               {/* All Departments content */}
               <div className="w-full h-max p-6">
                 {/* Status Cards */}
-                {/* //<StatusCards /> */}
+                <StatusCards />
                 
                 {/* Main All Departments Component */}
                 <AllDepartmentsComponent />

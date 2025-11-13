@@ -110,6 +110,15 @@ export const roleApi = createApi({
       }),
       invalidatesTags: ["Role"],
     }),
+
+    // Get role statistics
+    getRoleStatistics: builder.query({
+      query: () => ({
+        url: "/api/v1/Role/GetRoleStatistics/statistics",
+        method: "GET",
+      }),
+      providesTags: ["Role"],
+    }),
   }),
 });
 
@@ -124,4 +133,5 @@ export const {
   useGetRolePermissionsQuery,
   useAssignUserToRoleMutation,
   useRemoveUserFromRoleMutation,
+  useGetRoleStatisticsQuery,
 } = roleApi;
