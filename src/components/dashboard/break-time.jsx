@@ -1,156 +1,142 @@
-import React, { useState, useEffect, useRef } from "react";
-import { ChartColumn } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import CustomPopup from '../ui/custom-popup';
 import DigitalNumber from '../ui/DigitalNumber';
-import { useNavigate } from "react-router-dom";
+import { calculateDurationFromUtc, utcToLocalTime } from "../../utils/timeUtils";
 
-// Static break types data
-const staticBreakTypes = [
-  { name: "Lunch", duration: 45 },
-  { name: "Coffee", duration: 15 },
-  { name: "Personal", duration: 10 },
-  { name: "Prayer", duration: 10 }
-];
-
-const BreakTime = ({ breakDashboard, refetch }) => {
+const BreakTime = ({
+    breakOptions = [],
+    activeBreakLog,
+    onStartBreak,
+    onEndBreak,
+    isStarting = false,
+    isEnding = false,
+    isLoadingBreakOptions = false,
+    recentBreaks = [],
+    isLoadingLogs = false,
+}) => {
     const { t, i18n } = useTranslation();
-    const navigate = useNavigate();
+    const isArabic = i18n.language === "ar";
 
-    // Use static data instead of API hooks
-    const breakTypes = staticBreakTypes;
-    const typesLoading = false;
-    const starting = false;
-    const stopping = false;
-    const breakDashboardData = breakDashboard || {};
-    const breakStats = { data: [] };
-    
-    // Mock mutation handlers - disabled for static data
-    const startBreak = async () => ({ data: {} });
-    const stopBreak = async () => ({ data: {} });
-    const refetchDashboard = () => {};
-    const refetchStats = () => {};
+    // مزامنة اللغة من localStorage
+    useEffect(() => {
+        const lang = localStorage.getItem("lang") || "en";
+        i18n.changeLanguage(lang);
+        document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+    }, [i18n]);
 
-    // UI state
+    const [selectedBreakId, setSelectedBreakId] = useState("");
     const [time, setTime] = useState(new Date());
-    const [isBreakActive, setIsBreakActive] = useState(false);
     const [breakStartTime, setBreakStartTime] = useState(null);
     const [breakDuration, setBreakDuration] = useState(0);
-    const [selectedReason, setSelectedReason] = useState("");
     const [showPopup, setShowPopup] = useState(false);
+    const [popupMessage, setPopupMessage] = useState(
+        t("breakTime.selectBreakReasonFirst", "Please select a break reason first!")
+    );
 
-    // Restore break state from localStorage on mount
-    useEffect(() => {
-        const active = localStorage.getItem("breakActive") === "1";
-        const start = localStorage.getItem("breakStartTime");
-        const reason = localStorage.getItem("breakReason");
-        if (active && start) {
-            setIsBreakActive(true);
-            setBreakStartTime(new Date(start));
-            setSelectedReason(reason || "");
-        }
-    }, []);
+    const isBreakActive = useMemo(() => Boolean(activeBreakLog && !activeBreakLog.endBreak), [activeBreakLog]);
 
-    // Persist break state to localStorage on change
+    // when break options change, default select first available
     useEffect(() => {
-        if (isBreakActive && breakStartTime) {
-            localStorage.setItem("breakActive", "1");
-            localStorage.setItem("breakStartTime", breakStartTime.toISOString());
-            localStorage.setItem("breakReason", selectedReason);
+        if (breakOptions.length > 0) {
+            setSelectedBreakId((prev) => prev || breakOptions[0]?.id || "");
         } else {
-            localStorage.removeItem("breakActive");
-            localStorage.removeItem("breakStartTime");
-            localStorage.removeItem("breakReason");
+            setSelectedBreakId("");
         }
-    }, [isBreakActive, breakStartTime, selectedReason]);
+    }, [breakOptions]);
 
-    // Timer effect
+    // update break start time when active break changes
     useEffect(() => {
+        if (isBreakActive && activeBreakLog?.startBreak) {
+            // Store UTC ISO string directly
+            setBreakStartTime(activeBreakLog.startBreak);
+            // Reset duration when break becomes active
+            setBreakDuration(0);
+        } else {
+            setBreakStartTime(null);
+            setBreakDuration(0);
+        }
+    }, [activeBreakLog, isBreakActive]);
+
+    // Timer effect - calculate elapsed time from break start using UTC
+    useEffect(() => {
+        if (!isBreakActive || !breakStartTime) {
+            setBreakDuration(0);
+            return;
+        }
+
+        // Calculate initial duration immediately using timeUtils
+        const calculateDuration = () => {
+            // Use timeUtils to calculate duration from UTC
+            const duration = calculateDurationFromUtc(breakStartTime);
+            setBreakDuration(duration);
+        };
+
+        // Calculate immediately
+        calculateDuration();
+
+        // Then update every second
         const timer = setInterval(() => {
             setTime(new Date());
-            if (isBreakActive && breakStartTime) {
-                const currentTime = new Date();
-                const duration = Math.floor((currentTime - breakStartTime) / 1000);
-                setBreakDuration(duration);
-            }
+            calculateDuration();
         }, 1000);
+
         return () => clearInterval(timer);
     }, [isBreakActive, breakStartTime]);
 
-    // Clock hands
-    const secondAngle = time.getSeconds() * 6 - 90;
-    const minuteAngle = time.getMinutes() * 6 + time.getSeconds() * 0.1 - 90;
-    const hourAngle = (time.getHours() % 12) * 30 + time.getMinutes() * 0.5 - 90;
+    const handleToggleBreak = async () => {
+        try {
+            if (isBreakActive) {
+                await onEndBreak?.();
+            } else {
+                if (!selectedBreakId) {
+                    setPopupMessage(
+                        t("breakTime.selectBreakReasonFirst", "Please select a break reason first!")
+                    );
+                    setShowPopup(true);
+                    return;
+                }
+                await onStartBreak?.(selectedBreakId);
+            }
+        } catch (error) {
+            setPopupMessage(
+                error?.data?.errorMessage ||
+                t("common.somethingWentWrong", "Something went wrong. Please try again.")
+            );
+            setShowPopup(true);
+        }
+    };
+
+    const selectedBreakOption = useMemo(() => {
+        if (isBreakActive && activeBreakLog?.break?.id) {
+            return {
+                id: activeBreakLog.break.id,
+                name: activeBreakLog.break.name,
+                duration: activeBreakLog.break.duration,
+            };
+        }
+        return breakOptions.find((option) => option.id === selectedBreakId) || null;
+    }, [activeBreakLog, breakOptions, isBreakActive, selectedBreakId]);
 
     // Timer display
     const timerMinutes = Math.floor(breakDuration / 60).toString().padStart(2, "0");
     const timerSeconds = (breakDuration % 60).toString().padStart(2, "0");
 
-    // Reason options from API
-    const reasonOptions = [
-        { value: "", label: t('breakTime.selectReason') },
-        ...breakTypes.map((type) => ({
-            value: type.name,
-            label: t(`breakTime.reasons.${type.name}`, type.name),
-        })),
-    ];
+    // Calculate angles for clock hands
+    const secondAngle = time.getSeconds() * 6 - 90;
+    const minuteAngle = time.getMinutes() * 6 + time.getSeconds() * 0.1 - 90;
+    const hourAngle = (time.getHours() % 12) * 30 + time.getMinutes() * 0.5 - 90;
 
-    // Start/Stop break integration
-    const handleStartBreak = async () => {
-        if (!selectedReason) {
-            setShowPopup(true);
-            return;
-        }
-        if (!isBreakActive) {
-            try {
-                await startBreak(selectedReason).unwrap();
-                setIsBreakActive(true);
-                setBreakStartTime(new Date());
-                setBreakDuration(0);
-                if (refetchDashboard) refetchDashboard();
-                if (refetchStats) refetchStats();
-            } catch (err) {
-                setShowPopup(true);
-            }
-        } else {
-            try {
-                await stopBreak().unwrap();
-                setIsBreakActive(false);
-                setBreakStartTime(null);
-                setBreakDuration(0);
-                setSelectedReason("");
-                if (refetchDashboard) refetchDashboard();
-                if (refetchStats) refetchStats();
-            } catch (err) {
-                setShowPopup(true);
-            }
-        }
-    };
+    const breakTypeDuration = selectedBreakOption?.duration || 0;
 
-    // Sort break summary by date (latest first)
-    const sortedBreaks = breakStats?.breaks
-        ? [...breakStats.breaks].sort((a, b) => {
-            const dateA = new Date(a.date.split('/').reverse().join('-'));
-            const dateB = new Date(b.date.split('/').reverse().join('-'));
-            return dateB - dateA;
-        })
-        : [];
+    // Calculate remaining time - ensure it's never negative
+    const remainingSeconds = isBreakActive && breakStartTime && breakTypeDuration
+        ? Math.max(0, (breakTypeDuration * 60) - breakDuration)
+        : breakTypeDuration * 60;
 
-    function formatMinutes(minutes) {
-        minutes = Number(minutes);
-        if (isNaN(minutes) || minutes === 0) return '0 min';
-        const hours = Math.floor(minutes / 60);
-        const mins = Math.round(minutes % 60);
-        if (hours === 0) return `${mins} min`;
-        if (mins === 0) return `${hours} hr`;
-        return `${hours} hr ${mins} min`;
-    }
+    const remainingMinutes = Math.max(Math.floor(remainingSeconds / 60), 0);
+    const remainingSecs = Math.max(Math.floor(remainingSeconds % 60), 0);
 
-    function formatLocalTime(dateString) {
-        if (!dateString) return "--";
-        const date = new Date(dateString);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
 
     return (
         <div className="rounded-2xl shadow-xl border p-3 sm:p-4 lg:p-6 h-full flex flex-col backdrop-blur-sm transition-all duration-300 hover:shadow-2xl group"
@@ -172,25 +158,30 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                     {/* Select Reason - Always 50% width */}
                     <div className="relative group/select flex-1">
                         <select
-                            value={selectedReason}
-                            onChange={(e) => setSelectedReason(e.target.value)}
-                            disabled={isBreakActive}
+                            value={isBreakActive ? selectedBreakOption?.id || "" : selectedBreakId}
+                            onChange={(e) => setSelectedBreakId(e.target.value)}
+                            disabled={isBreakActive || isLoadingBreakOptions}
                             className="w-full border-2 rounded-xl font-semibold px-2 sm:px-2 lg:px-2 xl:px-2 py-2 sm:py-2.5 lg:py-2 xl:py-2.5 pr-8 sm:pr-10 lg:pr-8 xl:pr-10 text-xs sm:text-sm lg:text-xs xl:text-sm gradient-text appearance-none backdrop-blur-sm transition-all duration-300 hover:border-opacity-80 focus:ring-2 focus:ring-opacity-20 focus:scale-[1.02] h-[36px] sm:h-[42px] lg:h-[36px] xl:h-[42px]"
                             style={{
                                 borderColor: 'var(--accent-color)',
                                 backgroundColor: 'var(--bg-color)',
-                                opacity: isBreakActive ? 0.6 : 1,
+                                opacity: isBreakActive || isLoadingBreakOptions ? 0.6 : 1,
                                 boxShadow: '0 4px 15px rgba(0, 0, 0, 0.08)',
                                 focusRingColor: 'var(--accent-color)'
                             }}
                         >
-                            {reasonOptions.map((option) => (
+                            {!isBreakActive && (
+                                <option value="">
+                                    {t("breakTime.selectReason", "Select Break Reason")}
+                                </option>
+                            )}
+                            {(isBreakActive && selectedBreakOption ? [selectedBreakOption] : breakOptions).map((option) => (
                                 <option
-                                    key={option.value}
-                                    value={option.value}
+                                    key={option.id}
+                                    value={option.id}
                                     style={{ color: 'var(--sub-text-color)' }}
                                 >
-                                    {option.label}
+                                    {t(`breakTime.reasons.${option.name}`, option.name)}
                                 </option>
                             ))}
                         </select>
@@ -209,7 +200,7 @@ const BreakTime = ({ breakDashboard, refetch }) => {
 
                     {/* Start Break Button - Always 50% width */}
                     <button
-                        onClick={handleStartBreak}
+                        onClick={handleToggleBreak}
                         className="flex-1 text-white px-3 sm:px-4 lg:px-3 xl:px-4 py-2 sm:py-2.5 lg:py-2 xl:py-2.5 rounded-xl text-xs sm:text-sm lg:text-xs xl:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all duration-300 transform hover:scale-105 hover:shadow-xl active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed group/btn h-[36px] sm:h-[42px] lg:h-[36px] xl:h-[42px]"
                         style={{
                             background: isBreakActive
@@ -219,7 +210,7 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                                 ? '0 8px 25px rgba(239, 68, 68, 0.4)'
                                 : '0 8px 25px rgba(21, 145, 155, 0.4)'
                         }}
-                        disabled={starting || stopping}
+                        disabled={isStarting || isEnding || isLoadingBreakOptions}
                     >
                         <img
                             src="/assets/clock.svg"
@@ -227,7 +218,7 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                             className="w-3 h-3 sm:w-4 sm:h-4 lg:w-3 lg:h-3 xl:w-4 xl:h-4 transition-transform duration-300 group-hover/btn:rotate-12"
                         />
                         <span>
-                            {(starting || stopping) ? (
+                            {(isStarting || isEnding) ? (
                                 <span className="animate-pulse">Loading...</span>
                             ) : (
                                 isBreakActive ? t('breakTime.endBreak', 'End Break') : t('breakTime.startBreak', 'Start Break')
@@ -396,100 +387,86 @@ const BreakTime = ({ breakDashboard, refetch }) => {
             <div className="w-full h-px mb-2 sm:mb-3 lg:mb-4 bg-gradient-to-r from-transparent via-gray-200 to-transparent"
                 style={{ backgroundColor: 'var(--divider-color)' }}></div>
 
-            {/* Enhanced Break Dashboard Summary - Show Last 4 Only */}
+            {/* Recent Breaks Section */}
             <div className="flex-1 flex flex-col min-h-0">
-                <h4 className={`text-xs sm:text-sm font-bold pb-1 sm:pb-2 mb-1 ${i18n.language === 'ar' ? 'text-right' : 'text-left'} transition-all duration-200`}
+                <h4 className={`text-xs sm:text-sm font-bold pb-1 sm:pb-2 mb-1 ${isArabic ? 'text-right' : 'text-left'} transition-all duration-200`}
                     style={{ color: 'var(--text-color)' }}>
-                    {t('breakTime.breakSummary')}
+                    {t('breakTime.recentBreaks', 'Recent Breaks')}
                 </h4>
 
-                <div
-                    className="flex-1 overflow-hidden"
-                    style={{
-                        maxHeight: sortedBreaks.length > 2 ? "100px sm:120px" : "none",
-                        overflowY: sortedBreaks.length > 2 ? "auto" : "visible",
-                        minHeight: 0,
-                    }}
-                >
-                    {/* Mobile & Small Tablet: Card view - Show last 4 */}
-                    <div className="block md:hidden space-y-1">
-                        {sortedBreaks.slice(0, 4).map((item, idx) => (
-                            <div key={idx} className="bg-gray-50 rounded-lg p-2 space-y-1" style={{ backgroundColor: 'var(--hover-color)' }}>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-[9px] sm:text-[10px] font-medium" style={{ color: 'var(--text-color)' }}>
-                                        {item.date}
-                                    </span>
-                                    <span className="text-[9px] sm:text-[10px] font-semibold" style={{ color: 'var(--accent-color)' }}>
-                                        {t(`breakTime.reasons.${item.breakType}`, item.breakType)}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between items-center text-[8px] sm:text-[9px]" style={{ color: 'var(--sub-text-color)' }}>
-                                    <span>{formatMinutes(item.duration.replace(' min', ''))}</span>
-                                    <span className="hidden xs:inline">{formatLocalTime(item.startTime)} - {formatLocalTime(item.endTime)}</span>
-                                    <span className={item.exceeded ? 'text-red-500 font-semibold' : ''}>
-                                        {item.exceeded ? t('breakTime.exceededYes', 'Yes') : t('breakTime.exceededNo', 'No')}
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
+                {isLoadingLogs ? (
+                    <div className="flex items-center justify-center py-4">
+                        <div className="text-xs sm:text-sm" style={{ color: 'var(--sub-text-color)' }}>
+                            {t('common.loading', 'Loading...')}
+                        </div>
                     </div>
+                ) : recentBreaks.length === 0 ? (
+                    <div className="flex items-center justify-center py-4">
+                        <div className="text-xs sm:text-sm" style={{ color: 'var(--sub-text-color)' }}>
+                            {t('breakTime.noBreaks', 'No break history available')}
+                        </div>
+                    </div>
+                ) : (
+                    <div className="space-y-1.5 sm:space-y-2">
+                        {recentBreaks.map((breakItem) => {
+                            const formatLocalTime = (utcIsoString) => {
+                                if (!utcIsoString) return "--";
+                                return utcToLocalTime(utcIsoString, i18n.language === 'ar' ? 'ar-EG' : 'en-US', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                });
+                            };
 
-                    {/* Desktop: Table view - Show last 4 */}
-                    <table className="w-full hidden md:table">
-                        <thead className="sticky top-0 z-10" style={{ backgroundColor: 'var(--bg-color)' }}>
-                            <tr>
-                                <th className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs font-bold py-0.5 sm:py-1 transition-colors duration-200 hover:opacity-80"
-                                    style={{ color: 'var(--sub-text-color)' }}>
-                                    {t('breakTime.date', 'Date')}
-                                </th>
-                                <th className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs font-bold py-0.5 sm:py-1 transition-colors duration-200 hover:opacity-80"
-                                    style={{ color: 'var(--sub-text-color)' }}>
-                                    {t('breakTime.breakType', 'Type')}
-                                </th>
-                                <th className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs font-bold py-0.5 sm:py-1 transition-colors duration-200 hover:opacity-80"
-                                    style={{ color: 'var(--sub-text-color)' }}>
-                                    {t('breakTime.duration', 'Duration')}
-                                </th>
-                                <th className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs font-bold py-0.5 sm:py-1 transition-colors duration-200 hover:opacity-80 hidden xl:table-cell"
-                                    style={{ color: 'var(--sub-text-color)' }}>
-                                    {t('breakTime.startTime', 'Start')}
-                                </th>
-                                <th className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs font-bold py-0.5 sm:py-1 transition-colors duration-200 hover:opacity-80 hidden xl:table-cell"
-                                    style={{ color: 'var(--sub-text-color)' }}>
-                                    {t('breakTime.endTime', 'End')}
-                                </th>
-                                <th className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs font-bold py-0.5 sm:py-1 transition-colors duration-200 hover:opacity-80"
-                                    style={{ color: 'var(--sub-text-color)' }}>
-                                    {t('breakTime.exceeded', 'Exceeded')}
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {sortedBreaks.slice(0, 4).map((item, idx) => (
-                                <tr key={idx} className="hover:bg-opacity-50 transition-all duration-200 group/row" style={{ backgroundColor: 'transparent' }}>
-                                    <td className="py-0.5 sm:py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs font-medium transition-all duration-200 group-hover/row:opacity-80" style={{ color: 'var(--text-color)' }}>
-                                        {item.date}
-                                    </td>
-                                    <td className="py-0.5 sm:py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs font-semibold transition-all duration-200 group-hover/row:scale-105" style={{ color: 'var(--accent-color)' }}>
-                                        {t(`breakTime.reasons.${item.breakType}`, item.breakType)}
-                                    </td>
-                                    <td className="py-0.5 sm:py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs transition-all duration-200 group-hover/row:opacity-80" style={{ color: 'var(--sub-text-color)' }}>
-                                        {formatMinutes(item.duration.replace(' min', ''))}
-                                    </td>
-                                    <td className="py-0.5 sm:py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs transition-all duration-200 group-hover/row:opacity-80 hidden xl:table-cell" style={{ color: 'var(--sub-text-color)' }}>
-                                        {formatLocalTime(item.startTime)}
-                                    </td>
-                                    <td className="py-0.5 sm:py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs transition-all duration-200 group-hover/row:opacity-80 hidden xl:table-cell" style={{ color: 'var(--sub-text-color)' }}>
-                                        {formatLocalTime(item.endTime)}
-                                    </td>
-                                    <td className="py-0.5 sm:py-1 text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs font-semibold transition-all duration-200 group-hover/row:scale-105" style={{ color: item.exceeded ? '#ef4444' : 'var(--sub-text-color)' }}>
-                                        {item.exceeded ? t('breakTime.exceededYes', 'Yes') : t('breakTime.exceededNo', 'No')}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                            return (
+                                <div
+                                    key={breakItem.id}
+                                    className="rounded-lg p-2 sm:p-2.5 transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+                                    style={{
+                                        backgroundColor: 'var(--hover-color)',
+                                        border: '1px solid',
+                                        borderColor: 'var(--border-color)',
+                                    }}
+                                >
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[9px] sm:text-[10px] font-medium" style={{ color: 'var(--text-color)' }}>
+                                                {breakItem.date}
+                                            </span>
+                                            <span className="text-[9px] sm:text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                                                style={{
+                                                    backgroundColor: 'var(--accent-color)',
+                                                    color: '#fff',
+                                                    opacity: 0.9,
+                                                }}>
+                                                {t(`breakTime.reasons.${breakItem.breakType}`, breakItem.breakType)}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2 sm:gap-3 text-[8px] sm:text-[9px]" style={{ color: 'var(--sub-text-color)' }}>
+                                            <span className="font-medium">{breakItem.duration}</span>
+                                            <span className="hidden xs:inline">
+                                                {formatLocalTime(breakItem.startTime)} - {formatLocalTime(breakItem.endTime)}
+                                            </span>
+                                            <span
+                                                className={`font-semibold px-1.5 py-0.5 rounded ${
+                                                    breakItem.exceeded ? 'text-red-500' : 'text-green-500'
+                                                }`}
+                                                style={{
+                                                    backgroundColor: breakItem.exceeded
+                                                        ? 'rgba(239, 68, 68, 0.1)'
+                                                        : 'rgba(34, 197, 94, 0.1)',
+                                                }}
+                                            >
+                                                {breakItem.exceeded
+                                                    ? t('breakTime.exceededYes', 'Yes')
+                                                    : t('breakTime.exceededNo', 'No')}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
 
             {/* Enhanced Custom Popup */}
@@ -497,7 +474,7 @@ const BreakTime = ({ breakDashboard, refetch }) => {
                 isOpen={showPopup}
                 onClose={() => setShowPopup(false)}
                 title={t("breakTime.reasonRequired", "Break Reason Required")}
-                message={t("breakTime.selectBreakReasonFirst", "Please select a break reason first!")}
+                message={popupMessage}
                 type="warning"
             />
         </div>

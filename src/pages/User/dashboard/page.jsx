@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import SideMenu from "../../../components/side-menu/side-menu";
 import NavBar from "../../../components/NavBar/navbar";
 import ActivityHeatmap from "../../../components/dashboard/activity-heatmap";
@@ -6,6 +6,15 @@ import StatusCards from "../../../components/dashboard/status-cards";
 import QuickActions from "../../../components/dashboard/quick-actions";
 import BreakTime from "../../../components/dashboard/break-time";
 import { useLang } from "../../../contexts/LangContext";
+import { useMeQuery } from "../../../services/apis/AuthApi";
+import {
+  useGetUserBreakLogsQuery,
+  useStartBreakMutation,
+  useEndBreakMutation,
+  useGetAllBreaksQuery,
+} from "../../../services/apis/BreakApi";
+import { toast } from "react-hot-toast";
+import { getCurrentUtcTime, calculateDurationFromUtc, utcToLocalDate, utcToLocalTime, getDeviceLocale } from "../../../utils/timeUtils";
 
 // Static dashboard data
 const staticDashboardData = {
@@ -42,8 +51,138 @@ const staticDashboardData = {
 const Dashboard = () => {
   const { lang, isRtl } = useLang();
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const { data: meData } = useMeQuery();
+  const userId = meData?.value?.id || meData?.id;
 
-  // Use static data instead of API call
+  // Fetch break data using the same API hooks as break tracking page
+  const {
+    data: breakLogsResponse,
+    isLoading: isLogsLoading,
+    refetch: refetchLogs,
+  } = useGetUserBreakLogsQuery(
+    { userId, pageNumber: 1, pageSize: 10 },
+    { skip: !userId }
+  );
+
+  const {
+    data: breakDefinitionsResponse,
+    isLoading: isBreakDefinitionsLoading,
+  } = useGetAllBreaksQuery({ pageNumber: 1, pageSize: 100 });
+
+  const [startBreakMutation, { isLoading: isStarting }] = useStartBreakMutation();
+  const [endBreakMutation, { isLoading: isEnding }] = useEndBreakMutation();
+
+  // Process break options
+  const breakOptions = useMemo(() => {
+    const raw =
+      breakDefinitionsResponse?.value ||
+      breakDefinitionsResponse?.data ||
+      breakDefinitionsResponse?.items ||
+      breakDefinitionsResponse || [];
+
+    if (!Array.isArray(raw)) return [];
+    return raw
+      .filter((item) => item)
+      .map((item) => ({
+        id: item.id,
+        name: item.name,
+        duration: item.duration,
+        status: item.status,
+      }))
+      .filter((item) => item.status !== false);
+  }, [breakDefinitionsResponse]);
+
+  // Get active break log
+  const breakLogsRaw = useMemo(() => {
+    const raw = breakLogsResponse?.value || breakLogsResponse?.data || breakLogsResponse || [];
+    return Array.isArray(raw) ? raw : [];
+  }, [breakLogsResponse]);
+
+  const activeBreakLog = useMemo(
+    () => breakLogsRaw.find((log) => !log.endBreak),
+    [breakLogsRaw]
+  );
+
+  // Process break logs for display
+  const processedLogs = useMemo(() => {
+    const locale = getDeviceLocale();
+    return breakLogsRaw
+      .filter((log) => log.endBreak) // Only show completed breaks
+      .map((log) => {
+        const startUtc = log.startBreak;
+        const endUtc = log.endBreak;
+        const breakDurationMinutes = log.break?.duration || 0;
+        
+        // Calculate duration using timeUtils
+        const durationSeconds = startUtc
+          ? calculateDurationFromUtc(startUtc, endUtc || null)
+          : 0;
+        
+        const exceeded = breakDurationMinutes
+          ? durationSeconds / 60 > breakDurationMinutes
+          : false;
+        
+        // Format date in user's local timezone
+        const localDate = startUtc
+          ? utcToLocalDate(startUtc, locale, {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+            })
+          : "--";
+        
+        return {
+          id: log.id,
+          date: localDate,
+          breakType: log.break?.name || "--",
+          duration: `${Math.round(durationSeconds / 60)} min`,
+          durationSeconds,
+          startTime: startUtc || null,
+          endTime: endUtc || null,
+          exceeded,
+        };
+      })
+      .sort((a, b) => {
+        // Sort by start time, newest first
+        if (!a.startTime || !b.startTime) return 0;
+        return new Date(b.startTime) - new Date(a.startTime);
+      })
+      .slice(0, 4); // Get newest 4
+  }, [breakLogsRaw]);
+
+  // Break handlers
+  const handleStartBreak = async (breakId) => {
+    try {
+      const utcDateTime = getCurrentUtcTime();
+      await startBreakMutation({
+        breakId,
+        utcDateTime,
+      }).unwrap();
+      toast.success("Break started");
+      await refetchLogs();
+    } catch (error) {
+      const message = error?.data?.errorMessage || "Failed to start break";
+      toast.error(message);
+      throw error;
+    }
+  };
+
+  const handleEndBreak = async () => {
+    try {
+      const utcDateTime = getCurrentUtcTime();
+      await endBreakMutation({
+        utcDateTime,
+      }).unwrap();
+      toast.success("Break ended");
+      refetchLogs();
+    } catch (error) {
+      const message = error?.data?.errorMessage || "Failed to end break";
+      toast.error(message);
+      throw error;
+    }
+  };
+
+  // Use static data for other dashboard components
   const dashboardData = staticDashboardData;
   const isLoading = false;
   const error = null;
@@ -81,7 +220,17 @@ const Dashboard = () => {
                   <QuickActions dashboardData={dashboardData} isLoading={isLoading} error={error} refetch={refetch} />
                 </div>
                 <div className="w-full">
-                  <BreakTime dashboardData={dashboardData} isLoading={isLoading} error={error} refetch={refetch} />
+                  <BreakTime
+                    breakOptions={breakOptions}
+                    activeBreakLog={activeBreakLog}
+                    onStartBreak={handleStartBreak}
+                    onEndBreak={handleEndBreak}
+                    isStarting={isStarting}
+                    isEnding={isEnding}
+                    isLoadingBreakOptions={isBreakDefinitionsLoading}
+                    recentBreaks={processedLogs}
+                    isLoadingLogs={isLogsLoading}
+                  />
                 </div>
               </div>
 
