@@ -344,7 +344,8 @@ export const hasBackendPermission = (backendCodes, requiredPermissions) => {
   // Debug logging in development - only log if match is false or if it's a critical permission check
   const hasMatch = normalizedRequired.some(perm => permissionCodes.includes(perm));
   const isCriticalCheck = normalizedRequired.some(perm => 
-    perm.includes('Department.View') || perm.includes('Role.View') || perm.includes('Shift.View')
+    perm.includes('Department.View') || perm.includes('Role.View') || perm.includes('Shift.View') ||
+    perm.includes('Company.View') || perm.includes('User.View')
   );
   
   if (process.env.NODE_ENV === 'development' && (!hasMatch || isCriticalCheck)) {

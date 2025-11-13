@@ -70,7 +70,7 @@ export const PERMISSION_MENU_ITEMS = [
     name: "Company",
     path: "/pages/admin/company",
     permission: "editCompanySettings",
-    backendPermissions: ["Company.View", "Company.Update"],
+    backendPermissions: ["Company.View"],
     Icon: Building,
     category: "admin",
   },

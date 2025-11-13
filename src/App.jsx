@@ -264,13 +264,9 @@ function App() {
                     path="/pages/admin/company"
                     element={
                       <ProtectedRoute>
-                        <PermissionGuard
-                          permissions={["editCompanySettings"]}
-                        >
-                          <Suspense fallback={<Loading />}>
-                            <Company />
-                          </Suspense>
-                        </PermissionGuard>
+                        <Suspense fallback={<Loading />}>
+                          <Company />
+                        </Suspense>
                       </ProtectedRoute>
                     }
                   />

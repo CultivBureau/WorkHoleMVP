@@ -46,10 +46,14 @@ export const PermissionGuard = ({
     // Also check after delays in case permissions are being set asynchronously
     const timeout1 = setTimeout(checkPermissions, 100);
     const timeout2 = setTimeout(checkPermissions, 500);
+    const timeout3 = setTimeout(checkPermissions, 1000); // Add one more check after 1 second
+    const timeout4 = setTimeout(checkPermissions, 2000); // Add one more check after 2 seconds
     
     return () => {
       clearTimeout(timeout1);
       clearTimeout(timeout2);
+      clearTimeout(timeout3);
+      clearTimeout(timeout4);
     };
   }, [isLoading]); // Re-check when loading state changes
 
@@ -89,7 +93,10 @@ export const PermissionGuard = ({
         userHasCodes: extractedUserCodes,
         hasDepartmentView: extractedUserCodes.includes('Department.View'),
         hasRoleView: extractedUserCodes.includes('Role.View'),
-        isLoading: isLoading
+        hasCompanyView: extractedUserCodes.includes('Company.View'),
+        hasCompanyUpdate: extractedUserCodes.includes('Company.Update'),
+        isLoading: isLoading,
+        permissionsChecked: permissionsChecked
       });
     }
     
@@ -114,18 +121,27 @@ export const PermissionGuard = ({
     
     if (!hasPermission) {
       // Only deny if we've actually checked and confirmed no permissions
-      if (permissionsChecked || userBackendPermissions.length > 0) {
+      // Wait longer if permissions haven't been checked yet or if we're still loading
+      if (permissionsChecked && userBackendPermissions.length > 0) {
         if (process.env.NODE_ENV === 'development') {
           console.error('[PermissionGuard] Access denied - user does not have required permissions', {
             required: backendPermissions,
             userHasCodes: extractedUserCodes,
             hasRequired: backendPermissions.map(req => extractedUserCodes.includes(req)),
-            permissionsChecked: permissionsChecked
+            permissionsChecked: permissionsChecked,
+            userPermissionsCount: userBackendPermissions.length
           });
         }
         return fallback !== null ? fallback : <Unauthorized />;
       }
-      // Otherwise, wait for permissions to load
+      // Otherwise, wait for permissions to load (don't deny access prematurely)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[PermissionGuard] Waiting for permissions to load before denying access...', {
+          permissionsChecked,
+          userPermissionsCount: userBackendPermissions.length,
+          isLoading
+        });
+      }
       return loadingFallback;
     }
     
