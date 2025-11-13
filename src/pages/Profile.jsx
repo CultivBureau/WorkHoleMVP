@@ -72,9 +72,10 @@ const Profile = () => {
   )
 
   // Get user's shift from /me endpoint (for own profile) or employee profile API
+  // Note: Shift is included in the GetUserProfile endpoint response, no separate API call needed
   const userShift = useMemo(() => {
     if (isAdminView && employeeData) {
-      // For employee profile (admin view), check if shift is in employeeData
+      // For employee profile (admin view), shift comes from GetUserProfile/{id}/profile endpoint
       return employeeData.shift?.name || null
     }
     // For own profile, get shift from /me endpoint
@@ -268,6 +269,38 @@ const Profile = () => {
       return []
     }
 
+    // Helper function to format break duration from "HH:MM:SS" format
+    const formatBreakDuration = (breakDuration) => {
+      if (!breakDuration || breakDuration === '00:00:00') {
+        return 'N/A'
+      }
+      
+      // Parse the duration string (format: "HH:MM:SS" or "HH:mm:ss")
+      const parts = breakDuration.split(':')
+      if (parts.length !== 3) {
+        return breakDuration // Return as-is if format is unexpected
+      }
+      
+      const hours = parseInt(parts[0], 10) || 0
+      const minutes = parseInt(parts[1], 10) || 0
+      const seconds = parseInt(parts[2], 10) || 0
+      
+      // Format: "Xh Ym" or "Ym Zs" or "Zs" depending on values
+      const partsArray = []
+      if (hours > 0) {
+        partsArray.push(`${hours}h`)
+      }
+      if (minutes > 0) {
+        partsArray.push(`${minutes}m`)
+      }
+      if (seconds > 0 && hours === 0) {
+        // Only show seconds if there are no hours
+        partsArray.push(`${seconds}s`)
+      }
+      
+      return partsArray.length > 0 ? partsArray.join(' ') : 'N/A'
+    }
+
     return attendanceResponse.value.map((log) => {
       const clockInTime = log.clockinTime ? new Date(log.clockinTime) : null
       const clockOutTime = log.clockoutTime ? new Date(log.clockoutTime) : null
@@ -296,6 +329,9 @@ const Profile = () => {
         workingHours = 'In Progress'
       }
       
+      // Format break duration from API response
+      const breakDuration = formatBreakDuration(log.breakDuration)
+      
       // Determine status
       const status = log.isLate ? 'Late' : 'On Time'
       
@@ -307,7 +343,7 @@ const Profile = () => {
         date,
         checkIn,
         checkOut,
-        break: 'N/A', // Break data not available in API response
+        break: breakDuration,
         workingHours,
         office,
         status
