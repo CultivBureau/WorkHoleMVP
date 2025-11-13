@@ -75,9 +75,14 @@ export const getFieldLabels = (isRtl) => ({
       ],
       title: isRtl ? "طلبات الإجازة" : "Leave Requests",
       statusConfig: {
-        'Approved': { bg: 'bg-green-100', text: 'text-green-800' },
-        'Pending': { bg: 'bg-yellow-100', text: 'text-yellow-800' },
-        'Reject': { bg: 'bg-red-100', text: 'text-red-800' }
+        'Confirmed': { bg: 'bg-green-100', text: 'text-green-800' },
+        'Pending Approval': { bg: 'bg-yellow-100', text: 'text-yellow-800' },
+        'Team Lead Approval': { bg: 'bg-blue-100', text: 'text-blue-800' },
+        'Rejected': { bg: 'bg-red-100', text: 'text-red-800' },
+        'مؤكد': { bg: 'bg-green-100', text: 'text-green-800' },
+        'قيد الموافقة': { bg: 'bg-yellow-100', text: 'text-yellow-800' },
+        'موافقة قائد الفريق': { bg: 'bg-blue-100', text: 'text-blue-800' },
+        'مرفوض': { bg: 'bg-red-100', text: 'text-red-800' }
       }
     }
   })

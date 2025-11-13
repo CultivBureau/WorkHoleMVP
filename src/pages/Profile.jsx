@@ -13,6 +13,8 @@ import { useLocation } from "react-router-dom"
 import { useMeQuery } from "../services/apis/AuthApi"
 import { useGetUserProfileClockInLogsQuery } from "../services/apis/ClockinLogApi"
 import { useGetUserProfileByIdQuery } from "../services/apis/UserApi"
+import { useGetUserLeaveLogsQuery } from "../services/apis/LeaveApi"
+import { utcToLocalDate, getDeviceLocale } from "../utils/timeUtils"
 import Loading from "../components/Loading/Loading"
 
 const Profile = () => {
@@ -61,6 +63,12 @@ const Profile = () => {
   const { data: attendanceResponse, isLoading: isLoadingAttendance } = useGetUserProfileClockInLogsQuery(
     { userId: userIdForAttendance, pageNumber: 1, pageSize: 20 },
     { skip: !userIdForAttendance || activeSection !== 'attendance' }
+  )
+
+  // Fetch leave logs when leave section is active
+  const { data: leaveLogsResponse, isLoading: isLoadingLeaves } = useGetUserLeaveLogsQuery(
+    { userId: userIdForAttendance, pageNumber: 1, pageSize: 20 },
+    { skip: !userIdForAttendance || activeSection !== 'leave' }
   )
 
   // Get user's shift from /me endpoint (for own profile) or employee profile API
@@ -307,6 +315,73 @@ const Profile = () => {
     })
   }, [attendanceResponse])
 
+  // Transform leave logs API response to match table structure
+  const leaveLogsData = useMemo(() => {
+    const locale = getDeviceLocale()
+    const raw = leaveLogsResponse?.value?.items || leaveLogsResponse?.value || []
+    
+    if (!Array.isArray(raw) || raw.length === 0) {
+      return []
+    }
+
+    // Status mapping: 1 = pending approval, 2 = team lead approval, 3 = rejected, 4 = confirmed
+    const getStatusText = (status) => {
+      switch (status) {
+        case 1:
+          return isRtl ? 'قيد الموافقة' : 'Pending Approval'
+        case 2:
+          return isRtl ? 'موافقة قائد الفريق' : 'Team Lead Approval'
+        case 3:
+          return isRtl ? 'مرفوض' : 'Rejected'
+        case 4:
+          return isRtl ? 'مؤكد' : 'Confirmed'
+        default:
+          return 'N/A'
+      }
+    }
+
+    return raw.map((log) => {
+      // Format fromDate and toDate using timeUtils
+      const fromDate = log.fromDate 
+        ? utcToLocalDate(log.fromDate, locale, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          })
+        : 'N/A'
+      
+      const toDate = log.toDate 
+        ? utcToLocalDate(log.toDate, locale, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          })
+        : 'N/A'
+      
+      // Create duration string (fromDate to toDate)
+      const duration = fromDate !== 'N/A' && toDate !== 'N/A' 
+        ? `${fromDate} - ${toDate}`
+        : fromDate !== 'N/A' 
+          ? fromDate 
+          : 'N/A'
+      
+      // Use fromDate as the main date for the table
+      const date = fromDate
+      
+      // Get status text
+      const status = getStatusText(log.status)
+      
+      return {
+        id: log.id,
+        date,
+        duration,
+        days: log.totalDays || 0,
+        reportingManager: 'N/A', // Not available in API response
+        status
+      }
+    })
+  }, [leaveLogsResponse, isRtl])
+
   const content = renderContent()
 
   // Show loading state when fetching employee profile or own profile
@@ -357,9 +432,17 @@ const Profile = () => {
     }
 
     if (content.type === "table") {
-      // Use attendance data from API if attendance section is active
-      const tableData = activeSection === "attendance" ? attendanceData : content.data
-      const isLoading = activeSection === "attendance" ? isLoadingAttendance : false
+      // Use API data if attendance or leave section is active, otherwise use static data
+      let tableData = content.data
+      let isLoading = false
+      
+      if (activeSection === "attendance") {
+        tableData = attendanceData
+        isLoading = isLoadingAttendance
+      } else if (activeSection === "leave") {
+        tableData = leaveLogsData
+        isLoading = isLoadingLeaves
+      }
       
       if (isLoading) {
         return (
