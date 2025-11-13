@@ -120,6 +120,8 @@ export const leaveApi = createApi({
         method: "GET",
       }),
       providesTags: ["LeaveRequests"],
+    }),
+
     // Get user leave logs (for profile page)
     getUserLeaveLogs: builder.query({
       query: ({ userId, pageNumber = 1, pageSize = 20 }) => ({
