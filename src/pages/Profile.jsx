@@ -11,9 +11,10 @@ import AccountAccessSection from "../components/profile/sections/AccountAccessSe
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
 import { useMeQuery } from "../services/apis/AuthApi"
-import { useGetAllShiftAssignmentsQuery } from "../services/apis/ShiftApi"
 import { useGetUserProfileClockInLogsQuery } from "../services/apis/ClockinLogApi"
 import { useGetUserProfileByIdQuery } from "../services/apis/UserApi"
+import { useGetUserLeaveLogsQuery } from "../services/apis/LeaveApi"
+import { utcToLocalDate, getDeviceLocale } from "../utils/timeUtils"
 import Loading from "../components/Loading/Loading"
 
 const Profile = () => {
@@ -42,10 +43,6 @@ const Profile = () => {
   const { data: meResponse, isLoading: isLoadingUser } = useMeQuery()
   const userDataFromApi = meResponse?.value || null
   
-  // Fetch shift assignments to get user's shift
-  const { data: assignmentsData } = useGetAllShiftAssignmentsQuery()
-  const allAssignments = assignmentsData?.value || assignmentsData || []
-  
   const {
     fieldLabels,
     activeTab,
@@ -68,17 +65,22 @@ const Profile = () => {
     { skip: !userIdForAttendance || activeSection !== 'attendance' }
   )
 
-  // Get user's shift from assignments (for both own profile and employee profile)
+  // Fetch leave logs when leave section is active
+  const { data: leaveLogsResponse, isLoading: isLoadingLeaves } = useGetUserLeaveLogsQuery(
+    { userId: userIdForAttendance, pageNumber: 1, pageSize: 20 },
+    { skip: !userIdForAttendance || activeSection !== 'leave' }
+  )
+
+  // Get user's shift from /me endpoint (for own profile) or employee profile API
+  // Note: Shift is included in the GetUserProfile endpoint response, no separate API call needed
   const userShift = useMemo(() => {
-    // Determine which user ID to use
-    const userId = isAdminView && employeeData?.id ? employeeData.id : userDataFromApi?.id
-    if (!userId || !Array.isArray(allAssignments)) return null
-    const userAssignment = allAssignments.find(
-      assignment => assignment.userId === userId
-    )
-    // Check both possible structures
-    return userAssignment?.shiftRule?.name || userAssignment?.shift?.name || null
-  }, [allAssignments, userDataFromApi?.id, employeeData?.id, isAdminView])
+    if (isAdminView && employeeData) {
+      // For employee profile (admin view), shift comes from GetUserProfile/{id}/profile endpoint
+      return employeeData.shift?.name || null
+    }
+    // For own profile, get shift from /me endpoint
+    return userDataFromApi?.shift?.name || null
+  }, [userDataFromApi?.shift?.name, employeeData?.shift?.name, isAdminView])
 
   // Helper function to format arrays with bullet points (respects RTL/LTR)
   const formatArrayWithBullets = useMemo(() => {
@@ -267,6 +269,38 @@ const Profile = () => {
       return []
     }
 
+    // Helper function to format break duration from "HH:MM:SS" format
+    const formatBreakDuration = (breakDuration) => {
+      if (!breakDuration || breakDuration === '00:00:00') {
+        return 'N/A'
+      }
+      
+      // Parse the duration string (format: "HH:MM:SS" or "HH:mm:ss")
+      const parts = breakDuration.split(':')
+      if (parts.length !== 3) {
+        return breakDuration // Return as-is if format is unexpected
+      }
+      
+      const hours = parseInt(parts[0], 10) || 0
+      const minutes = parseInt(parts[1], 10) || 0
+      const seconds = parseInt(parts[2], 10) || 0
+      
+      // Format: "Xh Ym" or "Ym Zs" or "Zs" depending on values
+      const partsArray = []
+      if (hours > 0) {
+        partsArray.push(`${hours}h`)
+      }
+      if (minutes > 0) {
+        partsArray.push(`${minutes}m`)
+      }
+      if (seconds > 0 && hours === 0) {
+        // Only show seconds if there are no hours
+        partsArray.push(`${seconds}s`)
+      }
+      
+      return partsArray.length > 0 ? partsArray.join(' ') : 'N/A'
+    }
+
     return attendanceResponse.value.map((log) => {
       const clockInTime = log.clockinTime ? new Date(log.clockinTime) : null
       const clockOutTime = log.clockoutTime ? new Date(log.clockoutTime) : null
@@ -295,6 +329,9 @@ const Profile = () => {
         workingHours = 'In Progress'
       }
       
+      // Format break duration from API response
+      const breakDuration = formatBreakDuration(log.breakDuration)
+      
       // Determine status
       const status = log.isLate ? 'Late' : 'On Time'
       
@@ -306,13 +343,86 @@ const Profile = () => {
         date,
         checkIn,
         checkOut,
-        break: 'N/A', // Break data not available in API response
+        break: breakDuration,
         workingHours,
         office,
         status
       }
     })
   }, [attendanceResponse])
+
+  // Transform leave logs API response to match table structure
+  const leaveLogsData = useMemo(() => {
+    const locale = getDeviceLocale()
+    const raw = leaveLogsResponse?.value?.items || leaveLogsResponse?.value || []
+    
+    if (!Array.isArray(raw) || raw.length === 0) {
+      return []
+    }
+
+    // Status mapping: 1 = pending approval, 2 = team lead approval, 3 = rejected, 4 = confirmed
+    const getStatusText = (status) => {
+      switch (status) {
+        case 1:
+          return isRtl ? 'قيد الموافقة' : 'Pending Approval'
+        case 2:
+          return isRtl ? 'موافقة قائد الفريق' : 'Team Lead Approval'
+        case 3:
+          return isRtl ? 'مرفوض' : 'Rejected'
+        case 4:
+          return isRtl ? 'مؤكد' : 'Confirmed'
+        default:
+          return 'N/A'
+      }
+    }
+
+    return raw.map((log) => {
+      // Format fromDate and toDate using timeUtils
+      const fromDate = log.fromDate 
+        ? utcToLocalDate(log.fromDate, locale, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          })
+        : 'N/A'
+      
+      const toDate = log.toDate 
+        ? utcToLocalDate(log.toDate, locale, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          })
+        : 'N/A'
+      
+      // Create duration string (fromDate to toDate)
+      const duration = fromDate !== 'N/A' && toDate !== 'N/A' 
+        ? `${fromDate} - ${toDate}`
+        : fromDate !== 'N/A' 
+          ? fromDate 
+          : 'N/A'
+      
+      // Use fromDate as the main date for the table
+      const date = fromDate
+      
+      // Get status text
+      const status = getStatusText(log.status)
+      
+      // Extract reviewer name from API response
+      // Handle cases where reviewerName might be null, empty string, or just whitespace
+      const reviewerName = log.reviewerName 
+        ? log.reviewerName.trim() || 'N/A'
+        : 'N/A'
+      
+      return {
+        id: log.id,
+        date,
+        duration,
+        days: log.totalDays || 0,
+        reportingManager: reviewerName,
+        status
+      }
+    })
+  }, [leaveLogsResponse, isRtl])
 
   const content = renderContent()
 
@@ -364,9 +474,17 @@ const Profile = () => {
     }
 
     if (content.type === "table") {
-      // Use attendance data from API if attendance section is active
-      const tableData = activeSection === "attendance" ? attendanceData : content.data
-      const isLoading = activeSection === "attendance" ? isLoadingAttendance : false
+      // Use API data if attendance or leave section is active, otherwise use static data
+      let tableData = content.data
+      let isLoading = false
+      
+      if (activeSection === "attendance") {
+        tableData = attendanceData
+        isLoading = isLoadingAttendance
+      } else if (activeSection === "leave") {
+        tableData = leaveLogsData
+        isLoading = isLoadingLeaves
+      }
       
       if (isLoading) {
         return (
