@@ -248,7 +248,10 @@
         "checkOut": "Check-out",
         "workHours": "Work hours",
         "status": "Status",
-        "location": "Location"
+        "location": "Location",
+        "shift": "Shift",
+        "reason": "Reason",
+        "breakDuration": "Break Duration"
       }
     }
   },
@@ -382,7 +385,8 @@
       "workHours": "Work hours",
       "status": "Status",
       "location": "Location",
-      "office": "Office Name"
+      "office": "Office Name",
+      "breakDuration": "Break Duration"
     },
     "pageOf": "Page {{page}} of {{total}}"
   },

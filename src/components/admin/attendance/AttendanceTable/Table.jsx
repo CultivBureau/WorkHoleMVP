@@ -163,6 +163,7 @@ const AttendanceTable = () => {
         clockinLocation: log?.clockinLocation || "",
         clockoutLocation: log?.clockoutLocation || "",
         shiftName,
+        breakDuration: log?.breakDuration || null,
         raw: log,
       }
     })
@@ -271,6 +272,22 @@ const AttendanceTable = () => {
           case 'reason':
             aVal = (a.reason || "").toLowerCase()
             bVal = (b.reason || "").toLowerCase()
+            break
+          case 'breakDuration':
+            // Parse HH:mm:ss format to minutes for sorting
+            const parseBreakDuration = (duration) => {
+              if (!duration) return 0
+              const parts = duration.split(':')
+              if (parts.length === 3) {
+                const hours = parseInt(parts[0]) || 0
+                const minutes = parseInt(parts[1]) || 0
+                const seconds = parseInt(parts[2]) || 0
+                return hours * 60 + minutes + seconds / 60
+              }
+              return 0
+            }
+            aVal = parseBreakDuration(a.breakDuration)
+            bVal = parseBreakDuration(b.breakDuration)
             break
           default:
             return 0
@@ -587,18 +604,27 @@ const AttendanceTable = () => {
                   {getSortIcon('reason')}
                 </div>
               </th>
+              <th
+                onClick={() => handleTableSort('breakDuration')}
+                className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors"
+              >
+                <div className="flex items-center gap-1">
+                  {t("adminAttendance.table.columns.breakDuration", "Break Duration")}
+                  {getSortIcon('breakDuration')}
+                </div>
+              </th>
             </tr>
           </thead>
           <tbody className="bg-[var(--table-bg)]">
             {isLoading ? (
               <tr>
-                <td colSpan={9} className="py-16 px-6 text-center text-[var(--sub-text-color)]">
+                <td colSpan={10} className="py-16 px-6 text-center text-[var(--sub-text-color)]">
                   {t("adminAttendance.table.loading", "Loading attendance records...")}
                 </td>
               </tr>
             ) : isError ? (
               <tr>
-                <td colSpan={9} className="py-16 px-6">
+                <td colSpan={10} className="py-16 px-6">
                   <div className="flex flex-col items-center gap-3 text-[var(--sub-text-color)]">
                     <span>{t("adminAttendance.table.errorLoading", "Failed to load attendance records")}</span>
                     {error && (
@@ -614,7 +640,7 @@ const AttendanceTable = () => {
               </tr>
             ) : filteredAndSortedData.length === 0 ? (
               <tr>
-                <td colSpan={9} className="py-16 px-6">
+                <td colSpan={10} className="py-16 px-6">
                   <div className="flex flex-col items-center gap-4 text-[var(--sub-text-color)]">
                     <Users className="h-12 w-12 opacity-60" />
                     <div className="text-lg font-medium text-[var(--text-color)]">
@@ -669,6 +695,11 @@ const AttendanceTable = () => {
                 <td className="py-4 px-6 text-sm text-[var(--text-color)]">
                   {employee.reason
                     ? employee.reason
+                    : <span className="text-[var(--sub-text-color)]">—</span>}
+                </td>
+                <td className="py-4 px-6 text-sm text-[var(--text-color)]">
+                  {employee.breakDuration
+                    ? employee.breakDuration
                     : <span className="text-[var(--sub-text-color)]">—</span>}
                 </td>
               </tr>

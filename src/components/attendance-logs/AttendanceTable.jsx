@@ -158,6 +158,7 @@ const AttendanceTable = () => {
 				status: statusValue,
 				location: locationValue,
 				officeName: log?.company?.name || log?.shiftRule?.name || null,
+				breakDuration: log?.breakDuration || null,
 			}
 		})
 	}, [data, locale])
@@ -434,16 +435,20 @@ const AttendanceTable = () => {
 								style={{ color: 'var(--table-header-text)' }}>
 								{t("attendanceTable.columns.office")}
 							</th>
+							<th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
+								style={{ color: 'var(--table-header-text)' }}>
+								{t("attendanceTable.columns.breakDuration")}
+							</th>
 						</tr>
 					</thead>
 					<tbody>
 						{isLoading ? (
 							<tr>
-								<td colSpan={8} className="text-center py-8">{t("attendanceTable.loading")}</td>
+								<td colSpan={9} className="text-center py-8">{t("attendanceTable.loading")}</td>
 							</tr>
 						) : isError ? (
 							<tr>
-								<td colSpan={8} className="text-center py-8">
+								<td colSpan={9} className="text-center py-8">
 									<div className="flex flex-col items-center gap-2">
 										<span>{t("attendanceTable.errorLoading", "Failed to load attendance logs")}</span>
 										{error && (
@@ -459,7 +464,7 @@ const AttendanceTable = () => {
 							</tr>
 						) : filtered.length === 0 ? (
 							<tr>
-								<td colSpan={8} className="text-center py-8">{t("attendanceTable.noData")}</td>
+								<td colSpan={9} className="text-center py-8">{t("attendanceTable.noData")}</td>
 							</tr>
 						) : (
 							filtered.map((record, index) => (
@@ -509,6 +514,10 @@ const AttendanceTable = () => {
 									<td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
 										style={{ color: 'var(--table-text)' }}>
 										{record.officeName || <span style={{ color: 'var(--sub-text-color)' }}>—</span>}
+									</td>
+									<td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
+										style={{ color: 'var(--table-text)' }}>
+										{record.breakDuration || <span style={{ color: 'var(--sub-text-color)' }}>—</span>}
 									</td>
 								</tr>
 							))

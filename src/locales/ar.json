@@ -209,7 +209,10 @@
         "checkOut": "تسجيل الخروج",
         "workHours": "ساعات العمل",
         "status": "الحالة",
-        "location": "الموقع"
+        "location": "الموقع",
+        "shift": "الوردية",
+        "reason": "السبب",
+        "breakDuration": "مدة الاستراحة"
       }
     }
   },
@@ -343,7 +346,8 @@
       "workHours": "ساعات العمل",
       "status": "الحالة",
       "location": "الموقع",
-      "office": "اسم الفرع"
+      "office": "اسم الفرع",
+      "breakDuration": "مدة الاستراحة"
     },
     "pageOf": "الصفحة {{page}} من {{total}}"
   },

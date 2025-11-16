@@ -35,7 +35,7 @@ const Leaves = () => {
             <div className="w-full h-max p-3 sm:p-4 md:p-5 lg:p-4 xl:p-5 2xl:p-8">
               {/* Top Status Cards - Leave Balances */}
               <div className="mb-4 sm:mb-5 md:mb-6 lg:mb-4 xl:mb-5 2xl:mb-6">
-                <StatusCards />
+                {/* <StatusCards /> */}
               </div>
 
               {/* Main Content Grid - Responsive for 1024px-1300px */}

@@ -598,10 +598,12 @@ const MainContent = () => {
       }
 
       // Check if late from API response - handle different response structures
-      const isLate = result?.value?.isLate || result?.isLate || result?.data?.isLate || false
+      // Only treat as late if explicitly true (strict check to avoid false positives)
+      const isLate = result?.value?.isLate === true || result?.isLate === true || result?.data?.isLate === true
 
       // If late and no reason provided yet, show reason modal
-      if (isLate && !reason) {
+      // Only show modal if user is actually late (isLate === true)
+      if (isLate === true && !reason) {
         setPendingLocation(coords)
         setShowLateReasonModal(true)
         return
@@ -655,14 +657,21 @@ const MainContent = () => {
       
       // Check if this is a late clock-in error (400 with specific error message)
       const errorMessage = error?.data?.errorMessage || error?.data?.message || error?.data?.error || error?.data?.title || error?.message
+      const errorMessageLower = errorMessage?.toLowerCase() || ''
+      
+      // Only show late reason modal if error explicitly indicates late arrival
+      // Check for specific late-related keywords, but be more strict
       const isLateError = error?.status === 400 && (
-        errorMessage?.toLowerCase().includes('late') || 
-        errorMessage?.toLowerCase().includes('reason') ||
-        error?.data?.errorMessage?.toLowerCase().includes('late')
+        errorMessageLower.includes('late arrival') ||
+        errorMessageLower.includes('arrived late') ||
+        errorMessageLower.includes('clock in late') ||
+        errorMessageLower.includes('late clock') ||
+        (errorMessageLower.includes('late') && errorMessageLower.includes('reason'))
       )
       
       // If it's a late error and no reason was provided, show the late reason modal
-      if (isLateError && !reason) {
+      // Only show if user is actually late (strict check)
+      if (isLateError === true && !reason) {
         setPendingLocation(coords)
         setShowLateReasonModal(true)
         return
