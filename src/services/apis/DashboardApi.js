@@ -14,10 +14,19 @@ export const dashboardApi = createApi({
       }),
       providesTags: ["Dashboard"],
     }),
+    // Get dashboard statistics
+    getDashboardStatistics: builder.query({
+      query: () => ({
+        url: "/api/v1/Dashboard/GetStatistics/statistics",
+        method: "GET",
+      }),
+      providesTags: ["Dashboard"],
+    }),
   }),
 });
 
 export const {
   useGetEmployeeLeaveSummaryQuery,
+  useGetDashboardStatisticsQuery,
 } = dashboardApi;
 
