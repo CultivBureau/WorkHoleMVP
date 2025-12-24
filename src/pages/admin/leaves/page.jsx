@@ -26,6 +26,7 @@ import {
 import Card from "../../../components/Time_Tracking_Components/Stats/Card";
 import TeamLeadLeavesTable from "../../../components/admin/leaves/LeavesTable/TeamLeadLeavesTable";
 import HrLeavesTable from "../../../components/admin/leaves/LeavesTable/HrLeavesTable";
+import AdminLeavesTable from "../../../components/admin/leaves/LeavesTable/AdminLeavesTable";
 import LeaveTypesModal from "../../../components/admin/leaves/LeaveTypesModal";
 import { hasBackendPermission } from "../../../utils/permissionMapping";
 import { getPermissions } from "../../../utils/page";
@@ -48,10 +49,15 @@ const LeavesAdmin = () => {
     "LeaveRequest.Confirm",
   ]);
 
-  // Determine which view to show (only one table should be visible)
-  // Priority: HR permissions take precedence
+  // Check if user has Admin/Override permissions
+  const hasAdminPermissions = hasBackendPermission(backendPermissions, [
+    "LeaveRequest.Override",
+  ]);
+
+  // Determine which view to show (HR > Admin > Team Lead priority)
   const showHrView = hasHrPermissions;
-  const showTeamLeadView = hasTeamLeadPermissions && !hasHrPermissions;
+  const showAdminView = hasAdminPermissions && !hasHrPermissions;
+  const showTeamLeadView = hasTeamLeadPermissions && !hasHrPermissions && !hasAdminPermissions;
 
   // Extract statistics from API response
   const stats = statsData?.value || {};
@@ -133,6 +139,12 @@ const LeavesAdmin = () => {
           {showHrView && (
             <div className="w-full h-max">
               <HrLeavesTable />
+            </div>
+          )}
+          
+          {showAdminView && (
+            <div className="w-full h-max">
+              <AdminLeavesTable />
             </div>
           )}
           
