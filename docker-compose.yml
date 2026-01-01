@@ -1,10 +1,6 @@
 services:
   frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        - VITE_API_URL=http://workhole-api:8080
+    image: ${DOCKER_USERNAME}/rwafi-workhole:main
     container_name: rwafi-workhole
     ports:
       - "3002:80"
