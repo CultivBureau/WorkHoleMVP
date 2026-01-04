@@ -37,7 +37,7 @@ jobs:
           context: .
           push: true
           build-args: |
-            VITE_API_URL=http://workhole-api:8080
+            VITE_API_URL=${{ secrets.VITE_API_URL }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
