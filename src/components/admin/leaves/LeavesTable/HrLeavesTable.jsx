@@ -3,21 +3,51 @@
 import { useState, useMemo, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { useLang } from "../../../../contexts/LangContext"
-import { ChevronDown, ChevronUp, Calendar } from "lucide-react"
+import { ChevronDown, ChevronUp, Calendar, Download } from "lucide-react"
+import * as XLSX from "xlsx"
+import toast from "react-hot-toast"
 import LeavePopUp from "../leavePopUp/LeavePopUp"
 import { useGetAllHrRequestsQuery } from "../../../../services/apis/LeaveApi"
+import { useGetAllLeaveTypesQuery } from "../../../../services/apis/LeaveTypeApi"
+
+const normalizeStatus = (status) => {
+	if (!status) return "pending"
+	const lower = status.toLowerCase()
+	if (lower.includes("reject")) return "rejected"
+	if (lower.includes("confirm")) return "confirmed"
+	if (lower.includes("approve")) return "approved"
+	if (lower.includes("pending")) return "pending"
+	if (lower.includes("cancel")) return "cancelled"
+	return status
+}
+
+const formatStatusLabel = (status) => {
+	if (!status || typeof status !== "string") return "Unknown"
+	const spaced = status
+		.replace(/_/g, " ")
+		.replace(/([a-z])([A-Z])/g, "$1 $2")
+		.trim()
+	if (!spaced) return "Unknown"
+	return spaced
+		.split(" ")
+		.filter(Boolean)
+		.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+		.join(" ")
+}
 
 const getStatusBadge = (status, t) => {
 	const baseClasses =
 		"px-3 py-1 rounded-full text-xs font-medium inline-block border"
-	const statusLower = status?.toLowerCase() || ""
+	const normalized = normalizeStatus(status)
+	const statusLower = normalized?.toLowerCase() || ""
+	const label = formatStatusLabel(status)
 	switch (statusLower) {
 		case "pending":
 			return (
 				<span
 					className={`${baseClasses} bg-[var(--pending-leave-box-bg)] text-[var(--warning-color)] border-[var(--warning-color)]`}
 				>
-					{t("adminLeaves.status.pending", "Pending")}
+					{label}
 				</span>
 			)
 		case "rejected":
@@ -25,7 +55,7 @@ const getStatusBadge = (status, t) => {
 				<span
 					className={`${baseClasses} bg-[var(--rejected-leave-box-bg)] text-[var(--error-color)] border-[var(--error-color)]`}
 				>
-					{t("adminLeaves.status.rejected", "Rejected")}
+					{label}
 				</span>
 			)
 		case "approved":
@@ -33,7 +63,15 @@ const getStatusBadge = (status, t) => {
 				<span
 					className={`${baseClasses} bg-[var(--approved-leave-box-bg)] text-[var(--success-color)] border-[var(--success-color)]`}
 				>
-					{t("adminLeaves.status.approved", "Approved")}
+					{label}
+				</span>
+			)
+		case "cancelled":
+			return (
+				<span
+					className={`${baseClasses} bg-gray-100 text-gray-600 border-gray-200`}
+				>
+					{label}
 				</span>
 			)
 		case "confirmed":
@@ -41,7 +79,7 @@ const getStatusBadge = (status, t) => {
 				<span
 					className={`${baseClasses} bg-[var(--approved-leave-box-bg)] text-[var(--success-color)] border-[var(--success-color)]`}
 				>
-					{t("adminLeaves.status.confirmed", "Confirmed")}
+					{label}
 				</span>
 			)
 		default:
@@ -49,7 +87,7 @@ const getStatusBadge = (status, t) => {
 				<span
 					className={`${baseClasses} bg-[var(--container-color)] text-[var(--sub-text-color)] border-[var(--border-color)]`}
 				>
-					{status || "Unknown"}
+					{label}
 				</span>
 			)
 	}
@@ -58,10 +96,15 @@ const getStatusBadge = (status, t) => {
 const HrLeavesTable = () => {
 	const { t } = useTranslation()
 	const { isRtl } = useLang()
+	const { data: leaveTypesData } = useGetAllLeaveTypesQuery({
+		pageNumber: 1,
+		pageSize: 100,
+		status: 0, // Active types only
+	})
 
 	// Pagination states
 	const [currentPage, setCurrentPage] = useState(1)
-	const [pageSize] = useState(10)
+	const [pageSize] = useState(100) // Increased to show more items per page
 
 	// Filter states
 	const [sortBy, setSortBy] = useState("newest")
@@ -77,6 +120,25 @@ const HrLeavesTable = () => {
 	// Popup state
 	const [selectedLeave, setSelectedLeave] = useState(null)
 
+	const leaveTypeOptions = useMemo(() => {
+		const raw =
+			leaveTypesData?.value ||
+			leaveTypesData?.data ||
+			leaveTypesData?.items ||
+			leaveTypesData?.results ||
+			(Array.isArray(leaveTypesData) ? leaveTypesData : [])
+		const list = Array.isArray(raw) ? raw : []
+		const uniqueNames = Array.from(
+			new Set(
+				list
+					.map((type) => type?.name)
+					.filter((name) => typeof name === "string" && name.trim().length > 0)
+					.map((name) => name.trim())
+			)
+		)
+		return uniqueNames.sort((a, b) => a.localeCompare(b))
+	}, [leaveTypesData])
+
 	// Fetch leave requests from API (only approved requests)
 	const { data, isLoading, isError, refetch } = useGetAllHrRequestsQuery({
 		pageNumber: currentPage,
@@ -87,62 +149,60 @@ const HrLeavesTable = () => {
 	const leaveRequests = useMemo(() => {
 		if (!data) return []
 		const items = data?.value || data?.data || data?.items || data || []
-		return Array.isArray(items) ? items : []
+		const parsed = Array.isArray(items) ? items : []
+		// Debug: Log to verify data is being received
+		if (process.env.NODE_ENV === 'development') {
+			console.log('HrLeavesTable - API Response:', { 
+				data, 
+				itemsCount: parsed.length,
+				sampleItem: parsed[0] 
+			})
+		}
+		return parsed
 	}, [data])
 
 	// Format leave request for display
-	// HR should only see requests that have been APPROVED by the team lead
-	// This includes: approved requests (team lead approved), confirmed requests (both team lead and HR confirmed),
-	// and cancelled/rejected requests that were previously approved by team lead
-	// Filter out: pending requests (not yet reviewed by team lead)
+	// HR can see ALL leave requests in the company (no filtering)
+	// HR can only take action (confirm/reject) on requests with status "TeamLeadApproved"
+	// For all other statuses, HR can only view the request details
 	const formattedLeaves = useMemo(() => {
-		// Filter to show requests approved by team lead (including confirmed and cancelled ones)
-		const filteredRequests = leaveRequests.filter(request => {
-			const status = (request.requestStatus || "").toLowerCase().trim()
-			
-			// Exclude pending requests (not yet reviewed by team lead)
-			if (status === "pending" || status.includes("pending")) {
-				return false
-			}
-			
-			// Include requests that are approved by team lead OR confirmed by both team lead and HR
-			// Check if status indicates approval or confirmation
-			const isApproved = status === "approved" || 
-			                   status.includes("approved") || 
-			                   status === "teamleadapproved" ||
-			                   status.includes("teamleadapproved")
-			
-			const isConfirmed = status === "confirmed" || 
-			                    status.includes("confirmed") ||
-			                    status === "hrconfirmed" ||
-			                    status.includes("hrconfirmed")
-			
-			// Include rejected requests that have team lead approval (HR rejected after team lead approved)
-			const isRejected = status.includes("rejected") || 
-			                   status === "rejected"
-			
-			// Also check if team lead has taken action (indicates review has happened)
-			// For confirmed/rejected requests, team lead action is required (must be approved first)
-			const hasTeamLeadAction = request.teamLeadActionDate || 
-			                          request.teamLeadName || 
-			                          request.teamLeadApprover
-			
-			// Show if (approved by team lead) OR (confirmed by both) OR (rejected but had team lead approval)
-			// All require team lead action
-			if (isRejected) {
-				// For rejected, only show if it had team lead approval first
-				return hasTeamLeadAction
-			}
-			
-			// For approved/confirmed, require team lead action
-			return (isApproved || isConfirmed) && hasTeamLeadAction
-		})
-		
-		return filteredRequests.map(request => {
+		// Show ALL requests from the API - no filtering
+		const formatted = leaveRequests.map(request => {
 			const startDate = request.startDate ? new Date(request.startDate) : null
 			const endDate = request.endDate ? new Date(request.endDate) : null
-			const teamLeadActionDate = request.teamLeadActionDate ? new Date(request.teamLeadActionDate) : null
-			const hrActionDate = request.hrActionDate || request.hrConfirmDate ? new Date(request.hrActionDate || request.hrConfirmDate) : null
+			
+			// Get team lead approval information from teamLeadApprovals array
+			const teamLeadApprovals = request.teamLeadApprovals || []
+			const approvedTeamLeads = teamLeadApprovals.filter(
+				approval => approval.status === "TeamLeadApproved" || 
+				           (approval.status || "").toLowerCase().includes("teamleadapproved")
+			)
+			
+			// Get the most recent team lead approval (latest timestamp)
+			const latestTeamLeadApproval = approvedTeamLeads.length > 0
+				? approvedTeamLeads.reduce((latest, current) => {
+						const currentTime = new Date(current.timestamp || 0).getTime()
+						const latestTime = new Date(latest.timestamp || 0).getTime()
+						return currentTime > latestTime ? current : latest
+					}, approvedTeamLeads[0])
+				: null
+			
+			const teamLeadActionDate = latestTeamLeadApproval?.timestamp 
+				? new Date(latestTeamLeadApproval.timestamp) 
+				: (request.teamLeadActionDate ? new Date(request.teamLeadActionDate) : null)
+			
+			const hrActionDate = request.hrActionDate ? new Date(request.hrActionDate) : null
+			
+			// Get team lead name from the latest approval or fallback to old fields
+			const teamLeadName = latestTeamLeadApproval?.teamLeadName || 
+			                    request.teamLeadName || 
+			                    request.teamLeadApprover || 
+			                    ""
+			
+			// Get team lead comment from the latest approval or fallback
+			const teamLeadComment = latestTeamLeadApproval?.comment || 
+			                       request.teamLeadComment || 
+			                       ""
 			
 			return {
 				id: request.id,
@@ -156,14 +216,14 @@ const HrLeavesTable = () => {
 				days: request.totalDays || 0,
 				status: request.requestStatus || "Approved",
 				reason: request.reason || "",
-				attachmentUrl: request.attachmentUrl,
+				attachmentUrl: request.attachmentUrl || (request.attachments && request.attachments.length > 0 ? request.attachments[0] : null),
 				// Team Lead Approver fields
-				teamLeadName: request.teamLeadName || request.teamLeadApprover || "",
-				teamLeadComment: request.teamLeadComment || "",
+				teamLeadName: teamLeadName,
+				teamLeadComment: teamLeadComment,
 				teamLeadActionDate: teamLeadActionDate ? teamLeadActionDate.toLocaleDateString() : "",
 				teamLeadActionDateSort: teamLeadActionDate,
 				// HR Approver fields
-				hrApproverName: request.hrApproverName || request.hrApprover || "",
+				hrApproverName: request.hrName || request.hrApproverName || request.hrApprover || "",
 				hrActionDate: hrActionDate ? hrActionDate.toLocaleDateString() : "",
 				hrActionDateSort: hrActionDate,
 				hrComment: request.hrComment || "",
@@ -174,9 +234,35 @@ const HrLeavesTable = () => {
 				endDate: request.endDate,
 				totalDays: request.totalDays,
 				requestStatus: request.requestStatus,
+				// Store full teamLeadApprovals array for reference
+				teamLeadApprovals: teamLeadApprovals,
 			}
 		})
+		
+		// Debug: Log formatted leaves to verify data
+		if (process.env.NODE_ENV === 'development') {
+			console.log('HrLeavesTable - Formatted Leaves:', { 
+				count: formatted.length,
+				statuses: formatted.map(l => ({ id: l.id, name: l.name, status: l.status })),
+				teamLeadApproved: formatted.filter(l => l.status === "TeamLeadApproved" || l.status?.toLowerCase().includes("teamleadapproved"))
+			})
+		}
+		
+		return formatted
 	}, [leaveRequests])
+
+	const statusFilterOptions = useMemo(() => {
+		const unique = new Map()
+		formattedLeaves.forEach((leave) => {
+			const rawStatus = leave.status || "Unknown"
+			if (!unique.has(rawStatus)) {
+				unique.set(rawStatus, formatStatusLabel(rawStatus))
+			}
+		})
+		return Array.from(unique.entries())
+			.sort((a, b) => a[1].localeCompare(b[1]))
+			.map(([value, label]) => ({ value, label }))
+	}, [formattedLeaves])
 
 	// Handle table column sorting
 	const handleTableSort = (column) => {
@@ -194,29 +280,7 @@ const HrLeavesTable = () => {
 
 		// Apply filters
 		if (statusFilter !== "all") {
-			filtered = filtered.filter(leave => {
-				const status = leave.status?.toLowerCase() || ""
-				const isConfirmed = status.includes("confirmed") || 
-				                   status === "confirmed" ||
-				                   leave.hrActionDate || 
-				                   leave.hrApproverName
-				const isRejected = status.includes("rejected") || 
-				                  status === "rejected"
-				
-				if (statusFilter === "approved") {
-					// Show approved by team lead but NOT yet confirmed by HR
-					return !isConfirmed && !isRejected && (status.includes("approved") || status === "approved")
-				} else if (statusFilter === "confirmed") {
-					// Show confirmed by both team lead and HR
-					return isConfirmed
-				} else if (statusFilter === "rejected") {
-					// Show rejected
-					return isRejected
-				}
-				
-				// Fallback to exact match for other statuses
-				return status === statusFilter.toLowerCase()
-			})
+			filtered = filtered.filter(leave => (leave.status || "Unknown") === statusFilter)
 		}
 
 		if (leaveTypeFilter !== "all") {
@@ -329,6 +393,81 @@ const HrLeavesTable = () => {
 		refetch()
 	}
 
+	// Handle export to Excel
+	const handleExportToExcel = () => {
+		if (filteredAndSortedData.length === 0) {
+			toast.error(
+				t("adminLeaves.export.noData", "No data to export"),
+				{
+					duration: 3000,
+					style: {
+						background: '#EF4444',
+						color: '#fff',
+					},
+				}
+			);
+			return;
+		}
+
+		// Prepare data for Excel export
+		const exportData = filteredAndSortedData.map((leave, index) => ({
+			"#": index + 1,
+			[t("adminLeaves.table.columns.name", "Name")]: leave.name || "—",
+			[t("adminLeaves.table.columns.type", "Leave Type")]: leave.type || "—",
+			[t("adminLeaves.table.columns.from", "From Date")]: leave.from || "—",
+			[t("adminLeaves.table.columns.to", "To Date")]: leave.to || "—",
+			[t("adminLeaves.table.columns.days", "Days")]: leave.days || 0,
+			[t("adminLeaves.table.columns.status", "Status")]: leave.status || "—",
+			[t("adminLeaves.table.columns.reason", "Reason")]: leave.reason || "—",
+			[t("adminLeaves.table.columns.teamLead", "Team Lead Approver")]: leave.teamLeadName || "—",
+			[t("adminLeaves.table.columns.teamLeadActionDate", "Team Lead Action Date")]: leave.teamLeadActionDate || "—",
+			[t("adminLeaves.table.columns.hrApprover", "HR Approver")]: leave.hrApproverName || "—",
+			[t("adminLeaves.table.columns.hrActionDate", "HR Action Date")]: leave.hrActionDate || "—",
+		}));
+
+		// Create workbook and worksheet
+		const ws = XLSX.utils.json_to_sheet(exportData);
+		const wb = XLSX.utils.book_new();
+		XLSX.utils.book_append_sheet(wb, ws, t("adminLeaves.export.sheetName", "Leave Requests"));
+
+		// Auto-size columns
+		const wscols = [
+			{ wch: 5 },   // #
+			{ wch: 25 },  // Name
+			{ wch: 20 },  // Leave Type
+			{ wch: 12 },  // From Date
+			{ wch: 12 },  // To Date
+			{ wch: 8 },   // Days
+			{ wch: 15 },  // Status
+			{ wch: 30 },  // Reason
+			{ wch: 25 },  // Team Lead Approver
+			{ wch: 18 },  // Team Lead Action Date
+			{ wch: 25 },  // HR Approver
+			{ wch: 18 },  // HR Action Date
+		];
+		ws['!cols'] = wscols;
+
+		// Generate filename with current date
+		const now = new Date();
+		const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+		const filename = `leave_requests_${dateStr}.xlsx`;
+
+		// Export file
+		XLSX.writeFile(wb, filename);
+
+		// Show success toast
+		toast.success(
+			t("adminLeaves.export.success", "Leave requests exported successfully"),
+			{
+				duration: 3000,
+				style: {
+					background: '#10B981',
+					color: '#fff',
+				},
+			}
+		);
+	}
+
 	return (
 		<>
 			{selectedLeave && (
@@ -374,18 +513,11 @@ const HrLeavesTable = () => {
 									<option value="all">
 										{t("adminLeaves.table.leaveType.all", "All Types")}
 									</option>
-									<option value="annual">
-										{t("adminLeaves.table.leaveType.annual", "Annual")}
-									</option>
-									<option value="sick">
-										{t("adminLeaves.table.leaveType.sick", "Sick")}
-									</option>
-									<option value="emergency">
-										{t("adminLeaves.table.leaveType.emergency", "Emergency")}
-									</option>
-									<option value="unpaid">
-										{t("adminLeaves.table.leaveType.unpaid", "Unpaid")}
-									</option>
+									{leaveTypeOptions.map((type) => (
+										<option key={type} value={type}>
+											{type}
+										</option>
+									))}
 								</select>
 							</div>
 
@@ -401,15 +533,11 @@ const HrLeavesTable = () => {
 									<option value="all">
 										{t("adminLeaves.table.status.all", "All Status")}
 									</option>
-									<option value="approved">
-										{t("adminLeaves.table.status.approvedFromTeamLead", "Approved from Team Lead")}
-									</option>
-									<option value="confirmed">
-										{t("adminLeaves.table.status.confirmed", "Confirmed")}
-									</option>
-									<option value="rejected">
-										{t("adminLeaves.table.status.rejected", "Rejected")}
-									</option>
+									{statusFilterOptions.map((option) => (
+										<option key={option.value} value={option.value}>
+											{option.label}
+										</option>
+									))}
 								</select>
 							</div>
 
@@ -442,6 +570,20 @@ const HrLeavesTable = () => {
 						</div>
 
 						<div className={`flex items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+							<button
+								type="button"
+								onClick={handleExportToExcel}
+								disabled={isLoading || filteredAndSortedData.length === 0}
+								className="px-3 py-1.5 rounded-full border text-[10px] font-semibold transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 hover:bg-[var(--hover-color)] cursor-pointer"
+								style={{
+									borderColor: 'var(--accent-color)',
+									backgroundColor: 'var(--bg-color)',
+									color: 'var(--accent-color)',
+								}}
+							>
+								<Download className="w-3.5 h-3.5" />
+								{t("adminLeaves.export.button", "Export to Excel")}
+							</button>
 							<div className={`flex items-center gap-1 ${isRtl ? 'flex-row-reverse' : ''}`}>
 								<button
 									onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}

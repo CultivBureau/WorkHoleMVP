@@ -1,8 +1,10 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { ChevronDown, ChevronLeft, ChevronRight, Eye, Edit, RefreshCw, FileX, Calendar } from "lucide-react";
-import { useGetMyLeaveRequestsQuery } from "../../services/apis/LeaveApi";
+import { ChevronDown, ChevronLeft, ChevronRight, RefreshCw, FileX, Calendar, Loader2 } from "lucide-react";
+import { toast } from "react-hot-toast";
+import { useGetMyLeaveRequestsQuery, useCancelLeaveRequestMutation } from "../../services/apis/LeaveApi";
 import { useGetAllLeaveTypesQuery } from "../../services/apis/LeaveTypeApi";
+import CancelLeaveModal from "./CancelLeaveModal";
 
 const LeaveTable = () => {
   const { t, i18n } = useTranslation();
@@ -15,62 +17,139 @@ const LeaveTable = () => {
   const [dateTo, setDateTo] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [cancelingId, setCancelingId] = useState(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [selectedLeaveToCancel, setSelectedLeaveToCancel] = useState(null);
   const itemsPerPage = 6;
 
   // Fetch user's leave requests from API
-  const { data: leaveRequestsData, isLoading, isError: error, refetch, isFetching } = useGetMyLeaveRequestsQuery();
+  const { data: leaveRequestsData, isLoading, isError: error, refetch } = useGetMyLeaveRequestsQuery();
+  const [cancelLeaveRequest] = useCancelLeaveRequestMutation();
 
   // Fetch leave types to map IDs to names
   const { data: leaveTypesData } = useGetAllLeaveTypesQuery({ 
     pageNumber: 1, 
     pageSize: 50,
-    status: 2 // All types
+    status: 0 // Active types only
   });
 
   // Normalize status from API to display status
-  const normalizeStatus = (status) => {
+  const normalizeStatus = (status, requestData = null) => {
     if (!status) return "pending";
     const statusLower = status.toLowerCase();
-    if (statusLower === "confirmed" || statusLower === "true") return "approved";
+    
+    // Check for cancelled status first
+    if (statusLower.includes("cancel")) return "cancelled";
+    
+    // Check for rejected status
     if (statusLower.includes("reject")) return "rejected";
-    if (statusLower.includes("approve") || statusLower.includes("confirm")) return "approved";
+    
+    // Check for confirmed/HR confirmed status (both team lead and HR approved)
+    if (statusLower === "confirmed" || 
+        statusLower.includes("hrconfirmed") || 
+        statusLower === "true") {
+      return "confirmed";
+    }
+    
+    // Check for team lead approved status
+    // This includes: "teamleadapproved", "approved" (when team lead approved but not HR confirmed)
+    // We also check if request has teamLeadActionDate but no hrActionDate
+    const hasTeamLeadApproval = requestData?.teamLeadActionDate || 
+                                 requestData?.teamLeadName || 
+                                 requestData?.teamLeadApprover;
+    const hasHrApproval = requestData?.hrActionDate || 
+                          requestData?.hrConfirmDate || 
+                          requestData?.hrApproverName || 
+                          requestData?.hrApprover;
+    
+    if (statusLower.includes("teamleadapproved") || 
+        (statusLower.includes("approve") && hasTeamLeadApproval && !hasHrApproval)) {
+      return "teamLeadApproved";
+    }
+    
+    // Regular approved status (when HR has also confirmed)
+    if (statusLower.includes("approve") || statusLower.includes("confirm")) {
+      return hasHrApproval ? "approved" : "teamLeadApproved";
+    }
+    
     if (statusLower.includes("pending")) return "pending";
     return statusLower;
   };
 
   // Create a map of leave type names for lookup
+  const leaveTypeNames = useMemo(() => {
+    const raw =
+      leaveTypesData?.value ||
+      leaveTypesData?.data ||
+      leaveTypesData?.items ||
+      leaveTypesData?.results ||
+      (Array.isArray(leaveTypesData) ? leaveTypesData : []);
+    const list = Array.isArray(raw) ? raw : [];
+    return Array.from(
+      new Set(
+        list
+          .map((type) => type?.name)
+          .filter((name) => typeof name === "string" && name.trim().length > 0)
+          .map((name) => name.trim())
+      )
+    ).sort((a, b) => a.localeCompare(b));
+  }, [leaveTypesData]);
+
   const leaveTypeMap = useMemo(() => {
-    if (!leaveTypesData?.value) return {};
-    const items = Array.isArray(leaveTypesData.value) ? leaveTypesData.value : [];
     const map = {};
-    items.forEach(type => {
-      map[type.name] = type.name; // Map name to name (API returns name as string)
+    leaveTypeNames.forEach((name) => {
+      map[name] = name;
     });
     return map;
-  }, [leaveTypesData]);
+  }, [leaveTypeNames]);
+
+  const leaveTypeFilterOptions = useMemo(() => {
+    return [
+      { value: "all", label: t("leaves.table.leaveType.all", "All Types") },
+      ...leaveTypeNames.map((name) => ({ value: name, label: name })),
+    ];
+  }, [leaveTypeNames, t]);
 
   // Parse leave requests from API response
   const leaves = useMemo(() => {
     if (!leaveRequestsData?.value) return [];
     const items = Array.isArray(leaveRequestsData.value) ? leaveRequestsData.value : [];
-    return items.map(request => ({
-      id: request.id,
-      leaveType: request.leaveType || "Unknown",
-      startDate: request.startDate,
-      endDate: request.endDate,
-      fromDate: request.startDate ? new Date(request.startDate).toISOString().split("T")[0] : "",
-      toDate: request.endDate ? new Date(request.endDate).toISOString().split("T")[0] : "",
-      days: request.totalDays || 0,
-      numberOfDays: request.totalDays || 0,
-      reason: request.reason || "",
-      status: normalizeStatus(request.requestStatus),
-      requestStatus: request.requestStatus,
-      reviewerName: request.reviewerName || "",
-      reviewerComment: request.reviewerComment || "",
-      reviewedAt: request.reviewedAt,
-      attachmentUrl: request.attachmentUrl,
-      createdAt: request.startDate, // Use startDate as fallback for createdAt
-    }));
+    return items.map(request => {
+      // Prepare request data for status normalization
+      const requestData = {
+        teamLeadActionDate: request.teamLeadActionDate,
+        teamLeadName: request.teamLeadName,
+        teamLeadApprover: request.teamLeadApprover,
+        hrActionDate: request.hrActionDate,
+        hrConfirmDate: request.hrConfirmDate,
+        hrApproverName: request.hrApproverName,
+        hrApprover: request.hrApprover,
+      };
+      
+      return {
+        id: request.id,
+        leaveType: request.leaveType || "Unknown",
+        startDate: request.startDate,
+        endDate: request.endDate,
+        fromDate: request.startDate ? new Date(request.startDate).toISOString().split("T")[0] : "",
+        toDate: request.endDate ? new Date(request.endDate).toISOString().split("T")[0] : "",
+        days: request.totalDays || 0,
+        numberOfDays: request.totalDays || 0,
+        reason: request.reason || "",
+        status: normalizeStatus(request.requestStatus, requestData),
+        requestStatus: request.requestStatus,
+        reviewerName: request.reviewerName || "",
+        reviewerComment: request.reviewerComment || "",
+        reviewedAt: request.reviewedAt,
+        attachmentUrl: request.attachmentUrl,
+        createdAt: request.startDate, // Use startDate as fallback for createdAt
+        // Include approval data for status determination
+        teamLeadActionDate: request.teamLeadActionDate,
+        teamLeadName: request.teamLeadName,
+        hrActionDate: request.hrActionDate,
+        hrApproverName: request.hrApproverName,
+      };
+    });
   }, [leaveRequestsData]);
 
   const pagination = { page: currentPage, limit: itemsPerPage, total: leaves.length, totalPages: Math.ceil(leaves.length / itemsPerPage) };
@@ -159,18 +238,64 @@ const LeaveTable = () => {
     return filtered;
   }, [leaves, sortBy, leaveType, status, dateFrom, dateTo]);
 
+  // Handle cancel leave request - opens modal
+  const handleCancelRequest = (record) => {
+    if (!record?.id) return;
+    setSelectedLeaveToCancel(record);
+    setShowCancelModal(true);
+  };
+
+  // Handle confirm cancel from modal
+  const handleConfirmCancel = async (cancelReason) => {
+    if (!selectedLeaveToCancel || !cancelReason) {
+      return;
+    }
+
+    setCancelingId(selectedLeaveToCancel.id);
+    try {
+      await cancelLeaveRequest({
+        requestId: selectedLeaveToCancel.id,
+        cancelReason: cancelReason,
+      }).unwrap();
+
+      toast.success(t("leaves.table.cancelSuccess", "Leave request cancelled successfully."));
+      await refetch();
+      localStorage.setItem("leaveDataUpdated", Date.now().toString());
+      window.dispatchEvent(new Event("leaveDataChanged"));
+    } catch (err) {
+      const message =
+        err?.data?.message ||
+        err?.data?.errorMessage ||
+        err?.message ||
+        t("leaves.table.cancelError", "Failed to cancel leave request. Please try again.");
+      toast.error(message);
+    } finally {
+      setCancelingId(null);
+      setSelectedLeaveToCancel(null);
+    }
+  };
+
+  // Handle close modal
+  const handleCloseCancelModal = () => {
+    setShowCancelModal(false);
+    setSelectedLeaveToCancel(null);
+  };
+
   // Pagination (API already paginates, but filters are client-side)
   const totalPages = pagination.totalPages;
   const totalEntries = pagination.total;
   const currentPageData = filteredData;
 
-  const getStatusBadge = (status) => {
-    const normalized = normalizeStatus(status);
+  const getStatusBadge = (status, record = null) => {
+    // Use the record's normalized status if available, otherwise normalize it
+    const normalized = record?.status || normalizeStatus(status, record);
     const statusConfig = {
-      pending: { bg: "bg-yellow-100", text: "text-yellow-700", label: t("leaves.table.status.pending") },
-      approved: { bg: "bg-green-100", text: "text-green-700", label: t("leaves.table.status.approved") },
-      rejected: { bg: "bg-red-100", text: "text-red-700", label: t("leaves.table.status.rejected") },
-      confirmed: { bg: "bg-green-100", text: "text-green-700", label: t("leaves.table.status.approved") }
+      pending: { bg: "bg-yellow-100", text: "text-yellow-700", label: t("leaves.table.status.pending", "Pending") },
+      teamLeadApproved: { bg: "bg-blue-100", text: "text-blue-700", label: t("leaves.table.status.teamLeadApproved", "Team Lead Approved") },
+      approved: { bg: "bg-green-100", text: "text-green-700", label: t("leaves.table.status.approved", "Approved") },
+      rejected: { bg: "bg-red-100", text: "text-red-700", label: t("leaves.table.status.rejected", "Rejected") },
+      confirmed: { bg: "bg-green-100", text: "text-green-700", label: t("leaves.table.status.approved", "Approved") },
+      cancelled: { bg: "bg-gray-200", text: "text-gray-700", label: t("leaves.table.status.cancelled", "Cancelled") }
     };
 
     const config = statusConfig[normalized] || statusConfig.pending;
@@ -362,13 +487,7 @@ const LeaveTable = () => {
             <SelectField
               value={leaveType}
               onChange={(e) => setLeaveType(e.target.value)}
-              options={[
-                { value: "all", label: t("leaves.table.leaveType.all") },
-                { value: "annual", label: t("leaves.table.leaveType.annual") },
-                { value: "sick", label: t("leaves.table.leaveType.sick") },
-                { value: "emergency", label: t("leaves.table.leaveType.emergency") },
-                { value: "unpaid", label: t("leaves.table.leaveType.unpaid") }
-              ]}
+              options={leaveTypeFilterOptions}
               label={t("leaves.table.leaveType.label")}
             />
 
@@ -376,10 +495,12 @@ const LeaveTable = () => {
               value={status}
               onChange={(e) => setStatus(e.target.value)}
               options={[
-                { value: "all", label: t("leaves.table.status.all") },
-                { value: "pending", label: t("leaves.table.status.pending") },
-                { value: "approved", label: t("leaves.table.status.approved") },
-                { value: "rejected", label: t("leaves.table.status.rejected") }
+                { value: "all", label: t("leaves.table.status.all", "All Status") },
+                { value: "pending", label: t("leaves.table.status.pending", "Pending") },
+                { value: "teamLeadApproved", label: t("leaves.table.status.teamLeadApproved", "Team Lead Approved") },
+                { value: "approved", label: t("leaves.table.status.approved", "Approved") },
+                { value: "rejected", label: t("leaves.table.status.rejected", "Rejected") },
+                { value: "cancelled", label: t("leaves.table.status.cancelled", "Cancelled") }
               ]}
               label={t("leaves.table.status.label")}
             />
@@ -458,7 +579,7 @@ const LeaveTable = () => {
                 </th>
                 <th className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${isArabic ? 'text-right' : 'text-left'}`}
                   style={{ color: 'var(--table-header-text)' }}>
-                  {t("leaves.table.columns.approver")}
+                  {t("leaves.table.columns.action", "Action")}
                 </th>
               </tr>
             </thead>
@@ -498,7 +619,7 @@ const LeaveTable = () => {
                     {record.days}
                   </td>
                   <td className={`px-6 py-4 ${isArabic ? 'text-right' : 'text-left'}`}>
-                    {getStatusBadge(record.status)}
+                    {getStatusBadge(record.status, record)}
                   </td>
                   <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'} max-w-xs`}
                     style={{ color: 'var(--table-text)' }}>
@@ -521,9 +642,25 @@ const LeaveTable = () => {
                       )}
                     </div>
                   </td>
-                  <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}
-                    style={{ color: 'var(--table-text)' }}>
-                    {record.reviewerName || "-"}
+                  <td className={`px-6 py-4 text-sm ${isArabic ? 'text-right' : 'text-left'}`}>
+                    {normalizeStatus(record.status) === "pending" ? (
+                      <button
+                        onClick={() => handleCancelRequest(record)}
+                        disabled={cancelingId === record.id}
+                        className="px-3 py-1.5 text-xs rounded-full border font-medium flex items-center gap-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                        style={{
+                          borderColor: 'var(--error-color)',
+                          color: cancelingId === record.id ? 'var(--sub-text-color)' : 'var(--error-color)',
+                        }}
+                      >
+                        {cancelingId === record.id && <Loader2 className="w-3 h-3 animate-spin" />}
+                        {cancelingId === record.id
+                          ? t("leaves.table.cancelling", "Cancelling...")
+                          : t("leaves.table.cancel", "Cancel")}
+                      </button>
+                    ) : (
+                      <span className="text-xs text-[var(--sub-text-color)]">—</span>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -570,6 +707,14 @@ const LeaveTable = () => {
           </div>
         </div>
       )}
+
+      {/* Cancel Leave Modal */}
+      <CancelLeaveModal
+        isOpen={showCancelModal}
+        onClose={handleCloseCancelModal}
+        onConfirm={handleConfirmCancel}
+        isArabic={isArabic}
+      />
     </div>
   );
 };

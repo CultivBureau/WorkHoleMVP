@@ -7,11 +7,23 @@ export const clockinLogApi = createApi({
   tagTypes: ["ClockinLogs"],
   endpoints: (builder) => ({
     getCompanyClockinLogs: builder.query({
-      query: ({ pageNumber = 1, pageSize = 20 } = {}) => ({
-        url: "/api/v1/ClockinLogs/GetAllByCompanyId/company",
-        method: "GET",
-        params: { pageNumber, pageSize },
-      }),
+      query: ({ pageNumber = 1, pageSize = 20, day, toDay, status = "All" } = {}) => {
+        const params = { pageNumber, pageSize, status };
+        
+        // Add optional date filters if provided
+        if (day) {
+          params.day = day;
+        }
+        if (toDay) {
+          params.toDay = toDay;
+        }
+        
+        return {
+          url: "/api/v1/ClockinLogs/GetAllByCompanyId/company",
+          method: "GET",
+          params,
+        };
+      },
       providesTags: (result) => [{ type: "ClockinLogs", id: "COMPANY_LIST" }],
     }),
 
@@ -134,7 +146,7 @@ export const clockinLogApi = createApi({
     }),
 
     clockIn: builder.mutation({
-      query: ({ latitude, longitude, reason }) => {
+      query: ({ latitude, longitude, reason, utcDateTime }) => {
         // Ensure latitude and longitude are valid numbers
         const lat = parseFloat(latitude);
         const lng = parseFloat(longitude);
@@ -143,15 +155,15 @@ export const clockinLogApi = createApi({
           throw new Error("Invalid latitude or longitude");
         }
         
-        // Get current UTC time
-        const utcDateTime = new Date().toISOString();
+        // Allow callers to pass explicit UTC timestamp so retries use same moment
+        const timestamp = utcDateTime || new Date().toISOString();
         
         // According to Swagger docs, the API expects camelCase fields directly in the body (not wrapped in "request")
         const requestBody = {
           latitude: String(lat),
           longitude: String(lng),
           reason: reason || null, // Use null instead of empty string for optional fields
-          utcDateTime: utcDateTime, // Send UTC time to backend
+          utcDateTime: timestamp, // Send UTC time to backend
         };
         
         return {
@@ -231,10 +243,16 @@ export const clockinLogApi = createApi({
 
     // Get current attendance summary
     getCurrentAttendanceSummary: builder.query({
-      query: () => ({
-        url: "/api/v1/ClockinLogs/GetCurrentAttendanceSummary/summary/current",
-        method: "GET",
-      }),
+      query: ({ userId, companyId } = {}) => {
+        const params = {};
+        if (userId) params.userId = userId;
+        if (companyId) params.companyId = companyId;
+        return {
+          url: "/api/v1/ClockinLogs/GetCurrentAttendanceSummary/summary/current",
+          method: "GET",
+          params,
+        };
+      },
       transformResponse: (response) => {
         // API returns { value: {...}, statusCode: 200, ... }
         // Extract the value object which contains the summary data
@@ -251,9 +269,11 @@ export const clockinLogApi = createApi({
 
 export const {
   useGetCompanyClockinLogsQuery,
+  useLazyGetCompanyClockinLogsQuery,
   useGetDepartmentClockinLogsQuery,
   useGetTeamClockinLogsQuery,
   useGetUserClockinLogsQuery,
+  useLazyGetUserClockinLogsQuery,
   useGetClockinLogByIdQuery,
   useGetUserProfileClockInLogsQuery,
   useGetAttendanceSummaryQuery,

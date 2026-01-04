@@ -3,8 +3,10 @@
 import { useState, useMemo, useEffect } from "react"
 import { useTranslation } from "react-i18next";
 import { useLang } from "../../../../contexts/LangContext";
-import { ChevronDown, ChevronUp, Users } from "lucide-react";
-import { useGetCompanyClockinLogsQuery } from "../../../../services/apis/ClockinLogApi";
+import { ChevronDown, ChevronUp, Users, Download } from "lucide-react";
+import * as XLSX from "xlsx";
+import toast from "react-hot-toast";
+import { useLazyGetCompanyClockinLogsQuery } from "../../../../services/apis/ClockinLogApi";
 import { utcToLocalTime, utcToLocalDate, calculateDurationFromUtc } from '../../../../utils/timeUtils';
 import { isWithinShiftRadius } from '../../../../utils/locationUtils';
 
@@ -38,7 +40,7 @@ const calculateDuration = (startIso, endIso) => {
 const determineStatus = (log) => {
   if (!log?.clockinTime && !log?.clockoutTime) return "Absent";
   if (log?.isLate) return "Late arrival";
-  return "Present";
+  return "On Time";
 };
 
 const determineLocation = (log) => {
@@ -89,6 +91,19 @@ const parseBreakDuration = (duration) => {
   return 0;
 };
 
+const SERVER_PAGE_SIZE = 50;
+const MAX_PAGES = 100;
+
+const extractLogsFromResponse = (response) => {
+  if (!response) return [];
+  if (Array.isArray(response)) return response;
+  if (Array.isArray(response?.value)) return response.value;
+  if (Array.isArray(response?.data)) return response.data;
+  if (Array.isArray(response?.items)) return response.items;
+  if (Array.isArray(response?.results)) return response.results;
+  return [];
+};
+
 const AttendanceTable = () => {
   const { t, i18n } = useTranslation();
   const { isRtl } = useLang();
@@ -109,28 +124,93 @@ const AttendanceTable = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
 
-  // Fetch company clock-in logs
-  const { data, isLoading, isError, error, refetch } = useGetCompanyClockinLogsQuery({
-    pageNumber: currentPage,
-    pageSize: itemsPerPage,
-  })
+  const [rawLogs, setRawLogs] = useState([])
+  const [isFetchingLogs, setIsFetchingLogs] = useState(false)
+  const [fetchError, setFetchError] = useState(null)
+  const [reloadKey, setReloadKey] = useState(0)
+  const [fetchLogsTrigger] = useLazyGetCompanyClockinLogsQuery()
+
+  useEffect(() => {
+    let isCancelled = false;
+    const fetchAllLogs = async () => {
+      setIsFetchingLogs(true);
+      setFetchError(null);
+      const aggregated = [];
+      let page = 1;
+
+      try {
+        // Map UI filter values to API status values
+        let apiStatus = "All";
+        if (statusFilter === "onTime") {
+          apiStatus = "OnTime";
+        } else if (statusFilter === "absent") {
+          apiStatus = "Absent";
+        } else if (statusFilter === "late") {
+          apiStatus = "LateArrival";
+        }
+
+        // Prepare date parameters
+        const queryParams = {
+          pageNumber: page,
+          pageSize: SERVER_PAGE_SIZE,
+          status: apiStatus,
+        };
+
+        // Add date filters if provided
+        if (dateFromFilter) {
+          queryParams.day = dateFromFilter;
+        }
+        if (dateToFilter) {
+          queryParams.toDay = dateToFilter;
+        }
+
+        while (!isCancelled && page <= MAX_PAGES) {
+          const response = await fetchLogsTrigger(
+            { ...queryParams, pageNumber: page },
+            true
+          ).unwrap();
+
+          const pageLogs = extractLogsFromResponse(response);
+          aggregated.push(...pageLogs);
+
+          if (pageLogs.length < SERVER_PAGE_SIZE) {
+            break;
+          }
+          page += 1;
+        }
+
+        if (!isCancelled) {
+          setRawLogs(aggregated);
+        }
+      } catch (err) {
+        if (!isCancelled) {
+          if (aggregated.length > 0) {
+            setRawLogs(aggregated);
+          }
+          setFetchError(err);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsFetchingLogs(false);
+        }
+      }
+    };
+
+    fetchAllLogs();
+    return () => {
+      isCancelled = true;
+    };
+  }, [fetchLogsTrigger, reloadKey, statusFilter, dateFromFilter, dateToFilter]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [rawLogs]);
 
   // Map API data to table format
   const companyLogs = useMemo(() => {
-    if (!data) return []
+    if (!rawLogs?.length) return []
 
-    let items = []
-    if (Array.isArray(data)) {
-      items = data
-    } else if (data?.value && Array.isArray(data.value)) {
-      items = data.value
-    } else if (data?.data && Array.isArray(data.data)) {
-      items = data.data
-    } else if (data?.items && Array.isArray(data.items)) {
-      items = data.items
-    } else if (data?.results && Array.isArray(data.results)) {
-      items = data.results
-    }
+    const items = Array.isArray(rawLogs) ? rawLogs : []
 
     return items.map((log) => {
       const userFirstName = log?.user?.firstName || ""
@@ -172,7 +252,7 @@ const AttendanceTable = () => {
         raw: log,
       }
     })
-  }, [data, locale, t])
+  }, [rawLogs, locale, t])
 
   // Handle table column sorting
   const handleTableSort = (column) => {
@@ -188,43 +268,15 @@ const AttendanceTable = () => {
   const filteredAndSortedData = useMemo(() => {
     let filtered = [...companyLogs]
 
-    // Apply filters
-    if (statusFilter !== "all") {
-      filtered = filtered.filter(employee => {
-        if (statusFilter === "present") return employee.status === "Present"
-        if (statusFilter === "absent") return employee.status === "Absent"
-        if (statusFilter === "late") return employee.status === "Late arrival"
-        return true
-      })
-    }
-
+    // Status filter is now handled by API
+    // Date range filter is now handled by API
+    
+    // Apply location filter (client-side only)
     if (locationFilter !== "all") {
       filtered = filtered.filter(employee => {
         if (locationFilter === "office") return employee.location === "Work from office"
         if (locationFilter === "home") return employee.location === "Work from home"
         return true
-      })
-    }
-
-    // Apply date range filter
-    if (dateFromFilter || dateToFilter) {
-      filtered = filtered.filter(employee => {
-        const employeeDate = employee.dateSort
-        let isInRange = true
-
-        if (dateFromFilter) {
-          const fromDate = new Date(dateFromFilter)
-          isInRange = isInRange && employeeDate >= fromDate
-        }
-
-        if (dateToFilter) {
-          const toDate = new Date(dateToFilter)
-          // Set to end of day for inclusive comparison
-          toDate.setHours(23, 59, 59, 999)
-          isInRange = isInRange && employeeDate <= toDate
-        }
-
-        return isInRange
       })
     }
 
@@ -297,35 +349,107 @@ const AttendanceTable = () => {
   }, [companyLogs, sortBy, locationFilter, statusFilter, dateFromFilter, dateToFilter, tableSortColumn, tableSortDirection])
 
   // Pagination
-  const totalCount =
-    data?.totalCount ??
-    data?.total ??
-    data?.pagination?.total ??
-    (Array.isArray(data?.value) ? data.value.length : 0)
-
-  const reportedTotalPages = data?.totalPages ?? data?.pagination?.totalPages
-  const hasMoreFromApi = Array.isArray(companyLogs) && companyLogs.length === itemsPerPage
-  const totalPages =
-    reportedTotalPages ??
-    (totalCount
-      ? Math.max(1, Math.ceil(totalCount / itemsPerPage))
-      : hasMoreFromApi
-      ? currentPage + 1
-      : currentPage)
-
-  const currentData = filteredAndSortedData
+  const totalRecords = filteredAndSortedData.length
+  const totalPages = totalRecords === 0 ? 1 : Math.ceil(totalRecords / itemsPerPage)
+  const startIndex = totalRecords === 0 ? 0 : (currentPage - 1) * itemsPerPage
+  const currentData = filteredAndSortedData.slice(startIndex, startIndex + itemsPerPage)
+  const showingFrom = totalRecords === 0 ? 0 : startIndex + 1
+  const showingTo = totalRecords === 0 ? 0 : startIndex + currentData.length
 
   // Reset current page when filters change
   useEffect(() => {
     setCurrentPage(1)
   }, [sortBy, locationFilter, statusFilter, dateFromFilter, dateToFilter])
 
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages)
+    }
+  }, [currentPage, totalPages])
+
+  const handleRefresh = () => setReloadKey((prev) => prev + 1)
+
+  const handleExportToExcel = () => {
+    if (filteredAndSortedData.length === 0) {
+      toast.error(
+        t("adminAttendance.table.export.noData", "No data to export"),
+        {
+          duration: 3000,
+          style: {
+            background: '#EF4444',
+            color: '#fff',
+          },
+        }
+      );
+      return;
+    }
+
+    // Prepare data for Excel export
+    const exportData = filteredAndSortedData.map((employee, index) => ({
+      "#": index + 1,
+      [t("adminAttendance.table.columns.employeeName", "Employees Name")]: employee.name,
+      [t("adminAttendance.table.columns.email", "Email")]: employee.email || "—",
+      [t("adminAttendance.table.columns.date", "Date")]: employee.date,
+      [t("adminAttendance.table.columns.checkIn", "Check-in")]: employee.checkIn,
+      [t("adminAttendance.table.columns.checkOut", "Check-out")]: employee.checkOut,
+      [t("adminAttendance.table.columns.workHours", "Work hours")]: employee.workHours,
+      [t("adminAttendance.table.columns.status", "Status")]: employee.status,
+      [t("adminAttendance.table.columns.location", "Location")]: employee.location,
+      [t("adminAttendance.table.columns.shift", "Shift")]: employee.shiftName,
+      [t("adminAttendance.table.columns.reason", "Reason")]: employee.reason || "—",
+      [t("adminAttendance.table.columns.breakDuration", "Break Duration")]: employee.breakDuration || "—",
+    }));
+
+    // Create workbook and worksheet
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, t("adminAttendance.table.export.sheetName", "Attendance"));
+
+    // Auto-size columns
+    const maxWidth = 50;
+    const wscols = [
+      { wch: 5 },   // #
+      { wch: 25 },  // Employee Name
+      { wch: 25 },  // Email
+      { wch: 12 },  // Date
+      { wch: 12 },  // Check-in
+      { wch: 12 },  // Check-out
+      { wch: 12 },  // Work Hours
+      { wch: 15 },  // Status
+      { wch: 20 },  // Location
+      { wch: 15 },  // Shift
+      { wch: 30 },  // Reason
+      { wch: 15 },  // Break Duration
+    ];
+    ws['!cols'] = wscols;
+
+    // Generate filename with current date
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+    const filename = `attendance_${dateStr}.xlsx`;
+
+    // Export file
+    XLSX.writeFile(wb, filename);
+
+    // Show success toast
+    toast.success(
+      t("adminAttendance.table.export.success", "Attendance data exported successfully"),
+      {
+        duration: 3000,
+        style: {
+          background: '#10B981',
+          color: '#fff',
+        },
+      }
+    );
+  }
+
   const getStatusBadge = (status) => {
     const baseClasses = "px-3 py-1 rounded-full text-xs font-medium inline-block border";
     switch (status) {
-      case "Present":
+      case "On Time":
         return <span className={`${baseClasses} bg-[var(--success-color)]/10 text-[var(--success-color)]/70 border-[var(--success-color)]/30`}>
-          {t("adminAttendance.table.status.present", "Present")}
+          {t("adminAttendance.table.status.onTime", "On Time")}
         </span>
       case "Absent":
         return <span className={`${baseClasses} bg-[var(--error-color)]/10 text-[var(--error-color)]/70 border-[var(--error-color)]/30`}>
@@ -433,8 +557,8 @@ const AttendanceTable = () => {
                 <option value="all">
                   {t("adminAttendance.table.status.allStatus", "All Status")}
                 </option>
-                <option value="present">
-                  {t("adminAttendance.table.status.present", "Present")}
+                <option value="onTime">
+                  {t("adminAttendance.table.status.onTime", "On Time")}
                 </option>
                 <option value="absent">
                   {t("adminAttendance.table.status.absent", "Absent")}
@@ -501,6 +625,43 @@ const AttendanceTable = () => {
                 </svg>
               </button>
             </div>
+          </div>
+          <div className="flex items-center gap-3 ml-auto">
+            <div className="text-xs font-medium text-[var(--sub-text-color)]">
+              {t("attendanceTable.showing", { count: currentData.length, total: totalRecords })}
+              {totalRecords > 0 && (
+                <span className="block text-[10px] mt-0.5">
+                  {`${showingFrom}-${showingTo}`}
+                </span>
+              )}
+            </div>
+            {/* <button
+              type="button"
+              onClick={handleRefresh}
+              disabled={isFetchingLogs}
+              className="px-3 py-1.5 rounded-full border text-[10px] font-semibold transition-colors duration-200 disabled:opacity-50 flex items-center gap-1.5"
+              style={{
+                borderColor: 'var(--border-color)',
+                backgroundColor: 'var(--bg-color)',
+                color: 'var(--text-color)',
+              }}
+            >
+              {t("attendanceTable.refresh", "Refresh")}
+            </button> */}
+            <button
+              type="button"
+              onClick={handleExportToExcel}
+              disabled={isFetchingLogs || filteredAndSortedData.length === 0}
+              className="px-3 py-1.5 rounded-full border text-[10px] font-semibold cursor-pointer transition-colors duration-200 disabled:opacity-50 flex items-center gap-1.5 hover:bg-[var(--hover-color)]"
+              style={{
+                borderColor: 'var(--accent-color)',
+                backgroundColor: 'var(--bg-color)',
+                color: 'var(--accent-color)',
+              }}
+            >
+              <Download className="w-3.5 h-3.5" />
+              {t("adminAttendance.table.export.button", "Export to Excel")}
+            </button>
           </div>
         </div>
       </div>
@@ -603,23 +764,23 @@ const AttendanceTable = () => {
             </tr>
           </thead>
           <tbody className="bg-[var(--table-bg)]">
-            {isLoading ? (
+            {isFetchingLogs ? (
               <tr>
                 <td colSpan={10} className="py-16 px-6 text-center text-[var(--sub-text-color)]">
                   {t("adminAttendance.table.loading", "Loading attendance records...")}
                 </td>
               </tr>
-            ) : isError ? (
+            ) : fetchError ? (
               <tr>
                 <td colSpan={10} className="py-16 px-6">
                   <div className="flex flex-col items-center gap-3 text-[var(--sub-text-color)]">
                     <span>{t("adminAttendance.table.errorLoading", "Failed to load attendance records")}</span>
-                    {error && (
+                    {fetchError && (
                       <span className="text-sm text-[var(--sub-text-color)]/80">
-                        {error?.data?.message || error?.message || "An error occurred"}
+                        {fetchError?.data?.errorMessage || fetchError?.error || fetchError?.message || "An error occurred"}
                       </span>
                     )}
-                    <button onClick={() => refetch()} className="btn-secondary">
+                    <button onClick={handleRefresh} className="btn-secondary">
                       {t("adminAttendance.table.retry", "Retry")}
                     </button>
                   </div>
@@ -636,9 +797,9 @@ const AttendanceTable = () => {
                     <div className="text-sm text-center max-w-md">
                       {t("adminAttendance.table.emptyDescription", "When team members start clocking in, their activity will appear here.")}
                     </div>
-                    <button onClick={() => refetch()} className="btn-secondary">
+                    {/* <button onClick={handleRefresh} className="btn-secondary">
                       {t("adminAttendance.table.refresh", "Refresh")}
-                    </button>
+                    </button> */}
                   </div>
                 </td>
               </tr>

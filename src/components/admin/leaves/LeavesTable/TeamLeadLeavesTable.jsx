@@ -3,9 +3,12 @@
 import { useState, useMemo, useEffect, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useLang } from "../../../../contexts/LangContext"
-import { ChevronDown, ChevronUp, Calendar, Users } from "lucide-react"
+import { ChevronDown, ChevronUp, Calendar, Users, Download } from "lucide-react"
+import * as XLSX from "xlsx"
+import toast from "react-hot-toast"
 import LeavePopUp from "../leavePopUp/LeavePopUp"
 import { useGetAllTeamLeadRequestsQuery } from "../../../../services/apis/LeaveApi"
+import { useGetAllLeaveTypesQuery } from "../../../../services/apis/LeaveTypeApi"
 
 function normalizeDecision(status) {
 	if (!status) return "Pending"
@@ -13,6 +16,7 @@ function normalizeDecision(status) {
 	if (lower.includes("reject")) return "Rejected"
 	if (lower.includes("approve") || lower.includes("confirm")) return "Approved"
 	if (lower.includes("pending")) return "Pending"
+	if (lower.includes("cancel")) return "Cancelled"
 	return status
 }
 
@@ -46,6 +50,14 @@ const getStatusBadge = (status, t) => {
 					{t("adminLeaves.status.approved", "Approved")}
 				</span>
 			)
+		case "cancelled":
+			return (
+				<span
+					className={`${baseClasses} bg-gray-100 text-gray-600 border-gray-200`}
+				>
+					{t("adminLeaves.status.cancelled", "Cancelled")}
+				</span>
+			)
 		default:
 			return (
 				<span
@@ -60,6 +72,11 @@ const getStatusBadge = (status, t) => {
 const TeamLeadLeavesTable = () => {
 	const { t } = useTranslation()
 	const { isRtl } = useLang()
+	const { data: leaveTypesData } = useGetAllLeaveTypesQuery({
+		pageNumber: 1,
+		pageSize: 100,
+		status: 0, // Active types only
+	})
 
 	// Pagination states
 	const [currentPage, setCurrentPage] = useState(1)
@@ -79,6 +96,25 @@ const TeamLeadLeavesTable = () => {
 	// Popup / local override states
 	const [selectedLeave, setSelectedLeave] = useState(null)
 	const [manualUpdates, setManualUpdates] = useState({})
+
+	const leaveTypeOptions = useMemo(() => {
+		const raw =
+			leaveTypesData?.value ||
+			leaveTypesData?.data ||
+			leaveTypesData?.items ||
+			leaveTypesData?.results ||
+			(Array.isArray(leaveTypesData) ? leaveTypesData : [])
+		const list = Array.isArray(raw) ? raw : []
+		const uniqueNames = Array.from(
+			new Set(
+				list
+					.map((type) => type?.name)
+					.filter((name) => typeof name === "string" && name.trim().length > 0)
+					.map((name) => name.trim())
+			)
+		)
+		return uniqueNames.sort((a, b) => a.localeCompare(b))
+	}, [leaveTypesData])
 
 	// Fetch leave requests from API
 	const { data, isLoading, isError, error, refetch } = useGetAllTeamLeadRequestsQuery({
@@ -310,6 +346,81 @@ const TeamLeadLeavesTable = () => {
 		refetch()
 	}, [refetch])
 
+	// Handle export to Excel
+	const handleExportToExcel = () => {
+		if (filteredAndSortedData.length === 0) {
+			toast.error(
+				t("adminLeaves.export.noData", "No data to export"),
+				{
+					duration: 3000,
+					style: {
+						background: '#EF4444',
+						color: '#fff',
+					},
+				}
+			);
+			return;
+		}
+
+		// Prepare data for Excel export
+		const exportData = filteredAndSortedData.map((leave, index) => ({
+			"#": index + 1,
+			[t("adminLeaves.table.columns.name", "Name")]: leave.name || "—",
+			[t("adminLeaves.table.columns.type", "Leave Type")]: leave.type || "—",
+			[t("adminLeaves.table.columns.from", "From Date")]: leave.from || "—",
+			[t("adminLeaves.table.columns.to", "To Date")]: leave.to || "—",
+			[t("adminLeaves.table.columns.days", "Days")]: leave.days || 0,
+			[t("adminLeaves.table.columns.status", "Status")]: leave.finalDecision || leave.status || "—",
+			[t("adminLeaves.table.columns.reason", "Reason")]: leave.reason || "—",
+			[t("adminLeaves.table.columns.teamLead", "Team Lead Approver")]: leave.teamLeadName || "—",
+			[t("adminLeaves.table.columns.teamLeadActionDate", "Team Lead Action Date")]: leave.teamLeadActionDate || "—",
+			[t("adminLeaves.table.columns.hrApprover", "HR Approver")]: leave.hrApproverName || "—",
+			[t("adminLeaves.table.columns.hrActionDate", "HR Action Date")]: leave.hrActionDate || "—",
+		}));
+
+		// Create workbook and worksheet
+		const ws = XLSX.utils.json_to_sheet(exportData);
+		const wb = XLSX.utils.book_new();
+		XLSX.utils.book_append_sheet(wb, ws, t("adminLeaves.export.sheetName", "Leave Requests"));
+
+		// Auto-size columns
+		const wscols = [
+			{ wch: 5 },   // #
+			{ wch: 25 },  // Name
+			{ wch: 20 },  // Leave Type
+			{ wch: 12 },  // From Date
+			{ wch: 12 },  // To Date
+			{ wch: 8 },   // Days
+			{ wch: 15 },  // Status
+			{ wch: 30 },  // Reason
+			{ wch: 25 },  // Team Lead Approver
+			{ wch: 18 },  // Team Lead Action Date
+			{ wch: 25 },  // HR Approver
+			{ wch: 18 },  // HR Action Date
+		];
+		ws['!cols'] = wscols;
+
+		// Generate filename with current date
+		const now = new Date();
+		const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+		const filename = `leave_requests_${dateStr}.xlsx`;
+
+		// Export file
+		XLSX.writeFile(wb, filename);
+
+		// Show success toast
+		toast.success(
+			t("adminLeaves.export.success", "Leave requests exported successfully"),
+			{
+				duration: 3000,
+				style: {
+					background: '#10B981',
+					color: '#fff',
+				},
+			}
+		);
+	}
+
 	const handleActionComplete = useCallback((result) => {
 		if (!result?.leaveId) {
 			handleRefetch()
@@ -404,18 +515,11 @@ const TeamLeadLeavesTable = () => {
 									<option value="all">
 										{t("adminLeaves.table.leaveType.all", "All Types")}
 									</option>
-									<option value="annual">
-										{t("adminLeaves.table.leaveType.annual", "Annual")}
-									</option>
-									<option value="sick">
-										{t("adminLeaves.table.leaveType.sick", "Sick")}
-									</option>
-									<option value="emergency">
-										{t("adminLeaves.table.leaveType.emergency", "Emergency")}
-									</option>
-									<option value="unpaid">
-										{t("adminLeaves.table.leaveType.unpaid", "Unpaid")}
-									</option>
+									{leaveTypeOptions.map((type) => (
+										<option key={type} value={type}>
+											{type}
+										</option>
+									))}
 								</select>
 							</div>
 
@@ -439,6 +543,9 @@ const TeamLeadLeavesTable = () => {
 									</option>
 									<option value="pending">
 										{t("adminLeaves.table.status.pending", "Pending")}
+									</option>
+									<option value="cancelled">
+										{t("adminLeaves.table.status.cancelled", "Cancelled")}
 									</option>
 								</select>
 							</div>
@@ -472,6 +579,20 @@ const TeamLeadLeavesTable = () => {
 						</div>
 
 						<div className={`flex items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+							<button
+								type="button"
+								onClick={handleExportToExcel}
+								disabled={isLoading || filteredAndSortedData.length === 0}
+								className="px-3 py-1.5 rounded-full border text-[10px] font-semibold transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 hover:bg-[var(--hover-color)] cursor-pointer"
+								style={{
+									borderColor: 'var(--accent-color)',
+									backgroundColor: 'var(--bg-color)',
+									color: 'var(--accent-color)',
+								}}
+							>
+								<Download className="w-3.5 h-3.5" />
+								{t("adminLeaves.export.button", "Export to Excel")}
+							</button>
 							<div className={`flex items-center gap-1 ${isRtl ? 'flex-row-reverse' : ''}`}>
 								<button
 									onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
@@ -698,30 +819,35 @@ const TeamLeadLeavesTable = () => {
 											</div>
 										</td>
 										<td className="py-4 px-6">
-											<button
-												className="h-8 w-8 flex items-center justify-center rounded-full bg-[var(--container-color)] border border-[var(--border-color)] hover:bg-[var(--hover-color)] transition-colors"
-												onClick={() => setSelectedLeave(leave)}
-											>
-												<svg
-													className="h-5 w-5 text-[var(--accent-color)]"
-													fill="none"
-													stroke="currentColor"
-													viewBox="0 0 24 24"
+											{normalizeDecision(leave.status)?.toLowerCase() === "pending" &&
+											normalizeDecision(leave.finalDecision)?.toLowerCase() !== "cancelled" ? (
+												<button
+													className="h-8 w-8 flex items-center justify-center rounded-full bg-[var(--container-color)] border border-[var(--border-color)] hover:bg-[var(--hover-color)] transition-colors"
+													onClick={() => setSelectedLeave(leave)}
 												>
-													<path
-														strokeLinecap="round"
-														strokeLinejoin="round"
-														strokeWidth={2}
-														d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-													/>
-													<path
-														strokeLinecap="round"
-														strokeLinejoin="round"
-														strokeWidth={2}
-														d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-													/>
-												</svg>
-											</button>
+													<svg
+														className="h-5 w-5 text-[var(--accent-color)]"
+														fill="none"
+														stroke="currentColor"
+														viewBox="0 0 24 24"
+													>
+														<path
+															strokeLinecap="round"
+															strokeLinejoin="round"
+															strokeWidth={2}
+															d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+														/>
+														<path
+															strokeLinecap="round"
+															strokeLinejoin="round"
+															strokeWidth={2}
+															d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+														/>
+													</svg>
+												</button>
+											) : (
+												<span className="text-xs text-[var(--sub-text-color)]">—</span>
+											)}
 										</td>
 									</tr>
 								))}

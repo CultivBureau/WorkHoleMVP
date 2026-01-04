@@ -53,7 +53,11 @@
     "user_performance": "الأداء",
     "user_wallet": "محفظة الفريق",
     "adminMenu": "الإدارة",
-    "userMenu": "صفحات المستخدم"
+    "userMenu": "صفحات المستخدم",
+    "close": "إغلاق",
+    "collapse": "طي",
+    "expand": "توسيع",
+    "toggleMenu": "تبديل القائمة"
   },
   "comingSoon": "قريبًا",
   "navbar": {
@@ -189,6 +193,9 @@
       "lateArrivalsToday": "التأخيرات اليوم",
       "mostFrequentAbsentees": "الأكثر غيابًا"
     },
+    "validation": {
+      "overlap": "لديك بالفعل طلب إجازة يغطي هذه التواريخ"
+    },
     "table": {
       "sortBy": "ترتيب حسب",
       "sort": {
@@ -213,8 +220,15 @@
       "dateFrom": "من تاريخ",
       "dateTo": "إلى تاريخ",
       "pageOf": " {{page}} من {{total}} صفحة",
+      "export": {
+        "button": "تصدير إلى Excel",
+        "success": "تم تصدير بيانات الحضور بنجاح",
+        "noData": "لا توجد بيانات للتصدير",
+        "sheetName": "الحضور"
+      },
       "columns": {
         "employeeName": "اسم الموظفين",
+        "email": "البريد الإلكتروني",
         "date": "التاريخ",
         "checkIn": "تسجيل الدخول",
         "checkOut": "تسجيل الخروج",
@@ -283,12 +297,17 @@
   "breakTime": {
     "title": "وقت الاستراحة",
     "selectReason": "اختر السبب",
+    "selectBreakReasonFirst": "يرجى اختيار سبب الاستراحة أولاً!",
+    "reasonRequired": "مطلوب سبب الاستراحة",
     "startBreak": "بدء الاستراحة",
+    "endBreak": "إنهاء الاستراحة",
     "breakSummary": "ملخص الاستراحات",
     "breakPatterns": "أنماط الاستراحة الخاصة بك هذا اليوم",
     "dailyAverage": "المتوسط اليومي",
     "total": "الإجمالي",
     "minutes": "دقيقة",
+    "breakTime": "وقت الاستراحة",
+    "remaining": "المتبقي",
     "reasons": {
       "prayer": "صلاة",
       "lunch": "غداء",
@@ -315,7 +334,12 @@
     "totalHoursWorked": "إجمالي ساعات العمل",
     "breaksTaken": "الاستراحات المأخوذة",
     "totalOvertime": "إجمالي العمل الإضافي",
-    "extraHoursThisMonth": "ساعات العمل الإضافية لهذا الشهر"
+    "extraHoursThisMonth": "ساعات العمل الإضافية لهذا الشهر",
+    "averageWorkingHoursPerDay": "متوسط ساعات العمل اليومية",
+    "averagePerDay": "متوسط يومي",
+    "totalHoursWorkedThisWeek": "إجمالي ساعات العمل هذا الأسبوع",
+    "overtimeHoursThisWeek": "ساعات العمل الإضافية لهذا الأسبوع",
+    "extraHoursThisWeek": "ساعات إضافية هذا الأسبوع"
   },
   "timeUnits": {
     "am": "صباحاً",
@@ -385,13 +409,34 @@
     "projectManager": "مدير المشروع",
     "teamLead": "قائد الفريق",
     "srProjectManager": "مدير المشروع الأول",
-    "editProfile": "تعديل الملف الشخصي"
+    "editProfile": "تعديل الملف الشخصي",
+    "departmentsTeams": "الإدارات والفرق",
+    "departmentsTeamsDescription": "اكتشف المواقع الحالية لهذا المستخدم داخل المؤسسة.",
+    "departmentsHeader": "الإدارات",
+    "recordsFound": "تم العثور على {{count}} سجل",
+    "recordsFound_one": "تم العثور على {{count}} سجل",
+    "recordsFound_other": "تم العثور على {{count}} سجل",
+    "noDepartmentsAssigned": "لم يتم تعيين أي إدارات بعد.",
+    "noDepartmentsAssignedHint": "عند انضمام المستخدم إلى إدارة، ستظهر الفرق المرتبطة بها هنا.",
+    "noTeamsInDepartment": "لا توجد فرق ضمن هذه الإدارة حالياً.",
+    "teamsCount": "{{count}} فرق",
+    "singleTeamCount": "فريق واحد",
+    "notAssigned": "غير معيّن",
+    "team": "الفريق",
+    "department": "الإدارة"
   },
   "breakStats": {
     "todaysBreakTime": "وقت الاستراحة اليوم",
     "mostUsedBreak": "أكثر استراحة استخداماً",
     "avgBreakPerDay": "متوسط الاستراحة يومياً",
     "breaksOverLimit": "تجاوزت الحد المسموح",
+    "breaksTakenToday": "عدد الاستراحات اليوم",
+    "breaksToday": "عدد الاستراحات خلال اليوم",
+    "totalBreakTimeToday": "إجمالي وقت الاستراحات اليوم",
+    "remainingBreakAllowance": "الوقت المتبقي للاستراحة",
+    "remainingTime": "الوقت المتاح المتبقي",
+    "averageBreakDurationThisWeek": "متوسط مدة الاستراحات هذا الأسبوع",
+    "averageThisWeek": "متوسط هذا الأسبوع",
     "timeTakenToday": "الوقت المستغرق اليوم",
     "mostCommonThisWeek": "الأكثر هذا الأسبوع",
     "basedOnLast7Days": "حسب آخر 7 أيام",
@@ -474,6 +519,7 @@
       "step1Title": "الخطوة 1 - تفاصيل الإجازة",
       "step2Title": "الخطوة 2 - السبب والمرفقات",
       "step3Title": "الخطوة 3 - المراجعة والإرسال",
+      "selectDate": "اختر التاريخ:",
       "fromDate": "من",
       "toDate": "إلى",
       "numberOfDays": "عدد الأيام",
@@ -506,8 +552,10 @@
         "label": "الحالة",
         "all": "جميع الحالات",
         "pending": "معلقة",
+        "teamLeadApproved": "معتمد من قائد الفريق",
         "approved": "مقبولة",
-        "rejected": "مرفوضة"
+        "rejected": "مرفوضة",
+        "cancelled": "ملغاة"
       },
       "dateFrom": "من تاريخ",
       "dateTo": "إلى تاريخ",
@@ -677,6 +725,18 @@
     "results": "نتيجة",
     "addNew": "إضافة موظف جديد",
     "add": "إضافة",
+    "noFiltersActive": "لا توجد مرشحات مطبقة",
+    "noResults": "لم يتم العثور على موظفين",
+    "clearFilters": "مسح المرشحات",
+    "loading": "جاري تحميل الموظفين...",
+    "error": "فشل تحميل الموظفين",
+    "retry": "إعادة المحاولة",
+    "viewMode": {
+      "grid": "عرض الشبكة",
+      "table": "عرض الجدول"
+    },
+    "allDepartments": "جميع الأقسام",
+    "allTeams": "جميع الفرق",
     "filters": {
       "status": "الحالة",
       "role": "الدور",
@@ -685,11 +745,21 @@
     },
     "table": {
       "employee": "الموظف",
+      "employeeId": "رقم الموظف",
+      "email": "البريد الإلكتروني",
       "role": "الدور",
+      "jobTitle": "المسمى الوظيفي",
+      "team": "الفريق",
       "joinDate": "تاريخ الانضمام",
       "department": "القسم",
       "status": "الحالة",
       "action": "إجراء"
+    },
+    "export": {
+      "button": "تصدير إلى Excel",
+      "noData": "لا توجد بيانات للتصدير",
+      "success": "تم تصدير بيانات الموظفين بنجاح",
+      "sheetName": "الموظفين"
     },
     "pagination": {
       "page": "صفحة",
@@ -1041,6 +1111,7 @@
     },
     "filters": {
       "roleType": "نوع الدور",
+      "status": "الحالة",
       "allStatus": "جميع الحالات",
       "active": "نشط",
       "inactive": "غير نشط"
@@ -1101,7 +1172,9 @@
       "restoreFailed": "فشل استعادة الدور"
     },
     "noPermissionToViewPermissions": "لا يوجد صلاحية لعرض الصلاحيات",
-    "noPermissionToViewPermissionsDesc": "ليس لديك صلاحية لعرض الصلاحيات. لا يزال بإمكانك إنشاء دور، لكن لن تتمكن من تعيين الصلاحيات له."
+    "noPermissionToViewPermissionsDesc": "ليس لديك صلاحية لعرض الصلاحيات. لا يزال بإمكانك إنشاء دور، لكن لن تتمكن من تعيين الصلاحيات له.",
+    "viewPermissions": "عرض الصلاحيات",
+    "noPermissions": "لا توجد صلاحيات مخصصة لهذا الدور"
   },
   "adminDashboard": {
     "cards": {
@@ -1157,6 +1230,12 @@
   },
   "adminLeaves": {
     "manageLeaveTypes": "إدارة أنواع الإجازات",
+  "statusCards": {
+    "totalRequests": "إجمالي الطلبات",
+    "pendingApprovals": "طلبات بانتظار الموافقة",
+    "approvedRequests": "طلبات معتمدة",
+    "rejectedRequests": "طلبات مرفوضة"
+  },
     "cards": {
       "totalLeaveRequests": "إجمالي طلبات الإجازة",
       "pendingApprovals": "الموافقات المعلقة",
@@ -1182,22 +1261,35 @@
         "all": "جميع الحالات",
         "pending": "معلقة",
         "approved": "مقبولة",
-        "rejected": "مرفوضة"
+        "rejected": "مرفوضة",
+        "approvedFromTeamLead": "معتمدة من قائد الفريق",
+        "confirmed": "مؤكدة"
       },
       "dateFrom": "من تاريخ",
       "dateTo": "إلى تاريخ",
       "pageOf": " {{page}} من {{total}} صفحة",
       "columns": {
         "name": "الاسم",
+        "type": "نوع الإجازة",
         "leaveType": "نوع الإجازة",
-        "from": "من",
-        "to": "إلى",
+        "from": "من تاريخ",
+        "to": "إلى تاريخ",
         "days": "الأيام",
         "status": "الحالة",
         "reason": "السبب",
         "approver": "المعتمد",
+        "teamLead": "معتمد قائد الفريق",
+        "teamLeadActionDate": "تاريخ إجراء قائد الفريق",
+        "hrApprover": "معتمد الموارد البشرية",
+        "hrActionDate": "تاريخ إجراء الموارد البشرية",
         "action": "الإجراء"
       }
+    },
+    "export": {
+      "button": "تصدير إلى Excel",
+      "noData": "لا توجد بيانات للتصدير",
+      "success": "تم تصدير طلبات الإجازة بنجاح",
+      "sheetName": "طلبات الإجازة"
     },
     "popup": {
       "leaveType": "نوع الإجازة",
@@ -1231,7 +1323,24 @@
     "status": {
       "pending": "معلقة",
       "approved": "مقبولة",
-      "rejected": "مرفوضة"
+      "rejected": "مرفوضة",
+      "confirmed": "مؤكدة"
+    },
+    "loading": "جاري تحميل طلبات الإجازة...",
+    "error": "فشل تحميل طلبات الإجازة",
+    "retry": "إعادة المحاولة",
+    "empty": {
+      "title": "لا توجد طلبات إجازة للفريق",
+      "teamLead": "لا توجد طلبات إجازة من أعضاء فريقك بعد.",
+      "hr": {
+        "title": "لا توجد طلبات إجازة معتمدة",
+        "message": "لم يتم العثور على طلبات إجازة معتمدة.",
+        "subtitle": "في انتظار موافقة قائد الفريق."
+      },
+      "general": {
+        "title": "لا توجد طلبات إجازة",
+        "message": "لم يتم العثور على طلبات إجازة تطابق المرشحات الخاصة بك."
+      }
     }
   },
   "adminTeamWallet": {
@@ -1492,6 +1601,15 @@
       "addNewDepartment": "إضافة قسم جديد",
       "editDepartment": "تعديل القسم"
     },
+    "filter": {
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "resultsSummary": {
+      "showing": "عرض {{count}} قسم {{status}}",
+      "showingWithSearch": "عرض {{count}} قسم {{status}} يطابق \"{{searchTerm}}\"",
+      "hiddenByFilters": "{{count}} مخفي بواسطة المرشحات"
+    },
     "departmentCard": {
       "members": "الأعضاء",
       "teams": "الفرق",
@@ -1719,6 +1837,59 @@
       "saveFailed": "فشل حفظ الاستراحة"
     }
   },
+  "breakAdmin": {
+    "tabs": {
+      "types": "أنواع الاستراحات",
+      "logs": "سجلات الاستراحات"
+    }
+  },
+  "breakLogs": {
+    "unknownUser": "مستخدم غير معروف",
+    "filters": {
+      "user": "المستخدم",
+      "allUsers": "جميع المستخدمين",
+      "selectUser": "اختر المستخدم",
+      "searchUser": "ابحث عن المستخدم...",
+      "noUsers": "لم يتم العثور على مستخدمين",
+      "status": "الحالة",
+      "allStatus": "جميع الحالات",
+      "sortBy": "ترتيب حسب",
+      "newestFirst": "الأحدث أولاً",
+      "oldestFirst": "الأقدم أولاً"
+    },
+    "pageOf": "الصفحة {{page}} من {{total}}",
+    "showing": "عرض {{count}} من {{total}} سجل",
+    "refresh": "تحديث",
+    "loading": "جاري تحميل سجلات الاستراحات...",
+    "errorLoading": "فشل تحميل سجلات الاستراحات",
+    "retry": "إعادة المحاولة",
+    "emptyTitle": "لا توجد سجلات استراحات بعد",
+    "emptyDescription": "عندما يأخذ الموظفون استراحات، ستظهر أنشطتهم هنا.",
+    "noEmail": "لا يوجد بريد إلكتروني",
+    "status": {
+      "ongoing": "قيد التنفيذ",
+      "completed": "مكتمل",
+      "exceeded": "تجاوز الوقت"
+    },
+    "table": {
+      "columns": {
+        "employeeName": "اسم الموظف",
+        "email": "البريد الإلكتروني",
+        "date": "التاريخ",
+        "breakType": "نوع الاستراحة",
+        "startTime": "وقت البدء",
+        "endTime": "وقت الانتهاء",
+        "duration": "المدة",
+        "status": "الحالة"
+      }
+    },
+    "export": {
+      "button": "تصدير إلى Excel",
+      "noData": "لا توجد بيانات للتصدير",
+      "success": "تم تصدير سجلات الاستراحات بنجاح",
+      "sheetName": "سجلات الاستراحات"
+    }
+  },
   "common": {
     "loading": "جاري التحميل...",
     "saving": "جاري الحفظ...",
@@ -1805,6 +1976,7 @@
       "workingDays": "أيام العمل"
     },
     "gracePeriod": "فترة السماح",
+    "grace": "السماح",
     "minutes": "دقائق",
     "overtime": "العمل الإضافي",
     "hours": "ساعات",
@@ -1998,6 +2170,133 @@
     "empty": {
       "title": "لم يتم العثور على أنواع إجازات",
       "message": "لا توجد أنواع إجازات متاحة في الوقت الحالي."
+    }
+  },
+  "company": {
+    "companyName": "اسم الشركة",
+    "enterName": "أدخل اسم الشركة",
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "edit": "تعديل",
+    "save": "حفظ",
+    "saving": "جاري الحفظ...",
+    "cancel": "إلغاء",
+    "planStart": "بداية الخطة",
+    "planEnd": "نهاية الخطة",
+    "expired": "منتهية الصلاحية",
+    "planTier": "الخطة الحالية",
+    "companyId": "معرف الشركة",
+    "attachments": "المرفقات",
+    "attachmentsSubtitle": "إدارة المستندات",
+    "attachmentsEmpty": "لا توجد مستندات بعد",
+    "addAttachment": "إضافة مرفق",
+    "noAttachments": "لا توجد مرفقات",
+    "file": "الملف",
+    "changeFile": "تغيير الملف",
+    "uploadFile": "رفع ملف",
+    "noFile": "لا يوجد ملف",
+    "fileNameLabel": "اسم الملف",
+    "fileNamePlaceholder": "أدخل اسم الملف",
+    "attachmentId": "معرف المرفق",
+    "enterId": "أدخل المعرف",
+    "expiryDate": "تاريخ الانتهاء",
+    "fileRequired": "يرجى اختيار ملف",
+    "fileNameRequired": "يرجى إدخال اسم الملف",
+    "attachmentAdded": "تمت إضافة المرفق بنجاح",
+    "attachmentAddError": "فشل إضافة المرفق",
+    "selectFile": "اختر ملف",
+    "submit": "إرسال",
+    "submitting": "جاري الإرسال...",
+    "updateSuccess": "تم تحديث تفاصيل الشركة بنجاح",
+    "updateError": "فشل تحديث تفاصيل الشركة",
+    "daysRemainingShort": "{{count}} يوم متبقي",
+    "statusCards": {
+      "companyName": "اسم الشركة",
+      "registeredOrganization": "منظمة مسجلة",
+      "activeStatus": "الحالة النشطة",
+      "currentPlan": "الخطة الحالية",
+      "planType": "نوع الخطة",
+      "startEndDate": "تاريخ البداية - النهاية",
+      "departmentsLinked": "الأقسام المرتبطة",
+      "totalDepartments": "إجمالي الأقسام تحت هذه الشركة"
+    },
+    "planTypes": {
+      "free": "مجاني",
+      "basic": "أساسي",
+      "professional": "احترافي",
+      "enterprise": "مؤسسي",
+      "unknown": "غير معروف"
+    },
+    "table": {
+      "view": "عرض",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "name": "الاسم",
+      "position": "المنصب",
+      "department": "القسم",
+      "joinDate": "تاريخ الانضمام",
+      "status": "الحالة"
+    },
+    "customFields": {
+      "title": "الحقول المخصصة",
+      "addNewField": "إضافة حقل جديد",
+      "fieldName": "اسم الحقل",
+      "fieldNamePlaceholder": "اسم الحقل",
+      "fieldType": "نوع الحقل",
+      "assignTo": "تعيين إلى",
+      "requiredField": "حقل مطلوب",
+      "fieldTypes": {
+        "text": "نص",
+        "number": "رقم",
+        "date": "تاريخ",
+        "email": "بريد إلكتروني",
+        "phone": "هاتف",
+        "dropdown": "قائمة منسدلة",
+        "checkbox": "مربع اختيار"
+      },
+      "assignToOptions": {
+        "employeeProfile": "الملف الشخصي للموظف",
+        "department": "القسم",
+        "team": "الفريق",
+        "project": "المشروع"
+      },
+      "requiredOptions": {
+        "yes": "نعم",
+        "no": "لا"
+      }
+    },
+    "departments": {
+      "title": "الأقسام",
+      "members": "الأعضاء",
+      "teams": "الفرق",
+      "presentToday": "حاضر اليوم"
+    },
+    "addDepartment": "إضافة قسم",
+    "addUser": "إضافة مستخدم",
+    "viewLog": "عرض السجل",
+    "companyInfo": "معلومات الشركة",
+    "editCompany": "تعديل الشركة",
+    "status": "الحالة",
+    "startPlanDate": "تاريخ بداية الخطة",
+    "endPlanDate": "تاريخ نهاية الخطة",
+    "addField": "إضافة حقل",
+    "assignedTo": "مخصص إلى",
+    "type": "النوع",
+    "required": "مطلوب",
+    "yes": "نعم",
+    "no": "لا",
+    "departmentsOverview": "نظرة عامة على الأقسام",
+    "viewAll": "عرض الكل",
+    "fieldType": "نوع الحقل",
+    "fieldTypePlaceholder": "نوع الحقل",
+    "assignTo": "تعيين إلى",
+    "assignToPlaceholder": "تعيين إلى",
+    "requiredFieldPlaceholder": "حقل مطلوب",
+    "reject": "رفض",
+    "approve": "موافقة",
+    "suspended": "معلق",
+    "error": {
+      "loadFailed": "فشل تحميل تفاصيل الشركة"
     }
   }
 }

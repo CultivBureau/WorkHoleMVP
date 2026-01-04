@@ -72,11 +72,20 @@ const LeavesAdmin = () => {
     rejectedRequests: <img src="/assets/AdminDashboard/task.svg" alt="Rejected Requests" />,
   };
 
-  const cardData = Object.entries(stats).map(([key, value]) => ({
-    title: formatHeader(key),
-    value: isLoadingStats ? "..." : (value ?? 0).toString(),
-    icon: iconMap[key] || <img src="/assets/AdminDashboard/total.svg" alt={formatHeader(key)} />
-  }));
+  const cardData = Object.entries(stats).map(([key, value]) => {
+    const translationKey = `adminLeaves.statusCards.${key}`;
+    const translatedTitle = t(translationKey);
+    const title =
+      translatedTitle !== translationKey
+        ? translatedTitle
+        : formatHeader(key);
+
+    return {
+      title,
+      value: isLoadingStats || value === undefined || value === null ? "..." : value.toString(),
+      icon: iconMap[key] || <img src="/assets/AdminDashboard/total.svg" alt={title} />,
+    };
+  });
 
   const gridColsClass = cardData.length === 1 ? "lg:grid-cols-1" : 
                         cardData.length === 2 ? "lg:grid-cols-2" : 
@@ -84,7 +93,7 @@ const LeavesAdmin = () => {
 
   return (
     <PermissionGuard 
-      backendPermissions={["LeaveRequest.View", "LeaveRequest.ViewTeams", "LeaveRequest.Review", "LeaveRequest.Confirm", "LeaveRequest.Override"]}
+      backendPermissions={["LeaveRequest.ViewTeams", "LeaveRequest.Review", "LeaveRequest.Confirm", "LeaveRequest.Override"]}
       loadingFallback={
         <div className="flex items-center justify-center min-h-screen" style={{ background: "var(--bg-all)" }}>
           <span className="text-[var(--sub-text-color)]">{t('common.loading') || 'Loading...'}</span>

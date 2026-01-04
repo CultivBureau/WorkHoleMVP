@@ -1,0 +1,15 @@
+services:
+  frontend:
+    image: ${DOCKER_USERNAME}/rwafi-workhole:main
+    container_name: rwafi-workhole
+    ports:
+      - "3002:80"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    networks:
+      - workholebackend_workhole-network
+
+networks:
+  workholebackend_workhole-network:
+    external: true
