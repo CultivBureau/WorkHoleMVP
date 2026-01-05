@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { User, Briefcase, Eye, ChevronDown, X, Plus, Check, Search, EyeOff, Camera, Sparkles } from "lucide-react";
+import { User, Briefcase, Eye, ChevronDown, X, Plus, Check, Search, Camera, Sparkles } from "lucide-react";
 import { getCompanyId } from "../../../utils/page";
 import { useGetAllDepartmentsQuery } from "../../../services/apis/DepartmentApi";
 import { useGetAllRolesQuery } from "../../../services/apis/RoleApi";
@@ -20,7 +20,6 @@ export default function NewEmployeeForm() {
     const [employeeData, setEmployeeData] = useState({
         userName: "",
         email: "",
-        password: "",
         phoneNumber: "",
         firstName: "",
         lastName: "",
@@ -69,11 +68,9 @@ export default function NewEmployeeForm() {
             const required = {
                 userName: employeeData.userName,
                 email: employeeData.email,
-                password: employeeData.password,
                 phoneNumber: employeeData.phoneNumber,
                 firstName: employeeData.firstName,
                 lastName: employeeData.lastName,
-                jobTitle: employeeData.jobTitle,
                 companyId,
                 roleId: employeeData.roleId,
             };
@@ -88,13 +85,12 @@ export default function NewEmployeeForm() {
             const registerPayload = {
                 userName: employeeData.userName.trim(),
                 email: employeeData.email.trim(),
-                password: employeeData.password,
                 phoneNumber: employeeData.phoneNumber.trim(),
                 firstName: employeeData.firstName.trim(),
                 lastName: employeeData.lastName.trim(),
-                jobTitle: employeeData.jobTitle.trim(),
                 roleId: employeeData.roleId,
                 companyId,
+                ...(employeeData.jobTitle && employeeData.jobTitle.trim() && { jobTitle: employeeData.jobTitle.trim() }),
                 ...(employeeData.hireDate && { hireDate: new Date(employeeData.hireDate).toISOString() }),
                 ...(employeeData.teamIds && employeeData.teamIds.length > 0 && { teamIds: employeeData.teamIds }),
                 ...(employeeData.shiftIds && employeeData.shiftIds.length > 0 && { shiftIds: employeeData.shiftIds }),
@@ -234,13 +230,11 @@ function PersonalInfoStep({ onNext, onChange, data }) {
     const navigate = useNavigate();
     const [errors, setErrors] = useState({});
     const [touched, setTouched] = useState({});
-    const [showPassword, setShowPassword] = useState(false);
 
     const getLabel = (key) => {
         const map = {
             userName: t("employees.newEmployeeForm.professionalInfo.userName") || "Username",
             email: t("employees.newEmployeeForm.personalInfo.emailAddress") || "Email",
-            password: "Password",
             phoneNumber: t("employees.newEmployeeForm.personalInfo.mobileNumber") || "Mobile number",
             firstName: t("employees.newEmployeeForm.personalInfo.firstName") || "First name",
             lastName: t("employees.newEmployeeForm.personalInfo.lastName") || "Last name",
@@ -272,26 +266,6 @@ function PersonalInfoStep({ onNext, onChange, data }) {
                 }
                 break;
                 
-            case 'password':
-                if (!value?.trim()) {
-                    error = `${getLabel('password')} ${t('employees.newEmployeeForm.validation.isRequired') || 'is required'}`;
-                } else if (value.length < 8) {
-                    error = t('employees.newEmployeeForm.validation.passwordMinLength') || 'Password must be at least 8 characters long';
-                } else {
-                    const hasUpper = /[A-Z]/.test(value);
-                    const hasLower = /[a-z]/.test(value);
-                    const hasSpecial = /[^A-Za-z0-9]/.test(value);
-                    
-                    if (!hasUpper) {
-                        error = t('employees.newEmployeeForm.validation.passwordUppercase') || 'Password must contain at least one uppercase letter';
-                    } else if (!hasLower) {
-                        error = t('employees.newEmployeeForm.validation.passwordLowercase') || 'Password must contain at least one lowercase letter';
-                    } else if (!hasSpecial) {
-                        error = t('employees.newEmployeeForm.validation.passwordSpecialChar') || 'Password must contain at least one special character';
-                    }
-                }
-                break;
-                
             case 'phoneNumber':
                 if (!value?.trim()) {
                     error = `${getLabel('phoneNumber')} ${t('employees.newEmployeeForm.validation.isRequired') || 'is required'}`;
@@ -310,12 +284,6 @@ function PersonalInfoStep({ onNext, onChange, data }) {
                 }
                 break;
                 
-            case 'jobTitle':
-                if (!value?.trim()) {
-                    error = `${getLabel('jobTitle')} ${t('employees.newEmployeeForm.validation.isRequired') || 'is required'}`;
-                }
-                break;
-                
             default:
                 break;
         }
@@ -326,7 +294,7 @@ function PersonalInfoStep({ onNext, onChange, data }) {
     const validate = () => {
         const newErrors = {};
         Object.keys(data).forEach(key => {
-            if (['userName', 'email', 'password', 'phoneNumber', 'firstName', 'lastName', 'jobTitle'].includes(key)) {
+            if (['userName', 'email', 'phoneNumber', 'firstName', 'lastName'].includes(key)) {
                 const error = validateField(key, data[key]);
                 if (error) newErrors[key] = error;
             }
@@ -337,7 +305,7 @@ function PersonalInfoStep({ onNext, onChange, data }) {
 
     // Check form validity without setting state (for use during render)
     const checkFormValid = useMemo(() => {
-        const requiredFields = ['userName', 'email', 'password', 'phoneNumber', 'firstName', 'lastName', 'jobTitle'];
+        const requiredFields = ['userName', 'email', 'phoneNumber', 'firstName', 'lastName'];
         return requiredFields.every(field => {
             const value = data[field];
             if (!value || (typeof value === 'string' && !value.trim())) {
@@ -348,15 +316,12 @@ function PersonalInfoStep({ onNext, onChange, data }) {
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 return emailRegex.test(value);
             }
-            if (field === 'password') {
-                return value.length >= 8 && /[A-Z]/.test(value) && /[a-z]/.test(value) && /[^A-Za-z0-9]/.test(value);
-            }
             if (field === 'userName') {
                 return /^[A-Za-z]+$/.test(value);
             }
             return true;
         });
-    }, [data.userName, data.email, data.password, data.phoneNumber, data.firstName, data.lastName, data.jobTitle]);
+    }, [data.userName, data.email, data.phoneNumber, data.firstName, data.lastName]);
 
     const handleFieldChange = (name, value) => {
         onChange(name, value);
@@ -380,7 +345,7 @@ function PersonalInfoStep({ onNext, onChange, data }) {
     };
 
     const handleNext = () => {
-        const allFields = ['userName', 'email', 'password', 'phoneNumber', 'firstName', 'lastName', 'jobTitle'];
+        const allFields = ['userName', 'email', 'phoneNumber', 'firstName', 'lastName'];
         const newTouched = {};
         allFields.forEach(field => { newTouched[field] = true; });
         setTouched(newTouched);
@@ -456,40 +421,6 @@ function PersonalInfoStep({ onNext, onChange, data }) {
                             {errors.email && (
                                 <p className={`mt-2 text-sm text-[var(--error-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
                                     {errors.email}
-                                </p>
-                            )}
-                        </div>
-
-                        {/* Password */}
-                        <div className="relative">
-                            <label className={`block text-sm font-semibold text-[var(--text-color)] mb-2 ${isArabic ? 'text-right' : 'text-left'}`}>
-                                Password <span className="text-[var(--error-color)]">*</span>
-                            </label>
-                            <input
-                                className={`w-full px-4 py-3 border-2 rounded-xl bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-2 transition-all ${
-                                    errors.password 
-                                        ? 'border-[var(--error-color)] focus:border-[var(--error-color)] focus:ring-[var(--error-color)]/20' 
-                                        : data.password.trim()
-                                            ? 'border-[#15919B]/30 focus:border-[#15919B] focus:ring-[#15919B]/20'
-                                            : 'border-[var(--border-color)] focus:border-[#15919B] focus:ring-[#15919B]/20'
-                                }`}
-                                placeholder="Password"
-                                type={showPassword ? 'text' : 'password'}
-                                value={data.password}
-                                onChange={e => handleFieldChange('password', e.target.value)}
-                                onBlur={() => handleBlur('password')}
-                                dir={isArabic ? 'rtl' : 'ltr'}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(s => !s)}
-                                className={`absolute ${isArabic ? 'left-3' : 'right-3'} top-[calc(50%+10px)] -translate-y-1/2 text-[var(--sub-text-color)]`}
-                            >
-                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                            </button>
-                            {errors.password && (
-                                <p className={`mt-2 text-sm text-[var(--error-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
-                                    {errors.password}
                                 </p>
                             )}
                         </div>
@@ -576,30 +507,22 @@ function PersonalInfoStep({ onNext, onChange, data }) {
                         </div>
 
                         {/* Job Title */}
-                        <div className="md:col-span-2">
+                        <div>
                             <label className={`block text-sm font-semibold text-[var(--text-color)] mb-2 ${isArabic ? 'text-right' : 'text-left'}`}>
-                                Job Title <span className="text-[var(--error-color)]">*</span>
+                                Job Title <span className="text-xs text-[var(--sub-text-color)]">({t("common.optional", "Optional")})</span>
                             </label>
                             <input
                                 className={`w-full px-4 py-3 border-2 rounded-xl bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-2 transition-all ${
-                                    errors.jobTitle 
-                                        ? 'border-[var(--error-color)] focus:border-[var(--error-color)] focus:ring-[var(--error-color)]/20' 
-                                        : data.jobTitle.trim()
-                                            ? 'border-[#15919B]/30 focus:border-[#15919B] focus:ring-[#15919B]/20'
-                                            : 'border-[var(--border-color)] focus:border-[#15919B] focus:ring-[#15919B]/20'
+                                    data.jobTitle.trim()
+                                        ? 'border-[#15919B]/30 focus:border-[#15919B] focus:ring-[#15919B]/20'
+                                        : 'border-[var(--border-color)] focus:border-[#15919B] focus:ring-[#15919B]/20'
                                 }`}
                                 placeholder="Job Title"
                                 type="text"
                                 value={data.jobTitle}
                                 onChange={e => handleFieldChange('jobTitle', e.target.value)}
-                                onBlur={() => handleBlur('jobTitle')}
                                 dir={isArabic ? 'rtl' : 'ltr'}
                             />
-                            {errors.jobTitle && (
-                                <p className={`mt-2 text-sm text-[var(--error-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
-                                    {errors.jobTitle}
-                                </p>
-                            )}
                         </div>
 
                         {/* Hire Date */}
@@ -1078,10 +1001,12 @@ function ReviewStep({ onNext, onBack, employeeData, departments, roles, shifts, 
                         <span className="text-[var(--sub-text-color)] text-sm">Phone Number:</span>
                         <div className="text-[var(--text-color)] font-medium">{employeeData.phoneNumber}</div>
                     </div>
-                    <div>
-                        <span className="text-[var(--sub-text-color)] text-sm">Job Title:</span>
-                        <div className="text-[var(--text-color)] font-medium">{employeeData.jobTitle}</div>
-                    </div>
+                    {employeeData.jobTitle && employeeData.jobTitle.trim() && (
+                        <div>
+                            <span className="text-[var(--sub-text-color)] text-sm">Job Title:</span>
+                            <div className="text-[var(--text-color)] font-medium">{employeeData.jobTitle}</div>
+                        </div>
+                    )}
                     {employeeData.hireDate && (
                         <div>
                             <span className="text-[var(--sub-text-color)] text-sm">Hire Date:</span>
