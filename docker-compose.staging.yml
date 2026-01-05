@@ -1,0 +1,18 @@
+services:
+  frontend:
+    image: ${DOCKER_USERNAME}/rwafi-workhole:staging
+    container_name: rwafi-workhole-staging
+    ports:
+      - "3003:80"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=staging
+      - VITE_API_URL=${VITE_API_URL}
+    env_file:
+      - .env.staging
+    networks:
+      - workholebackend_workhole-network
+
+networks:
+  workholebackend_workhole-network:
+    external: true
