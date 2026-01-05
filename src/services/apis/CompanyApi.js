@@ -85,6 +85,77 @@ export const companyApi = createApi({
       },
       invalidatesTags: ["Company"],
     }),
+    addAttachment: builder.mutation({
+      query: ({ companyId, fileName, file, attachmentID, expiryDate, canView }) => {
+        const formData = new FormData();
+        
+        if (fileName) {
+          formData.append("FileName", fileName);
+        }
+        
+        if (file instanceof File) {
+          formData.append("File", file);
+        }
+        
+        if (attachmentID !== undefined && attachmentID !== null) {
+          formData.append("AttachmentID", attachmentID.toString());
+        }
+        
+        if (expiryDate) {
+          formData.append("ExpiryDate", expiryDate);
+        }
+        
+        if (canView !== undefined && canView !== null) {
+          formData.append("CanView", canView.toString());
+        }
+        
+        return {
+          url: `/api/v1/Company/AddAttachment/${companyId}/attachments`,
+          method: "POST",
+          body: formData,
+        };
+      },
+      invalidatesTags: ["Company"],
+    }),
+    updateAttachment: builder.mutation({
+      query: ({ id, fileName, file, attachmentID, expiryDate, canView }) => {
+        const formData = new FormData();
+        
+        if (fileName) {
+          formData.append("FileName", fileName);
+        }
+        
+        if (file instanceof File) {
+          formData.append("File", file);
+        }
+        
+        if (attachmentID !== undefined && attachmentID !== null) {
+          formData.append("AttachmentID", attachmentID.toString());
+        }
+        
+        if (expiryDate) {
+          formData.append("ExpiryDate", expiryDate);
+        }
+        
+        if (canView !== undefined && canView !== null) {
+          formData.append("CanView", canView.toString());
+        }
+        
+        return {
+          url: `/api/v1/Company/UpdateAttachment/attachments/${id}`,
+          method: "PUT",
+          body: formData,
+        };
+      },
+      invalidatesTags: ["Company"],
+    }),
+    deleteAttachment: builder.mutation({
+      query: (id) => ({
+        url: `/api/v1/Company/DeleteAttachment/attachments/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Company"],
+    }),
   }),
 });
 
@@ -93,4 +164,7 @@ export const {
   useGetCompanyByIdQuery,
   useUpdateCompanyMutation,
   useUpdateCompanyDetailsMutation,
+  useAddAttachmentMutation,
+  useUpdateAttachmentMutation,
+  useDeleteAttachmentMutation,
 } = companyApi;

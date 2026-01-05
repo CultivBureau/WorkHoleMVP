@@ -1,19 +1,19 @@
-import { useState, useEffect } from "react";
-import { useGetCompanyByIdQuery, useUpdateCompanyDetailsMutation } from "../../../services/apis/CompanyApi";
+import { useState, useEffect, useRef } from "react";
+import { useGetCompanyByIdQuery, useUpdateCompanyDetailsMutation, useAddAttachmentMutation, useUpdateAttachmentMutation, useDeleteAttachmentMutation } from "../../../services/apis/CompanyApi";
 import { getCompanyId } from "../../../utils/page";
 import { useTranslation } from "react-i18next";
-import { Edit, Save, X, Upload, File, Calendar, Clock } from "lucide-react";
+import { Edit, Save, X, Upload, File, Calendar, Clock, MoreVertical, Eye, Trash2, Building2, Network, Tag, Hash } from "lucide-react";
 import toast from "react-hot-toast";
 import { useHasPermission } from "../../../hooks/useHasPermission";
 
 const CompanyDetailsCard = () => {
-  const { t, i18n } = useTranslation();
-  const isArabic = i18n.language === "ar";
+  const { t } = useTranslation();
   const companyId = getCompanyId();
   const [isEditing, setIsEditing] = useState(false);
   const [companyName, setCompanyName] = useState("");
   const [attachments, setAttachments] = useState([]);
   const [showAddAttachmentModal, setShowAddAttachmentModal] = useState(false);
+  const [editingAttachment, setEditingAttachment] = useState(null);
   
   // Permission checks
   const canUpdateCompany = useHasPermission('Company.Update');
@@ -24,6 +24,10 @@ const CompanyDetailsCard = () => {
   });
 
   const [updateCompanyDetails, { isLoading: isUpdating }] = useUpdateCompanyDetailsMutation();
+  const [updateAttachment] = useUpdateAttachmentMutation();
+  const [deleteAttachment] = useDeleteAttachmentMutation();
+  const [openMenuIndex, setOpenMenuIndex] = useState(null);
+  const menuRef = useRef(null);
 
   const company = companyData?.value;
 
@@ -31,17 +35,19 @@ const CompanyDetailsCard = () => {
   useEffect(() => {
     if (company && !isEditing) {
       setCompanyName(company.name || "");
-      // Initialize attachments from companyAttachment
-      if (company.companyAttachment?.attachments && company.companyAttachment.attachments.length > 0) {
+      // Initialize attachments from API response
+      if (company.attachments && Array.isArray(company.attachments) && company.attachments.length > 0) {
         setAttachments(
-          company.companyAttachment.attachments.map((att) => ({
-            id: att.id,
-            internalId: att.internalId || null, // UUID string from backend
+          company.attachments.map((att) => ({
+            id: att.id || null, // UUID string from backend
+            attachmentID: att.attachmentID || null, // Number ID
+            internalId: att.id || null, // UUID string from backend (same as id)
             file: null, // No file initially, only when user uploads new one
             fileName: att.fileName || "", // File name string
             expiryDate: formatExpiryDate(att.expiryDate || ""), // Convert to YYYY-MM-DD format
             filePath: att.filePath, // Keep original file path for display
-            fileContent: att.fileContent, // Keep original file content for display
+            fileContent: null, // Not provided by API
+            canView: att.canView !== undefined ? att.canView : true, // Permission flag, default to true
           }))
         );
       } else {
@@ -53,16 +59,18 @@ const CompanyDetailsCard = () => {
   const handleEdit = () => {
     setIsEditing(true);
     setCompanyName(company.name || "");
-    if (company.companyAttachment?.attachments) {
+    if (company.attachments && Array.isArray(company.attachments) && company.attachments.length > 0) {
       setAttachments(
-        company.companyAttachment.attachments.map((att) => ({
-          id: att.id,
-          internalId: att.internalId || null, // UUID string from backend
+        company.attachments.map((att) => ({
+          id: att.id || null, // UUID string from backend
+          attachmentID: att.attachmentID || null, // Number ID
+          internalId: att.id || null, // UUID string from backend (same as id)
           file: null,
           fileName: att.fileName || "", // File name string
           expiryDate: formatExpiryDate(att.expiryDate || ""), // Convert to YYYY-MM-DD format
           filePath: att.filePath,
-          fileContent: att.fileContent,
+          fileContent: null, // Not provided by API
+          canView: att.canView !== undefined ? att.canView : true, // Permission flag, default to true
         }))
       );
     } else {
@@ -73,16 +81,18 @@ const CompanyDetailsCard = () => {
   const handleCancel = () => {
     setIsEditing(false);
     setCompanyName(company.name || "");
-    if (company.companyAttachment?.attachments) {
+    if (company.attachments && Array.isArray(company.attachments) && company.attachments.length > 0) {
       setAttachments(
-        company.companyAttachment.attachments.map((att) => ({
-          id: att.id,
-          internalId: att.internalId || null, // UUID string from backend
+        company.attachments.map((att) => ({
+          id: att.id || null, // UUID string from backend
+          attachmentID: att.attachmentID || null, // Number ID
+          internalId: att.id || null, // UUID string from backend (same as id)
           file: null,
           fileName: att.fileName || "", // File name string
           expiryDate: formatExpiryDate(att.expiryDate || ""), // Convert to YYYY-MM-DD format
           filePath: att.filePath,
-          fileContent: att.fileContent,
+          fileContent: null, // Not provided by API
+          canView: att.canView !== undefined ? att.canView : true, // Permission flag, default to true
         }))
       );
     } else {
@@ -113,50 +123,86 @@ const CompanyDetailsCard = () => {
     }
   };
 
-  const handleAttachmentFileChange = (index, file) => {
-    const newAttachments = [...attachments];
-    newAttachments[index] = {
-      ...newAttachments[index],
-      file: file,
-      fileName: file ? file.name : newAttachments[index].fileName || "", // Set fileName when file is selected
-    };
-    setAttachments(newAttachments);
-  };
-
-  const handleAttachmentFileNameChange = (index, fileName) => {
-    const newAttachments = [...attachments];
-    newAttachments[index] = {
-      ...newAttachments[index],
-      fileName: fileName,
-    };
-    setAttachments(newAttachments);
-  };
-
-  const handleAttachmentExpiryChange = (index, expiryDate) => {
-    const newAttachments = [...attachments];
-    newAttachments[index] = {
-      ...newAttachments[index],
-      expiryDate: expiryDate,
-    };
-    setAttachments(newAttachments);
-  };
-
-  const handleAttachmentIdChange = (index, id) => {
-    const newAttachments = [...attachments];
-    newAttachments[index] = {
-      ...newAttachments[index],
-      id: id ? parseInt(id) : null,
-    };
-    setAttachments(newAttachments);
-  };
-
-  const removeAttachment = (index) => {
-    const newAttachments = attachments.filter((_, i) => i !== index);
-    setAttachments(newAttachments);
-  };
 
   const handleAddAttachment = () => {
     setShowAddAttachmentModal(true);
+  };
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setOpenMenuIndex(null);
+      }
+    };
+
+    if (openMenuIndex !== null) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [openMenuIndex]);
+
+  const handleViewAttachment = (attachment) => {
+    if (attachment.filePath) {
+      const fileUrl = getFileUrl(attachment.filePath);
+      window.open(fileUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      toast.error(t("company.noFileToView", "No file available to view"));
+    }
+  };
+
+
+  const handleDeleteAttachment = async (attachment) => {
+    if (!attachment.id) {
+      toast.error(t("company.invalidAttachment", "Invalid attachment"));
+      return;
+    }
+
+    if (!window.confirm(t("company.confirmDelete", "Are you sure you want to delete this attachment?"))) {
+      return;
+    }
+
+    try {
+      await deleteAttachment(attachment.id).unwrap();
+      toast.success(t("company.deleteSuccess", "Attachment deleted successfully"));
+      refetch();
+    } catch (error) {
+      console.error("Delete error:", error);
+      const errorMessage = error?.data?.errorMessage || error?.data?.message || error?.message;
+      toast.error(errorMessage || t("company.deleteError", "Failed to delete attachment"));
+    }
+  };
+
+  const handleToggleCanView = async (attachment) => {
+    if (!attachment.id) {
+      toast.error(t("company.invalidAttachment", "Invalid attachment"));
+      return;
+    }
+
+    try {
+      await updateAttachment({
+        id: attachment.id, // UUID string
+        fileName: attachment.fileName || undefined,
+        attachmentID: attachment.attachmentID || undefined,
+        expiryDate: attachment.expiryDate || undefined,
+        canView: !attachment.canView,
+      }).unwrap();
+      toast.success(t("company.updateSuccess", "Attachment updated successfully"));
+      refetch();
+    } catch (error) {
+      console.error("Update error:", error);
+      const errorMessage = error?.data?.errorMessage || error?.data?.message || error?.message;
+      toast.error(errorMessage || t("company.updateError", "Failed to update attachment"));
+    }
+  };
+
+  const handleUpdateAttachment = (attachment) => {
+    setEditingAttachment(attachment);
+    setShowAddAttachmentModal(true);
+    setOpenMenuIndex(null);
   };
 
   const getPlanTypeName = (planType) => {
@@ -169,14 +215,15 @@ const CompanyDetailsCard = () => {
     return plans[planType] || t("company.planTypes.unknown");
   };
 
-  const getPlanTypeColor = (planType) => {
-    const colors = {
-      1: "bg-blue-100 text-blue-800",
-      2: "bg-purple-100 text-purple-800",
-      3: "bg-gradient-to-r from-[#15919B] to-[#09D1C7] text-white",
+  const getCompanyTypeName = (companyType) => {
+    const types = {
+      0: t("company.companyTypes.main", "Main"),
+      1: t("company.companyTypes.subsidiary", "Subsidiary"),
+      2: t("company.companyTypes.branch", "Branch"),
     };
-    return colors[planType] || "bg-gray-100 text-gray-800";
+    return types[companyType] || t("company.companyTypes.unknown", "Unknown");
   };
+
 
   const formatDate = (dateString) => {
     if (!dateString || dateString === "0001-01-01T00:00:00") return "N/A";
@@ -378,36 +425,24 @@ const CompanyDetailsCard = () => {
         <div className="px-6 pb-6 sm:px-8 sm:pb-8 border-t" style={{ borderColor: "var(--border-color)" }}>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 pt-6">
             <SummaryCard
-              label={t("company.planStart", "Plan Start")}
-              icon={<Calendar className="w-3.5 h-3.5" />}
-              value={formatDate(company.startPlanDate)}
+              label={t("company.companyType", "Company Type")}
+              icon={<Building2 className="w-3.5 h-3.5" />}
+              value={getCompanyTypeName(company.companyType)}
             />
             <SummaryCard
-              label={t("company.planEnd", "Plan End")}
-              icon={<Calendar className="w-3.5 h-3.5" />}
-              value={formatDate(company.endPlanDate)}
-              hint={
-                daysRemaining !== null
-                  ? daysRemaining > 0
-                    ? t("company.daysRemainingShort", {
-                        defaultValue: "{{count}} days left",
-                        count: daysRemaining,
-                      })
-                    : t("company.expired", "Expired")
-                  : undefined
-              }
-              hintTone={daysRemaining !== null && daysRemaining <= 0 ? "error" : "default"}
+              label={t("company.parentCompany", "Parent Company")}
+              icon={<Network className="w-3.5 h-3.5" />}
+              value={company.parentCompany?.name || company.parentCompanyName || t("company.noParentCompany", "None")}
             />
             <SummaryCard
-              label={t("company.planTier", "Current Plan")}
-              icon={<Upload className="w-3.5 h-3.5 rotate-90" />}
-              value={getPlanTypeName(company.planType)}
+              label={t("company.category", "Category")}
+              icon={<Tag className="w-3.5 h-3.5" />}
+              value={company.category?.name || company.categoryName || t("company.noCategory", "None")}
             />
             <SummaryCard
               label={t("company.companyId", "Company ID")}
-              icon={<File className="w-3.5 h-3.5" />}
+              icon={<Hash className="w-3.5 h-3.5" />}
               value={company.id}
-              isMono
             />
           </div>
         </div>
@@ -474,144 +509,144 @@ const CompanyDetailsCard = () => {
               </div>
             </div>
           ) : (
-            <div className="space-y-3 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
               {attachments.map((attachment, index) => (
-                <article
-                  key={index}
-                  className="rounded-lg border p-4 transition-all duration-200 hover:shadow-sm"
+                <div
+                  key={attachment.id || index}
+                  className="relative rounded-xl border p-4 transition-all duration-200 hover:shadow-lg"
                   style={{
                     background: "var(--container-color)",
                     borderColor: "var(--border-color)",
                   }}
                 >
-                  <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-                    <div className="flex-1 space-y-5">
-                      <div className="flex flex-col gap-2">
-                        <span className="text-xs font-bold uppercase tracking-wider flex items-center gap-2" style={{ color: "var(--sub-text-color)" }}>
-                          <div className="w-1 h-3 rounded-full" style={{ background: "var(--accent-color)" }} />
-                          {t("company.file", "File")}
-                        </span>
-
-                        {isEditing ? (
-                          <div className="flex flex-wrap items-center gap-3">
-             
-                            <label className="cursor-pointer">
-                              <input
-                                type="file"
-                                className="hidden"
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0];
-                                  if (file) handleAttachmentFileChange(index, file);
-                                }}
-                              />
-                              <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 hover:scale-105 shadow-md" style={{
-                                background: "linear-gradient(135deg, var(--container-color) 0%, var(--bg-color) 100%)",
-                                border: "2px solid var(--accent-color)",
-                                color: "var(--accent-color)",
-                              }}>
-                                <Upload className="w-4 h-4" />
-                                {attachment.file || attachment.filePath
-                                  ? t("company.changeFile", "Change File")
-                                  : t("company.uploadFile", "Upload File")}
-                              </span>
-                            </label>
-                          </div>
-                        ) : attachment.filePath ? (
-                          <a
-                            href={getFileUrl(attachment.filePath)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-3 text-base font-bold transition-all duration-200 hover:scale-105 w-fit"
-                            style={{ color: "var(--accent-color)" }}
+                  {/* Three-dot menu */}
+                  {canUpdateCompany && (
+                    <div className="absolute top-3 right-3" ref={openMenuIndex === index ? menuRef : null}>
+                      <button
+                        onClick={() => setOpenMenuIndex(openMenuIndex === index ? null : index)}
+                        className="p-1.5 rounded-lg transition-colors"
+                        style={{ 
+                          color: "var(--text-color)",
+                          backgroundColor: openMenuIndex === index ? "var(--hover-color)" : "transparent"
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--hover-color)"}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = openMenuIndex === index ? "var(--hover-color)" : "transparent"}
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                      
+                      {openMenuIndex === index && (
+                        <div 
+                          className="absolute right-0 mt-2 w-48 rounded-lg border shadow-lg z-10"
+                          style={{
+                            background: "var(--bg-color)",
+                            borderColor: "var(--border-color)",
+                          }}
+                        >
+                          <button
+                            onClick={() => {
+                              handleViewAttachment(attachment);
+                              setOpenMenuIndex(null);
+                            }}
+                            className="w-full flex items-center gap-2 px-4 py-2 text-sm transition-colors text-left hover:bg-[var(--hover-color)]"
+                            style={{ color: "var(--text-color)" }}
                           >
-                            <div className="p-2 rounded-lg" style={{ background: "var(--bg-color)" }}>
-                              <File className="w-5 h-5" />
-                            </div>
-                            {attachment.fileName || attachment.filePath.split("/").pop()}
-                          </a>
-                        ) : (
-                          <span className="text-sm font-medium" style={{ color: "var(--sub-text-color)" }}>
-                            {t("company.noFile", "No file")}
-                          </span>
-                        )}
-                      </div>
-
-                      {isEditing && (
-                        <div className="grid gap-4">
-                          <div>
-                            <label className="text-xs font-bold uppercase tracking-wider flex items-center gap-2 mb-2" style={{ color: "var(--sub-text-color)" }}>
-                              <div className="w-1 h-3 rounded-full" style={{ background: "var(--accent-color)" }} />
-                              {t("company.fileNameLabel", "File Name")}
-                            </label>
-                            <input
-                              type="text"
-                              value={attachment.fileName || ""}
-                              onChange={(e) => handleAttachmentFileNameChange(index, e.target.value)}
-                              className="form-input w-full border-2 rounded-xl px-4 py-3 transition-all duration-200 focus:ring-4"
-                              placeholder={t("company.fileNamePlaceholder", "Enter file name")}
-                              style={{ background: "var(--bg-color)", color: "var(--text-color)", borderColor: "var(--border-color)" }}
-                            />
-                          </div>
+                            <Eye className="w-4 h-4" />
+                            {t("company.view", "View")}
+                          </button>
+                          <div className="border-t" style={{ borderColor: "var(--border-color)" }} />
+                          <button
+                            onClick={() => {
+                              handleUpdateAttachment(attachment);
+                            }}
+                            className="w-full flex items-center gap-2 px-4 py-2 text-sm transition-colors text-left hover:bg-[var(--hover-color)]"
+                            style={{ color: "var(--text-color)" }}
+                          >
+                            <Edit className="w-4 h-4" />
+                            {t("company.update", "Update")}
+                          </button>
+                          <button
+                            onClick={() => {
+                              handleDeleteAttachment(attachment);
+                              setOpenMenuIndex(null);
+                            }}
+                            className="w-full flex items-center gap-2 px-4 py-2 text-sm transition-colors text-left hover:bg-[var(--hover-color)]"
+                            style={{ color: "var(--error-color)" }}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            {t("company.remove", "Remove")}
+                          </button>
                         </div>
                       )}
                     </div>
+                  )}
 
-                    <div className="flex w-full flex-col gap-5 sm:flex-row sm:items-start lg:flex-col lg:w-72">
-                      {isEditing && (
-                        <div className="w-full">
-                          <label className="text-xs font-bold uppercase tracking-wider flex items-center gap-2 mb-2" style={{ color: "var(--sub-text-color)" }}>
-                            <div className="w-1 h-3 rounded-full" style={{ background: "var(--accent-color)" }} />
-                            {t("company.attachmentId", "Attachment ID")}
-                          </label>
-                          <input
-                            type="number"
-                            value={attachment.id || ""}
-                            onChange={(e) => handleAttachmentIdChange(index, e.target.value)}
-                            className="form-input w-full border-2 rounded-xl px-4 py-3 transition-all duration-200 focus:ring-4"
-                            placeholder={t("company.enterId", "Enter ID")}
-                            style={{ background: "var(--bg-color)", color: "var(--text-color)", borderColor: "var(--border-color)" }}
-                          />
-                        </div>
+                  {/* File Icon and Name */}
+                  <div className="flex items-start gap-3 mb-4 pr-8">
+                    <div className="p-3 rounded-lg flex-shrink-0" style={{ background: "var(--bg-color)" }}>
+                      <File className="w-6 h-6" style={{ color: "var(--accent-color)" }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-bold truncate" style={{ color: "var(--text-color)" }}>
+                        {attachment.fileName || attachment.filePath?.split("/").pop() || t("company.unnamedFile", "Unnamed File")}
+                      </h4>
+                      {attachment.attachmentID && (
+                        <p className="text-xs mt-1" style={{ color: "var(--sub-text-color)" }}>
+                          ID: {attachment.attachmentID}
+                        </p>
                       )}
-
-                      <div className="w-full">
-                        <label className="text-xs font-bold uppercase tracking-wider flex items-center gap-2 mb-2" style={{ color: "var(--sub-text-color)" }}>
-                          <div className="w-1 h-3 rounded-full" style={{ background: "var(--accent-color)" }} />
-                          {t("company.expiryDate", "Expiry Date")}
-                        </label>
-                        {isEditing ? (
-                          <input
-                            type="date"
-                            value={formatExpiryDate(attachment.expiryDate)}
-                            onChange={(e) => handleAttachmentExpiryChange(index, e.target.value)}
-                            className="form-input w-full border-2 rounded-xl px-4 py-3 transition-all duration-200 focus:ring-4"
-                            style={{ background: "var(--bg-color)", color: "var(--text-color)", borderColor: "var(--border-color)" }}
-                          />
-                        ) : (
-                          <div className="flex items-center gap-2 px-4 py-3 rounded-xl border-2" style={{ borderColor: "var(--border-color)", background: "var(--bg-color)" }}>
-                            <Calendar className="w-4 h-4" style={{ color: "var(--accent-color)" }} />
-                            <p className="text-sm font-bold" style={{ color: "var(--text-color)" }}>
-                              {attachment.expiryDate || t("company.noExpiry", "N/A")}
-                            </p>
-                          </div>
-                        )}
-                      </div>
                     </div>
                   </div>
-                </article>
+
+                  {/* Expiry Date */}
+                  <div className="flex items-center gap-2 mb-3">
+                    <Calendar className="w-4 h-4" style={{ color: "var(--accent-color)" }} />
+                    <span className="text-xs font-medium" style={{ color: "var(--sub-text-color)" }}>
+                      {attachment.expiryDate 
+                        ? new Date(attachment.expiryDate).toLocaleDateString()
+                        : t("company.noExpiry", "No expiry")}
+                    </span>
+                  </div>
+
+                  {/* Can View Toggle */}
+                  {canUpdateCompany && (
+                    <div className="flex items-center justify-between pt-3 border-t" style={{ borderColor: "var(--border-color)" }}>
+                      <span className="text-xs font-medium" style={{ color: "var(--sub-text-color)" }}>
+                        {t("company.canView", "Can View")}
+                      </span>
+                      <button
+                        onClick={() => handleToggleCanView(attachment)}
+                        disabled={false}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          attachment.canView ? 'bg-gradient-to-r from-[#15919B] to-[#09D1C7]' : 'bg-gray-300'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            attachment.canView ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           )}
         </section>
 
-        {/* Add Attachment Modal */}
+        {/* Add/Edit Attachment Modal */}
         {showAddAttachmentModal && (
           <AddAttachmentModal
             companyId={companyId}
-            existingAttachments={attachments}
-            onClose={() => setShowAddAttachmentModal(false)}
+            attachment={editingAttachment}
+            onClose={() => {
+              setShowAddAttachmentModal(false);
+              setEditingAttachment(null);
+            }}
             onSuccess={() => {
               setShowAddAttachmentModal(false);
+              setEditingAttachment(null);
               refetch();
             }}
             t={t}
@@ -622,14 +657,35 @@ const CompanyDetailsCard = () => {
   );
 };
 
-// Add Attachment Modal Component
-const AddAttachmentModal = ({ companyId, existingAttachments = [], onClose, onSuccess, t }) => {
+// Add/Edit Attachment Modal Component
+const AddAttachmentModal = ({ companyId, attachment = null, onClose, onSuccess, t }) => {
+  const isEditing = !!attachment;
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
-  const [id, setId] = useState("");
+  const [attachmentID, setAttachmentID] = useState("");
+  const [canView, setCanView] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [updateCompanyDetails] = useUpdateCompanyDetailsMutation();
+  const [addAttachment] = useAddAttachmentMutation();
+  const [updateAttachment] = useUpdateAttachmentMutation();
+
+  // Initialize form with attachment data when editing
+  useEffect(() => {
+    if (attachment) {
+      setFileName(attachment.fileName || "");
+      setExpiryDate(attachment.expiryDate || "");
+      setAttachmentID(attachment.attachmentID ? attachment.attachmentID.toString() : "");
+      setCanView(attachment.canView !== undefined ? attachment.canView : true);
+      setFile(null); // Don't pre-fill file, user can choose to update it
+    } else {
+      // Reset form for new attachment
+      setFileName("");
+      setExpiryDate("");
+      setAttachmentID("");
+      setCanView(false);
+      setFile(null);
+    }
+  }, [attachment]);
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files?.[0];
@@ -654,7 +710,8 @@ const AddAttachmentModal = ({ companyId, existingAttachments = [], onClose, onSu
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!file) {
+    // File is required only when adding new attachment
+    if (!isEditing && !file) {
       toast.error(t("company.fileRequired", "Please select a file"));
       return;
     }
@@ -676,41 +733,37 @@ const AddAttachmentModal = ({ companyId, existingAttachments = [], onClose, onSu
         return dateString;
       };
 
-      // Prepare existing attachments (keep them as-is, no file re-upload)
-      const existingAttachmentsData = existingAttachments
-        .filter(att => att.filePath) // Only include attachments that have been saved (have filePath)
-        .map(att => ({
-          id: att.id || 0,
-          internalId: att.internalId || null,
-          file: null, // Don't re-upload existing files
-          fileName: att.fileName || "",
-          expiryDate: formatExpiryDateForAPI(att.expiryDate) || null,
-        }));
+      if (isEditing) {
+        // Update existing attachment
+        await updateAttachment({
+          id: attachment.id, // UUID string
+          fileName: fileName.trim(),
+          file: file || undefined, // File is optional when updating
+          attachmentID: attachmentID ? parseInt(attachmentID) : undefined,
+          expiryDate: formatExpiryDateForAPI(expiryDate) || undefined,
+          canView: canView,
+        }).unwrap();
 
-      // Add the new attachment
-      const newAttachment = {
-        id: id ? parseInt(id) : 0, // Use provided ID or 0 for new attachment
-        internalId: null,
-        file: file,
-        fileName: fileName.trim() || file.name || "", // Use provided file name or fallback to file name
-        expiryDate: formatExpiryDateForAPI(expiryDate) || null,
-      };
+        toast.success(t("company.attachmentUpdated", "Attachment updated successfully"));
+      } else {
+        // Add new attachment
+        await addAttachment({
+          companyId,
+          fileName: fileName.trim(),
+          file: file,
+          attachmentID: attachmentID ? parseInt(attachmentID) : undefined,
+          expiryDate: formatExpiryDateForAPI(expiryDate) || undefined,
+          canView: canView,
+        }).unwrap();
 
-      // Combine existing and new attachments
-      const allAttachments = [...existingAttachmentsData, newAttachment];
+        toast.success(t("company.attachmentAdded", "Attachment added successfully"));
+      }
 
-      await updateCompanyDetails({
-        companyId,
-        name: null, // Don't update company name
-        attachments: allAttachments,
-      }).unwrap();
-
-      toast.success(t("company.attachmentAdded", "Attachment added successfully"));
       onSuccess();
     } catch (error) {
-      console.error("Failed to add attachment:", error);
+      console.error(`Failed to ${isEditing ? 'update' : 'add'} attachment:`, error);
       const errorMessage = error?.data?.errorMessage || error?.data?.message || error?.message;
-      toast.error(errorMessage || t("company.attachmentAddError", "Failed to add attachment"));
+      toast.error(errorMessage || t(`company.attachment${isEditing ? 'Update' : 'Add'}Error`, `Failed to ${isEditing ? 'update' : 'add'} attachment`));
     } finally {
       setIsSubmitting(false);
     }
@@ -729,7 +782,7 @@ const AddAttachmentModal = ({ companyId, existingAttachments = [], onClose, onSu
         <div className="px-6 py-4 border-b" style={{ borderColor: "var(--border-color)" }}>
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold" style={{ color: "var(--text-color)" }}>
-              {t("company.addAttachment", "Add Attachment")}
+              {isEditing ? t("company.updateAttachment", "Update Attachment") : t("company.addAttachment", "Add Attachment")}
             </h3>
             <button
               onClick={onClose}
@@ -747,14 +800,15 @@ const AddAttachmentModal = ({ companyId, existingAttachments = [], onClose, onSu
           <div>
             <label className="text-xs font-bold uppercase tracking-wider flex items-center gap-2 mb-2" style={{ color: "var(--sub-text-color)" }}>
               <div className="w-1 h-3 rounded-full" style={{ background: "var(--accent-color)" }} />
-              {t("company.file", "File")} *
+              {t("company.file", "File")} {!isEditing && "*"}
+              {isEditing && <span className="text-xs text-[var(--sub-text-color)] ml-1">({t("company.optional", "Optional")})</span>}
             </label>
             <label className="cursor-pointer">
               <input
                 type="file"
                 className="hidden"
                 onChange={handleFileChange}
-                required
+                required={!isEditing}
               />
               <div className="flex items-center gap-3 p-4 rounded-xl border-2 border-dashed transition-all duration-200 hover:border-solid" style={{
                 borderColor: file ? "var(--accent-color)" : "var(--border-color)",
@@ -762,10 +816,19 @@ const AddAttachmentModal = ({ companyId, existingAttachments = [], onClose, onSu
               }}>
                 <Upload className="w-5 h-5" style={{ color: "var(--accent-color)" }} />
                 <span className="text-sm font-medium" style={{ color: "var(--text-color)" }}>
-                  {file ? file.name : t("company.selectFile", "Select a file")}
+                  {file 
+                    ? file.name 
+                    : isEditing && attachment?.filePath
+                      ? t("company.currentFile", "Current: {fileName}", { fileName: attachment.fileName || attachment.filePath.split("/").pop() })
+                      : t("company.selectFile", "Select a file")}
                 </span>
               </div>
             </label>
+            {isEditing && attachment?.filePath && !file && (
+              <p className="text-xs mt-1" style={{ color: "var(--sub-text-color)" }}>
+                {t("company.fileNotChanged", "Leave empty to keep current file")}
+              </p>
+            )}
           </div>
 
           {/* File Name */}
@@ -793,10 +856,10 @@ const AddAttachmentModal = ({ companyId, existingAttachments = [], onClose, onSu
             </label>
             <input
               type="number"
-              value={id}
-              onChange={(e) => setId(e.target.value)}
+              value={attachmentID}
+              onChange={(e) => setAttachmentID(e.target.value)}
               className="form-input w-full border-2 rounded-xl px-4 py-3 transition-all duration-200 focus:ring-4"
-              placeholder={t("company.enterId", "Enter ID ")}
+              placeholder={t("company.enterId", "Enter ID (optional)")}
               style={{ background: "var(--bg-color)", color: "var(--text-color)", borderColor: "var(--border-color)" }}
             />
           </div>
@@ -814,6 +877,32 @@ const AddAttachmentModal = ({ companyId, existingAttachments = [], onClose, onSu
               className="form-input w-full border-2 rounded-xl px-4 py-3 transition-all duration-200 focus:ring-4"
               style={{ background: "var(--bg-color)", color: "var(--text-color)", borderColor: "var(--border-color)" }}
             />
+          </div>
+
+          {/* Can View Toggle */}
+          <div>
+            <label className="text-xs font-bold uppercase tracking-wider flex items-center gap-2 mb-2" style={{ color: "var(--sub-text-color)" }}>
+              <div className="w-1 h-3 rounded-full" style={{ background: "var(--accent-color)" }} />
+              {t("company.canView", "Can View")}
+            </label>
+            <div className="flex items-center justify-between px-4 py-3 rounded-xl border-2" style={{ borderColor: "var(--border-color)", background: "var(--bg-color)" }}>
+              <span className="text-sm font-medium" style={{ color: "var(--text-color)" }}>
+                {canView ? t("company.yes", "Yes") : t("company.no", "No")}
+              </span>
+              <button
+                type="button"
+                onClick={() => setCanView(!canView)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  canView ? 'bg-gradient-to-r from-[#15919B] to-[#09D1C7]' : 'bg-gray-300'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    canView ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
           </div>
 
           {/* Actions */}
@@ -840,7 +929,9 @@ const AddAttachmentModal = ({ companyId, existingAttachments = [], onClose, onSu
                 color: "white",
               }}
             >
-              {isSubmitting ? t("company.submitting", "Submitting...") : t("company.submit", "Submit")}
+              {isSubmitting 
+                ? (isEditing ? t("company.updating", "Updating...") : t("company.submitting", "Submitting...")) 
+                : (isEditing ? t("company.update", "Update") : t("company.submit", "Submit"))}
             </button>
           </div>
         </form>
@@ -849,7 +940,7 @@ const AddAttachmentModal = ({ companyId, existingAttachments = [], onClose, onSu
   );
 };
 
-const SummaryCard = ({ label, value, icon, hint, hintTone = "default", isMono = false }) => {
+const SummaryCard = ({ label, value, icon, hint, hintTone = "default" }) => {
   return (
     <div
       className="rounded-lg border p-3 transition-all duration-200 hover:shadow-md hover:scale-[1.01]"
@@ -865,7 +956,7 @@ const SummaryCard = ({ label, value, icon, hint, hintTone = "default", isMono = 
         {label}
       </div>
       <p
-        className={`text-base font-bold ${isMono ? "font-mono text-xs" : ""}`}
+        className="text-base font-bold"
         style={{ color: "var(--text-color)" }}
       >
         {value}
@@ -895,7 +986,7 @@ const SummaryCard = ({ label, value, icon, hint, hintTone = "default", isMono = 
   );
 };
 
-const MetaItem = ({ label, value, isMono = false, accent = "default" }) => {
+const MetaItem = ({ label, value, accent = "default" }) => {
   const toneMap = {
     default: {
       badge: "border",
