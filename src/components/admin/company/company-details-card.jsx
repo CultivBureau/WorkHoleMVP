@@ -215,16 +215,6 @@ const CompanyDetailsCard = () => {
     return plans[planType] || t("company.planTypes.unknown");
   };
 
-  const getCompanyTypeName = (companyType) => {
-    const types = {
-      0: t("company.companyTypes.main", "Main"),
-      1: t("company.companyTypes.subsidiary", "Subsidiary"),
-      2: t("company.companyTypes.branch", "Branch"),
-    };
-    return types[companyType] || t("company.companyTypes.unknown", "Unknown");
-  };
-
-
   const formatDate = (dateString) => {
     if (!dateString || dateString === "0001-01-01T00:00:00") return "N/A";
     const date = new Date(dateString);
@@ -427,7 +417,7 @@ const CompanyDetailsCard = () => {
             <SummaryCard
               label={t("company.companyType", "Company Type")}
               icon={<Building2 className="w-3.5 h-3.5" />}
-              value={getCompanyTypeName(company.companyType)}
+              value={company.companyTypeName || t("company.companyTypeName.unknown", "Unknown Company Type")}
             />
             <SummaryCard
               label={t("company.parentCompany", "Parent Company")}
