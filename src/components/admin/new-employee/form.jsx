@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { User, Briefcase, Eye, ChevronDown, X, Plus, Check, Search, EyeOff, Camera } from "lucide-react";
+import { User, Briefcase, Eye, ChevronDown, X, Plus, Check, Search, EyeOff, Camera, Sparkles } from "lucide-react";
 import { getCompanyId } from "../../../utils/page";
 import { useGetAllDepartmentsQuery } from "../../../services/apis/DepartmentApi";
 import { useGetAllRolesQuery } from "../../../services/apis/RoleApi";
@@ -78,7 +78,7 @@ export default function NewEmployeeForm() {
                 roleId: employeeData.roleId,
             };
             const missing = Object.entries(required)
-                .filter(([_, v]) => !v || (typeof v === 'string' && v.trim() === ''))
+                .filter(([, v]) => !v || (typeof v === 'string' && v.trim() === ''))
                 .map(([k]) => k);
             if (missing.length) {
                 toast.error(t("employees.newEmployeeForm.validation.missingFields") || `Missing required fields: ${missing.join(', ')}`);
@@ -119,24 +119,39 @@ export default function NewEmployeeForm() {
     };
 
     return (
-        <div className="w-full mx-auto bg-[var(--bg-color)] rounded-xl border border-[var(--border-color)]" dir={isArabic ? "rtl" : "ltr"}>
-            {/* Header */}
-            <div className="p-6 border-b border-[var(--border-color)]">
-                <h1
-                    className={`text-2xl font-bold text-[var(--text-color)] mb-2 ${isArabic ? 'text-right' : 'text-left'}`}
-                >
-                    {t("employees.newEmployeeForm.title") || "Create New Employee"}
-                </h1>
+        <div className="w-full mx-auto bg-[var(--bg-color)] rounded-2xl border-2 border-[var(--border-color)] shadow-xl overflow-hidden" dir={isArabic ? "rtl" : "ltr"}>
+            {/* Enhanced Header with Gradient */}
+            <div className="relative bg-gradient-to-r from-[#15919B] via-[#09D1C7] to-[#15919B] p-6 overflow-hidden">
+                <div className="absolute inset-0 opacity-10">
+                    <div className={`absolute ${isArabic ? '-left-10' : '-right-10'} -top-10 w-40 h-40 bg-white rounded-full blur-3xl`}></div>
+                    <div className={`absolute ${isArabic ? '-right-10' : '-left-10'} -bottom-10 w-40 h-40 bg-white rounded-full blur-3xl`}></div>
+                </div>
+                <div className={`relative flex items-center gap-4 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                    <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg ring-2 ring-white/20">
+                        <User className="text-white w-6 h-6" />
+                    </div>
+                    <div className={isArabic ? 'text-right' : 'text-left'}>
+                        <div className={`flex items-center gap-2 mb-1 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                            <Sparkles className="text-white/80 w-4 h-4" />
+                            <span className="text-white/90 text-xs font-semibold uppercase tracking-wider">
+                                {t("employees.newEmployeeForm.subtitle", "Employee Management")}
+                            </span>
+                        </div>
+                        <h1 className="text-3xl font-bold text-white">
+                            {t("employees.newEmployeeForm.title") || "Create New Employee"}
+                        </h1>
+                    </div>
+                </div>
             </div>
 
             <div className="p-8">
-                {/* Progress Bar */}
+                {/* Enhanced Progress Bar */}
                 <div className="mb-8">
                     {/* Progress Line */}
-                    <div className="relative mb-4">
-                        <div className="w-full h-1 bg-[var(--border-color)] rounded" />
+                    <div className="relative mb-6">
+                        <div className="w-full h-2 bg-[var(--border-color)] rounded-full" />
                         <div
-                            className={`absolute top-0 h-1 gradient-bg rounded transition-all duration-300 ${isArabic ? 'right-0' : 'left-0'}`}
+                            className={`absolute top-0 h-2 bg-gradient-to-r from-[#15919B] to-[#09D1C7] rounded-full transition-all duration-500 ${isArabic ? 'right-0' : 'left-0'}`}
                             style={{ width: `${((step + 1) / steps.length) * 100}%` }}
                         />
                     </div>
@@ -153,15 +168,18 @@ export default function NewEmployeeForm() {
                                     key={stepItem.label}
                                     className="flex items-center"
                                 >
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isArabic ? 'ml-2' : 'mr-2'} ${isActive || isCompleted ? 'gradient-bg text-white' :
-                                        'bg-[var(--container-color)] text-[var(--sub-text-color)]'
-                                        }`}>
-                                        <IconComponent size={16} />
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${isArabic ? 'ml-2' : 'mr-2'} ${
+                                        isActive || isCompleted 
+                                            ? 'bg-gradient-to-r from-[#15919B] to-[#09D1C7] text-white shadow-lg scale-110' 
+                                            : 'bg-[var(--container-color)] text-[var(--sub-text-color)]'
+                                    }`}>
+                                        <IconComponent size={18} />
                                     </div>
-                                    <span className={`text-sm font-medium hidden sm:block ${isActive || isCompleted
-                                        ? 'gradient-text'
-                                        : 'text-[var(--sub-text-color)]'
-                                        }`}>
+                                    <span className={`text-sm font-semibold hidden sm:block transition-colors duration-300 ${
+                                        isActive || isCompleted
+                                            ? 'text-transparent bg-clip-text bg-gradient-to-r from-[#15919B] to-[#09D1C7]'
+                                            : 'text-[var(--sub-text-color)]'
+                                    }`}>
                                         {stepItem.label}
                                     </span>
                                 </div>
@@ -376,152 +394,250 @@ function PersonalInfoStep({ onNext, onChange, data }) {
 
     return (
         <div className="space-y-6">
-            {/* Avatar Upload */}
-            <div className={`flex ${isArabic ? 'justify-end' : 'justify-start'} mb-6`}>
-                <div className="w-20 h-20 rounded-xl bg-[var(--container-color)] border-2 border-dashed border-[var(--border-color)] flex items-center justify-center cursor-pointer hover:bg-[var(--hover-color)] transition-colors">
-                    <Camera className="text-[var(--sub-text-color)]" size={24} />
+            {/* Enhanced Form Section */}
+            <div className="p-6 bg-gradient-to-br from-[#15919B]/5 to-transparent rounded-xl border-2 border-[var(--border-color)]">
+                {/* Avatar Upload */}
+                <div className={`flex ${isArabic ? 'justify-end' : 'justify-start'} mb-6`}>
+                    <div className="w-20 h-20 rounded-xl bg-[var(--container-color)] border-2 border-dashed border-[var(--border-color)] flex items-center justify-center cursor-pointer hover:bg-[var(--hover-color)] transition-colors">
+                        <Camera className="text-[var(--sub-text-color)]" size={24} />
+                    </div>
                 </div>
-            </div>
 
-            {/* Form Fields */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <input
-                        className={`form-input ${errors.userName ? 'border-red-500 focus:ring-red-500' : ''}`}
-                        placeholder={t("employees.newEmployeeForm.professionalInfo.userName")}
-                        type="text"
-                        value={data.userName}
-                        onChange={e => handleFieldChange('userName', e.target.value.replace(/[^A-Za-z]/g, ''))}
-                        onBlur={() => handleBlur('userName')}
-                    />
-                    {errors.userName && (
-                        <p className="mt-1 text-sm text-red-500" style={{ direction: isArabic ? 'rtl' : 'ltr' }}>
-                            {errors.userName}
-                        </p>
-                    )}
-                </div>
-                <div>
-                    <input
-                        className={`form-input ${errors.email ? 'border-red-500 focus:ring-red-500' : ''}`}
-                        placeholder={t("employees.newEmployeeForm.personalInfo.emailAddress")}
-                        type="email"
-                        value={data.email}
-                        onChange={e => handleFieldChange('email', e.target.value)}
-                        onBlur={() => handleBlur('email')}
-                    />
-                    {errors.email && (
-                        <p className="mt-1 text-sm text-red-500" style={{ direction: isArabic ? 'rtl' : 'ltr' }}>
-                            {errors.email}
-                        </p>
-                    )}
-                </div>
-                <div className="relative">
-                    <input
-                        className={`form-input ${errors.password ? 'border-red-500 focus:ring-red-500' : ''}`}
-                        placeholder="Password"
-                        type={showPassword ? 'text' : 'password'}
-                        value={data.password}
-                        onChange={e => handleFieldChange('password', e.target.value)}
-                        onBlur={() => handleBlur('password')}
-                    />
-                    <button
-                        type="button"
-                        onClick={() => setShowPassword(s => !s)}
-                        className={`absolute ${isArabic ? 'left-3' : 'right-3'} top-1/2 -translate-y-1/2 text-[var(--sub-text-color)]`}
-                    >
-                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                    {errors.password && (
-                        <p className="mt-1 text-sm text-red-500" style={{ direction: isArabic ? 'rtl' : 'ltr' }}>
-                            {errors.password}
-                        </p>
-                    )}
-                </div>
-                <div>
-                    <input
-                        className={`form-input ${errors.phoneNumber ? 'border-red-500 focus:ring-red-500' : ''}`}
-                        placeholder={t("employees.newEmployeeForm.personalInfo.mobileNumber")}
-                        type="tel"
-                        value={data.phoneNumber}
-                        onChange={e => handleFieldChange('phoneNumber', e.target.value)}
-                        onBlur={() => handleBlur('phoneNumber')}
-                    />
-                    {errors.phoneNumber && (
-                        <p className="mt-1 text-sm text-red-500" style={{ direction: isArabic ? 'rtl' : 'ltr' }}>
-                            {errors.phoneNumber}
-                        </p>
-                    )}
-                </div>
-                <div>
-                    <input
-                        className={`form-input ${errors.firstName ? 'border-red-500 focus:ring-red-500' : ''}`}
-                        placeholder={t("employees.newEmployeeForm.personalInfo.firstName")}
-                        type="text"
-                        value={data.firstName}
-                        onChange={e => handleFieldChange('firstName', e.target.value)}
-                        onBlur={() => handleBlur('firstName')}
-                    />
-                    {errors.firstName && (
-                        <p className="mt-1 text-sm text-red-500" style={{ direction: isArabic ? 'rtl' : 'ltr' }}>
-                            {errors.firstName}
-                        </p>
-                    )}
-                </div>
-                <div>
-                    <input
-                        className={`form-input ${errors.lastName ? 'border-red-500 focus:ring-red-500' : ''}`}
-                        placeholder={t("employees.newEmployeeForm.personalInfo.lastName")}
-                        type="text"
-                        value={data.lastName}
-                        onChange={e => handleFieldChange('lastName', e.target.value)}
-                        onBlur={() => handleBlur('lastName')}
-                    />
-                    {errors.lastName && (
-                        <p className="mt-1 text-sm text-red-500" style={{ direction: isArabic ? 'rtl' : 'ltr' }}>
-                            {errors.lastName}
-                        </p>
-                    )}
-                </div>
-                <div className="md:col-span-2">
-                    <input
-                        className={`form-input ${errors.jobTitle ? 'border-red-500 focus:ring-red-500' : ''}`}
-                        placeholder="Job Title"
-                        type="text"
-                        value={data.jobTitle}
-                        onChange={e => handleFieldChange('jobTitle', e.target.value)}
-                        onBlur={() => handleBlur('jobTitle')}
-                    />
-                    {errors.jobTitle && (
-                        <p className="mt-1 text-sm text-red-500" style={{ direction: isArabic ? 'rtl' : 'ltr' }}>
-                            {errors.jobTitle}
-                        </p>
-                    )}
-                </div>
-                <div>
-                    <input
-                        className="form-input"
-                        placeholder={t("employees.newEmployeeForm.personalInfo.hireDate") || "Hire Date (Optional)"}
-                        type="date"
-                        value={data.hireDate || ""}
-                        onChange={e => onChange('hireDate', e.target.value)}
-                    />
+                {/* Form Fields */}
+                <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Username */}
+                        <div>
+                            <label className={`block text-sm font-semibold text-[var(--text-color)] mb-2 ${isArabic ? 'text-right' : 'text-left'}`}>
+                                {t("employees.newEmployeeForm.professionalInfo.userName") || "Username"} <span className="text-[var(--error-color)]">*</span>
+                            </label>
+                            <input
+                                className={`w-full px-4 py-3 border-2 rounded-xl bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-2 transition-all ${
+                                    errors.userName 
+                                        ? 'border-[var(--error-color)] focus:border-[var(--error-color)] focus:ring-[var(--error-color)]/20' 
+                                        : data.userName.trim()
+                                            ? 'border-[#15919B]/30 focus:border-[#15919B] focus:ring-[#15919B]/20'
+                                            : 'border-[var(--border-color)] focus:border-[#15919B] focus:ring-[#15919B]/20'
+                                }`}
+                                placeholder={t("employees.newEmployeeForm.professionalInfo.userName")}
+                                type="text"
+                                value={data.userName}
+                                onChange={e => handleFieldChange('userName', e.target.value.replace(/[^A-Za-z]/g, ''))}
+                                onBlur={() => handleBlur('userName')}
+                                dir={isArabic ? 'rtl' : 'ltr'}
+                            />
+                            {errors.userName && (
+                                <p className={`mt-2 text-sm text-[var(--error-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
+                                    {errors.userName}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Email */}
+                        <div>
+                            <label className={`block text-sm font-semibold text-[var(--text-color)] mb-2 ${isArabic ? 'text-right' : 'text-left'}`}>
+                                {t("employees.newEmployeeForm.personalInfo.emailAddress") || "Email Address"} <span className="text-[var(--error-color)]">*</span>
+                            </label>
+                            <input
+                                className={`w-full px-4 py-3 border-2 rounded-xl bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-2 transition-all ${
+                                    errors.email 
+                                        ? 'border-[var(--error-color)] focus:border-[var(--error-color)] focus:ring-[var(--error-color)]/20' 
+                                        : data.email.trim()
+                                            ? 'border-[#15919B]/30 focus:border-[#15919B] focus:ring-[#15919B]/20'
+                                            : 'border-[var(--border-color)] focus:border-[#15919B] focus:ring-[#15919B]/20'
+                                }`}
+                                placeholder={t("employees.newEmployeeForm.personalInfo.emailAddress")}
+                                type="email"
+                                value={data.email}
+                                onChange={e => handleFieldChange('email', e.target.value)}
+                                onBlur={() => handleBlur('email')}
+                                dir={isArabic ? 'rtl' : 'ltr'}
+                            />
+                            {errors.email && (
+                                <p className={`mt-2 text-sm text-[var(--error-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
+                                    {errors.email}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Password */}
+                        <div className="relative">
+                            <label className={`block text-sm font-semibold text-[var(--text-color)] mb-2 ${isArabic ? 'text-right' : 'text-left'}`}>
+                                Password <span className="text-[var(--error-color)]">*</span>
+                            </label>
+                            <input
+                                className={`w-full px-4 py-3 border-2 rounded-xl bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-2 transition-all ${
+                                    errors.password 
+                                        ? 'border-[var(--error-color)] focus:border-[var(--error-color)] focus:ring-[var(--error-color)]/20' 
+                                        : data.password.trim()
+                                            ? 'border-[#15919B]/30 focus:border-[#15919B] focus:ring-[#15919B]/20'
+                                            : 'border-[var(--border-color)] focus:border-[#15919B] focus:ring-[#15919B]/20'
+                                }`}
+                                placeholder="Password"
+                                type={showPassword ? 'text' : 'password'}
+                                value={data.password}
+                                onChange={e => handleFieldChange('password', e.target.value)}
+                                onBlur={() => handleBlur('password')}
+                                dir={isArabic ? 'rtl' : 'ltr'}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(s => !s)}
+                                className={`absolute ${isArabic ? 'left-3' : 'right-3'} top-[calc(50%+10px)] -translate-y-1/2 text-[var(--sub-text-color)]`}
+                            >
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                            {errors.password && (
+                                <p className={`mt-2 text-sm text-[var(--error-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
+                                    {errors.password}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Phone Number */}
+                        <div>
+                            <label className={`block text-sm font-semibold text-[var(--text-color)] mb-2 ${isArabic ? 'text-right' : 'text-left'}`}>
+                                {t("employees.newEmployeeForm.personalInfo.mobileNumber") || "Mobile Number"} <span className="text-[var(--error-color)]">*</span>
+                            </label>
+                            <input
+                                className={`w-full px-4 py-3 border-2 rounded-xl bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-2 transition-all ${
+                                    errors.phoneNumber 
+                                        ? 'border-[var(--error-color)] focus:border-[var(--error-color)] focus:ring-[var(--error-color)]/20' 
+                                        : data.phoneNumber.trim()
+                                            ? 'border-[#15919B]/30 focus:border-[#15919B] focus:ring-[#15919B]/20'
+                                            : 'border-[var(--border-color)] focus:border-[#15919B] focus:ring-[#15919B]/20'
+                                }`}
+                                placeholder={t("employees.newEmployeeForm.personalInfo.mobileNumber")}
+                                type="tel"
+                                value={data.phoneNumber}
+                                onChange={e => handleFieldChange('phoneNumber', e.target.value)}
+                                onBlur={() => handleBlur('phoneNumber')}
+                                dir={isArabic ? 'rtl' : 'ltr'}
+                            />
+                            {errors.phoneNumber && (
+                                <p className={`mt-2 text-sm text-[var(--error-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
+                                    {errors.phoneNumber}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* First Name */}
+                        <div>
+                            <label className={`block text-sm font-semibold text-[var(--text-color)] mb-2 ${isArabic ? 'text-right' : 'text-left'}`}>
+                                {t("employees.newEmployeeForm.personalInfo.firstName") || "First Name"} <span className="text-[var(--error-color)]">*</span>
+                            </label>
+                            <input
+                                className={`w-full px-4 py-3 border-2 rounded-xl bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-2 transition-all ${
+                                    errors.firstName 
+                                        ? 'border-[var(--error-color)] focus:border-[var(--error-color)] focus:ring-[var(--error-color)]/20' 
+                                        : data.firstName.trim()
+                                            ? 'border-[#15919B]/30 focus:border-[#15919B] focus:ring-[#15919B]/20'
+                                            : 'border-[var(--border-color)] focus:border-[#15919B] focus:ring-[#15919B]/20'
+                                }`}
+                                placeholder={t("employees.newEmployeeForm.personalInfo.firstName")}
+                                type="text"
+                                value={data.firstName}
+                                onChange={e => handleFieldChange('firstName', e.target.value)}
+                                onBlur={() => handleBlur('firstName')}
+                                dir={isArabic ? 'rtl' : 'ltr'}
+                            />
+                            {errors.firstName && (
+                                <p className={`mt-2 text-sm text-[var(--error-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
+                                    {errors.firstName}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Last Name */}
+                        <div>
+                            <label className={`block text-sm font-semibold text-[var(--text-color)] mb-2 ${isArabic ? 'text-right' : 'text-left'}`}>
+                                {t("employees.newEmployeeForm.personalInfo.lastName") || "Last Name"} <span className="text-[var(--error-color)]">*</span>
+                            </label>
+                            <input
+                                className={`w-full px-4 py-3 border-2 rounded-xl bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-2 transition-all ${
+                                    errors.lastName 
+                                        ? 'border-[var(--error-color)] focus:border-[var(--error-color)] focus:ring-[var(--error-color)]/20' 
+                                        : data.lastName.trim()
+                                            ? 'border-[#15919B]/30 focus:border-[#15919B] focus:ring-[#15919B]/20'
+                                            : 'border-[var(--border-color)] focus:border-[#15919B] focus:ring-[#15919B]/20'
+                                }`}
+                                placeholder={t("employees.newEmployeeForm.personalInfo.lastName")}
+                                type="text"
+                                value={data.lastName}
+                                onChange={e => handleFieldChange('lastName', e.target.value)}
+                                onBlur={() => handleBlur('lastName')}
+                                dir={isArabic ? 'rtl' : 'ltr'}
+                            />
+                            {errors.lastName && (
+                                <p className={`mt-2 text-sm text-[var(--error-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
+                                    {errors.lastName}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Job Title */}
+                        <div className="md:col-span-2">
+                            <label className={`block text-sm font-semibold text-[var(--text-color)] mb-2 ${isArabic ? 'text-right' : 'text-left'}`}>
+                                Job Title <span className="text-[var(--error-color)]">*</span>
+                            </label>
+                            <input
+                                className={`w-full px-4 py-3 border-2 rounded-xl bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-2 transition-all ${
+                                    errors.jobTitle 
+                                        ? 'border-[var(--error-color)] focus:border-[var(--error-color)] focus:ring-[var(--error-color)]/20' 
+                                        : data.jobTitle.trim()
+                                            ? 'border-[#15919B]/30 focus:border-[#15919B] focus:ring-[#15919B]/20'
+                                            : 'border-[var(--border-color)] focus:border-[#15919B] focus:ring-[#15919B]/20'
+                                }`}
+                                placeholder="Job Title"
+                                type="text"
+                                value={data.jobTitle}
+                                onChange={e => handleFieldChange('jobTitle', e.target.value)}
+                                onBlur={() => handleBlur('jobTitle')}
+                                dir={isArabic ? 'rtl' : 'ltr'}
+                            />
+                            {errors.jobTitle && (
+                                <p className={`mt-2 text-sm text-[var(--error-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
+                                    {errors.jobTitle}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Hire Date */}
+                        <div>
+                            <label className={`block text-sm font-semibold text-[var(--text-color)] mb-2 ${isArabic ? 'text-right' : 'text-left'}`}>
+                                {t("employees.newEmployeeForm.personalInfo.hireDate") || "Hire Date"} <span className="text-xs text-[var(--sub-text-color)]">({t("common.optional", "Optional")})</span>
+                            </label>
+                            <input
+                                className="w-full px-4 py-3 border-2 border-[var(--border-color)] rounded-xl bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-2 focus:ring-[#15919B]/20 focus:border-[#15919B] transition-all"
+                                placeholder={t("employees.newEmployeeForm.personalInfo.hireDate") || "Hire Date"}
+                                type="date"
+                                value={data.hireDate || ""}
+                                onChange={e => onChange('hireDate', e.target.value)}
+                                dir={isArabic ? 'rtl' : 'ltr'}
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
 
             {/* Action Buttons */}
-            <div className={`flex ${isArabic ? 'justify-start' : 'justify-end'} gap-3 pt-6`}>
-                <button type="button" className="btn-secondary" onClick={() => navigate('/pages/admin/all-employees')}>
+            <div className={`flex ${isArabic ? 'justify-start' : 'justify-end'} gap-3 pt-6 border-t border-[var(--border-color)]`}>
+                <button 
+                    type="button" 
+                    className="px-6 py-3 rounded-xl border-2 border-[var(--border-color)] text-[var(--text-color)] font-semibold hover:bg-[var(--hover-color)] hover:border-[#15919B]/30 transition-all duration-200" 
+                    onClick={() => navigate('/pages/admin/all-employees')}
+                >
                     {t("employees.newEmployeeForm.buttons.cancel") || "Cancel"}
                 </button>
                 <button 
                     type="button" 
-                    className="btn-primary" 
+                    className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
+                        isFormValid
+                            ? 'bg-gradient-to-r from-[#15919B] to-[#09D1C7] text-white hover:shadow-lg hover:scale-105'
+                            : 'bg-[var(--container-color)] text-[var(--sub-text-color)] border-2 border-[var(--border-color)] cursor-not-allowed opacity-60'
+                    }`}
                     onClick={handleNext}
                     disabled={!isFormValid}
-                    style={{
-                        opacity: !isFormValid ? 0.6 : 1,
-                        cursor: !isFormValid ? 'not-allowed' : 'pointer'
-                    }}
                 >
                     {t("employees.newEmployeeForm.buttons.next") || "Next"}
                 </button>
@@ -627,17 +743,19 @@ function ProfessionalInfoStep({ onNext, onBack, onChange, data, departments, rol
                 </div>
             )}
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Enhanced Form Section */}
+            <div className="p-6 bg-gradient-to-br from-[#09D1C7]/5 to-transparent rounded-xl border-2 border-[var(--border-color)]">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Department Dropdown */}
                 <div className="relative">
-                    <label className="block text-sm font-medium text-[var(--text-color)] mb-2">
-                        {t("employees.newEmployeeForm.professionalInfo.selectDepartment") || "Department"} <span className="text-red-500">*</span>
+                    <label className={`block text-sm font-semibold text-[var(--text-color)] mb-2 ${isArabic ? 'text-right' : 'text-left'}`}>
+                        {t("employees.newEmployeeForm.professionalInfo.selectDepartment") || "Department"} <span className="text-xs text-[var(--sub-text-color)]">({t("common.optional", "Optional")})</span>
                     </label>
-                    <div className="form-input cursor-pointer flex items-center justify-between" onClick={() => setIsDeptOpen(!isDeptOpen)}>
-                        <span className="text-[var(--sub-text-color)]">
+                    <div className="w-full px-4 py-3 border-2 border-[var(--border-color)] rounded-xl bg-[var(--bg-color)] cursor-pointer flex items-center justify-between hover:border-[#09D1C7]/50 transition-all" onClick={() => setIsDeptOpen(!isDeptOpen)}>
+                        <span className={selectedDept ? "text-[var(--text-color)] font-medium" : "text-[var(--sub-text-color)]"}>
                             {selectedDept ? (selectedDept.name || selectedDept.departmentName) : t("employees.newEmployeeForm.professionalInfo.selectDepartment")}
                         </span>
-                        <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isDeptOpen ? 'rotate-180' : ''}`} size={16} />
+                        <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isDeptOpen ? 'rotate-180' : ''}`} size={18} />
                     </div>
                     {isDeptOpen && (
                         <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-hidden flex flex-col">
@@ -680,14 +798,20 @@ function ProfessionalInfoStep({ onNext, onBack, onChange, data, departments, rol
 
                 {/* Role Dropdown */}
                 <div className="relative">
-                    <label className="block text-sm font-medium text-[var(--text-color)] mb-2">
-                        {t("employees.newEmployeeForm.professionalInfo.selectEmployeeRole") || "Role"} <span className="text-red-500">*</span>
+                    <label className={`block text-sm font-semibold text-[var(--text-color)] mb-2 ${isArabic ? 'text-right' : 'text-left'}`}>
+                        {t("employees.newEmployeeForm.professionalInfo.selectEmployeeRole") || "Role"} <span className="text-[var(--error-color)]">*</span>
                     </label>
-                    <div className={`form-input cursor-pointer flex items-center justify-between ${!data.roleId && error ? 'border-red-500' : ''}`} onClick={() => setIsRoleOpen(!isRoleOpen)}>
-                        <span className="text-[var(--sub-text-color)]">
+                    <div className={`w-full px-4 py-3 border-2 rounded-xl bg-[var(--bg-color)] cursor-pointer flex items-center justify-between transition-all ${
+                        !data.roleId && error 
+                            ? 'border-[var(--error-color)]' 
+                            : selectedRole
+                                ? 'border-[#09D1C7]/30 hover:border-[#09D1C7]/50'
+                                : 'border-[var(--border-color)] hover:border-[#09D1C7]/50'
+                    }`} onClick={() => setIsRoleOpen(!isRoleOpen)}>
+                        <span className={selectedRole ? "text-[var(--text-color)] font-medium" : "text-[var(--sub-text-color)]"}>
                             {selectedRole ? (selectedRole.name || selectedRole.roleName || selectedRole.code) : t("employees.newEmployeeForm.professionalInfo.selectEmployeeRole")}
                         </span>
-                        <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isRoleOpen ? 'rotate-180' : ''}`} size={16} />
+                        <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isRoleOpen ? 'rotate-180' : ''}`} size={18} />
                     </div>
                     {isRoleOpen && (
                         <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-hidden flex flex-col">
@@ -730,16 +854,16 @@ function ProfessionalInfoStep({ onNext, onBack, onChange, data, departments, rol
 
                 {/* Shifts Multi-Select */}
                 <div className="md:col-span-2 relative">
-                    <label className="block text-sm font-medium text-[var(--text-color)] mb-2">
-                        Select shift <span className="text-[var(--sub-text-color)] text-xs">(Optional)</span>
+                    <label className={`block text-sm font-semibold text-[var(--text-color)] mb-2 ${isArabic ? 'text-right' : 'text-left'}`}>
+                        Select Shift <span className="text-xs text-[var(--sub-text-color)]">({t("common.optional", "Optional")})</span>
                     </label>
-                    <div className="form-input cursor-pointer flex items-center justify-between" onClick={() => setIsShiftOpen(!isShiftOpen)}>
-                        <span className="text-[var(--sub-text-color)]">
+                    <div className="w-full px-4 py-3 border-2 border-[var(--border-color)] rounded-xl bg-[var(--bg-color)] cursor-pointer flex items-center justify-between hover:border-[#09D1C7]/50 transition-all" onClick={() => setIsShiftOpen(!isShiftOpen)}>
+                        <span className={selectedShifts.length > 0 ? "text-[var(--text-color)] font-medium" : "text-[var(--sub-text-color)]"}>
                             {selectedShifts.length > 0 
                                 ? `${selectedShifts.length} shift(s) selected` 
                                 : "Select shifts (optional)"}
                         </span>
-                        <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isShiftOpen ? 'rotate-180' : ''}`} size={16} />
+                        <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isShiftOpen ? 'rotate-180' : ''}`} size={18} />
                     </div>
                     {isShiftOpen && (
                         <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-hidden flex flex-col">
@@ -805,21 +929,27 @@ function ProfessionalInfoStep({ onNext, onBack, onChange, data, departments, rol
 
                 {/* Teams Multi-Select */}
                 <div className="md:col-span-2 relative">
-                    <label className="block text-sm font-medium text-[var(--text-color)] mb-2">
-                        Select Team <span className="text-[var(--sub-text-color)] text-xs">(Optional)</span>
+                    <label className={`block text-sm font-semibold text-[var(--text-color)] mb-2 ${isArabic ? 'text-right' : 'text-left'}`}>
+                        Select Team <span className="text-xs text-[var(--sub-text-color)]">({t("common.optional", "Optional")})</span>
                     </label>
                     <div 
-                        className={`form-input cursor-pointer flex items-center justify-between ${!data.departmentId ? 'opacity-50 cursor-not-allowed' : ''}`} 
+                        className={`w-full px-4 py-3 border-2 border-[var(--border-color)] rounded-xl bg-[var(--bg-color)] cursor-pointer flex items-center justify-between transition-all ${
+                            !data.departmentId 
+                                ? 'opacity-50 cursor-not-allowed' 
+                                : selectedTeams.length > 0
+                                    ? 'border-[#09D1C7]/30 hover:border-[#09D1C7]/50'
+                                    : 'hover:border-[#09D1C7]/50'
+                        }`} 
                         onClick={() => data.departmentId && setIsTeamOpen(!isTeamOpen)}
                     >
-                        <span className="text-[var(--sub-text-color)]">
+                        <span className={selectedTeams.length > 0 ? "text-[var(--text-color)] font-medium" : "text-[var(--sub-text-color)]"}>
                             {!data.departmentId 
                                 ? "Select department first"
                                 : selectedTeams.length > 0 
                                     ? `${selectedTeams.length} team(s) selected` 
                                     : "Select teams (optional)"}
                         </span>
-                        <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isTeamOpen ? 'rotate-180' : ''}`} size={16} />
+                        <ChevronDown className={`text-[var(--sub-text-color)] transition-transform ${isTeamOpen ? 'rotate-180' : ''}`} size={18} />
                     </div>
                     {isTeamOpen && data.departmentId && (
                         <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-hidden flex flex-col">
@@ -883,13 +1013,22 @@ function ProfessionalInfoStep({ onNext, onBack, onChange, data, departments, rol
                     )}
                 </div>
             </div>
+            </div>
 
             {/* Action Buttons */}
-            <div className={`flex ${isArabic ? 'justify-start' : 'justify-end'} gap-3 pt-6`}>
-                <button type="button" className="btn-secondary" onClick={onBack}>
+            <div className={`flex ${isArabic ? 'justify-start' : 'justify-end'} gap-3 pt-6 border-t border-[var(--border-color)]`}>
+                <button 
+                    type="button" 
+                    className="px-6 py-3 rounded-xl border-2 border-[var(--border-color)] text-[var(--text-color)] font-semibold hover:bg-[var(--hover-color)] hover:border-[#15919B]/30 transition-all duration-200" 
+                    onClick={onBack}
+                >
                     {t("employees.newEmployeeForm.buttons.back") || "Back"}
                 </button>
-                <button type="button" className="btn-primary" onClick={handleNext}>
+                <button 
+                    type="button" 
+                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#15919B] to-[#09D1C7] text-white font-semibold hover:shadow-lg hover:scale-105 transition-all duration-200" 
+                    onClick={handleNext}
+                >
                     {t("employees.newEmployeeForm.buttons.next") || "Next"}
                 </button>
             </div>
@@ -998,13 +1137,18 @@ function ReviewStep({ onNext, onBack, employeeData, departments, roles, shifts, 
             </div>
 
             {/* Action Buttons */}
-            <div className={`flex ${isArabic ? 'justify-start' : 'justify-end'} gap-3 pt-6`}>
-                <button type="button" className="btn-secondary" onClick={onBack} disabled={loading}>
+            <div className={`flex ${isArabic ? 'justify-start' : 'justify-end'} gap-3 pt-6 border-t border-[var(--border-color)]`}>
+                <button 
+                    type="button" 
+                    className="px-6 py-3 rounded-xl border-2 border-[var(--border-color)] text-[var(--text-color)] font-semibold hover:bg-[var(--hover-color)] hover:border-[#15919B]/30 transition-all duration-200" 
+                    onClick={onBack} 
+                    disabled={loading}
+                >
                     {t("employees.newEmployeeForm.buttons.back") || "Back"}
                 </button>
                 <button 
                     type="button" 
-                    className="btn-primary flex items-center gap-2" 
+                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#15919B] to-[#09D1C7] text-white font-semibold hover:shadow-lg hover:scale-105 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" 
                     onClick={onNext}
                     disabled={loading}
                 >
@@ -1014,7 +1158,10 @@ function ReviewStep({ onNext, onBack, employeeData, departments, roles, shifts, 
                             <span>{t("employees.newEmployeeForm.buttons.submitting") || t("common.loading") || "Processing..."}</span>
                         </>
                     ) : (
-                        t("employees.newEmployeeForm.buttons.submit") || t("common.submit") || "Create Employee"
+                        <>
+                            <Plus size={16} />
+                            {t("employees.newEmployeeForm.buttons.submit") || t("common.submit") || "Create Employee"}
+                        </>
                     )}
                 </button>
             </div>

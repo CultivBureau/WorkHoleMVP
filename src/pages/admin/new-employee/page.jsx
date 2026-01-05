@@ -33,10 +33,7 @@ const NewEmployee = () => {
             style={{ background: "var(--bg-color)" }}
           >
             <div className="w-full h-max p-6" dir={isArabic ? "rtl" : "ltr"}>
-              {/* Title & Breadcrumb */}
-              <div className={`mb-8 ${isArabic ? 'text-right' : 'text-left'}`}>
-                <h1 className="text-2xl font-bold text-[var(--text-color)]">{t("employees.newEmployeeForm.title")}</h1>
-              </div>
+              
               {/* Status Cards Row */}
               <NewEmployeeForm />
             </div>
