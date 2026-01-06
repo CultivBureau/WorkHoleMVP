@@ -99,7 +99,6 @@ export const baseQueryWithReauth = async (args, api, extraOptions) => {
           if (refreshResult.error) {
             // Refresh failed - check error response
             const errorMessage = refreshResult.error?.data?.errorMessage || refreshResult.error?.data?.message || 'Token refresh failed';
-            console.error('Token refresh failed:', errorMessage);
             
             // If refresh token is invalid/expired, remove tokens
             if (hasAnyAuthentication()) {

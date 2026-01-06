@@ -64,17 +64,6 @@ export default function AllShifts() {
 
     const shifts = shiftsData?.value || [];
     
-    // Debug: Log the API response
-    useEffect(() => {
-        console.log('Status Filter:', statusFilter, 'Status Number:', statusNumber);
-        console.log('Shifts received:', shifts);
-        console.log('Shifts with status breakdown:', shifts.map(s => ({ 
-            id: s.id, 
-            name: s.name, 
-            status: s.status, 
-            statusType: typeof s.status 
-        })));
-    }, [statusFilter, statusNumber, shifts]);
 
     // Client-side filtering - always filter client-side for inactive since API status=1 doesn't work
     const filteredByStatus = useMemo(() => {

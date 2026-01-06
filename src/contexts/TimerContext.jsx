@@ -211,7 +211,6 @@ export function TimerProvider({ children }) {
         // Silently fail - we're using local mode anyway
       }
     } catch (error) {
-      console.error('Failed to start timer:', error);
       throw error;
     }
   }, [startTimerMutation]);
@@ -227,7 +226,6 @@ export function TimerProvider({ children }) {
           // Silently fail - we're using local mode anyway
         }
       } catch (error) {
-        console.error('Failed to pause timer:', error);
         throw error;
       }
     }
@@ -248,7 +246,6 @@ export function TimerProvider({ children }) {
           // Silently fail - we're using local mode anyway
         }
       } catch (error) {
-        console.error('Failed to resume timer:', error);
         throw error;
       }
     }
@@ -275,7 +272,6 @@ export function TimerProvider({ children }) {
           // Silently fail - we're using local mode anyway
         }
       } catch (error) {
-        console.error('Failed to complete timer:', error);
         throw error;
       }
     } else {
@@ -328,7 +324,6 @@ export function TimerProvider({ children }) {
           // Silently fail - we're using local mode anyway
         }
       } catch (error) {
-        console.error('Failed to cancel timer:', error);
         throw error;
       }
     }

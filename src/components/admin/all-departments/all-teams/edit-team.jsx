@@ -281,7 +281,6 @@ export default function EditTeamModal({ isOpen, onClose, onUpdateTeam, teamData,
                 selectedEmployees: editTeam.selectedEmployees,
             });
             
-            console.log('✅ Team update process completed successfully');
             
             // Reset form
             setEditTeam({ name: '', description: '', selectedEmployees: [], teamLeader: null });

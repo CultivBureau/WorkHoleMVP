@@ -23,7 +23,7 @@ const TimerPopUp = ({
       await onComplete('')
       onClose()
     } catch (error) {
-      console.error('Failed to complete timer:', error)
+      // Failed to complete timer
     }
   }
 
@@ -32,7 +32,7 @@ const TimerPopUp = ({
       await onCancel('')
       onClose()
     } catch (error) {
-      console.error('Failed to cancel timer:', error)
+      // Failed to cancel timer
     }
   }
 

@@ -124,7 +124,6 @@ const CompanyDetailsCard = () => {
       toast.success(t("company.updateSuccess", "Company details updated successfully"));
       refetch();
     } catch (error) {
-      console.error("Failed to update company:", error);
       toast.error(t("company.updateError", "Failed to update company details"));
     }
   };
@@ -235,7 +234,6 @@ const CompanyDetailsCard = () => {
       toast.success(t("company.deleteSuccess", "Attachment deleted successfully"));
       refetch();
     } catch (error) {
-      console.error("Delete error:", error);
       const errorMessage = error?.data?.errorMessage || error?.data?.message || error?.message;
       toast.error(errorMessage || t("company.deleteError", "Failed to delete attachment"));
     }
@@ -258,7 +256,6 @@ const CompanyDetailsCard = () => {
       toast.success(t("company.updateSuccess", "Attachment updated successfully"));
       refetch();
     } catch (error) {
-      console.error("Update error:", error);
       const errorMessage = error?.data?.errorMessage || error?.data?.message || error?.message;
       toast.error(errorMessage || t("company.updateError", "Failed to update attachment"));
     }
@@ -816,7 +813,6 @@ const AddAttachmentModal = ({ companyId, attachment = null, onClose, onSuccess, 
 
       onSuccess();
     } catch (error) {
-      console.error(`Failed to ${isEditing ? 'update' : 'add'} attachment:`, error);
       const errorMessage = error?.data?.errorMessage || error?.data?.message || error?.message;
       toast.error(errorMessage || t(`company.attachment${isEditing ? 'Update' : 'Add'}Error`, `Failed to ${isEditing ? 'update' : 'add'} attachment`));
     } finally {

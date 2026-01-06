@@ -82,7 +82,6 @@ const EmployeeCard = ({
             onView();
             return;
         }
-        console.log("View employee:", name);
     };
 
     const handleEdit = (e) => {
@@ -92,7 +91,6 @@ const EmployeeCard = ({
             onEdit();
             return;
         }
-        console.log("Edit employee:", name);
     };
 
     const handleDeleteAction = (e) => {
@@ -102,7 +100,6 @@ const EmployeeCard = ({
             onDelete(isActive ? "delete" : "restore");
             return;
         }
-        console.log(isActive ? "Delete employee:" : "Restore employee:", name);
     };
 
     const toggleDropdown = (e) => {

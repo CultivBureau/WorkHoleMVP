@@ -303,9 +303,6 @@ export const convertBackendToFrontendPermissions = (backendCodes) => {
 export const hasBackendPermission = (backendCodes, requiredPermissions) => {
   // Handle null/undefined cases
   if (!backendCodes) {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('[hasBackendPermission] backendCodes is null or undefined');
-    }
     return false;
   }
   
@@ -313,9 +310,6 @@ export const hasBackendPermission = (backendCodes, requiredPermissions) => {
   const codesArray = Array.isArray(backendCodes) ? backendCodes : [backendCodes];
   
   if (!requiredPermissions) {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('[hasBackendPermission] requiredPermissions is null or undefined');
-    }
     return false;
   }
   

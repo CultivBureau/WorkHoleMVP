@@ -141,7 +141,6 @@ const NewRoleForm = () => {
                 navigate('/pages/admin/Roles&Permissions');
             }
         } catch (error) {
-            console.error('Error creating role:', error);
             alert(error?.data?.errorMessage || t('roles.errors.createFailed') || 'Failed to create role');
         }
     };

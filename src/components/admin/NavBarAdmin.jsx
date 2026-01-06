@@ -171,9 +171,7 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
     try {
       await refetchLogs();
     } catch (error) {
-      if (import.meta.env.DEV) {
-        console.warn("Failed to refetch attendance logs:", error);
-      }
+      // Failed to refetch attendance logs
     }
   }, [refetchLogs]);
 
@@ -348,16 +346,6 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
         setPendingLocation(null);
       }
     } catch (error) {
-      console.error('Clock in error:', error);
-      console.error('Error details:', {
-        status: error?.status,
-        statusCode: error?.statusCode,
-        data: error?.data,
-        errors: error?.data?.errors,
-        originalStatus: error?.originalStatus,
-        message: error?.message,
-        coords: { lat: coords.lat, lng: coords.lng },
-      });
       if (loadingToast) toast.dismiss(loadingToast);
       
       // If error and no reason provided yet, user is late - show reason modal
@@ -452,16 +440,6 @@ const NavBar = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
       refetchDashboard();
       setPendingLocation(null);
     } catch (error) {
-      console.error('Clock out error:', error);
-      console.error('Clock out error details:', {
-        status: error?.status,
-        statusCode: error?.statusCode,
-        data: error?.data,
-        originalStatus: error?.originalStatus,
-        message: error?.message,
-        coords: { lat: coords.lat, lng: coords.lng },
-        fullError: JSON.stringify(error, null, 2)
-      });
       toast.dismiss(loadingToast);
       
       // Get error message from API response - try multiple possible locations

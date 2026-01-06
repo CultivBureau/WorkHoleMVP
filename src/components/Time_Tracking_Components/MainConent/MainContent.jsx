@@ -307,17 +307,6 @@ const MainContent = () => {
       // Parse as UTC - JavaScript Date will correctly handle the conversion
       const start = new Date(utcString);
       
-      // Debug logging in development
-      if (import.meta.env.DEV) {
-        console.log('Timer initialization:', {
-          clockInTime,
-          utcString,
-          startUTC: start.toISOString(),
-          startLocal: start.toLocaleString(),
-          now: new Date().toLocaleString(),
-          diffSeconds: Math.floor((new Date().getTime() - start.getTime()) / 1000),
-        });
-      }
       
       const updateTimer = () => {
         const now = new Date();
@@ -418,7 +407,6 @@ const MainContent = () => {
 
           const { latitude, longitude, accuracy } = position.coords
 
-          console.log('Location success:', { latitude, longitude, accuracy })
 
           // Success toast with location info
           toast.success(
@@ -442,11 +430,6 @@ const MainContent = () => {
         (error) => {
           setIsGettingLocation(false)
           toast.dismiss(loadingToast)
-
-          console.error('Location error details:', {
-            code: error.code,
-            message: error.message,
-          })
 
           let errorMessage = isAr ? 'خطأ في تحديد الموقع' : 'Location error'
           let errorIcon = '❌'
@@ -597,7 +580,6 @@ const MainContent = () => {
 
       // Log the result to debug
       if (import.meta.env.DEV) {
-        console.log('Clock in result:', result)
       }
 
       // If status is 200, clock-in was successful
@@ -629,23 +611,11 @@ const MainContent = () => {
           try {
             await refetchLogs()
           } catch (refetchError) {
-            // Log but don't show error to user - clock-in was successful
-            if (import.meta.env.DEV) {
-              console.warn('Failed to refetch logs after clock-in:', refetchError)
-            }
           }
         }
         setPendingLocation(null)
       }
     } catch (error) {
-      console.error('Clock in error:', error)
-      console.error('Clock in error details:', {
-        status: error?.status,
-        statusCode: error?.data?.statusCode,
-        data: error?.data,
-        errors: error?.data?.errors,
-        coords: { lat: coords.lat, lng: coords.lng },
-      })
       if (loadingToast) toast.dismiss(loadingToast)
       
       // If error and no reason provided yet, user is late - show reason modal
@@ -741,15 +711,10 @@ const MainContent = () => {
         try {
           await refetchLogs()
         } catch (refetchError) {
-          // Log but don't show error to user - clock-out was successful
-          if (import.meta.env.DEV) {
-            console.warn('Failed to refetch logs after clock-out:', refetchError)
-          }
         }
       }
       setPendingLocation(null)
     } catch (error) {
-      console.error('Clock out error:', error)
       toast.dismiss(loadingToast)
       toast.error(
         <div className="flex items-center gap-2">

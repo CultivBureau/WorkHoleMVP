@@ -542,21 +542,12 @@ function SetupTeamsStep({ onNext, onBack, teams, setTeams }) {
     const [showAddTeam, setShowAddTeam] = useState(false);
 
     const handleTeamAdd = (team) => {
-        console.log('📝 Adding team to state:', team);
         setTeams(prev => {
             const updated = [...prev, team];
-            console.log('📝 Updated teams array:', updated);
-            console.log('📝 Teams count:', updated.length);
             return updated;
         });
         setShowAddTeam(false);
     };
-    
-    // Debug: Log teams whenever they change
-    useEffect(() => {
-        console.log('📝 SetupTeamsStep - Teams state changed:', teams);
-        console.log('📝 SetupTeamsStep - Teams count:', teams.length);
-    }, [teams]);
 
     return (
         <div className="space-y-6">
@@ -716,15 +707,6 @@ function ReviewStep({ onBack, departmentInfo, supervisor, teams }) {
 
     const departmentData = departmentInfo || { departmentName: '', description: '' };
     
-    // Debug: Log teams when ReviewStep mounts or teams change
-    useEffect(() => {
-        console.log('🔍 ReviewStep - Teams received:', teams);
-        console.log('🔍 ReviewStep - Teams is array?', Array.isArray(teams));
-        console.log('🔍 ReviewStep - Teams count:', teams?.length);
-        if (teams && teams.length > 0) {
-            console.log('🔍 ReviewStep - Teams content:', JSON.stringify(teams, null, 2));
-        }
-    }, [teams]);
 
     // STEP 1: Create department first
     const handleCreateDepartment = async () => {
@@ -754,27 +736,18 @@ function ReviewStep({ onBack, departmentInfo, supervisor, teams }) {
                 try { 
                     await assignSupervisor({ id: createdDepartmentId, userId: supervisorId }).unwrap(); 
                 } catch (assignError) {
-                    console.warn('Supervisor was already assigned or assignment failed:', assignError);
                     // Don't throw - supervisor might already be set
                 }
             }
 
             // After department is created, proceed to create teams
-            console.log('Department created successfully with ID:', createdDepartmentId);
-            console.log('Checking teams array:', teams);
-            console.log('Teams is array?', Array.isArray(teams));
-            console.log('Teams length:', teams?.length);
-            
             if (Array.isArray(teams) && teams.length > 0) {
-                console.log('Proceeding to create teams...');
                 await handleCreateTeams(createdDepartmentId);
             } else {
-                console.log('No teams to create, finishing...');
                 setIsSubmitting(false);
                 setIsCompleted(true);
             }
         } catch (e) {
-            console.error('Error creating department:', e);
             const errorMsg = e?.data?.errorMessage || 
                            e?.data?.message || 
                            e?.message || 
@@ -791,25 +764,14 @@ function ReviewStep({ onBack, departmentInfo, supervisor, teams }) {
             setCurrentStep('teams');
             setCreatedTeamsCount(0);
             
-            console.log('=== Starting Team Creation ===');
-            console.log('Department ID:', deptId);
-            console.log('Teams array:', teams);
-            console.log('Teams length:', teams?.length);
-            console.log('Is array:', Array.isArray(teams));
-            
             if (!Array.isArray(teams) || teams.length === 0) {
-                console.log('No teams to create, finishing...');
                 setIsSubmitting(false);
                 setIsCompleted(true);
                 return;
             }
 
-            console.log(`Creating ${teams.length} teams...`);
-
             for (let i = 0; i < teams.length; i++) {
                 const team = teams[i];
-                console.log(`\n--- Processing Team ${i + 1}/${teams.length} ---`);
-                console.log('Team data:', team);
                 
                 // Extract team leader ID (try multiple property names)
                 const teamLeadId = team.teamLeader?.id || 
@@ -819,27 +781,12 @@ function ReviewStep({ onBack, departmentInfo, supervisor, teams }) {
                                   team.teamLeader?.Id ||
                                   team.teamLeader?._id;
                 
-                console.log('Team Leader ID:', teamLeadId);
-                console.log('Team Leader object:', team.teamLeader);
-                console.log('Team Leader object keys:', team.teamLeader ? Object.keys(team.teamLeader) : 'No team leader');
-                
-                // Try to find ID in nested structure
-                if (!teamLeadId && team.teamLeader) {
-                    console.warn('⚠️ Could not find team leader ID in standard properties, checking all properties...');
-                    // Log all properties to help debug
-                    for (const key in team.teamLeader) {
-                        console.log(`  ${key}:`, team.teamLeader[key]);
-                    }
-                }
-                
                 if (!teamLeadId) {
-                    console.warn(`⚠️ Skipping team "${team.name || 'Unnamed'}" - no team leader ID found`);
                     setCreatedTeamsCount(prev => prev + 1);
                     continue; // Skip teams without a leader
                 }
                 
                 if (!team.name || !team.name.trim()) {
-                    console.warn(`⚠️ Skipping team - no team name provided`);
                     setCreatedTeamsCount(prev => prev + 1);
                     continue; // Skip teams without a name
                 }
@@ -851,29 +798,19 @@ function ReviewStep({ onBack, departmentInfo, supervisor, teams }) {
                     departmentId: deptId, // Use the created department ID
                 };
                 
-                console.log('Team payload:', teamPayload);
-                
                 try { 
-                    console.log(`📤 Creating team "${team.name}"...`);
                     // Create the team using /api/v1/Team/Create
                     const teamResult = await createTeam(teamPayload).unwrap();
-                    console.log('✅ Team creation response:', teamResult);
                     
                     const createdTeam = teamResult?.value || teamResult;
                     const createdTeamId = createdTeam?.id;
                     
-                    console.log('Created Team ID:', createdTeamId);
-                    console.log('Full created team object:', createdTeam);
-                    
                     if (!createdTeamId) {
-                        console.error('❌ Team was created but no team ID was returned');
-                        console.error('Response structure:', teamResult);
                         throw new Error(`Team "${team.name}" was created but no team ID was returned`);
                     }
 
                     // Add team members using /api/v1/Team/AddUsersToTeam/{teamId}/users
                     if (Array.isArray(team.selectedEmployees) && team.selectedEmployees.length > 0) {
-                        console.log(`📤 Adding ${team.selectedEmployees.length} members to team...`);
                         // Extract all userIds from selected employees
                         const userIds = team.selectedEmployees.map(member => {
                             const memberId = member?.id || 
@@ -885,54 +822,28 @@ function ReviewStep({ onBack, departmentInfo, supervisor, teams }) {
                             return memberId;
                         }).filter(Boolean); // Remove any null/undefined values
                         
-                        console.log('Member User IDs:', userIds);
-                        
                         if (userIds.length > 0) {
                             try {
-                                console.log(`📤 Calling AddUsersToTeam with teamId: ${createdTeamId}, userIds:`, userIds);
-                                const addUsersResult = await addUsersToTeam({ 
+                                await addUsersToTeam({ 
                                     teamId: createdTeamId, 
                                     userIds,
                                     departmentId: deptId
                                 }).unwrap();
-                                console.log('✅ Members added successfully:', addUsersResult);
                             } catch (addUsersError) {
-                                const errorMsg = addUsersError?.data?.errorMessage || 
-                                               addUsersError?.data?.message || 
-                                               addUsersError?.message || 
-                                               'Unknown error';
-                                console.error(`❌ Failed to add members to team "${team.name}":`, errorMsg);
-                                console.error('Full error:', addUsersError);
                                 // Don't throw - continue with other teams
                             }
-                        } else {
-                            console.warn('⚠️ No valid user IDs found in selected employees');
                         }
-                    } else {
-                        console.log('ℹ️ No members to add to team');
                     }
-                    
-                    console.log(`✅ Team "${team.name}" created successfully!`);
                     setCreatedTeamsCount(prev => prev + 1);
                 } catch (err) {
-                    const errorMsg = err?.data?.errorMessage || 
-                                   err?.data?.message || 
-                                   err?.message || 
-                                   'Unknown error';
-                    console.error(`❌ Failed to create team "${team.name}":`, errorMsg);
-                    console.error('Full error object:', err);
-                    console.error('Error data:', err?.data);
                     // Continue with other teams even if one fails
                     setCreatedTeamsCount(prev => prev + 1);
                 }
             }
 
-            console.log('=== Team Creation Complete ===');
             setIsSubmitting(false);
             setIsCompleted(true);
         } catch (e) {
-            console.error('❌ Error creating teams:', e);
-            console.error('Full error object:', e);
             const errorMsg = e?.data?.errorMessage || 
                            e?.data?.message || 
                            e?.message || 

@@ -57,7 +57,6 @@ export const authApi = createApi({
           }
         } catch (error) {
           // Error handling
-          console.error("Login error:", error);
         }
       },
     }),
@@ -105,7 +104,6 @@ export const authApi = createApi({
           }
         } catch (error) {
           // Error handling
-          console.error("Register error:", error);
         }
       },
     }),

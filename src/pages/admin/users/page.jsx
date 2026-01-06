@@ -304,7 +304,6 @@ const UsersAdmin = () => {
       setUserToDelete(null);
       refetch();
     } catch (error) {
-      console.error("Error deleting user:", error);
     }
   };
 
@@ -317,7 +316,6 @@ const UsersAdmin = () => {
       }).unwrap();
       refetch();
     } catch (error) {
-      console.error("Error updating user status:", error);
     }
   };
 

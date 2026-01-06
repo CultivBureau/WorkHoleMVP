@@ -1159,7 +1159,7 @@ const EmployeesTable = () => {
             employee={selectedEmployee}
             isOpen={isEditOpen}
             onClose={() => setIsEditOpen(false)}
-            onSave={(updated) => { console.log('Updated employee', updated); }}
+            onSave={(updated) => { }}
         />
         {pendingAction && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.45)" }}>

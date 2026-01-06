@@ -82,7 +82,6 @@ const LocationInputModal = ({ isOpen, onClose, onConfirm, isArabic }) => {
       },
       (error) => {
         setIsGettingLocation(false);
-        console.error("Location error:", error);
         
         let errorMessage = isArabic
           ? "فشل في الحصول على الموقع. يرجى المحاولة مرة أخرى أو استخدام الإدخال اليدوي"

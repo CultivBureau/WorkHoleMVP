@@ -182,17 +182,6 @@ const Stats = () => {
       // Parse as UTC - JavaScript Date will correctly handle the conversion
       const start = new Date(utcString);
       
-      // Debug logging in development
-      if (import.meta.env.DEV) {
-        console.log('Stats Timer initialization:', {
-          clockInTime,
-          utcString,
-          startUTC: start.toISOString(),
-          startLocal: start.toLocaleString(),
-          now: new Date().toLocaleString(),
-          diffSeconds: Math.floor((new Date().getTime() - start.getTime()) / 1000),
-        });
-      }
       
       const updateTimer = () => {
         const now = new Date();

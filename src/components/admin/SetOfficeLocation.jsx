@@ -184,7 +184,6 @@ const SetOfficeLocation = ({ onClose }) => {
       
       onClose();
     } catch (error) {
-      console.error('Error setting office location:', error);
     }
   };
 
