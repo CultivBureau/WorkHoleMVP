@@ -178,7 +178,6 @@ export const teamApi = createApi({
 
           return tags;
         } catch (err) {
-          console.error('Error in updateUsersInTeam invalidatesTags:', err);
           return ["Teams", { type: "Teams", id: "LIST" }];
         }
       },

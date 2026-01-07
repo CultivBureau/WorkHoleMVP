@@ -169,9 +169,7 @@ const NavBar = () => {
     try {
       await refetchLogs();
     } catch (error) {
-      if (import.meta.env.DEV) {
-        console.warn("Failed to refetch attendance logs:", error);
-      }
+      // Failed to refetch attendance logs
     }
   }, [refetchLogs]);
 
@@ -346,7 +344,6 @@ const NavBar = () => {
         setPendingLocation(null);
       }
     } catch (error) {
-      console.error('Clock in error:', error);
       if (loadingToast) toast.dismiss(loadingToast);
       
       // If error and no reason provided yet, user is late - show reason modal
@@ -440,7 +437,6 @@ const NavBar = () => {
       refetchDashboard();
       setPendingLocation(null);
     } catch (error) {
-      console.error('Clock out error:', error);
       toast.dismiss(loadingToast);
       toast.error(
         <div className="flex items-center gap-2">

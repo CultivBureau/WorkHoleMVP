@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useGetCompanyByIdQuery, useUpdateCompanyDetailsMutation, useAddAttachmentMutation, useUpdateAttachmentMutation, useDeleteAttachmentMutation } from "../../../services/apis/CompanyApi";
 import { getCompanyId } from "../../../utils/page";
 import { useTranslation } from "react-i18next";
-import { Edit, Save, X, Upload, File, Calendar, Clock, MoreVertical, Eye, Trash2, Building2, Network, Tag, Hash } from "lucide-react";
+import { Edit, Save, X, Upload, File, Calendar, Clock, MoreVertical, Eye, Trash2, Building2, Network, Tag, Hash, AlertTriangle } from "lucide-react";
 import toast from "react-hot-toast";
 import { useHasPermission } from "../../../hooks/useHasPermission";
 
@@ -31,6 +31,12 @@ const CompanyDetailsCard = () => {
 
   const company = companyData?.value;
 
+  // Create a stable reference for attachments to detect changes
+  const attachmentsKey = useMemo(() => {
+    if (!company?.attachments || !Array.isArray(company.attachments)) return '';
+    return company.attachments.map(a => `${a.id}-${a.fileName}-${a.canView}`).join('|');
+  }, [company?.attachments]);
+
   // Initialize state when company data loads
   useEffect(() => {
     if (company && !isEditing) {
@@ -54,7 +60,7 @@ const CompanyDetailsCard = () => {
         setAttachments([]);
       }
     }
-  }, [company?.id, isEditing]);
+  }, [company?.id, company?.name, attachmentsKey, isEditing]);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -118,7 +124,6 @@ const CompanyDetailsCard = () => {
       toast.success(t("company.updateSuccess", "Company details updated successfully"));
       refetch();
     } catch (error) {
-      console.error("Failed to update company:", error);
       toast.error(t("company.updateError", "Failed to update company details"));
     }
   };
@@ -161,7 +166,66 @@ const CompanyDetailsCard = () => {
       return;
     }
 
-    if (!window.confirm(t("company.confirmDelete", "Are you sure you want to delete this attachment?"))) {
+    // Show confirmation toast
+    const confirmed = await new Promise((resolve) => {
+      toast(
+        (toastInstance) => (
+          <div className="flex items-center gap-3" style={{ direction: "ltr" }}>
+            <AlertTriangle className="w-5 h-5" style={{ color: "var(--error-color)", flexShrink: 0 }} />
+            <div className="flex-1">
+              <div className="font-medium" style={{ color: "var(--text-color)" }}>
+                {t("company.confirmDelete", "Are you sure you want to delete this attachment?")}
+              </div>
+            </div>
+            <div className="flex gap-2" style={{ flexShrink: 0 }}>
+              <button
+                onClick={() => {
+                  toast.dismiss(toastInstance.id);
+                  resolve(true);
+                }}
+                className="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+                style={{
+                  background: "var(--error-color)",
+                  color: "white",
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.opacity = "0.9"}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}
+              >
+                {t("company.yes", "Yes")}
+              </button>
+              <button
+                onClick={() => {
+                  toast.dismiss(toastInstance.id);
+                  resolve(false);
+                }}
+                className="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+                style={{
+                  background: "var(--container-color)",
+                  color: "var(--text-color)",
+                  border: "1px solid var(--border-color)",
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--hover-color)"}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "var(--container-color)"}
+              >
+                {t("company.no", "No")}
+              </button>
+            </div>
+          </div>
+        ),
+        {
+          duration: 10000,
+          style: {
+            background: "var(--bg-color)",
+            border: "1px solid var(--border-color)",
+            borderRadius: "12px",
+            padding: "12px",
+            maxWidth: "500px",
+          },
+        }
+      );
+    });
+
+    if (!confirmed) {
       return;
     }
 
@@ -170,7 +234,6 @@ const CompanyDetailsCard = () => {
       toast.success(t("company.deleteSuccess", "Attachment deleted successfully"));
       refetch();
     } catch (error) {
-      console.error("Delete error:", error);
       const errorMessage = error?.data?.errorMessage || error?.data?.message || error?.message;
       toast.error(errorMessage || t("company.deleteError", "Failed to delete attachment"));
     }
@@ -193,7 +256,6 @@ const CompanyDetailsCard = () => {
       toast.success(t("company.updateSuccess", "Attachment updated successfully"));
       refetch();
     } catch (error) {
-      console.error("Update error:", error);
       const errorMessage = error?.data?.errorMessage || error?.data?.message || error?.message;
       toast.error(errorMessage || t("company.updateError", "Failed to update attachment"));
     }
@@ -751,7 +813,6 @@ const AddAttachmentModal = ({ companyId, attachment = null, onClose, onSuccess, 
 
       onSuccess();
     } catch (error) {
-      console.error(`Failed to ${isEditing ? 'update' : 'add'} attachment:`, error);
       const errorMessage = error?.data?.errorMessage || error?.data?.message || error?.message;
       toast.error(errorMessage || t(`company.attachment${isEditing ? 'Update' : 'Add'}Error`, `Failed to ${isEditing ? 'update' : 'add'} attachment`));
     } finally {

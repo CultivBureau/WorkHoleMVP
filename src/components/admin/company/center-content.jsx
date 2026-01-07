@@ -103,7 +103,6 @@ const CenterContent = () => {
     const handleSave = () => {
         setCompanyInfo(editedCompanyInfo);
         setIsEditing(false);
-        console.log('Saving company info:', editedCompanyInfo);
     };
 
     const handleChange = (field, value) => {

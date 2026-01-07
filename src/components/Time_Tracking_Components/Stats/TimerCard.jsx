@@ -38,7 +38,6 @@ const TimerCard = () => {
       await startTimer(taskNameToUse, duration)
       setTaskName(taskNameToUse)
     } catch (error) {
-      console.error('Failed to start timer:', error)
       alert(t('timerCard.startFailed') || 'Failed to start timer')
     }
   }
@@ -49,7 +48,6 @@ const TimerCard = () => {
       await pauseTimer()
       setShowControlPopup(false)
     } catch (error) {
-      console.error('Failed to pause timer:', error)
       alert(t('timerCard.pauseFailed'))
     }
   }
@@ -60,7 +58,6 @@ const TimerCard = () => {
       await resumeTimer()
       setShowControlPopup(false)
     } catch (error) {
-      console.error('Failed to resume timer:', error)
       alert(t('timerCard.resumeFailed'))
     }
   }
@@ -71,7 +68,6 @@ const TimerCard = () => {
       await completeTimer(note || '')
       setShowControlPopup(false)
     } catch (error) {
-      console.error('Failed to complete timer:', error)
       alert(t('timerCard.completeFailed'))
     }
   }
@@ -82,7 +78,6 @@ const TimerCard = () => {
       await cancelTimer(note || '')
       setShowControlPopup(false)
     } catch (error) {
-      console.error('Failed to cancel timer:', error)
       alert(t('timerCard.cancelFailed'))
     }
   }

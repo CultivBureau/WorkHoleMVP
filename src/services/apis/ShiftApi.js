@@ -23,7 +23,6 @@ export const shiftApi = createApi({
           // Default to all if status is not provided
           params.status = 2;
         }
-        console.log('API Request - Status filter:', status, 'Params:', params);
         return {
           url: "/api/Shift",
           method: "GET",

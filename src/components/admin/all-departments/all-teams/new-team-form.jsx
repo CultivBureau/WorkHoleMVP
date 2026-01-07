@@ -48,18 +48,26 @@ export default function NewTeamForm({ departmentId: initialDepartmentId }) {
     // Fetch data - Use correct endpoints based on filters
     // When role is selected, use GetRoleUsers endpoint (correct API)
     // When no role, use GetAllUsers endpoint
+    
+    // Memoize query parameters to ensure RTK Query properly detects changes
+    const userQueryParams = useMemo(() => {
+        const params = { pageNumber: 1, pageSize: 500 };
+        if (selectedDepartment !== "all") {
+            params.departmentId = selectedDepartment;
+        }
+        if (nameSearch && nameSearch.trim()) {
+            params.name = nameSearch.trim();
+        }
+        return params;
+    }, [selectedDepartment, nameSearch]);
+    
     const { data: roleUsersData, isLoading: isLoadingRoleUsers } = useGetRoleUsersQuery(
         { id: selectedRole, pageNumber: 1, pageSize: 500 },
         { skip: selectedRole === "all" || !selectedRole }
     );
     
     const { data: usersData, isLoading: isLoadingAllUsers } = useGetAllUsersQuery(
-        { 
-            departmentId: selectedDepartment !== "all" ? selectedDepartment : undefined,
-            name: nameSearch || undefined,
-            pageNumber: 1, 
-            pageSize: 500 
-        },
+        userQueryParams,
         { skip: selectedRole !== "all" } // Skip when role is selected (use role users instead)
     );
     
@@ -109,6 +117,19 @@ export default function NewTeamForm({ departmentId: initialDepartmentId }) {
         const items = rolesData?.value || rolesData?.data || rolesData?.items || rolesData || [];
         return Array.isArray(items) ? items : [];
     }, [rolesData]);
+
+    // Helper functions for user display (must be defined before useMemo that uses them)
+    const getUserDisplayName = (user) => {
+        return user?.name || 
+               (user?.firstName || user?.lastName ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : '') ||
+               user?.email || 
+               user?.userName || 
+               'Unknown';
+    };
+
+    const getUserDisplayInfo = (user) => {
+        return user?.email || user?.userName || user?.jobTitle || '';
+    };
 
     // Filter users by department and name search (client-side)
     // Role filtering is now done via API endpoint (useGetRoleUsersQuery)
@@ -312,18 +333,6 @@ export default function NewTeamForm({ departmentId: initialDepartmentId }) {
                                t("allTeams.addTeam.errors.createFailed", "Failed to create team. Please try again.");
             toast.error(errorMessage);
         }
-    };
-
-    const getUserDisplayName = (user) => {
-        return user?.name || 
-               (user?.firstName || user?.lastName ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : '') ||
-               user?.email || 
-               user?.userName || 
-               'Unknown';
-    };
-
-    const getUserDisplayInfo = (user) => {
-        return user?.email || user?.userName || user?.jobTitle || '';
     };
 
     return (

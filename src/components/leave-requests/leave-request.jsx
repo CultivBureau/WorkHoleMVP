@@ -289,7 +289,6 @@ const LeaveRequest = ({ refetch }) => {
         localStorage.removeItem("leaveFormData")
       }, 3000)
     } catch (err) {
-      console.error("Error submitting leave request:", err)
       setSubmitError(err)
 
       // Handle different types of errors
@@ -783,7 +782,6 @@ const LeaveRequest = ({ refetch }) => {
         const parsedData = JSON.parse(saved)
         setFormData(parsedData)
       } catch (error) {
-        console.error("Error parsing saved form data:", error)
         localStorage.removeItem("leaveFormData")
       }
     }
@@ -794,7 +792,7 @@ const LeaveRequest = ({ refetch }) => {
     try {
       localStorage.setItem("leaveFormData", JSON.stringify(formData))
     } catch (error) {
-      console.error("Error saving form data:", error)
+      // Error saving form data
     }
   }, [formData])
 

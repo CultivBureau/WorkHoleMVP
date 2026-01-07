@@ -309,11 +309,8 @@ const MainContent = () => {
     }
 
     try {
-      console.log('Starting clock process...')
-      
       // احصل على الموقع الحالي
       const location = await getCurrentLocation()
-      console.log('Got location:', location)
       
       if (stats.currentStatus === "Clocked In") {
         await clockOut({ 
@@ -358,7 +355,6 @@ const MainContent = () => {
       // Static data - no update needed
       refetch() // Empty function for compatibility
     } catch (e) {
-      console.error('Clock process error:', e)
       
       // إذا فشل تحديد الموقع، اعرض خيارات الموقع
       setShowLocationModal(true)
@@ -424,7 +420,6 @@ const MainContent = () => {
       refetch() // Empty function for compatibility
       setShowLocationModal(false)
     } catch (error) {
-      console.error('Clock with location error:', error)
       
       toast.error(
         <div className="flex items-center gap-2">

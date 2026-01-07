@@ -65,7 +65,6 @@ export const useTokenRefresh = () => {
             // The next API call will trigger the refresh automatically
           }, checkTime);
         } catch (error) {
-          console.log('Error parsing token:', error);
         }
       }
     };

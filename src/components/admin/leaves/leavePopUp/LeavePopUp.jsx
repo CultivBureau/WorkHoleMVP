@@ -82,7 +82,6 @@ const LeavePopUp = ({
       }
       onClose()
     } catch (error) {
-      console.error("Failed to review leave request:", error)
       alert(t("adminLeaves.popup.error", "Failed to process request. Please try again."))
     } finally {
       setIsSubmitting(false)
@@ -113,7 +112,6 @@ const LeavePopUp = ({
       }
       onClose()
     } catch (error) {
-      console.error("Failed to confirm leave request:", error)
       alert(t("adminLeaves.popup.error", "Failed to process request. Please try again."))
     } finally {
       setIsSubmitting(false)
@@ -145,7 +143,6 @@ const LeavePopUp = ({
       setShowOverrideModal(false)
       onClose()
     } catch (error) {
-      console.error("Failed to override leave request:", error)
       alert(t("adminLeaves.popup.error", "Failed to process request. Please try again."))
     } finally {
       setIsSubmitting(false)

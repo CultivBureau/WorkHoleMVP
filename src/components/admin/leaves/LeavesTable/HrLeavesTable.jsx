@@ -150,14 +150,6 @@ const HrLeavesTable = () => {
 		if (!data) return []
 		const items = data?.value || data?.data || data?.items || data || []
 		const parsed = Array.isArray(items) ? items : []
-		// Debug: Log to verify data is being received
-		if (process.env.NODE_ENV === 'development') {
-			console.log('HrLeavesTable - API Response:', { 
-				data, 
-				itemsCount: parsed.length,
-				sampleItem: parsed[0] 
-			})
-		}
 		return parsed
 	}, [data])
 
@@ -239,14 +231,6 @@ const HrLeavesTable = () => {
 			}
 		})
 		
-		// Debug: Log formatted leaves to verify data
-		if (process.env.NODE_ENV === 'development') {
-			console.log('HrLeavesTable - Formatted Leaves:', { 
-				count: formatted.length,
-				statuses: formatted.map(l => ({ id: l.id, name: l.name, status: l.status })),
-				teamLeadApproved: formatted.filter(l => l.status === "TeamLeadApproved" || l.status?.toLowerCase().includes("teamleadapproved"))
-			})
-		}
 		
 		return formatted
 	}, [leaveRequests])

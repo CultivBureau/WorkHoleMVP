@@ -69,13 +69,6 @@ export const companyApi = createApi({
           });
         }
         
-        // Debug: Log FormData contents (for development only)
-        if (import.meta.env.DEV) {
-          console.log("FormData contents:");
-          for (let pair of formData.entries()) {
-            console.log(pair[0] + ": " + (pair[1] instanceof File ? pair[1].name : pair[1]));
-          }
-        }
         
         return {
           url: `/api/v1/Company/UpdateDetails/${companyId}/details`,

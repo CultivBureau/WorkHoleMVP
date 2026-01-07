@@ -142,10 +142,6 @@ const TeamLeadLeavesTable = () => {
 			items = data.results
 		}
 		
-		// Debug logging (remove in production if needed)
-		if (process.env.NODE_ENV === 'development') {
-			console.log('TeamLeadLeavesTable - API Response:', { data, itemsCount: items.length })
-		}
 		
 		return items
 	}, [data])

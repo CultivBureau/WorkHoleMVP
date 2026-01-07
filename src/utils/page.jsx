@@ -83,7 +83,6 @@ export const logout = () => {
     // Only clear session-related items, keep user preferences
     // localStorage.clear(); // Don't clear everything, keep theme/lang
   } catch (error) {
-    console.error("Error clearing localStorage:", error);
   }
   
   // Reload the page to ensure clean state for next user
@@ -239,7 +238,6 @@ export const setUserInfoFromToken = (token) => {
     Cookies.set("user_info", JSON.stringify(userInfo), { expires: 2, path: '/', sameSite: 'lax' });
     return userInfo;
   } catch (error) {
-    console.error("Error extracting user info from token:", error);
     return null;
   }
 };

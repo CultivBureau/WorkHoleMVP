@@ -500,7 +500,7 @@ const CompanyTable = () => {
             employee={selectedEmployee}
             isOpen={isEditOpen}
             onClose={() => setIsEditOpen(false)}
-            onSave={(updated) => { console.log('Updated employee', updated); }}
+            onSave={(updated) => { }}
         />
         </>
     );

@@ -174,7 +174,6 @@ const EditRole = ({ isOpen, onClose, roleData, onSave }) => {
             }
             onClose();
         } catch (error) {
-            console.error('Error updating role:', error);
             alert(error?.data?.errorMessage || t('roles.errors.updateFailed') || t('roles.errors.createFailed') || 'Failed to update role');
         }
     };
