@@ -9,11 +9,12 @@ const CompactLeaveSummaryCards = () => {
   // Fetch employee leave summary from API
   const { data: leaveSummary, isLoading } = useGetEmployeeLeaveSummaryQuery();
   
-  // Map API data to component values
-  const availableLeaves = leaveSummary?.annualLeaveBalance ?? 0;
-  const rejectedLeaves = leaveSummary?.rejectedRequests ?? 0;
-  const pendingLeaves = leaveSummary?.pendingRequests ?? 0;
-  const approvedLeaves = leaveSummary?.approvedRequests ?? 0;
+  // Map API data to component values - using new API field names
+  // API returns: { value: { availableLeavesDays, pendingLeavesDays, approvedLeavesDays, rejectedLeavesDays } }
+  const availableLeaves = leaveSummary?.availableLeavesDays ?? 0;
+  const rejectedLeaves = leaveSummary?.rejectedLeavesDays ?? 0;
+  const pendingLeaves = leaveSummary?.pendingLeavesDays ?? 0;
+  const approvedLeaves = leaveSummary?.approvedLeavesDays ?? 0;
 
   const summaryCardsData = [
     {

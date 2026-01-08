@@ -2,25 +2,54 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { Upload, File, Loader2, AlertCircle, CheckCircle } from "lucide-react"
+import { Upload, File, Loader2, AlertCircle, CheckCircle, X } from "lucide-react"
 import { toast } from "react-hot-toast"
 import { useGetAllLeaveTypesQuery } from "../../services/apis/LeaveTypeApi"
 import { useSubmitLeaveRequestMutation, useGetMyLeaveRequestsQuery } from "../../services/apis/LeaveApi"
-
-// Static user data
-const staticUser = {
-  id: "user-1",
-  firstName: "John",
-  lastName: "Doe",
-  holidays: []
-};
+import { useGetEmployeeLeaveSummaryQuery } from "../../services/apis/DashboardApi"
+import { useMeQuery } from "../../services/apis/AuthApi"
+import { useGetShiftByIdQuery } from "../../services/apis/ShiftApi"
+import { enumValuesToDayNames } from "../../utils/workDayUtils"
 
 const LeaveRequest = ({ refetch }) => {
   const { t, i18n } = useTranslation()
   const isArabic = i18n.language === "ar"
 
-  // Use static user data
-  const user = staticUser;
+  // Get current user data from /me endpoint
+  const { data: meData } = useMeQuery()
+  const userData = meData?.value || null
+  
+  // Get shift ID from user data
+  const shiftId = userData?.shift?.id || userData?.shiftId || null
+  
+  // Always fetch shift details using getShiftById to get workdays
+  const { data: shiftData, isLoading: isLoadingShift } = useGetShiftByIdQuery(shiftId, {
+    skip: !shiftId
+  })
+  
+  // Get user's shift workdays - prioritize shiftData from API, then userData as fallback
+  const userWorkDays = useMemo(() => {
+    // Handle shiftData response structure (could be shiftData.value or shiftData directly)
+    const shift = shiftData?.value || shiftData
+    
+    // First try to get workdays from fetched shiftData (most reliable)
+    if (shift?.workDays && Array.isArray(shift.workDays) && shift.workDays.length > 0) {
+      // workDays is an array of WorkDay enum values (1-7)
+      return enumValuesToDayNames(shift.workDays)
+    }
+    
+    // Fallback: try to get workdays from userData.shift
+    if (userData?.shift?.workDays && Array.isArray(userData.shift.workDays) && userData.shift.workDays.length > 0) {
+      return enumValuesToDayNames(userData.shift.workDays)
+    }
+    
+    // If still not available, return empty array (will not count any days)
+    return []
+  }, [shiftData, userData?.shift?.workDays])
+
+  // Get available leaves from summary
+  const { data: leaveSummary } = useGetEmployeeLeaveSummaryQuery()
+  const availableLeaves = leaveSummary?.availableLeavesDays ?? 0
 
   const { data: myLeaveRequestsData } = useGetMyLeaveRequestsQuery()
 
@@ -32,7 +61,7 @@ const LeaveRequest = ({ refetch }) => {
       .map((leave) => {
         const start = leave?.startDate || leave?.fromDate
         const end = leave?.endDate || leave?.toDate || start
-        const status = (leave?.status || leave?.leaveStatus || "").toString().toLowerCase()
+        const status = (leave?.status || leave?.leaveStatus || leave?.requestStatus || "").toString().toLowerCase()
         return { start, end, status }
       })
       .filter(
@@ -95,49 +124,78 @@ const LeaveRequest = ({ refetch }) => {
 
   const today = new Date().toISOString().split("T")[0]
 
-  // Helper to check if date is a user holiday (dynamic based on /me)
-  const isUserHoliday = (date) => {
-    if (!user?.holidays || user.holidays.length === 0) return false
+  // Helper to check if date is a workday based on user's shift workdays
+  const isWorkDay = useCallback((date) => {
+    // If workdays aren't loaded yet, don't allow selection (return false)
+    // This ensures we only allow workdays to be selected
+    if (!userWorkDays || userWorkDays.length === 0) {
+      return false
+    }
     const day = new Date(date).getDay()
+    // JavaScript getDay() returns: 0=Sunday, 1=Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday
     const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
     const dayName = dayNames[day]
-    return user.holidays.includes(dayName)
-  }
+    // Only return true if the day is in the workdays array
+    return userWorkDays.includes(dayName)
+  }, [userWorkDays])
 
-  // Helper to count only valid working days (excluding user holidays only)
-  const calculateDays = (from, to) => {
+  // Helper to count only workdays (excluding weekends/days off based on WorkDay enum)
+  const calculateDays = useCallback((from, to) => {
     if (from && to) {
+      // Must have workdays loaded to calculate - return 0 if not loaded
+      if (!userWorkDays || userWorkDays.length === 0) {
+        return 0
+      }
+      
       let fromDate = new Date(from)
       let toDate = new Date(to)
       if (toDate < fromDate) return 0
+      
+      // Only count workdays - any day not in workdays array is NOT counted
       let count = 0
-      while (fromDate <= toDate) {
-        const day = fromDate.getDay()
-        const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
-        const dayName = dayNames[day]
-
-        // Skip ONLY user holidays (remove static Friday/Saturday check)
-        if (!user?.holidays?.includes(dayName)) {
+      const currentDate = new Date(fromDate)
+      
+      while (currentDate <= toDate) {
+        // Only increment count if the day is a workday
+        if (isWorkDay(currentDate)) {
           count++
         }
-        fromDate.setDate(fromDate.getDate() + 1)
+        currentDate.setDate(currentDate.getDate() + 1)
       }
       return count
     }
     return 0
-  }
+  }, [userWorkDays, isWorkDay])
 
   const handleDateChange = (field, value) => {
     const selectedDate = new Date(value)
-    const day = selectedDate.getDay()
-    const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
-    const dayName = dayNames[day]
-
+    
     // Clear previous errors for this field
-    setErrors(prev => ({ ...prev, [field]: null }))
+    setErrors(prev => ({ ...prev, [field]: null, numberOfDays: null }))
 
-    // Check ONLY if it's a user holiday (remove static Friday/Saturday check)
-    if (user?.holidays?.includes(dayName)) {
+    // Check if workdays are loaded
+    if (!userWorkDays || userWorkDays.length === 0) {
+      if (isLoadingShift) {
+        toast.error(
+          isArabic
+            ? "جارٍ تحميل بيانات أيام العمل. يرجى الانتظار..."
+            : "Loading workdays data. Please wait..."
+        )
+      } else {
+        toast.error(
+          isArabic
+            ? "لا توجد أيام عمل محددة. يرجى الاتصال بالدعم."
+            : "No workdays configured. Please contact support."
+        )
+      }
+      return
+    }
+    
+    // Check if it's a workday
+    if (!isWorkDay(selectedDate)) {
+      const day = selectedDate.getDay()
+      const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
+      const dayName = dayNames[day]
       const dayLabels = {
         sunday: isArabic ? "الأحد" : "Sunday",
         monday: isArabic ? "الاثنين" : "Monday",
@@ -150,8 +208,8 @@ const LeaveRequest = ({ refetch }) => {
 
       toast.error(
         isArabic
-          ? `${dayLabels[dayName]} يوم إجازة لك. لا يمكنك اختياره.`
-          : `${dayLabels[dayName]} is your holiday. You cannot select it.`
+          ? `${dayLabels[dayName]} ليس يوم عمل. لا يمكنك اختياره.`
+          : `${dayLabels[dayName]} is not a workday. You cannot select it.`
       )
       return
     }
@@ -159,10 +217,27 @@ const LeaveRequest = ({ refetch }) => {
     setFormData((prev) => {
       const newData = { ...prev, [field]: value }
       if (field === "fromDate" || field === "toDate") {
-        newData.numberOfDays = calculateDays(
+        const calculatedDays = calculateDays(
           field === "fromDate" ? value : prev.fromDate,
           field === "toDate" ? value : prev.toDate,
         )
+        newData.numberOfDays = calculatedDays
+        
+        // Show info message if workdays aren't loaded yet (but allow selection)
+        if (!userWorkDays || userWorkDays.length === 0) {
+          // Don't show error, just allow selection - workdays will be applied when loaded
+          // The count will be recalculated once workdays are available
+        }
+        
+        // Validate available leaves
+        if (calculatedDays > 0 && calculatedDays > availableLeaves) {
+          setErrors(prevErrors => ({
+            ...prevErrors,
+            numberOfDays: isArabic
+              ? `لا توجد إجازات متاحة كافية. المتاح: ${availableLeaves} يوم`
+              : `Insufficient available leaves. Available: ${availableLeaves} days`
+          }))
+        }
       }
       return newData
     })
@@ -184,6 +259,12 @@ const LeaveRequest = ({ refetch }) => {
       if (fromDate < todayDate) {
         newErrors.fromDate = t("leaves.validation.fromDatePast", "Start date cannot be in the past")
       }
+      // Check if start date is a workday
+      if (!isWorkDay(fromDate)) {
+        newErrors.fromDate = isArabic
+          ? "تاريخ البداية يجب أن يكون يوم عمل"
+          : "Start date must be a workday"
+      }
     }
 
     if (!formData.toDate) {
@@ -194,6 +275,19 @@ const LeaveRequest = ({ refetch }) => {
       if (toDate < fromDate) {
         newErrors.toDate = t("leaves.validation.toDateBeforeFrom", "End date cannot be before start date")
       }
+      // Check if end date is a workday
+      if (!isWorkDay(toDate)) {
+        newErrors.toDate = isArabic
+          ? "تاريخ النهاية يجب أن يكون يوم عمل"
+          : "End date must be a workday"
+      }
+    }
+
+    // Validate available leaves vs requested days
+    if (formData.numberOfDays > 0 && formData.numberOfDays > availableLeaves) {
+      newErrors.numberOfDays = isArabic
+        ? `لا توجد إجازات متاحة كافية. المتاح: ${availableLeaves} يوم`
+        : `Insufficient available leaves. Available: ${availableLeaves} days`
     }
 
     if (
@@ -360,6 +454,89 @@ const LeaveRequest = ({ refetch }) => {
       setErrors({})
       setSubmitError(null)
     }
+  }
+
+  // Check if there's any entered data
+  const hasEnteredData = useMemo(() => {
+    return !!(
+      formData.leaveTypeId ||
+      formData.fromDate ||
+      formData.toDate ||
+      formData.numberOfDays > 0 ||
+      formData.reason.trim() ||
+      formData.attachment
+    )
+  }, [formData])
+
+  // Handle cancel/abort form
+  const handleCancel = () => {
+    // Show confirmation toast with approve/cancel buttons
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-3" style={{ color: "var(--text-color)" }}>
+          <span className="text-sm font-medium">
+            {isArabic
+              ? "هل أنت متأكد من إلغاء طلب الإجازة؟ سيتم فقدان جميع البيانات المدخلة."
+              : "Are you sure you want to cancel the leave request? All entered data will be lost."}
+          </span>
+          <div className="flex items-center gap-2 justify-end">
+            <button
+              onClick={() => {
+                toast.dismiss(t.id)
+              }}
+              className="px-3 py-1.5 text-xs rounded-md font-medium hover:opacity-80 transition-opacity"
+              style={{
+                backgroundColor: "var(--bg-color)",
+                color: "var(--text-color)",
+                border: "1px solid var(--border-color)",
+              }}
+            >
+              {isArabic ? "إلغاء" : "Cancel"}
+            </button>
+            <button
+              onClick={() => {
+                toast.dismiss(t.id)
+                // Confirm cancellation
+                setCurrentStep(1)
+                setFormData({
+                  leaveTypeId: "",
+                  fromDate: "",
+                  toDate: "",
+                  numberOfDays: 0,
+                  reason: "",
+                  attachment: null,
+                })
+                setErrors({})
+                setSubmitError(null)
+                setShowSuccess(false)
+                localStorage.removeItem("leaveFormData")
+                toast.success(
+                  isArabic
+                    ? "تم إلغاء طلب الإجازة"
+                    : "Leave request cancelled"
+                )
+              }}
+              className="px-3 py-1.5 text-xs rounded-md font-medium hover:opacity-90 transition-opacity text-white"
+              style={{
+                backgroundColor: "var(--error-color)",
+              }}
+            >
+              {isArabic ? "تأكيد" : "Confirm"}
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity, // Keep toast open until user clicks a button
+        icon: "⚠️",
+        style: {
+          backgroundColor: "var(--container-color)",
+          color: "var(--text-color)",
+          border: "1px solid var(--border-color)",
+          minWidth: "300px",
+        },
+      }
+    )
   }
 
   const handleFileUpload = (event) => {
@@ -796,6 +973,19 @@ const LeaveRequest = ({ refetch }) => {
     }
   }, [formData])
 
+  // Recalculate days when workdays are loaded or change
+  useEffect(() => {
+    if (formData.fromDate && formData.toDate && userWorkDays && userWorkDays.length > 0) {
+      const calculatedDays = calculateDays(formData.fromDate, formData.toDate)
+      if (calculatedDays !== formData.numberOfDays) {
+        setFormData(prev => ({
+          ...prev,
+          numberOfDays: calculatedDays
+        }))
+      }
+    }
+  }, [userWorkDays, formData.fromDate, formData.toDate, calculateDays])
+
   return (
     <div
       className="rounded-xl p-2 sm:p-3 md:p-4 lg:p-2 xl:p-3 2xl:p-6 border shadow-sm h-full flex flex-col relative"
@@ -826,10 +1016,27 @@ const LeaveRequest = ({ refetch }) => {
       </div>
       {!showSuccess && (
         <div className="flex justify-between mt-2 sm:mt-3 lg:mt-2 xl:mt-3 2xl:mt-3 pt-2 border-t" style={{ borderColor: "var(--border-color)" }}>
-          <div>
+          <div className="flex items-center gap-2">
             <p className="text-[10px] sm:text-xs lg:text-[10px] xl:text-xs 2xl:text-xs" style={{ color: "var(--sub-text-color)" }}>
               {t("leaves.form.step", "Step")} {currentStep} {t("leaves.form.of", "of")} 3
             </p>
+            {/* Cancel button - only show if there's entered data */}
+            {hasEnteredData && (
+              <button
+                onClick={handleCancel}
+                disabled={isSubmitting}
+                className="px-2 py-1 border rounded-md font-medium hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed text-[10px] sm:text-xs lg:text-[10px] xl:text-xs 2xl:text-xs flex items-center gap-1"
+                style={{
+                  borderColor: "var(--error-color)",
+                  color: "var(--error-color)",
+                  backgroundColor: "transparent",
+                }}
+                title={isArabic ? "إلغاء" : "Cancel"}
+              >
+                <X className="w-3 h-3" />
+                {t("leaves.form.cancel", "Cancel")}
+              </button>
+            )}
           </div>
           <div className="flex gap-1.5 sm:gap-2 lg:gap-1.5 xl:gap-2 2xl:gap-2">
             {currentStep !== 1 && (
