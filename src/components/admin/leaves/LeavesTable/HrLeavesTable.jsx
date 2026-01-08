@@ -697,7 +697,7 @@ const HrLeavesTable = () => {
 										className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors"
 									>
 										<div className="flex items-center gap-1">
-											{t("adminLeaves.table.columns.teamLeadApprover", "Team Lead Approver")}
+											{t("adminLeaves.table.columns.teamLeadDecisions", "Team Lead Decisions")}
 											{getSortIcon('teamLead')}
 										</div>
 									</th>
@@ -760,14 +760,16 @@ const HrLeavesTable = () => {
 											{leave.reason || "-"}
 										</td>
 										<td className="py-4 px-6 text-[var(--text-color)] text-sm">
-											<div>
-												<div className="font-medium">{leave.teamLeadName || "-"}</div>
-												{leave.teamLeadActionDate && (
-													<div className="text-xs text-[var(--sub-text-color)]">
-														{leave.teamLeadActionDate}
-													</div>
-												)}
-											</div>
+											<button
+												className="text-[var(--accent-color)] hover:underline font-medium"
+												onClick={() => setSelectedLeave(leave)}
+											>
+												{leave.teamLeadApprovals && leave.teamLeadApprovals.length > 0
+													? `${leave.teamLeadApprovals.length} decision(s)`
+													: leave.teamLeadName ? "View"
+													: "-"
+												}
+											</button>
 										</td>
 										<td className="py-4 px-6 text-[var(--text-color)] text-sm">
 											<div>

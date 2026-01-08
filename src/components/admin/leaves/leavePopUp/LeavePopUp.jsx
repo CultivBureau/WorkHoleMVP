@@ -88,7 +88,7 @@ const LeavePopUp = ({
     }
   }
 
-  // Handle HR Confirm
+  // Handle HR Confirm (for team lead approved requests)
   const handleHrConfirm = async (isConfirmed) => {
     if (!leaveRequest?.id) return
 
@@ -118,25 +118,25 @@ const LeavePopUp = ({
     }
   }
 
-  // Handle HR Override
-  const handleHrOverride = async () => {
+  // Handle HR Override (for requests NOT approved by team lead - pending or rejected)
+  const handleHrOverride = async (forceApprove = true) => {
     if (!leaveRequest?.id) return
 
     setIsSubmitting(true)
     try {
       await hrOverride({
         requestId: leaveRequest.id,
-        forceApprove: true,
-        justification: justificationText,
+        forceApprove,
+        justification: commentText || justificationText || "",
       }).unwrap()
       
       if (onActionComplete) {
         onActionComplete({
           leaveId: leaveRequest?.id,
           action: "hrOverride",
-          forceApprove: true,
-          newStatus: "Approved",
-          comment: justificationText,
+          forceApprove,
+          newStatus: forceApprove ? "Approved" : "Rejected",
+          comment: commentText || justificationText,
           actionDate: new Date().toLocaleDateString(),
         })
       }
@@ -146,6 +146,22 @@ const LeavePopUp = ({
       alert(t("adminLeaves.popup.error", "Failed to process request. Please try again."))
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  // Handle HR/Admin action - uses the appropriate endpoint based on request status
+  const handleHrAction = async (isApproved) => {
+    // Check if request is team lead approved - use hrConfirm
+    // Otherwise use hrOverride to bypass team lead
+    const isTeamLeadApprovedStatus = normalizedStatus === "teamleadapproved" || 
+                                     normalizedStatus.includes("teamleadapproved")
+    
+    if (isTeamLeadApprovedStatus) {
+      // Use hrConfirm for team lead approved requests
+      await handleHrConfirm(isApproved)
+    } else {
+      // Use hrOverride for pending/rejected requests (bypass team lead)
+      await handleHrOverride(isApproved)
     }
   }
 
@@ -167,24 +183,15 @@ const LeavePopUp = ({
   const canApprove = userRole === "teamLead" && (isPendingStatus || !isFinalStatus)
   const canReject = userRole === "teamLead" && (isPendingStatus || !isFinalStatus)
   
-  // HR can confirm/reject ONLY if status is "TeamLeadApproved"
-  // HR can view all requests but can only take action on TeamLeadApproved requests
-  // For any other status, HR has NO actions - view only
-  // Check both the normalized status and the original status to handle case variations
-  const originalStatus = (displayStatus || "").trim()
-  const isTeamLeadApproved = normalizedStatus === "teamleadapproved" || 
-                             normalizedStatus.includes("teamleadapproved") ||
-                             originalStatus === "TeamLeadApproved"
-  
-  // HR can only confirm/reject if status is exactly "TeamLeadApproved" and not already processed
-  const canConfirm = userRole === "hr" && 
-                     isTeamLeadApproved &&
-                     !normalizedStatus.includes("rejected") &&
+  // HR can confirm/reject ALL requests (both pending and TeamLeadApproved)
+  // HR can override/accept without the team leads
+  const canConfirm = (userRole === "hr" || userRole === "admin") && 
                      !normalizedStatus.includes("hrconfirmed") &&
                      !normalizedStatus.includes("confirmed") &&
-                     !normalizedStatus.includes("cancelled")
+                     !normalizedStatus.includes("cancelled") &&
+                     !normalizedStatus.includes("rejected")
   
-  // HR has NO override option - can only act on TeamLeadApproved status
+  // HR/Admin have NO override option - can directly confirm or reject all requests
   const canOverride = false
 
   // Format avatar display
@@ -273,22 +280,83 @@ const LeavePopUp = ({
               </a>
             </div>
           )}
-          {/* Team Lead Comment (for HR view) */}
-          {userRole === "hr" && teamLeadName && (
-            <div className="px-6 pt-4">
-              <div className="text-[var(--text-color)] font-semibold mb-2">
-                {t("adminLeaves.popup.teamLeadComment", "Team Lead Comment")}
-              </div>
-              <div className="bg-[var(--container-color)] rounded-xl p-4 text-[var(--text-color)] text-base border border-[var(--border-color)]">
-                <div className="mb-2">
-                  <span className="font-medium">{teamLeadName}</span>
-                  <span className="text-sm text-[var(--sub-text-color)] ml-2">
-                    ({t("adminLeaves.popup.roles.teamLead")})
-                  </span>
+          {/* Team Lead Comments and Decisions (for HR and Admin view) */}
+          {(userRole === "hr" || userRole === "admin") && (
+            <>
+              {/* Show team lead approvals/rejections */}
+              {leaveRequest?.teamLeadApprovals && leaveRequest.teamLeadApprovals.length > 0 && (
+                <div className="px-6 pt-4">
+                  <div className="text-[var(--text-color)] font-semibold mb-3">
+                    {t("adminLeaves.popup.teamLeadDecisions", "Team Lead Decisions")}
+                  </div>
+                  <div className="space-y-3">
+                    {leaveRequest.teamLeadApprovals.map((approval, index) => {
+                      const isApproved = approval.status === "TeamLeadApproved" || 
+                                        (approval.status || "").toLowerCase().includes("teamleadapproved")
+                      const isRejected = (approval.status || "").toLowerCase().includes("teamleadrejected") || 
+                                        (approval.status || "").toLowerCase().includes("rejected")
+                      
+                      return (
+                        <div
+                          key={index}
+                          className={`rounded-xl p-4 border ${
+                            isApproved
+                              ? "bg-green-50 border-green-200 dark:bg-green-900/20"
+                              : isRejected
+                              ? "bg-red-50 border-red-200 dark:bg-red-900/20"
+                              : "bg-[var(--container-color)] border-[var(--border-color)]"
+                          }`}
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <div className="font-medium text-[var(--text-color)]">
+                                {approval.teamLeadName || "Unknown Team Lead"}
+                              </div>
+                              <div className={`text-sm font-semibold ${
+                                isApproved
+                                  ? "text-green-600 dark:text-green-400"
+                                  : isRejected
+                                  ? "text-red-600 dark:text-red-400"
+                                  : "text-[var(--sub-text-color)]"
+                              }`}>
+                                {isApproved ? "✓ Approved" : isRejected ? "✗ Rejected" : "Pending"}
+                              </div>
+                            </div>
+                            {approval.timestamp && (
+                              <div className="text-xs text-[var(--sub-text-color)]">
+                                {new Date(approval.timestamp).toLocaleDateString()}
+                              </div>
+                            )}
+                          </div>
+                          {approval.comment && (
+                            <div className="text-sm text-[var(--text-color)] mt-2">
+                              {approval.comment}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
-                <div>{displayComment || t("adminLeaves.popup.noComment", "No comment")}</div>
-              </div>
-            </div>
+              )}
+              {/* Show single team lead comment if available (for backward compatibility) */}
+              {!leaveRequest?.teamLeadApprovals && teamLeadName && (
+                <div className="px-6 pt-4">
+                  <div className="text-[var(--text-color)] font-semibold mb-2">
+                    {t("adminLeaves.popup.teamLeadComment", "Team Lead Comment")}
+                  </div>
+                  <div className="bg-[var(--container-color)] rounded-xl p-4 text-[var(--text-color)] text-base border border-[var(--border-color)]">
+                    <div className="mb-2">
+                      <span className="font-medium">{teamLeadName}</span>
+                      <span className="text-sm text-[var(--sub-text-color)] ml-2">
+                        ({t("adminLeaves.popup.roles.teamLead")})
+                      </span>
+                    </div>
+                    <div>{displayComment || t("adminLeaves.popup.noComment", "No comment")}</div>
+                  </div>
+                </div>
+              )}
+            </>
           )}
           {/* Action Buttons */}
           {userRole === "teamLead" && (canApprove || canReject) && (
@@ -339,14 +407,46 @@ const LeavePopUp = ({
               </div>
               <div className="flex gap-4 px-6 py-4">
                 <button
-                  onClick={() => handleHrConfirm(true)}
+                  onClick={() => handleHrAction(true)}
                   disabled={isSubmitting}
                   className="flex-1 gradient-bg hover:bg-[var(--accent-hover)] text-white font-semibold py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
                 >
-                  {isSubmitting ? t("adminLeaves.popup.processing", "Processing...") : t("adminLeaves.popup.confirm", "Confirm")}
+                  {isSubmitting ? t("adminLeaves.popup.processing", "Processing...") : t("adminLeaves.popup.approve", "Approve")}
                 </button>
                 <button
-                  onClick={() => handleHrConfirm(false)}
+                  onClick={() => handleHrAction(false)}
+                  disabled={isSubmitting}
+                  className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? t("adminLeaves.popup.processing", "Processing...") : t("adminLeaves.popup.reject", "Reject")}
+                </button>
+              </div>
+            </>
+          )}
+          {userRole === "admin" && canConfirm && (
+            <>
+              <div className="px-6 pt-4">
+                <label className="block text-[var(--text-color)] font-semibold mb-2">
+                  {t("adminLeaves.popup.addComment", "Add Comment (Optional)")}
+                </label>
+                <textarea
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  placeholder={t("adminLeaves.popup.commentPlaceholder", "Enter your comment...")}
+                  className="w-full px-4 py-2 bg-[var(--container-color)] border border-[var(--border-color)] rounded-lg text-[var(--text-color)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)] resize-none"
+                  rows="3"
+                />
+              </div>
+              <div className="flex gap-4 px-6 py-4">
+                <button
+                  onClick={() => handleHrAction(true)}
+                  disabled={isSubmitting}
+                  className="flex-1 gradient-bg hover:bg-[var(--accent-hover)] text-white font-semibold py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
+                >
+                  {isSubmitting ? t("adminLeaves.popup.processing", "Processing...") : t("adminLeaves.popup.approve", "Approve")}
+                </button>
+                <button
+                  onClick={() => handleHrAction(false)}
                   disabled={isSubmitting}
                   className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >

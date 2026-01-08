@@ -7,8 +7,8 @@ import { ChevronDown, ChevronUp, Calendar, Users, Download } from "lucide-react"
 import * as XLSX from "xlsx"
 import toast from "react-hot-toast"
 import LeavePopUp from "../leavePopUp/LeavePopUp"
-import { useGetAllTeamLeadRequestsQuery } from "../../../../services/apis/LeaveApi"
 import { useGetAllLeaveTypesQuery } from "../../../../services/apis/LeaveTypeApi"
+import { useSelector } from "react-redux"
 
 function normalizeDecision(status) {
 	if (!status) return "Pending"
@@ -69,7 +69,53 @@ const getStatusBadge = (status, t) => {
 	}
 }
 
-const TeamLeadLeavesTable = () => {
+// Custom hook to fetch all leave requests using redux toolkit query
+const useGetAllLeaveRequestsQuery = (params) => {
+	const token = useSelector((state) => state.auth?.token || localStorage.getItem("token"))
+	const [data, setData] = useState(null)
+	const [isLoading, setIsLoading] = useState(true)
+	const [isError, setIsError] = useState(false)
+	const [error, setError] = useState(null)
+
+	const fetchData = useCallback(async () => {
+		setIsLoading(true)
+		try {
+			const response = await fetch(
+				`/api/v1/LeaveRequest/GetAll/all?pageNumber=${params.pageNumber}&pageSize=${params.pageSize}`,
+				{
+					method: "GET",
+					headers: {
+						"Authorization": `Bearer ${token}`,
+						"Content-Type": "application/json",
+					},
+				}
+			)
+
+			if (!response.ok) {
+				throw new Error(`API error: ${response.status}`)
+			}
+
+			const result = await response.json()
+			setData(result)
+			setIsError(false)
+			setError(null)
+		} catch (err) {
+			setError(err)
+			setIsError(true)
+			setData(null)
+		} finally {
+			setIsLoading(false)
+		}
+	}, [token, params.pageNumber, params.pageSize])
+
+	useEffect(() => {
+		fetchData()
+	}, [fetchData])
+
+	return { data, isLoading, isError, error, refetch: fetchData }
+}
+
+const AdminLeavesTable = () => {
 	const { t } = useTranslation()
 	const { isRtl } = useLang()
 	const { data: leaveTypesData } = useGetAllLeaveTypesQuery({
@@ -116,8 +162,8 @@ const TeamLeadLeavesTable = () => {
 		return uniqueNames.sort((a, b) => a.localeCompare(b))
 	}, [leaveTypesData])
 
-	// Fetch leave requests from API
-	const { data, isLoading, isError, error, refetch } = useGetAllTeamLeadRequestsQuery({
+	// Fetch all leave requests from API
+	const { data, isLoading, isError, error, refetch } = useGetAllLeaveRequestsQuery({
 		pageNumber: currentPage,
 		pageSize: pageSize,
 	})
@@ -126,8 +172,6 @@ const TeamLeadLeavesTable = () => {
 	const leaveRequests = useMemo(() => {
 		if (!data) return []
 		
-		// Handle different response structures
-		// Response might be: { value: [...], totalCount: X } or just { value: [...] } or direct array
 		let items = []
 		
 		if (Array.isArray(data)) {
@@ -141,7 +185,6 @@ const TeamLeadLeavesTable = () => {
 		} else if (data?.results && Array.isArray(data.results)) {
 			items = data.results
 		}
-		
 		
 		return items
 	}, [data])
@@ -157,6 +200,9 @@ const TeamLeadLeavesTable = () => {
 			const rawStatus = request.requestStatus || "Pending"
 			const rawDecision = request.finalDecision || rawStatus
 			const normalizedDecision = normalizeDecision(rawDecision)
+			
+			// Check if HR has processed this request (taken action)
+			const hasHrAction = !!request.hrApproverName || !!request.hrActionDate || !!request.hrConfirmDate
 			
 			return {
 				id: request.id,
@@ -184,6 +230,8 @@ const TeamLeadLeavesTable = () => {
 				hrActionDate: hrActionDate ? hrActionDate.toLocaleDateString() : "",
 				hrActionDateSort: hrActionDate,
 				hrComment: request.hrComment || "",
+				// HR processing status
+				hasHrAction: hasHrAction,
 				// API fields
 				employeeName: request.employeeName,
 				leaveType: request.leaveType,
@@ -191,6 +239,7 @@ const TeamLeadLeavesTable = () => {
 				endDate: request.endDate,
 				totalDays: request.totalDays,
 				requestStatus: request.requestStatus,
+				teamLeadApprovals: request.teamLeadApprovals || [],
 			}
 		})
 	}, [leaveRequests])
@@ -308,13 +357,9 @@ const TeamLeadLeavesTable = () => {
 						aVal = a.createdAtSort || 0
 						bVal = b.createdAtSort || 0
 						break
-					case 'teamLeadApprover':
-						aVal = a.teamLeadName?.toLowerCase() || ""
-						bVal = b.teamLeadName?.toLowerCase() || ""
-						break
-					case 'hrApprover':
-						aVal = a.hrApproverName?.toLowerCase() || ""
-						bVal = b.hrApproverName?.toLowerCase() || ""
+					case 'hrStatus':
+						aVal = a.hasHrAction ? 1 : 0
+						bVal = b.hasHrAction ? 1 : 0
 						break
 					default:
 						return 0
@@ -376,6 +421,7 @@ const TeamLeadLeavesTable = () => {
 			[t("adminLeaves.table.columns.days", "Days")]: leave.days || 0,
 			[t("adminLeaves.table.columns.status", "Status")]: leave.finalDecision || leave.status || "—",
 			[t("adminLeaves.table.columns.reason", "Reason")]: leave.reason || "—",
+			[t("adminLeaves.table.columns.createdAt", "Created At")]: leave.createdAt || "—",
 			[t("adminLeaves.table.columns.teamLead", "Team Lead Approver")]: leave.teamLeadName || "—",
 			[t("adminLeaves.table.columns.teamLeadActionDate", "Team Lead Action Date")]: leave.teamLeadActionDate || "—",
 			[t("adminLeaves.table.columns.hrApprover", "HR Approver")]: leave.hrApproverName || "—",
@@ -397,6 +443,7 @@ const TeamLeadLeavesTable = () => {
 			{ wch: 8 },   // Days
 			{ wch: 15 },  // Status
 			{ wch: 30 },  // Reason
+			{ wch: 12 },  // Created At
 			{ wch: 25 },  // Team Lead Approver
 			{ wch: 18 },  // Team Lead Action Date
 			{ wch: 25 },  // HR Approver
@@ -407,7 +454,7 @@ const TeamLeadLeavesTable = () => {
 		// Generate filename with current date
 		const now = new Date();
 		const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
-		const filename = `leave_requests_${dateStr}.xlsx`;
+		const filename = `leave_requests_admin_${dateStr}.xlsx`;
 
 		// Export file
 		XLSX.writeFile(wb, filename);
@@ -460,6 +507,7 @@ const TeamLeadLeavesTable = () => {
 							hrComment: result.comment ?? existing.hrComment,
 							hrActionDate: formattedActionDate,
 							hrActionDateSort: now,
+							hasHrAction: true,
 					  }
 					: {}),
 			}
@@ -479,7 +527,7 @@ const TeamLeadLeavesTable = () => {
 			{selectedLeave && (
 				<LeavePopUp
 					leaveRequest={selectedLeave}
-					userRole="teamLead"
+					userRole="admin"
 					onClose={() => setSelectedLeave(null)}
 					onActionComplete={handleActionComplete}
 				/>
@@ -650,10 +698,10 @@ const TeamLeadLeavesTable = () => {
 						<div className="py-16 px-6 text-center">
 							<Users className="h-16 w-16 text-[var(--sub-text-color)] mx-auto mb-4 opacity-50" />
 							<p className="text-lg font-medium text-[var(--text-color)] mb-2">
-								{t("adminLeaves.empty.title", "No Team Leave Requests")}
+								{t("adminLeaves.empty.title", "No Leave Requests")}
 							</p>
 							<p className="text-sm text-[var(--sub-text-color)]">
-								{t("adminLeaves.empty.teamLead", "No leave requests from your team members yet.")}
+								{t("adminLeaves.empty.admin", "No leave requests found.")}
 							</p>
 						</div>
 					) : (
@@ -714,49 +762,22 @@ const TeamLeadLeavesTable = () => {
 											{getSortIcon('status')}
 										</div>
 									</th>
-								<th
-									onClick={() => handleTableSort('finalDecision')}
-									className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors"
-								>
-									<div className="flex items-center gap-1">
-										{t("adminLeaves.table.columns.finalDecision", "Final Decision")}
-										{getSortIcon('finalDecision')}
-									</div>
-								</th>
 									<th
-										onClick={() => handleTableSort('reason')}
+										onClick={() => handleTableSort('finalDecision')}
 										className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors"
 									>
 										<div className="flex items-center gap-1">
-											{t("adminLeaves.table.columns.reason", "Reason")}
-											{getSortIcon('reason')}
+											{t("adminLeaves.table.columns.finalDecision", "Final Decision")}
+											{getSortIcon('finalDecision')}
 										</div>
 									</th>
 									<th
-										onClick={() => handleTableSort('createdAt')}
+										onClick={() => handleTableSort('hrStatus')}
 										className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors"
 									>
 										<div className="flex items-center gap-1">
-											{t("adminLeaves.table.columns.createdAt", "Created At")}
-											{getSortIcon('createdAt')}
-										</div>
-									</th>
-									<th
-										onClick={() => handleTableSort('teamLeadApprover')}
-										className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors"
-									>
-										<div className="flex items-center gap-1">
-											{t("adminLeaves.table.columns.teamLeadApprover", "Team Lead Approver")}
-											{getSortIcon('teamLeadApprover')}
-										</div>
-									</th>
-									<th
-										onClick={() => handleTableSort('hrApprover')}
-										className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)] cursor-pointer hover:bg-[var(--hover-color)] transition-colors"
-									>
-										<div className="flex items-center gap-1">
-											{t("adminLeaves.table.columns.hrApprover", "HR Approver")}
-											{getSortIcon('hrApprover')}
+											{t("adminLeaves.table.columns.hrStatus", "HR Status")}
+											{getSortIcon('hrStatus')}
 										</div>
 									</th>
 									<th className="text-left py-3 px-6 text-sm font-medium text-[var(--sub-text-color)] border-b border-[var(--border-color)]">
@@ -808,35 +829,19 @@ const TeamLeadLeavesTable = () => {
 										<td className="py-4 px-6">
 											{getStatusBadge(leave.finalDecision, t)}
 										</td>
-										<td className="py-4 px-6 text-[var(--text-color)] text-sm">
-											{leave.reason || "-"}
-										</td>
-										<td className="py-4 px-6 text-[var(--text-color)] text-sm">
-											{leave.createdAt}
-										</td>
-										<td className="py-4 px-6 text-[var(--text-color)] text-sm">
-											<div>
-												<div className="font-medium">{leave.teamLeadName || "-"}</div>
-												{leave.teamLeadActionDate && (
-													<div className="text-xs text-[var(--sub-text-color)]">
-														{leave.teamLeadActionDate}
-													</div>
-												)}
-											</div>
-										</td>
-										<td className="py-4 px-6 text-[var(--text-color)] text-sm">
-											<div>
-												<div className="font-medium">{leave.hrApproverName || "-"}</div>
-												{leave.hrActionDate && (
-													<div className="text-xs text-[var(--sub-text-color)]">
-														{leave.hrActionDate}
-													</div>
-												)}
-											</div>
+										<td className="py-4 px-6">
+											{leave.hasHrAction ? (
+												<span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">
+													{t("adminLeaves.table.columns.processed", "Processed")}
+												</span>
+											) : (
+												<span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs font-medium">
+													{t("adminLeaves.table.columns.pending", "Pending")}
+												</span>
+											)}
 										</td>
 										<td className="py-4 px-6">
-											{normalizeDecision(leave.status)?.toLowerCase() === "pending" &&
-											normalizeDecision(leave.finalDecision)?.toLowerCase() !== "cancelled" ? (
+											{!leave.hasHrAction ? (
 												<button
 													className="h-8 w-8 flex items-center justify-center rounded-full bg-[var(--container-color)] border border-[var(--border-color)] hover:bg-[var(--hover-color)] transition-colors"
 													onClick={() => setSelectedLeave(leave)}
@@ -862,7 +867,31 @@ const TeamLeadLeavesTable = () => {
 													</svg>
 												</button>
 											) : (
-												<span className="text-xs text-[var(--sub-text-color)]">—</span>
+												<button
+													className="h-8 w-8 flex items-center justify-center rounded-full bg-[var(--container-color)] border border-[var(--border-color)] hover:bg-[var(--hover-color)] transition-colors text-[var(--sub-text-color)]"
+													onClick={() => setSelectedLeave(leave)}
+													title="View Details"
+												>
+													<svg
+														className="h-5 w-5"
+														fill="none"
+														stroke="currentColor"
+														viewBox="0 0 24 24"
+													>
+														<path
+															strokeLinecap="round"
+															strokeLinejoin="round"
+															strokeWidth={2}
+															d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+														/>
+														<path
+															strokeLinecap="round"
+															strokeLinejoin="round"
+															strokeWidth={2}
+															d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+														/>
+													</svg>
+												</button>
 											)}
 										</td>
 									</tr>
@@ -876,5 +905,4 @@ const TeamLeadLeavesTable = () => {
 	)
 }
 
-export default TeamLeadLeavesTable
-
+export default AdminLeavesTable
