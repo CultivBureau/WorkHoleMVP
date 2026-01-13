@@ -297,14 +297,14 @@ export default function DepartmentCard({ department, onDelete, canUpdate = true,
     return (
         <>
         <div
-            className={`bg-[var(--bg-color)] rounded-2xl border border-[var(--border-color)] transition-all duration-300 relative overflow-hidden group ${
+            className={`bg-[var(--bg-color)] rounded-2xl border border-[var(--border-color)] transition-all duration-300 relative group ${
                 canViewTeams ? 'hover:shadow-xl hover:border-[var(--accent-color)]/30 cursor-pointer' : 'cursor-default'
             }`}
             dir={isArabic ? "rtl" : "ltr"}
             onClick={canViewTeams ? handleCardClick : undefined}
         >
             {/* Gradient Accent Bar */}
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[var(--accent-color)] to-[var(--accent-color)]/60"></div>
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[var(--accent-color)] to-[var(--accent-color)]/60 rounded-t-2xl"></div>
             
             <div className="p-6">
                 {/* Department Header */}
@@ -388,13 +388,13 @@ export default function DepartmentCard({ department, onDelete, canUpdate = true,
                                     <>
                                         {/* Subtle backdrop overlay */}
                                         <div 
-                                            className="fixed inset-0 z-[9]"
+                                            className="fixed inset-0 z-[999]"
                                             onClick={() => setIsMenuOpen(false)}
                                         />
                                         
                                         {/* Enhanced dropdown menu */}
                                         <div 
-                                            className={`absolute top-full mt-2 w-48 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-xl shadow-2xl z-[10] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 ${isArabic ? 'right-0' : 'left-0'}`}
+                                            className={`absolute top-full mt-2 w-48 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-xl shadow-2xl z-[1000] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 ${isArabic ? 'right-0' : 'left-0'}`}
                                             style={{
                                                 boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06)'
                                             }}
