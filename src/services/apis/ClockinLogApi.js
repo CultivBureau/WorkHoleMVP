@@ -79,37 +79,46 @@ export const clockinLogApi = createApi({
     }),
 
     getTeamClockinLogs: builder.query({
-      query: (teamId) => {
+      queryFn: async (teamId, _queryApi, _extraOptions, baseQuery) => {
         if (!teamId) {
-          throw new Error("Team ID is required");
+          return { error: { status: 'CUSTOM_ERROR', error: 'Team ID is required' } };
         }
-        return {
+        
+        const result = await baseQuery({
           url: `/api/v1/ClockinLogs/GetTeamClockinLogs/team/${teamId}`,
           method: "GET",
-        };
-      },
-      transformResponse: (response) => {
-        if (!response) return [];
-
-        if (Array.isArray(response)) {
-          return response;
+        });
+        
+        // Handle error responses
+        if (result.error) {
+          const status = result.error.status;
+          const errorMessage = result.error.data?.errorMessage || result.error.data?.message || '';
+          
+          // Handle 404 or 400 with "no clockin logs found" - return empty array as success
+          if (status === 404 || 
+              (status === 400 && errorMessage.toLowerCase().includes('no clockin logs found'))) {
+            return { data: [] };
+          }
+          
+          // Return other errors as-is
+          return { error: result.error };
         }
-
-        if (Array.isArray(response?.value)) {
-          return response.value;
+        
+        // Transform successful response
+        const response = result.data;
+        let data = [];
+        
+        if (!response) {
+          data = [];
+        } else if (Array.isArray(response)) {
+          data = response;
+        } else if (Array.isArray(response?.value)) {
+          data = response.value;
+        } else if (Array.isArray(response?.data)) {
+          data = response.data;
         }
-
-        if (Array.isArray(response?.data)) {
-          return response.data;
-        }
-
-        return [];
-      },
-      transformErrorResponse: (response, meta, arg) => {
-        if (response?.status === 404) {
-          return [];
-        }
-        return response;
+        
+        return { data };
       },
       providesTags: (result, error, teamId) => [
         { type: "ClockinLogs", id: `TEAM_${teamId || "UNKNOWN"}` },
