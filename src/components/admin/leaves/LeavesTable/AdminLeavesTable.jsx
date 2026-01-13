@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useLang } from "../../../../contexts/LangContext"
 import { ChevronDown, ChevronUp, Calendar, Users, Download } from "lucide-react"
-import * as XLSX from "xlsx"
+import ExcelJS from "exceljs"
 import toast from "react-hot-toast"
 import LeavePopUp from "../leavePopUp/LeavePopUp"
 import { useGetAllLeaveTypesQuery } from "../../../../services/apis/LeaveTypeApi"
@@ -428,28 +428,34 @@ const AdminLeavesTable = () => {
 			[t("adminLeaves.table.columns.hrActionDate", "HR Action Date")]: leave.hrActionDate || "—",
 		}));
 
-		// Create workbook and worksheet
-		const ws = XLSX.utils.json_to_sheet(exportData);
-		const wb = XLSX.utils.book_new();
-		XLSX.utils.book_append_sheet(wb, ws, t("adminLeaves.export.sheetName", "Leave Requests"));
+		// Create workbook and worksheet using ExcelJS
+		const workbook = new ExcelJS.Workbook();
+		const worksheet = workbook.addWorksheet(t("adminLeaves.export.sheetName", "Leave Requests"));
 
-		// Auto-size columns
-		const wscols = [
-			{ wch: 5 },   // #
-			{ wch: 25 },  // Name
-			{ wch: 20 },  // Leave Type
-			{ wch: 12 },  // From Date
-			{ wch: 12 },  // To Date
-			{ wch: 8 },   // Days
-			{ wch: 15 },  // Status
-			{ wch: 30 },  // Reason
-			{ wch: 12 },  // Created At
-			{ wch: 25 },  // Team Lead Approver
-			{ wch: 18 },  // Team Lead Action Date
-			{ wch: 25 },  // HR Approver
-			{ wch: 18 },  // HR Action Date
-		];
-		ws['!cols'] = wscols;
+		// Add header row
+		const headers = Object.keys(exportData[0]);
+		worksheet.addRow(headers);
+
+		// Style header row
+		const headerRow = worksheet.getRow(1);
+		headerRow.font = { bold: true };
+		headerRow.fill = {
+			type: 'pattern',
+			pattern: 'solid',
+			fgColor: { argb: 'FFE0E0E0' }
+		};
+
+		// Add data rows
+		exportData.forEach((item) => {
+			const row = headers.map((header) => item[header]);
+			worksheet.addRow(row);
+		});
+
+		// Set column widths
+		const columnWidths = [5, 25, 20, 12, 12, 8, 15, 30, 12, 25, 18, 25, 18];
+		columnWidths.forEach((width, index) => {
+			worksheet.getColumn(index + 1).width = width;
+		});
 
 		// Generate filename with current date
 		const now = new Date();
@@ -457,7 +463,17 @@ const AdminLeavesTable = () => {
 		const filename = `leave_requests_admin_${dateStr}.xlsx`;
 
 		// Export file
-		XLSX.writeFile(wb, filename);
+		workbook.xlsx.writeBuffer().then((buffer) => {
+			const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+			const url = window.URL.createObjectURL(blob);
+			const link = document.createElement('a');
+			link.href = url;
+			link.download = filename;
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+			window.URL.revokeObjectURL(url);
+		});
 
 		// Show success toast
 		toast.success(

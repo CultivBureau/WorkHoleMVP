@@ -5,7 +5,7 @@ import { ChevronDown, ChevronLeft, ChevronRight, Search, LayoutGrid, TableIcon, 
 import EmployeeCard from "./employee-card";
 import EditEmployeePopup from "./edit-employee";
 import toast from "react-hot-toast";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { useGetAllUsersQuery, useDeleteUserMutation, useRestoreUserMutation } from "../../../services/apis/UserApi";
 import { useGetAllDepartmentsQuery } from "../../../services/apis/DepartmentApi";
 import { useGetAllRolesQuery } from "../../../services/apis/RoleApi";
@@ -436,25 +436,34 @@ const EmployeesTable = () => {
             [t("employees.table.status", "Status")]: employee.status || "—",
         }));
 
-        // Create workbook and worksheet
-        const ws = XLSX.utils.json_to_sheet(exportData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, t("employees.export.sheetName", "Employees"));
+        // Create workbook and worksheet using ExcelJS
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet(t("employees.export.sheetName", "Employees"));
 
-        // Auto-size columns
-        const wscols = [
-            { wch: 5 },   // #
-            { wch: 25 },  // Employee Name
-            { wch: 20 },  // Employee ID
-            { wch: 30 },  // Email
-            { wch: 20 },  // Role
-            { wch: 20 },  // Job Title
-            { wch: 25 },  // Department
-            { wch: 20 },  // Team
-            { wch: 15 },  // Join Date
-            { wch: 12 },  // Status
-        ];
-        ws['!cols'] = wscols;
+        // Add header row
+        const headers = Object.keys(exportData[0]);
+        worksheet.addRow(headers);
+
+        // Style header row
+        const headerRow = worksheet.getRow(1);
+        headerRow.font = { bold: true };
+        headerRow.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFE0E0E0' }
+        };
+
+        // Add data rows
+        exportData.forEach((item) => {
+            const row = headers.map((header) => item[header]);
+            worksheet.addRow(row);
+        });
+
+        // Set column widths
+        const columnWidths = [5, 25, 20, 30, 20, 20, 25, 20, 15, 12];
+        columnWidths.forEach((width, index) => {
+            worksheet.getColumn(index + 1).width = width;
+        });
 
         // Generate filename with current date
         const now = new Date();
@@ -462,7 +471,17 @@ const EmployeesTable = () => {
         const filename = `employees_${dateStr}.xlsx`;
 
         // Export file
-        XLSX.writeFile(wb, filename);
+        workbook.xlsx.writeBuffer().then((buffer) => {
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        });
 
         // Show success toast
         toast.success(

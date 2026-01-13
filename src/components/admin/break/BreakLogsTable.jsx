@@ -7,7 +7,7 @@ import { Users, Download, ChevronDown, ChevronUp } from "lucide-react"
 import { useLazyGetAllBreakLogsQuery, useLazyGetUserBreakLogsQuery } from "../../../services/apis/BreakApi"
 import { useGetAllUsersQuery } from "../../../services/apis/UserApi"
 import { utcToLocalTime, utcToLocalDate, calculateDurationFromUtc } from '../../../utils/timeUtils'
-import * as XLSX from "xlsx"
+import ExcelJS from "exceljs"
 import toast from "react-hot-toast"
 
 const SERVER_PAGE_SIZE = 50
@@ -377,28 +377,49 @@ const BreakLogsTable = () => {
       }
     })
 
-    const ws = XLSX.utils.json_to_sheet(exportData)
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, t("breakLogs.export.sheetName", "Break Logs"))
+    const workbook = new ExcelJS.Workbook()
+    const worksheet = workbook.addWorksheet(t("breakLogs.export.sheetName", "Break Logs"))
 
-    const wscols = [
-      { wch: 5 },   // #
-      { wch: 25 },  // Employee Name
-      { wch: 25 },  // Email
-      { wch: 12 },  // Date
-      { wch: 15 },  // Break Type
-      { wch: 12 },  // Start Time
-      { wch: 12 },  // End Time
-      { wch: 12 },  // Duration
-      { wch: 12 },  // Status
-    ]
-    ws['!cols'] = wscols
+    // Add header row
+    const headers = Object.keys(exportData[0])
+    worksheet.addRow(headers)
+
+    // Style header row
+    const headerRow = worksheet.getRow(1)
+    headerRow.font = { bold: true }
+    headerRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFE0E0E0' }
+    }
+
+    // Add data rows
+    exportData.forEach((item) => {
+      const row = headers.map((header) => item[header])
+      worksheet.addRow(row)
+    })
+
+    // Set column widths
+    const columnWidths = [5, 25, 25, 12, 15, 12, 12, 12, 12]
+    columnWidths.forEach((width, index) => {
+      worksheet.getColumn(index + 1).width = width
+    })
 
     const now = new Date()
     const dateStr = now.toISOString().split('T')[0]
     const filename = `break_logs_${dateStr}.xlsx`
 
-    XLSX.writeFile(wb, filename)
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    })
 
     toast.success(
       t("breakLogs.export.success", "Break logs exported successfully"),

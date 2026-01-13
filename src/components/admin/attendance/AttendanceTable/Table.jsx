@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from "react"
 import { useTranslation } from "react-i18next";
 import { useLang } from "../../../../contexts/LangContext";
 import { ChevronDown, ChevronUp, Users, Download } from "lucide-react";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import toast from "react-hot-toast";
 import { useLazyGetCompanyClockinLogsQuery } from "../../../../services/apis/ClockinLogApi";
 import { utcToLocalTime, utcToLocalDate, calculateDurationFromUtc } from '../../../../utils/timeUtils';
@@ -400,28 +400,34 @@ const AttendanceTable = () => {
       [t("adminAttendance.table.columns.breakDuration", "Break Duration")]: employee.breakDuration || "—",
     }));
 
-    // Create workbook and worksheet
-    const ws = XLSX.utils.json_to_sheet(exportData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, t("adminAttendance.table.export.sheetName", "Attendance"));
+    // Create workbook and worksheet using ExcelJS
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet(t("adminAttendance.table.export.sheetName", "Attendance"));
 
-    // Auto-size columns
-    const maxWidth = 50;
-    const wscols = [
-      { wch: 5 },   // #
-      { wch: 25 },  // Employee Name
-      { wch: 25 },  // Email
-      { wch: 12 },  // Date
-      { wch: 12 },  // Check-in
-      { wch: 12 },  // Check-out
-      { wch: 12 },  // Work Hours
-      { wch: 15 },  // Status
-      { wch: 20 },  // Location
-      { wch: 15 },  // Shift
-      { wch: 30 },  // Reason
-      { wch: 15 },  // Break Duration
-    ];
-    ws['!cols'] = wscols;
+    // Add header row
+    const headers = Object.keys(exportData[0]);
+    worksheet.addRow(headers);
+
+    // Style header row
+    const headerRow = worksheet.getRow(1);
+    headerRow.font = { bold: true };
+    headerRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFE0E0E0' }
+    };
+
+    // Add data rows
+    exportData.forEach((item) => {
+      const row = headers.map((header) => item[header]);
+      worksheet.addRow(row);
+    });
+
+    // Set column widths
+    const columnWidths = [5, 25, 25, 12, 12, 12, 12, 15, 20, 15, 30, 15];
+    columnWidths.forEach((width, index) => {
+      worksheet.getColumn(index + 1).width = width;
+    });
 
     // Generate filename with current date
     const now = new Date();
@@ -429,7 +435,17 @@ const AttendanceTable = () => {
     const filename = `attendance_${dateStr}.xlsx`;
 
     // Export file
-    XLSX.writeFile(wb, filename);
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    });
 
     // Show success toast
     toast.success(
