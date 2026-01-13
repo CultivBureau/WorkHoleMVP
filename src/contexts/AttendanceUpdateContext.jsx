@@ -2,7 +2,7 @@ import { createContext, useContext, useState } from "react"
 
 const AttendanceUpdateContext = createContext({
   triggerUpdate: () => {},
-  lastUpdate: 0,
+  lastUpdate: 0, 
 })
 
 export const useAttendanceUpdate = () => useContext(AttendanceUpdateContext)
