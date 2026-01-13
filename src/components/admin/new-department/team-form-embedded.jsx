@@ -2,8 +2,6 @@ import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus, Check, Users, Search, User, Crown, X, ChevronDown, Filter } from "lucide-react";
 import { useGetAllUsersQuery } from "../../../services/apis/UserApi";
-import { useGetAllDepartmentsQuery } from "../../../services/apis/DepartmentApi";
-import { useGetTeamsByDepartmentQuery } from "../../../services/apis/TeamApi";
 import { useGetAllRolesQuery, useGetRoleUsersQuery } from "../../../services/apis/RoleApi";
 
 export default function TeamFormEmbedded({
@@ -28,11 +26,9 @@ export default function TeamFormEmbedded({
     });
     
     // Filter states - Separate for leader and members
-    const [leaderDepartment, setLeaderDepartment] = useState(departmentId || "all");
     const [leaderRole, setLeaderRole] = useState("all");
     const [leaderNameSearch, setLeaderNameSearch] = useState("");
     
-    const [memberDepartment, setMemberDepartment] = useState(departmentId || "all");
     const [memberRole, setMemberRole] = useState("all");
     const [memberNameSearch, setMemberNameSearch] = useState("");
     
@@ -44,16 +40,12 @@ export default function TeamFormEmbedded({
     // Dropdown states
     const [isLeaderDropdownOpen, setIsLeaderDropdownOpen] = useState(false);
     const [isMembersDropdownOpen, setIsMembersDropdownOpen] = useState(false);
-    const [isLeaderDepartmentFilterOpen, setIsLeaderDepartmentFilterOpen] = useState(false);
     const [isLeaderRoleFilterOpen, setIsLeaderRoleFilterOpen] = useState(false);
-    const [isMemberDepartmentFilterOpen, setIsMemberDepartmentFilterOpen] = useState(false);
     const [isMemberRoleFilterOpen, setIsMemberRoleFilterOpen] = useState(false);
     
     const leaderDropdownRef = useRef(null);
     const membersDropdownRef = useRef(null);
-    const leaderDepartmentFilterRef = useRef(null);
     const leaderRoleFilterRef = useRef(null);
-    const memberDepartmentFilterRef = useRef(null);
     const memberRoleFilterRef = useRef(null);
 
     // Fetch data for leader
@@ -64,7 +56,6 @@ export default function TeamFormEmbedded({
     
     const { data: leaderUsersData, isLoading: isLoadingLeaderAllUsers } = useGetAllUsersQuery(
         { 
-            departmentId: leaderDepartment !== "all" ? leaderDepartment : undefined,
             name: leaderNameSearch || undefined,
             pageNumber: 1, 
             pageSize: 500 
@@ -80,7 +71,6 @@ export default function TeamFormEmbedded({
     
     const { data: memberUsersData, isLoading: isLoadingMemberAllUsers } = useGetAllUsersQuery(
         { 
-            departmentId: memberDepartment !== "all" ? memberDepartment : undefined,
             name: memberNameSearch || undefined,
             pageNumber: 1, 
             pageSize: 500 
@@ -88,7 +78,6 @@ export default function TeamFormEmbedded({
         { skip: memberRole !== "all" }
     );
     
-    const { data: departmentsData } = useGetAllDepartmentsQuery({ pageNumber: 1, pageSize: 100 });
     // Only fetch active roles (status: 0 = active)
     const { data: rolesData, isLoading: isLoadingRoles, isError: isErrorRoles } = useGetAllRolesQuery({ pageNumber: 1, pageSize: 100, status: 0 });
     
@@ -155,11 +144,6 @@ export default function TeamFormEmbedded({
     const isLoadingLeaderUsers = leaderRole !== "all" ? isLoadingLeaderRoleUsers : isLoadingLeaderAllUsers;
     const isLoadingMemberUsers = memberRole !== "all" ? isLoadingMemberRoleUsers : isLoadingMemberAllUsers;
     
-    const departments = useMemo(() => {
-        const items = departmentsData?.value || departmentsData?.data || departmentsData?.items || departmentsData || [];
-        return Array.isArray(items) ? items : [];
-    }, [departmentsData]);
-    
     // Roles are already filtered by status: 0 (active) in the API query
     // status: 0 = active, status: 1 = inactive, status: 2 = all
     const roles = useMemo(() => {
@@ -212,14 +196,8 @@ export default function TeamFormEmbedded({
             if (membersDropdownRef.current && !membersDropdownRef.current.contains(event.target)) {
                 setIsMembersDropdownOpen(false);
             }
-            if (leaderDepartmentFilterRef.current && !leaderDepartmentFilterRef.current.contains(event.target)) {
-                setIsLeaderDepartmentFilterOpen(false);
-            }
             if (leaderRoleFilterRef.current && !leaderRoleFilterRef.current.contains(event.target)) {
                 setIsLeaderRoleFilterOpen(false);
-            }
-            if (memberDepartmentFilterRef.current && !memberDepartmentFilterRef.current.contains(event.target)) {
-                setIsMemberDepartmentFilterOpen(false);
             }
             if (memberRoleFilterRef.current && !memberRoleFilterRef.current.contains(event.target)) {
                 setIsMemberRoleFilterOpen(false);
@@ -265,11 +243,11 @@ export default function TeamFormEmbedded({
     
     useEffect(() => {
         setLeaderPage(1);
-    }, [leaderRole, leaderNameSearch, leaderDepartment]);
+    }, [leaderRole, leaderNameSearch]);
     
     useEffect(() => {
         setMembersPage(1);
-    }, [memberRole, memberNameSearch, memberDepartment]);
+    }, [memberRole, memberNameSearch]);
 
     // Auto-open dropdown when search text is entered
     useEffect(() => {
@@ -298,37 +276,6 @@ export default function TeamFormEmbedded({
         }));
     };
 
-    const handleAddTeam = () => {
-        if (!newTeam.name.trim()) {
-            return;
-        }
-        if (!newTeam.teamLeader) {
-            return;
-        }
-        
-        const teamToAdd = {
-            id: Date.now(),
-            name: newTeam.name,
-            description: newTeam.description || '',
-            teamLeader: newTeam.teamLeader,
-            selectedEmployees: newTeam.selectedEmployees || [],
-            members: (newTeam.teamLeader ? 1 : 0) + (newTeam.selectedEmployees || []).length
-        };
-        
-        onTeamAdd(teamToAdd);
-        
-        // Reset form
-        setNewTeam({ name: '', description: '', selectedEmployees: [], teamLeader: null });
-        setLeaderDepartment(departmentId || "all");
-        setLeaderRole("all");
-        setLeaderNameSearch("");
-        setMemberDepartment(departmentId || "all");
-        setMemberRole("all");
-        setMemberNameSearch("");
-        setLeaderPage(1);
-        setMembersPage(1);
-    };
-
     const getUserDisplayName = (user) => {
         return user?.name || 
                (user?.firstName || user?.lastName ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : '') ||
@@ -351,10 +298,8 @@ export default function TeamFormEmbedded({
             });
         } else if (!isEditMode) {
             setNewTeam({ name: '', description: '', selectedEmployees: [], teamLeader: null });
-            setLeaderDepartment(departmentId || "all");
             setLeaderRole("all");
             setLeaderNameSearch("");
-            setMemberDepartment(departmentId || "all");
             setMemberRole("all");
             setMemberNameSearch("");
             setLeaderPage(1);
@@ -363,13 +308,11 @@ export default function TeamFormEmbedded({
     }, [initialTeam, departmentId, isEditMode]);
 
     const clearLeaderFilters = () => {
-        setLeaderDepartment(departmentId || "all");
         setLeaderRole("all");
         setLeaderNameSearch("");
     };
 
     const clearMemberFilters = () => {
-        setMemberDepartment(departmentId || "all");
         setMemberRole("all");
         setMemberNameSearch("");
     };
@@ -474,99 +417,58 @@ export default function TeamFormEmbedded({
                     </label>
                 </div>
 
-                {/* Filters for Leader */}
-                <div className="grid grid-cols-2 gap-2">
-                    <div className="relative" ref={leaderDepartmentFilterRef}>
-                        <div
-                            className="form-input cursor-pointer flex items-center justify-between text-sm"
-                            onClick={() => setIsLeaderDepartmentFilterOpen(!isLeaderDepartmentFilterOpen)}
-                        >
-                            <span className="text-[var(--sub-text-color)]">
-                                {leaderDepartment !== "all" 
-                                    ? departments.find(d => d.id === leaderDepartment)?.name || "Department"
-                                    : t("allTeams.addTeam.filters.allDepartments", "All Departments")}
-                            </span>
-                            <ChevronDown className={`w-4 h-4 text-[var(--sub-text-color)] transition-transform ${isLeaderDepartmentFilterOpen ? 'rotate-180' : ''}`} />
-                        </div>
-                        {isLeaderDepartmentFilterOpen && (
-                            <div className={`absolute top-full ${isArabic ? 'right-0' : 'left-0'} z-30 mt-1 w-full bg-[var(--bg-color)] border-2 border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto`}>
-                                <div
-                                    className="p-2 hover:bg-[var(--hover-color)] cursor-pointer"
-                                    onClick={() => {
-                                        setLeaderDepartment(departmentId || "all");
-                                        setIsLeaderDepartmentFilterOpen(false);
-                                    }}
-                                >
-                                    <span className="text-sm text-[var(--text-color)]">{t("allTeams.addTeam.filters.allDepartments", "All Departments")}</span>
-                                </div>
-                                {departments.map(dept => (
+                {/* Filter for Leader - Role Only */}
+                <div className="relative" ref={leaderRoleFilterRef}>
+                    <div
+                        className="form-input cursor-pointer flex items-center justify-between text-sm"
+                        onClick={() => setIsLeaderRoleFilterOpen(!isLeaderRoleFilterOpen)}
+                    >
+                        <span className="text-[var(--sub-text-color)]">
+                            {leaderRole !== "all" 
+                                ? roles.find(r => r.id === leaderRole)?.name || "Role"
+                                : t("allTeams.addTeam.filters.allRoles", "All Roles")}
+                        </span>
+                        <ChevronDown className={`w-4 h-4 text-[var(--sub-text-color)] transition-transform ${isLeaderRoleFilterOpen ? 'rotate-180' : ''}`} />
+                    </div>
+                    {isLeaderRoleFilterOpen && (
+                        <div className={`absolute top-full ${isArabic ? 'right-0' : 'left-0'} z-30 mt-1 w-full bg-[var(--bg-color)] border-2 border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto`}>
+                            {isLoadingRoles ? (
+                                <div className="p-4 text-center text-[var(--sub-text-color)]">Loading roles...</div>
+                            ) : isErrorRoles ? (
+                                <div className="p-4 text-center text-[var(--error-color)]">Failed to load roles</div>
+                            ) : (
+                                <>
                                     <div
-                                        key={dept.id}
                                         className="p-2 hover:bg-[var(--hover-color)] cursor-pointer"
                                         onClick={() => {
-                                            setLeaderDepartment(dept.id);
-                                            setIsLeaderDepartmentFilterOpen(false);
+                                            setLeaderRole("all");
+                                            setIsLeaderRoleFilterOpen(false);
                                         }}
                                     >
-                                        <span className="text-sm text-[var(--text-color)]">{dept.name}</span>
+                                        <span className="text-sm text-[var(--text-color)]">{t("allTeams.addTeam.filters.allRoles", "All Roles")}</span>
                                     </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="relative" ref={leaderRoleFilterRef}>
-                        <div
-                            className="form-input cursor-pointer flex items-center justify-between text-sm"
-                            onClick={() => setIsLeaderRoleFilterOpen(!isLeaderRoleFilterOpen)}
-                        >
-                            <span className="text-[var(--sub-text-color)]">
-                                {leaderRole !== "all" 
-                                    ? roles.find(r => r.id === leaderRole)?.name || "Role"
-                                    : t("allTeams.addTeam.filters.allRoles", "All Roles")}
-                            </span>
-                            <ChevronDown className={`w-4 h-4 text-[var(--sub-text-color)] transition-transform ${isLeaderRoleFilterOpen ? 'rotate-180' : ''}`} />
-                        </div>
-                        {isLeaderRoleFilterOpen && (
-                            <div className={`absolute top-full ${isArabic ? 'right-0' : 'left-0'} z-30 mt-1 w-full bg-[var(--bg-color)] border-2 border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto`}>
-                                {isLoadingRoles ? (
-                                    <div className="p-4 text-center text-[var(--sub-text-color)]">Loading roles...</div>
-                                ) : isErrorRoles ? (
-                                    <div className="p-4 text-center text-[var(--error-color)]">Failed to load roles</div>
-                                ) : (
-                                    <>
-                                        <div
-                                            className="p-2 hover:bg-[var(--hover-color)] cursor-pointer"
-                                            onClick={() => {
-                                                setLeaderRole("all");
-                                                setIsLeaderRoleFilterOpen(false);
-                                            }}
-                                        >
-                                            <span className="text-sm text-[var(--text-color)]">{t("allTeams.addTeam.filters.allRoles", "All Roles")}</span>
-                                        </div>
-                                        {roles && roles.length > 0 ? (
-                                            roles.map(role => (
-                                                <div
-                                                    key={role.id}
-                                                    className="p-2 hover:bg-[var(--hover-color)] cursor-pointer"
-                                                    onClick={() => {
-                                                        setLeaderRole(role.id);
-                                                        setIsLeaderRoleFilterOpen(false);
-                                                    }}
-                                                >
-                                                    <span className="text-sm text-[var(--text-color)]">{role.name}</span>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div className="p-2 text-sm text-[var(--sub-text-color)]">
-                                                {t("allTeams.addTeam.filters.noRoles", "No active roles found")}
+                                    {roles && roles.length > 0 ? (
+                                        roles.map(role => (
+                                            <div
+                                                key={role.id}
+                                                className="p-2 hover:bg-[var(--hover-color)] cursor-pointer"
+                                                onClick={() => {
+                                                    setLeaderRole(role.id);
+                                                    setIsLeaderRoleFilterOpen(false);
+                                                }}
+                                            >
+                                                <span className="text-sm text-[var(--text-color)]">{role.name}</span>
                                             </div>
-                                        )}
-                                    </>
-                                )}
-                            </div>
-                        )}
-                    </div>
+                                        ))
+                                    ) : (
+                                        <div className="p-2 text-sm text-[var(--sub-text-color)]">
+                                            {t("allTeams.addTeam.filters.noRoles", "No active roles found")}
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Search for Leader */}
@@ -738,99 +640,58 @@ export default function TeamFormEmbedded({
                     </div>
                 )}
 
-                {/* Filters for Members */}
-                <div className="grid grid-cols-2 gap-2">
-                    <div className="relative" ref={memberDepartmentFilterRef}>
-                        <div
-                            className="form-input cursor-pointer flex items-center justify-between text-sm"
-                            onClick={() => setIsMemberDepartmentFilterOpen(!isMemberDepartmentFilterOpen)}
-                        >
-                            <span className="text-[var(--sub-text-color)]">
-                                {memberDepartment !== "all" 
-                                    ? departments.find(d => d.id === memberDepartment)?.name || "Department"
-                                    : t("allTeams.addTeam.filters.allDepartments", "All Departments")}
-                            </span>
-                            <ChevronDown className={`w-4 h-4 text-[var(--sub-text-color)] transition-transform ${isMemberDepartmentFilterOpen ? 'rotate-180' : ''}`} />
-                        </div>
-                        {isMemberDepartmentFilterOpen && (
-                            <div className={`absolute top-full ${isArabic ? 'right-0' : 'left-0'} z-30 mt-1 w-full bg-[var(--bg-color)] border-2 border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto`}>
-                                <div
-                                    className="p-2 hover:bg-[var(--hover-color)] cursor-pointer"
-                                    onClick={() => {
-                                        setMemberDepartment(departmentId || "all");
-                                        setIsMemberDepartmentFilterOpen(false);
-                                    }}
-                                >
-                                    <span className="text-sm text-[var(--text-color)]">{t("allTeams.addTeam.filters.allDepartments", "All Departments")}</span>
-                                </div>
-                                {departments.map(dept => (
+                {/* Filter for Members - Role Only */}
+                <div className="relative" ref={memberRoleFilterRef}>
+                    <div
+                        className="form-input cursor-pointer flex items-center justify-between text-sm"
+                        onClick={() => setIsMemberRoleFilterOpen(!isMemberRoleFilterOpen)}
+                    >
+                        <span className="text-[var(--sub-text-color)]">
+                            {memberRole !== "all" 
+                                ? roles.find(r => r.id === memberRole)?.name || "Role"
+                                : t("allTeams.addTeam.filters.allRoles", "All Roles")}
+                        </span>
+                        <ChevronDown className={`w-4 h-4 text-[var(--sub-text-color)] transition-transform ${isMemberRoleFilterOpen ? 'rotate-180' : ''}`} />
+                    </div>
+                    {isMemberRoleFilterOpen && (
+                        <div className={`absolute top-full ${isArabic ? 'right-0' : 'left-0'} z-30 mt-1 w-full bg-[var(--bg-color)] border-2 border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto`}>
+                            {isLoadingRoles ? (
+                                <div className="p-4 text-center text-[var(--sub-text-color)]">Loading roles...</div>
+                            ) : isErrorRoles ? (
+                                <div className="p-4 text-center text-[var(--error-color)]">Failed to load roles</div>
+                            ) : (
+                                <>
                                     <div
-                                        key={dept.id}
                                         className="p-2 hover:bg-[var(--hover-color)] cursor-pointer"
                                         onClick={() => {
-                                            setMemberDepartment(dept.id);
-                                            setIsMemberDepartmentFilterOpen(false);
+                                            setMemberRole("all");
+                                            setIsMemberRoleFilterOpen(false);
                                         }}
                                     >
-                                        <span className="text-sm text-[var(--text-color)]">{dept.name}</span>
+                                        <span className="text-sm text-[var(--text-color)]">{t("allTeams.addTeam.filters.allRoles", "All Roles")}</span>
                                     </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="relative" ref={memberRoleFilterRef}>
-                        <div
-                            className="form-input cursor-pointer flex items-center justify-between text-sm"
-                            onClick={() => setIsMemberRoleFilterOpen(!isMemberRoleFilterOpen)}
-                        >
-                            <span className="text-[var(--sub-text-color)]">
-                                {memberRole !== "all" 
-                                    ? roles.find(r => r.id === memberRole)?.name || "Role"
-                                    : t("allTeams.addTeam.filters.allRoles", "All Roles")}
-                            </span>
-                            <ChevronDown className={`w-4 h-4 text-[var(--sub-text-color)] transition-transform ${isMemberRoleFilterOpen ? 'rotate-180' : ''}`} />
-                        </div>
-                        {isMemberRoleFilterOpen && (
-                            <div className={`absolute top-full ${isArabic ? 'right-0' : 'left-0'} z-30 mt-1 w-full bg-[var(--bg-color)] border-2 border-[var(--border-color)] rounded-lg shadow-lg max-h-60 overflow-y-auto`}>
-                                {isLoadingRoles ? (
-                                    <div className="p-4 text-center text-[var(--sub-text-color)]">Loading roles...</div>
-                                ) : isErrorRoles ? (
-                                    <div className="p-4 text-center text-[var(--error-color)]">Failed to load roles</div>
-                                ) : (
-                                    <>
-                                        <div
-                                            className="p-2 hover:bg-[var(--hover-color)] cursor-pointer"
-                                            onClick={() => {
-                                                setMemberRole("all");
-                                                setIsMemberRoleFilterOpen(false);
-                                            }}
-                                        >
-                                            <span className="text-sm text-[var(--text-color)]">{t("allTeams.addTeam.filters.allRoles", "All Roles")}</span>
-                                        </div>
-                                        {roles && roles.length > 0 ? (
-                                            roles.map(role => (
-                                                <div
-                                                    key={role.id}
-                                                    className="p-2 hover:bg-[var(--hover-color)] cursor-pointer"
-                                                    onClick={() => {
-                                                        setMemberRole(role.id);
-                                                        setIsMemberRoleFilterOpen(false);
-                                                    }}
-                                                >
-                                                    <span className="text-sm text-[var(--text-color)]">{role.name}</span>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div className="p-2 text-sm text-[var(--sub-text-color)]">
-                                                {t("allTeams.addTeam.filters.noRoles", "No active roles found")}
+                                    {roles && roles.length > 0 ? (
+                                        roles.map(role => (
+                                            <div
+                                                key={role.id}
+                                                className="p-2 hover:bg-[var(--hover-color)] cursor-pointer"
+                                                onClick={() => {
+                                                    setMemberRole(role.id);
+                                                    setIsMemberRoleFilterOpen(false);
+                                                }}
+                                            >
+                                                <span className="text-sm text-[var(--text-color)]">{role.name}</span>
                                             </div>
-                                        )}
-                                    </>
-                                )}
-                            </div>
-                        )}
-                    </div>
+                                        ))
+                                    ) : (
+                                        <div className="p-2 text-sm text-[var(--sub-text-color)]">
+                                            {t("allTeams.addTeam.filters.noRoles", "No active roles found")}
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Search for Members */}

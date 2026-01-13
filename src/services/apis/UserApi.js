@@ -83,7 +83,7 @@ export const userApi = createApi({
     // Get user profile by ID (for admin viewing employee profiles)
     getUserProfileById: builder.query({
       query: (userId) => ({
-        url: `/api/v1/User/GetUserProfile/${userId}/profile`,
+        url: `/api/v1/User/GetUserProfile/${userId}`,
         method: "GET",
       }),
       providesTags: (result, error, userId) => [{ type: "User", id: `profile-${userId}` }],

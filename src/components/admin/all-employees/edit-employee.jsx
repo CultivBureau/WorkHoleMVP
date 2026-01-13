@@ -26,11 +26,13 @@ export default function EditEmployeePopup({ employee, isOpen, onClose, onSave })
     const employeeId = employee?.id || employee?.userId || employee?.rawData?.id;
 
     // Fetch full employee profile data
-    const { data: employeeProfileResponse, isLoading: isLoadingProfile } = useGetUserProfileByIdQuery(
+    const { data: employeeProfileResponse, isLoading: isLoadingProfile, error: profileError } = useGetUserProfileByIdQuery(
         employeeId,
         { skip: !isOpen || !employeeId }
     );
-    const employeeData = employeeProfileResponse?.value || employee;
+    
+    // Handle different response formats and fallback to employee prop
+    const employeeData = employeeProfileResponse?.value || employeeProfileResponse?.data || employeeProfileResponse || employee;
 
     // Fetch dropdown data
     const { data: leaveTypesRes } = useGetAllLeaveTypesQuery({ pageNumber: 1, pageSize: 100, status: 0 });
@@ -45,11 +47,21 @@ export default function EditEmployeePopup({ employee, isOpen, onClose, onSave })
 
     // Initialize form data when employee data changes
     useEffect(() => {
-        if (employeeData) {
+        if (employeeData && isOpen) {
+            // Parse name field to extract firstName and lastName
+            const nameParts = (employeeData.name || '').trim().split(' ');
+            const extractedFirstName = employeeData.firstName || nameParts[0] || '';
+            const extractedLastName = employeeData.lastName || nameParts.slice(1).join(' ') || '';
+            
             // Extract roles as array of role IDs (prefer ID over name for API)
             const employeeRoles = employeeData.roles?.map(r => {
                 return r.id || r.roleId || r.name || r;
             }).filter(Boolean) || [];
+            
+            // If no roles array, try to get from single role field
+            if (employeeRoles.length === 0 && employeeData.role) {
+                employeeRoles.push(employeeData.role);
+            }
             
             // Extract team IDs as array
             const employeeTeamIds = employeeData.teams?.map(t => t.id || t.teamId).filter(Boolean) || [];
@@ -67,23 +79,26 @@ export default function EditEmployeePopup({ employee, isOpen, onClose, onSave })
                                         '';
 
             const initialFormData = {
-                firstName: employeeData.firstName || '',
-                lastName: employeeData.lastName || '',
-                jobTitle: employeeData.jobTitle || '',
-                hireDate: employeeData.hireDate ? new Date(employeeData.hireDate).toISOString().split('T')[0] : '',
-                employeeStatus: employeeData.employeeStatus !== undefined ? employeeData.employeeStatus : 0,
-                roles: employeeRoles, // Keep array for backward compatibility
-                role: employeeRoles[0] || employeeData.role || '', // Single role for dropdown
-                teamIds: employeeTeamIds, // Keep array for backward compatibility
-                teamId: employeeTeamIds[0] || '', // Single team for dropdown
-                shiftId: employeeShiftId, // Single value
+                firstName: extractedFirstName,
+                lastName: extractedLastName,
+                jobTitle: employeeData.jobTitle || employeeData.position || '',
+                hireDate: employeeData.hireDate || employeeData.joinDate ? 
+                    new Date(employeeData.hireDate || employeeData.joinDate).toISOString().split('T')[0] : '',
+                employeeStatus: employeeData.employeeStatus !== undefined ? employeeData.employeeStatus : 
+                               employeeData.status === 'Active' ? 0 : employeeData.status === 'Inactive' ? 1 : 0,
+                roles: employeeRoles,
+                role: employeeRoles[0] || employeeData.role || '',
+                teamIds: employeeTeamIds,
+                teamId: employeeTeamIds[0] || '',
+                shiftId: employeeShiftId,
                 departmentId: employeeDepartmentId,
-                leaveBalances: [], // Will be populated from API when step 1 is accessed
+                leaveBalances: [],
             };
+            
             setFormData(initialFormData);
             setOriginalFormData(JSON.parse(JSON.stringify(initialFormData))); // Deep copy for comparison
         }
-    }, [employeeData]);
+    }, [employeeData, isOpen, employeeId]);
 
     useEffect(() => {
         if (isOpen) {

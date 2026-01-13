@@ -3,8 +3,6 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Check, Users, Search, User, Crown, XCircle, Loader2, Filter, X, ChevronDown } from "lucide-react";
 import { useGetAllUsersQuery } from "../../../../services/apis/UserApi";
-import { useGetAllDepartmentsQuery } from "../../../../services/apis/DepartmentApi";
-import { useGetTeamsByDepartmentQuery } from "../../../../services/apis/TeamApi";
 import { useGetAllRolesQuery, useGetRoleUsersQuery } from "../../../../services/apis/RoleApi";
 import { useCreateTeamMutation, useAddUsersToTeamMutation } from "../../../../services/apis/TeamApi";
 import toast from "react-hot-toast";
@@ -22,8 +20,6 @@ export default function NewTeamForm({ departmentId: initialDepartmentId }) {
     });
     
     // Filter states
-    const [selectedDepartment, setSelectedDepartment] = useState(initialDepartmentId || "all");
-    const [selectedTeam, setSelectedTeam] = useState("all");
     const [selectedRole, setSelectedRole] = useState("all");
     const [nameSearch, setNameSearch] = useState("");
     
@@ -35,14 +31,10 @@ export default function NewTeamForm({ departmentId: initialDepartmentId }) {
     // Dropdown states
     const [isLeaderDropdownOpen, setIsLeaderDropdownOpen] = useState(false);
     const [isMembersDropdownOpen, setIsMembersDropdownOpen] = useState(false);
-    const [isDepartmentFilterOpen, setIsDepartmentFilterOpen] = useState(false);
-    const [isTeamFilterOpen, setIsTeamFilterOpen] = useState(false);
     const [isRoleFilterOpen, setIsRoleFilterOpen] = useState(false);
     
     const leaderDropdownRef = useRef(null);
     const membersDropdownRef = useRef(null);
-    const departmentFilterRef = useRef(null);
-    const teamFilterRef = useRef(null);
     const roleFilterRef = useRef(null);
 
     // Fetch data - Use correct endpoints based on filters
@@ -52,14 +44,11 @@ export default function NewTeamForm({ departmentId: initialDepartmentId }) {
     // Memoize query parameters to ensure RTK Query properly detects changes
     const userQueryParams = useMemo(() => {
         const params = { pageNumber: 1, pageSize: 500 };
-        if (selectedDepartment !== "all") {
-            params.departmentId = selectedDepartment;
-        }
         if (nameSearch && nameSearch.trim()) {
             params.name = nameSearch.trim();
         }
         return params;
-    }, [selectedDepartment, nameSearch]);
+    }, [nameSearch]);
     
     const { data: roleUsersData, isLoading: isLoadingRoleUsers } = useGetRoleUsersQuery(
         { id: selectedRole, pageNumber: 1, pageSize: 500 },
@@ -71,10 +60,6 @@ export default function NewTeamForm({ departmentId: initialDepartmentId }) {
         { skip: selectedRole !== "all" } // Skip when role is selected (use role users instead)
     );
     
-    const { data: departmentsData } = useGetAllDepartmentsQuery({ pageNumber: 1, pageSize: 100 });
-    const { data: teamsData } = useGetTeamsByDepartmentQuery(selectedDepartment !== "all" ? selectedDepartment : null, {
-        skip: selectedDepartment === "all"
-    });
     // Only fetch active roles (status: 0 = active)
     const { data: rolesData } = useGetAllRolesQuery({ pageNumber: 1, pageSize: 100, status: 0 });
     
@@ -102,16 +87,6 @@ export default function NewTeamForm({ departmentId: initialDepartmentId }) {
     }, [usersData, roleUsersData, selectedRole]);
     
     const isLoadingUsers = selectedRole !== "all" ? isLoadingRoleUsers : isLoadingAllUsers;
-    
-    const departments = useMemo(() => {
-        const items = departmentsData?.value || departmentsData?.data || departmentsData?.items || departmentsData || [];
-        return Array.isArray(items) ? items : [];
-    }, [departmentsData]);
-    
-    const teams = useMemo(() => {
-        const items = teamsData?.value || teamsData?.data || teamsData?.items || teamsData || [];
-        return Array.isArray(items) ? items : [];
-    }, [teamsData]);
     
     const roles = useMemo(() => {
         const items = rolesData?.value || rolesData?.data || rolesData?.items || rolesData || [];
@@ -182,12 +157,6 @@ export default function NewTeamForm({ departmentId: initialDepartmentId }) {
             if (membersDropdownRef.current && !membersDropdownRef.current.contains(event.target)) {
                 setIsMembersDropdownOpen(false);
             }
-            if (departmentFilterRef.current && !departmentFilterRef.current.contains(event.target)) {
-                setIsDepartmentFilterOpen(false);
-            }
-            if (teamFilterRef.current && !teamFilterRef.current.contains(event.target)) {
-                setIsTeamFilterOpen(false);
-            }
             if (roleFilterRef.current && !roleFilterRef.current.contains(event.target)) {
                 setIsRoleFilterOpen(false);
             }
@@ -236,11 +205,11 @@ export default function NewTeamForm({ departmentId: initialDepartmentId }) {
     // Reset pagination when filters change
     useEffect(() => {
         setLeaderPage(1);
-    }, [selectedRole, nameSearch, selectedDepartment]);
+    }, [selectedRole, nameSearch]);
     
     useEffect(() => {
         setMembersPage(1);
-    }, [selectedRole, nameSearch, selectedDepartment]);
+    }, [selectedRole, nameSearch]);
 
     const removeTeamLeader = () => {
         setNewTeam(prev => ({ ...prev, teamLeader: null }));
@@ -258,13 +227,12 @@ export default function NewTeamForm({ departmentId: initialDepartmentId }) {
 
     const handleAddTeam = async () => {
         const teamLeadId = newTeam.teamLeader?.id || newTeam.teamLeader?.userId;
-        const finalDepartmentId = selectedDepartment !== "all" ? selectedDepartment : initialDepartmentId;
         
         if (!newTeam.name.trim()) {
             toast.error(t("allTeams.addTeam.errors.nameRequired", "Please enter a team name"));
             return;
         }
-        if (!finalDepartmentId) {
+        if (!initialDepartmentId) {
             toast.error(t("allTeams.addTeam.errors.departmentRequired", "Please select a department"));
             return;
         }
@@ -279,7 +247,7 @@ export default function NewTeamForm({ departmentId: initialDepartmentId }) {
                 name: newTeam.name.trim(),
                 description: newTeam.description?.trim() || '',
                 teamLeadId,
-                departmentId: finalDepartmentId,
+                departmentId: initialDepartmentId,
             };
             
             toast.loading(t("allTeams.addTeam.creating", "Creating team..."), { id: 'create-team' });
@@ -306,7 +274,7 @@ export default function NewTeamForm({ departmentId: initialDepartmentId }) {
                         await addUsersToTeam({ 
                             teamId: createdTeamId, 
                             userIds,
-                            departmentId: finalDepartmentId
+                            departmentId: initialDepartmentId
                         }).unwrap();
                         toast.dismiss('add-members');
                         toast.success(t("allTeams.addTeam.membersAdded", "Members added successfully!"));
@@ -323,7 +291,7 @@ export default function NewTeamForm({ departmentId: initialDepartmentId }) {
 
             // Navigate back to teams page
             setTimeout(() => {
-                navigate(`/pages/admin/all-teams?departmentId=${finalDepartmentId}`);
+                navigate(`/pages/admin/all-teams${initialDepartmentId ? `?departmentId=${initialDepartmentId}` : ''}`);
             }, 1000);
         } catch (error) {
             toast.dismiss('create-team');
@@ -393,12 +361,12 @@ export default function NewTeamForm({ departmentId: initialDepartmentId }) {
                         </div>
                         <div className="w-8 h-0.5 bg-[var(--border-color)]"></div>
                         <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
-                            newTeam.name.trim() && selectedDepartment !== "all" ? 'bg-[var(--approved-leave-box-bg)] border border-[var(--success-color)]/30' : 'bg-[var(--container-color)]/30 border border-[var(--border-color)]'
+                            newTeam.name.trim() ? 'bg-[var(--approved-leave-box-bg)] border border-[var(--success-color)]/30' : 'bg-[var(--container-color)]/30 border border-[var(--border-color)]'
                         }`}>
                             <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                                newTeam.name.trim() && selectedDepartment !== "all" ? 'bg-[var(--success-color)] text-white' : 'bg-[var(--accent-color)]/10 text-[var(--accent-color)]'
+                                newTeam.name.trim() ? 'bg-[var(--success-color)] text-white' : 'bg-[var(--accent-color)]/10 text-[var(--accent-color)]'
                             }`}>
-                                {newTeam.name.trim() && selectedDepartment !== "all" ? '✓' : '3'}
+                                {newTeam.name.trim() ? '✓' : '3'}
                             </div>
                             <span className="text-xs font-medium text-[var(--text-color)]">{t("allTeams.addTeam.steps.info", "Info")}</span>
                         </div>
@@ -830,12 +798,11 @@ export default function NewTeamForm({ departmentId: initialDepartmentId }) {
                                                     </span>
                                                 )}
                                             </div>
-                                            {(selectedRole !== "all" || selectedTeam !== "all" || nameSearch.trim()) && (
+                                            {(selectedRole !== "all" || nameSearch.trim()) && (
                                                 <button
                                                     type="button"
                                                     onClick={() => {
                                                         setSelectedRole("all");
-                                                        setSelectedTeam("all");
                                                         setNameSearch("");
                                                     }}
                                                     className="text-xs text-[var(--accent-color)] hover:underline flex items-center gap-1 transition-colors"
@@ -845,54 +812,7 @@ export default function NewTeamForm({ departmentId: initialDepartmentId }) {
                                                 </button>
                                             )}
                                         </div>
-                                        <div className="grid grid-cols-3 gap-2">
-                                            {/* Team Filter */}
-                                            <div className="relative" ref={teamFilterRef}>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setIsTeamFilterOpen(!isTeamFilterOpen)}
-                                                    className="w-full px-3 py-2 text-xs border border-[var(--border-color)] rounded-lg bg-[var(--bg-color)] text-[var(--text-color)] hover:border-[var(--accent-color)]/50 transition-all flex items-center justify-between"
-                                                >
-                                                    <span className="truncate">
-                                                        {selectedTeam === "all" 
-                                                            ? t("allTeams.addTeam.allTeams", "All Teams")
-                                                            : teams.find(t => t.id === selectedTeam)?.name || "Unknown"}
-                                                    </span>
-                                                    <ChevronDown className={`w-3 h-3 transition-transform ${isTeamFilterOpen ? 'rotate-180' : ''}`} />
-                                                </button>
-                                                {isTeamFilterOpen && (
-                                                    <div className="absolute top-full left-0 right-0 z-40 mt-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg shadow-xl max-h-48 overflow-y-auto">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                setSelectedTeam("all");
-                                                                setIsTeamFilterOpen(false);
-                                                            }}
-                                                            className={`w-full p-2 text-xs ${isArabic ? 'text-right' : 'text-left'} hover:bg-[var(--hover-color)] ${
-                                                                selectedTeam === "all" ? 'bg-[var(--accent-color)]/10' : ''
-                                                            }`}
-                                                        >
-                                                            {t("allTeams.addTeam.allTeams", "All Teams")}
-                                                        </button>
-                                                        {teams.map(team => (
-                                                            <button
-                                                                key={team.id}
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    setSelectedTeam(team.id);
-                                                                    setIsTeamFilterOpen(false);
-                                                                }}
-                                                                className={`w-full p-2 text-xs ${isArabic ? 'text-right' : 'text-left'} hover:bg-[var(--hover-color)] ${
-                                                                    selectedTeam === team.id ? 'bg-[var(--accent-color)]/10' : ''
-                                                                }`}
-                                                            >
-                                                                {team.name}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                            
+                                        <div className="grid grid-cols-2 gap-2">
                                             {/* Role Filter */}
                                             <div className="relative" ref={roleFilterRef}>
                                                 <button
@@ -1118,60 +1038,6 @@ export default function NewTeamForm({ departmentId: initialDepartmentId }) {
                         </div>
                         
                         <div className="space-y-5">
-                            {/* Department Selection - Enhanced */}
-                            <div>
-                                <label className={`flex items-center gap-2 text-sm font-bold text-[var(--text-color)] mb-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                                    <span>{t("allTeams.addTeam.department", "Department")}</span>
-                                    <span className="text-red-500">*</span>
-                                    <span className={`${isArabic ? 'mr-auto' : 'ml-auto'} text-xs font-normal text-[var(--sub-text-color)] italic`}>
-                                        {selectedDepartment !== "all" ? t("allTeams.addTeam.required", "Required") : t("allTeams.addTeam.pleaseSelect", "Please select")}
-                                    </span>
-                                </label>
-                                <div className="relative" ref={departmentFilterRef}>
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsDepartmentFilterOpen(!isDepartmentFilterOpen)}
-                                        className={`w-full px-4 py-3.5 border-2 rounded-xl transition-all flex items-center justify-between ${
-                                            selectedDepartment !== "all"
-                                                ? 'border-[var(--accent-color)]/30 bg-[var(--accent-color)]/5 text-[var(--text-color)]'
-                                                : 'border-[var(--border-color)] bg-[var(--bg-color)] text-[var(--sub-text-color)] hover:border-[var(--accent-color)]/50'
-                                        }`}
-                                    >
-                                        <span className="font-medium">
-                                            {selectedDepartment === "all" 
-                                                ? t("allTeams.addTeam.selectDepartment", "Select Department")
-                                                : departments.find(d => d.id === selectedDepartment)?.name || "Unknown"}
-                                        </span>
-                                        <ChevronDown className={`w-4 h-4 transition-transform ${isDepartmentFilterOpen ? 'rotate-180' : ''}`} />
-                                    </button>
-                                    
-                                    {isDepartmentFilterOpen && (
-                                        <div className={`absolute top-full ${isArabic ? 'right-0 left-0' : 'left-0 right-0'} z-30 mt-2 bg-[var(--bg-color)] border-2 border-[var(--border-color)] rounded-xl shadow-2xl overflow-hidden max-h-60 overflow-y-auto`}>
-                                            {departments.map(dept => (
-                                                <button
-                                                    key={dept.id}
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setSelectedDepartment(dept.id);
-                                                        setIsDepartmentFilterOpen(false);
-                                                    }}
-                                                    className={`w-full p-3.5 ${isArabic ? 'text-right' : 'text-left'} hover:bg-[var(--hover-color)] transition-colors border-b border-[var(--border-color)] last:border-b-0 ${
-                                                        selectedDepartment === dept.id ? 'bg-[var(--accent-color)]/10 font-semibold' : ''
-                                                    }`}
-                                                >
-                                                    <div className={`flex items-center ${isArabic ? 'flex-row-reverse' : ''} justify-between`}>
-                                                        <span>{dept.name}</span>
-                                                        {selectedDepartment === dept.id && (
-                                                            <Check className="w-4 h-4 text-[var(--accent-color)]" />
-                                                        )}
-                                                    </div>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
                             {/* Team Name - Enhanced */}
                             <div>
                                 <label className={`flex items-center gap-2 text-sm font-bold text-[var(--text-color)] mb-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
@@ -1248,27 +1114,6 @@ export default function NewTeamForm({ departmentId: initialDepartmentId }) {
                         
                         {/* Summary Content */}
                         <div className="space-y-4 mb-6">
-                            {/* Department */}
-                            <div className="p-4 bg-[var(--container-color)]/40 rounded-xl border border-[var(--border-color)]">
-                                <div className={`flex items-center gap-2 mb-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                                    <Filter className="w-4 h-4 text-[var(--accent-color)]" />
-                                    <p className="text-xs font-bold text-[var(--sub-text-color)] uppercase tracking-wide">
-                                        {t("allTeams.addTeam.summaryDepartment", "Department")}
-                                    </p>
-                                </div>
-                                {selectedDepartment !== "all" ? (
-                                    <p className={`text-sm font-bold text-[var(--text-color)] flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                                        <Check className="w-4 h-4 text-[var(--success-color)]" />
-                                        {departments.find(d => d.id === selectedDepartment)?.name || "—"}
-                                    </p>
-                                ) : (
-                                    <p className={`text-sm text-[var(--sub-text-color)] italic flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                                        <X className="w-4 h-4 text-[var(--error-color)]" />
-                                        {t("allTeams.addTeam.notSelected", "Not selected")}
-                                    </p>
-                                )}
-                            </div>
-                            
                             {/* Team Leader */}
                             <div className="p-4 bg-[var(--container-color)]/40 rounded-xl border border-[var(--border-color)]">
                                 <div className={`flex items-center gap-2 mb-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
@@ -1348,7 +1193,7 @@ export default function NewTeamForm({ departmentId: initialDepartmentId }) {
                         </div>
 
                         {/* Validation Status */}
-                        {(!newTeam.name.trim() || !selectedDepartment || selectedDepartment === "all" || !newTeam.teamLeader) && (
+                        {(!newTeam.name.trim() || !newTeam.teamLeader) && (
                             <div className="mb-6 p-4 bg-[var(--pending-leave-box-bg)] border-2 border-[var(--warning-color)]/30 rounded-xl">
                                 <div className={`flex items-start gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
                                     <div className="w-5 h-5 rounded-full bg-[var(--warning-color)] flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -1359,9 +1204,6 @@ export default function NewTeamForm({ departmentId: initialDepartmentId }) {
                                             {t("allTeams.addTeam.requiredFields", "Required Fields Missing")}
                                         </p>
                                         <ul className={`text-xs text-[var(--sub-text-color)] space-y-1 ${isArabic ? 'text-right' : 'text-left'}`}>
-                                            {!selectedDepartment || selectedDepartment === "all" ? (
-                                                <li className={isArabic ? 'list-none' : ''}>{isArabic ? '• ' : '• '}{t("allTeams.addTeam.selectDepartmentRequired", "Select a department")}</li>
-                                            ) : null}
                                             {!newTeam.teamLeader && (
                                                 <li className={isArabic ? 'list-none' : ''}>{isArabic ? '• ' : '• '}{t("allTeams.addTeam.selectLeaderRequired", "Select a team leader")}</li>
                                             )}
@@ -1380,15 +1222,15 @@ export default function NewTeamForm({ departmentId: initialDepartmentId }) {
                                 type="button" 
                                 className="group w-full px-6 py-4 rounded-xl font-bold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg hover:shadow-xl disabled:shadow-none relative overflow-hidden"
                                 style={{
-                                    background: (!newTeam.name.trim() || !selectedDepartment || selectedDepartment === "all" || !newTeam.teamLeader || isCreating || isAddingUsers)
+                                    background: (!newTeam.name.trim() || !newTeam.teamLeader || isCreating || isAddingUsers)
                                         ? 'var(--border-color)'
                                         : 'linear-gradient(135deg, var(--accent-color) 0%, var(--accent-color) 100%)'
                                 }}
                                 onClick={handleAddTeam}
-                                disabled={!newTeam.name.trim() || !selectedDepartment || selectedDepartment === "all" || !newTeam.teamLeader || isCreating || isAddingUsers}
+                                disabled={!newTeam.name.trim() || !newTeam.teamLeader || isCreating || isAddingUsers}
                             >
                                 {/* Button shine effect */}
-                                {!isCreating && !isAddingUsers && newTeam.name.trim() && selectedDepartment && selectedDepartment !== "all" && newTeam.teamLeader && (
+                                {!isCreating && !isAddingUsers && newTeam.name.trim() && newTeam.teamLeader && (
                                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 group-hover:translate-x-full transition-transform duration-1000"></div>
                                 )}
                                 
