@@ -306,9 +306,9 @@ export default function DepartmentCard({ department, onDelete, canUpdate = true,
             {/* Gradient Accent Bar */}
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[var(--accent-color)] to-[var(--accent-color)]/60 rounded-t-2xl"></div>
             
-            <div className="p-6">
+            <div className="p-5">
                 {/* Department Header */}
-                <div className={`flex items-start justify-between mb-5 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                <div className={`flex items-start justify-between mb-4 ${isArabic ? 'flex-row-reverse' : ''}`}>
                     <div className={`flex items-start gap-4 flex-1 ${isArabic ? 'flex-row-reverse' : ''}`}>
                         {/* Department Icon */}
                         <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--accent-color)]/15 via-[var(--accent-color)]/10 to-[var(--accent-color)]/5 flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:bg-[var(--accent-color)] transition-all duration-300">
