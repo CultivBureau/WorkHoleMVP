@@ -426,7 +426,7 @@ export default function TeamFormEmbedded({
                         <span className="text-[var(--sub-text-color)]">
                             {leaderRole !== "all" 
                                 ? roles.find(r => r.id === leaderRole)?.name || "Role"
-                                : t("allTeams.addTeam.filters.allRoles", "All Roles")}
+                                 : t("allTeams.addTeam.filters.allRoles", "All Roles")}
                         </span>
                         <ChevronDown className={`w-4 h-4 text-[var(--sub-text-color)] transition-transform ${isLeaderRoleFilterOpen ? 'rotate-180' : ''}`} />
                     </div>
