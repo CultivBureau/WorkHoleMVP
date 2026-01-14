@@ -109,12 +109,6 @@ const mainMenuItems = [
   { key: "leaves", Icon: LogOut, implemented: true },
 ];
 
-const settingsItems = [
-  { key: "settingsItem", Icon: SettingsIcon, implemented: true }, // <-- هنا التعديل
-  { key: "subscriptions", Icon: RefreshCw, implemented: false },
-  { key: "help", Icon: Bot, implemented: false },
-];
-
 function SideMenuItem({
   item,
   active,
@@ -587,22 +581,9 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
     else if (key === "admin_shifts") navigate("/pages/admin/shifts");
   };
 
-  // Settings click handler
-  const handleSettingsClick = (key) => {
-    if (key === "settingsItem") {
-      navigate("/pages/User/profile"); // ← هنا المسار الصحيح حسب الراوتنج عندك
-      return;
-    }
-    const settingsItem = settingsItems.find(item => item.key === key);
-    if (!settingsItem?.implemented) {
-      showToast(t('comingSoon'));
-      return;
-    }
-  };
-
   // Handle mobile menu item click
   const handleMobileMenuClick = (key) => {
-    const allItems = [...mainMenuItems, ...allAdminMenuItems, ...settingsItems];
+    const allItems = [...mainMenuItems, ...allAdminMenuItems];
     const item = allItems.find(item => item.key === key) ||
       allItems.flatMap(item => item.children || []).find(child => child.key === key);
 
@@ -808,39 +789,6 @@ export default function SideMenu({ isMobileOpen, onMobileClose }) {
             </nav>
           </>
         )}
-
-        {(!collapsed || isMobile) && (
-          <p
-            className={`px-3 pt-4 pb-2 text-xs tracking-wide uppercase font-semibold ${isArabic ? "text-right" : "text-left"
-              }`}
-            style={{
-              color: "var(--sub-text-color)",
-              direction: isArabic ? "rtl" : "ltr",
-            }}
-          >
-            {t("aside.settings")}
-          </p>
-        )}
-        <nav
-          className="flex px-2 flex-col gap-1 pb-2"
-          style={{ alignItems: collapsed && !isMobile ? "center" : "stretch" }}
-        >
-          {settingsItems.map((item) => (
-            <SideMenuItem
-              key={item.key}
-              item={item}
-              active={getActiveKey()}
-              collapsed={collapsed && !isMobile}
-              onClick={isMobile ? handleMobileMenuClick : handleSettingsClick}
-              openDropdown={openDropdown}
-              setOpenDropdown={setOpenDropdown}
-              setCollapsed={setCollapsed}
-              t={t}
-              isArabic={isArabic}
-              onShowToast={showToast}
-            />
-          ))}
-        </nav>
       </div>
 
       {/* Bottom Language & Theme Toggle */}
