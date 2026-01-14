@@ -535,6 +535,8 @@
     "totalEntries": "entries"
   },
   "leaves": {
+    "title": "Leaves",
+    "noLeaveTypes": "No leave types available",
     "statusCards": {
       "annualLeave": "Annual leave",
       "sickLeave": "Sick leave",

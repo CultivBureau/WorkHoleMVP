@@ -487,6 +487,8 @@
     "totalEntries": "سجلات"
   },
   "leaves": {
+    "title": "اجازات",
+    "noLeaveTypes": "لا توجد أنواع إجازات متاحة",
     "statusCards": {
       "annualLeave": "الإجازة السنوية",
       "sickLeave": "الإجازة المرضية",
