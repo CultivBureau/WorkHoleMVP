@@ -842,6 +842,7 @@
       "title": "Add New Employee",
       "breadcrumb": "All Employee",
       "steps": {
+        "emailVerification": "Email",
         "personalInfo": "Personal Information",
         "professionalInfo": "Professional Information",
         "documents": "Documents",
@@ -922,12 +923,14 @@
         "title": "Employee Added!",
         "message": "You have successfully added a new employee.",
         "teamAssigned": "User assigned to team successfully",
-        "shiftAssigned": "User assigned to shift successfully"
+        "shiftAssigned": "User assigned to shift successfully",
+        "assigned": "User assigned to company successfully!"
       },
       "processing": {
         "register": "Registering user...",
         "assignTeam": "Assigning user to team...",
-        "assignShift": "Assigning user to shift..."
+        "assignShift": "Assigning user to shift...",
+        "assigning": "Assigning user to company..."
       },
       "validation": {
         "isRequired": "is required",

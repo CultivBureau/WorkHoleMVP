@@ -8,6 +8,8 @@ import { useGetAllRolesQuery } from "../../../services/apis/RoleApi";
 import { useGetAllShiftsQuery } from "../../../services/apis/ShiftApi";
 import { useGetTeamsByDepartmentQuery } from "../../../services/apis/TeamApi";
 import { useRegisterMutation } from "../../../services/apis/AuthApi";
+import { useLazyCheckUserExistenceByEmailQuery } from "../../../services/apis/UserApi";
+import { useAssignUserToCompanyMutation } from "../../../services/apis/CompanyApi";
 import toast from "react-hot-toast";
 
 export default function NewEmployeeForm() {
@@ -15,6 +17,7 @@ export default function NewEmployeeForm() {
     const isArabic = i18n.language === "ar";
     const navigate = useNavigate();
     const [step, setStep] = useState(0);
+    const [existingUserData, setExistingUserData] = useState(null);
 
     // Initialize employee data, pre-filling companyId from token/cookie
     const [employeeData, setEmployeeData] = useState({
@@ -33,12 +36,14 @@ export default function NewEmployeeForm() {
     });
 
     const [registerUser, { isLoading: isRegistering }] = useRegisterMutation();
+    const [assignUser, { isLoading: isAssigning }] = useAssignUserToCompanyMutation();
 
     const handleFieldChange = (name, value) => {
         setEmployeeData(prev => ({ ...prev, [name]: value }));
     };
 
     const steps = [
+        { label: t("employees.newEmployeeForm.steps.emailVerification", "Email Verification"), icon: User },
         { label: t("employees.newEmployeeForm.steps.personalInfo"), icon: User },
         { label: t("employees.newEmployeeForm.steps.professionalInfo"), icon: Briefcase },
         { label: "Review & Submit", icon: Eye },
@@ -65,46 +70,81 @@ export default function NewEmployeeForm() {
                 return;
             }
 
-            const required = {
-                userName: employeeData.userName,
-                email: employeeData.email,
-                phoneNumber: employeeData.phoneNumber,
-                firstName: employeeData.firstName,
-                lastName: employeeData.lastName,
-                companyId,
-                roleId: employeeData.roleId,
-            };
-            const missing = Object.entries(required)
-                .filter(([, v]) => !v || (typeof v === 'string' && v.trim() === ''))
-                .map(([k]) => k);
-            if (missing.length) {
-                toast.error(t("employees.newEmployeeForm.validation.missingFields") || `Missing required fields: ${missing.join(', ')}`);
-                return;
+            // Check if we're assigning an existing user or registering a new one
+            if (existingUserData) {
+                // Existing user - use assign endpoint
+                const required = {
+                    roleId: employeeData.roleId,
+                };
+                const missing = Object.entries(required)
+                    .filter(([, v]) => !v || (typeof v === 'string' && v.trim() === ''))
+                    .map(([k]) => k);
+                if (missing.length) {
+                    toast.error(t("employees.newEmployeeForm.validation.missingFields") || `Missing required fields: ${missing.join(', ')}`);
+                    return;
+                }
+
+                const assignPayload = {
+                    userId: existingUserData.id,
+                    roleId: employeeData.roleId,
+                    ...(employeeData.jobTitle && employeeData.jobTitle.trim() && { jobTitle: employeeData.jobTitle.trim() }),
+                    ...(employeeData.hireDate && { hireDate: new Date(employeeData.hireDate).toISOString() }),
+                    ...(employeeData.teamIds && employeeData.teamIds.length > 0 && { teamIds: employeeData.teamIds }),
+                    ...(employeeData.shiftIds && employeeData.shiftIds.length > 0 && { shiftIds: employeeData.shiftIds }),
+                };
+
+                toast.loading(t("employees.newEmployeeForm.processing.assigning") || "Assigning user to company...");
+                await assignUser(assignPayload).unwrap();
+                toast.dismiss();
+                
+                toast.success(t("employees.newEmployeeForm.success.assigned") || "User assigned to company successfully!");
+                
+                setTimeout(() => {
+                    navigate("/pages/admin/all-employees", { replace: true });
+                }, 500);
+            } else {
+                // New user - use register endpoint
+                const required = {
+                    userName: employeeData.userName,
+                    email: employeeData.email,
+                    phoneNumber: employeeData.phoneNumber,
+                    firstName: employeeData.firstName,
+                    lastName: employeeData.lastName,
+                    companyId,
+                    roleId: employeeData.roleId,
+                };
+                const missing = Object.entries(required)
+                    .filter(([, v]) => !v || (typeof v === 'string' && v.trim() === ''))
+                    .map(([k]) => k);
+                if (missing.length) {
+                    toast.error(t("employees.newEmployeeForm.validation.missingFields") || `Missing required fields: ${missing.join(', ')}`);
+                    return;
+                }
+
+                const registerPayload = {
+                    userName: employeeData.userName.trim(),
+                    email: employeeData.email.trim(),
+                    phoneNumber: employeeData.phoneNumber.trim(),
+                    firstName: employeeData.firstName.trim(),
+                    lastName: employeeData.lastName.trim(),
+                    roleId: employeeData.roleId,
+                    companyId,
+                    ...(employeeData.jobTitle && employeeData.jobTitle.trim() && { jobTitle: employeeData.jobTitle.trim() }),
+                    ...(employeeData.hireDate && { hireDate: new Date(employeeData.hireDate).toISOString() }),
+                    ...(employeeData.teamIds && employeeData.teamIds.length > 0 && { teamIds: employeeData.teamIds }),
+                    ...(employeeData.shiftIds && employeeData.shiftIds.length > 0 && { shiftIds: employeeData.shiftIds }),
+                };
+
+                toast.loading(t("employees.newEmployeeForm.processing.register") || "Registering user...");
+                await registerUser(registerPayload).unwrap();
+                toast.dismiss();
+                
+                toast.success(t("employees.newEmployeeForm.success.title") || "Employee created successfully!");
+                
+                setTimeout(() => {
+                    navigate("/pages/admin/all-employees", { replace: true });
+                }, 500);
             }
-
-            const registerPayload = {
-                userName: employeeData.userName.trim(),
-                email: employeeData.email.trim(),
-                phoneNumber: employeeData.phoneNumber.trim(),
-                firstName: employeeData.firstName.trim(),
-                lastName: employeeData.lastName.trim(),
-                roleId: employeeData.roleId,
-                companyId,
-                ...(employeeData.jobTitle && employeeData.jobTitle.trim() && { jobTitle: employeeData.jobTitle.trim() }),
-                ...(employeeData.hireDate && { hireDate: new Date(employeeData.hireDate).toISOString() }),
-                ...(employeeData.teamIds && employeeData.teamIds.length > 0 && { teamIds: employeeData.teamIds }),
-                ...(employeeData.shiftIds && employeeData.shiftIds.length > 0 && { shiftIds: employeeData.shiftIds }),
-            };
-
-            toast.loading(t("employees.newEmployeeForm.processing.register") || "Registering user...");
-            await registerUser(registerPayload).unwrap();
-            toast.dismiss();
-            
-            toast.success(t("employees.newEmployeeForm.success.title") || "Employee created successfully!");
-            
-            setTimeout(() => {
-                navigate("/pages/admin/all-employees", { replace: true });
-            }, 500);
         } catch (err) {
             toast.dismiss();
             const apiErrors = err?.data?.errors || err?.data?.Errors;
@@ -187,13 +227,32 @@ export default function NewEmployeeForm() {
                 {/* Step Content */}
                 <div className="mt-8">
                     {step === 0 && (
-                        <PersonalInfoStep
+                        <EmailStep
                             data={employeeData}
                             onChange={handleFieldChange}
-                            onNext={() => setStep(1)}
+                            onNext={(userData) => {
+                                setExistingUserData(userData);
+                                if (userData) {
+                                    // Pre-fill form with existing user data
+                                    handleFieldChange('userName', userData.userName || '');
+                                    handleFieldChange('phoneNumber', userData.phoneNumber || '');
+                                    handleFieldChange('firstName', userData.firstName || '');
+                                    handleFieldChange('lastName', userData.lastName || '');
+                                }
+                                setStep(1);
+                            }}
                         />
                     )}
                     {step === 1 && (
+                        <PersonalInfoStep
+                            data={employeeData}
+                            onChange={handleFieldChange}
+                            onNext={() => setStep(2)}
+                            onBack={() => setStep(0)}
+                            existingUserData={existingUserData}
+                        />
+                    )}
+                    {step === 2 && (
                         <ProfessionalInfoStep
                             data={employeeData}
                             onChange={handleFieldChange}
@@ -201,11 +260,11 @@ export default function NewEmployeeForm() {
                             roles={roles}
                             shifts={shifts}
                             teams={teams}
-                            onNext={() => setStep(2)}
-                            onBack={() => setStep(0)}
+                            onNext={() => setStep(3)}
+                            onBack={() => setStep(1)}
                         />
                     )}
-                    {step === 2 && (
+                    {step === 3 && (
                         <ReviewStep
                             employeeData={employeeData}
                             departments={departments}
@@ -213,8 +272,8 @@ export default function NewEmployeeForm() {
                             shifts={shifts}
                             teams={teams}
                             onNext={handleSubmitAll}
-                            onBack={() => setStep(1)}
-                            loading={isRegistering}
+                            onBack={() => setStep(2)}
+                            loading={isRegistering || isAssigning}
                         />
                     )}
                 </div>
@@ -223,13 +282,138 @@ export default function NewEmployeeForm() {
     );
 }
 
-// Step 1: Personal Information
-function PersonalInfoStep({ onNext, onChange, data }) {
+// Step 1: Email Verification
+function EmailStep({ onNext, onChange, data }) {
+    const { t, i18n } = useTranslation();
+    const isArabic = i18n.language === "ar";
+    const navigate = useNavigate();
+    const [error, setError] = useState("");
+    const [touched, setTouched] = useState(false);
+    const [checkUserByEmail, { isLoading: isCheckingEmail }] = useLazyCheckUserExistenceByEmailQuery();
+
+    const validateEmail = (email) => {
+        if (!email.trim()) {
+            return t("employees.newEmployeeForm.validation.emailRequired", "Email is required");
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return t("employees.newEmployeeForm.validation.invalidEmail", "Please enter a valid email address");
+        }
+        return "";
+    };
+
+    const handleFieldChange = (value) => {
+        onChange('email', value);
+        if (touched) {
+            const validationError = validateEmail(value);
+            setError(validationError);
+        }
+    };
+
+    const handleBlur = () => {
+        setTouched(true);
+        const validationError = validateEmail(data.email);
+        setError(validationError);
+    };
+
+    const handleNext = async () => {
+        setTouched(true);
+        const validationError = validateEmail(data.email);
+        if (validationError) {
+            setError(validationError);
+            return;
+        }
+
+        try {
+            // Check if user exists by email
+            const response = await checkUserByEmail(data.email).unwrap();
+            
+            // If value exists, user is found (pass user data to next step)
+            if (response?.value) {
+                onNext(response.value);
+            } else {
+                // User doesn't exist, proceed with empty data
+                onNext(null);
+            }
+        } catch (err) {
+            console.error("Error checking email:", err);
+            toast.error(t("employees.newEmployeeForm.errors.emailCheckFailed", "Failed to verify email"));
+        }
+    };
+
+    const isFormValid = !validateEmail(data.email);
+
+    return (
+        <div className="space-y-6">
+            {/* Email Field */}
+            <div className="p-6 bg-gradient-to-br from-[#15919B]/5 to-transparent rounded-xl border-2 border-[var(--border-color)]">
+                <div className="space-y-6">
+                    <div>
+                        <label className={`block text-sm font-semibold text-[var(--text-color)] mb-2 ${isArabic ? 'text-right' : 'text-left'}`}>
+                            {t("employees.newEmployeeForm.personalInfo.emailAddress") || "Email Address"} <span className="text-[var(--error-color)]">*</span>
+                        </label>
+                        <input
+                            className={`w-full px-4 py-3 border-2 rounded-xl bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-2 transition-all ${
+                                error 
+                                    ? 'border-[var(--error-color)] focus:border-[var(--error-color)] focus:ring-[var(--error-color)]/20' 
+                                    : data.email.trim()
+                                        ? 'border-[#15919B]/30 focus:border-[#15919B] focus:ring-[#15919B]/20'
+                                        : 'border-[var(--border-color)] focus:border-[#15919B] focus:ring-[#15919B]/20'
+                            }`}
+                            placeholder={t("employees.newEmployeeForm.personalInfo.emailAddress")}
+                            type="email"
+                            value={data.email}
+                            onChange={e => handleFieldChange(e.target.value)}
+                            onBlur={handleBlur}
+                            dir={isArabic ? 'rtl' : 'ltr'}
+                        />
+                        {error && (
+                            <p className={`mt-2 text-sm text-[var(--error-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
+                                {error}
+                            </p>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Navigation Buttons */}
+            <div className={`flex ${isArabic ? 'justify-start' : 'justify-end'} gap-3 pt-6 border-t border-[var(--border-color)]`}>
+                <button 
+                    type="button" 
+                    className="px-6 py-3 rounded-xl border-2 border-[var(--border-color)] text-[var(--text-color)] font-semibold hover:bg-[var(--hover-color)] hover:border-[#15919B]/30 transition-all duration-200" 
+                    onClick={() => navigate('/pages/admin/all-employees')}
+                >
+                    {t("employees.newEmployeeForm.buttons.cancel") || "Cancel"}
+                </button>
+                <button 
+                    type="button" 
+                    className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
+                        isFormValid && !isCheckingEmail
+                            ? 'bg-gradient-to-r from-[#15919B] to-[#09D1C7] text-white hover:shadow-lg hover:scale-105'
+                            : 'bg-[var(--container-color)] text-[var(--sub-text-color)] border-2 border-[var(--border-color)] cursor-not-allowed opacity-60'
+                    }`}
+                    onClick={handleNext}
+                    disabled={!isFormValid || isCheckingEmail}
+                >
+                    {isCheckingEmail 
+                        ? t("employees.newEmployeeForm.buttons.checking", "Checking...") 
+                        : t("employees.newEmployeeForm.buttons.next") || "Next"}
+                </button>
+            </div>
+        </div>
+    );
+}
+
+// Step 2: Personal Information
+function PersonalInfoStep({ onNext, onBack, onChange, data, existingUserData }) {
     const { t, i18n } = useTranslation();
     const isArabic = i18n.language === "ar";
     const navigate = useNavigate();
     const [errors, setErrors] = useState({});
     const [touched, setTouched] = useState({});
+    
+    // Check if fields should be read-only (when user already exists)
+    const isReadOnly = !!existingUserData;
 
     const getLabel = (key) => {
         const map = {
@@ -294,7 +478,7 @@ function PersonalInfoStep({ onNext, onChange, data }) {
     const validate = () => {
         const newErrors = {};
         Object.keys(data).forEach(key => {
-            if (['userName', 'email', 'phoneNumber', 'firstName', 'lastName'].includes(key)) {
+            if (['userName', 'phoneNumber', 'firstName', 'lastName'].includes(key)) {
                 const error = validateField(key, data[key]);
                 if (error) newErrors[key] = error;
             }
@@ -305,23 +489,19 @@ function PersonalInfoStep({ onNext, onChange, data }) {
 
     // Check form validity without setting state (for use during render)
     const checkFormValid = useMemo(() => {
-        const requiredFields = ['userName', 'email', 'phoneNumber', 'firstName', 'lastName'];
+        const requiredFields = ['userName', 'phoneNumber', 'firstName', 'lastName'];
         return requiredFields.every(field => {
             const value = data[field];
             if (!value || (typeof value === 'string' && !value.trim())) {
                 return false;
             }
             // Additional validation for specific fields
-            if (field === 'email') {
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                return emailRegex.test(value);
-            }
             if (field === 'userName') {
                 return /^[A-Za-z]+$/.test(value);
             }
             return true;
         });
-    }, [data.userName, data.email, data.phoneNumber, data.firstName, data.lastName]);
+    }, [data.userName, data.phoneNumber, data.firstName, data.lastName]);
 
     const handleFieldChange = (name, value) => {
         onChange(name, value);
@@ -377,50 +557,26 @@ function PersonalInfoStep({ onNext, onChange, data }) {
                                 {t("employees.newEmployeeForm.professionalInfo.userName") || "Username"} <span className="text-[var(--error-color)]">*</span>
                             </label>
                             <input
-                                className={`w-full px-4 py-3 border-2 rounded-xl bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-2 transition-all ${
-                                    errors.userName 
-                                        ? 'border-[var(--error-color)] focus:border-[var(--error-color)] focus:ring-[var(--error-color)]/20' 
-                                        : data.userName.trim()
-                                            ? 'border-[#15919B]/30 focus:border-[#15919B] focus:ring-[#15919B]/20'
-                                            : 'border-[var(--border-color)] focus:border-[#15919B] focus:ring-[#15919B]/20'
+                                className={`w-full px-4 py-3 border-2 rounded-xl text-[var(--text-color)] focus:outline-none focus:ring-2 transition-all ${
+                                    isReadOnly 
+                                        ? 'bg-[var(--container-color)] border-[var(--border-color)] cursor-not-allowed'
+                                        : errors.userName 
+                                            ? 'border-[var(--error-color)] focus:border-[var(--error-color)] focus:ring-[var(--error-color)]/20 bg-[var(--bg-color)]' 
+                                            : data.userName.trim()
+                                                ? 'border-[#15919B]/30 focus:border-[#15919B] focus:ring-[#15919B]/20 bg-[var(--bg-color)]'
+                                                : 'border-[var(--border-color)] focus:border-[#15919B] focus:ring-[#15919B]/20 bg-[var(--bg-color)]'
                                 }`}
                                 placeholder={t("employees.newEmployeeForm.professionalInfo.userName")}
                                 type="text"
                                 value={data.userName}
-                                onChange={e => handleFieldChange('userName', e.target.value.replace(/[^A-Za-z]/g, ''))}
-                                onBlur={() => handleBlur('userName')}
+                                onChange={e => !isReadOnly && handleFieldChange('userName', e.target.value.replace(/[^A-Za-z]/g, ''))}
+                                onBlur={() => !isReadOnly && handleBlur('userName')}
                                 dir={isArabic ? 'rtl' : 'ltr'}
+                                readOnly={isReadOnly}
                             />
                             {errors.userName && (
                                 <p className={`mt-2 text-sm text-[var(--error-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
                                     {errors.userName}
-                                </p>
-                            )}
-                        </div>
-
-                        {/* Email */}
-                        <div>
-                            <label className={`block text-sm font-semibold text-[var(--text-color)] mb-2 ${isArabic ? 'text-right' : 'text-left'}`}>
-                                {t("employees.newEmployeeForm.personalInfo.emailAddress") || "Email Address"} <span className="text-[var(--error-color)]">*</span>
-                            </label>
-                            <input
-                                className={`w-full px-4 py-3 border-2 rounded-xl bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-2 transition-all ${
-                                    errors.email 
-                                        ? 'border-[var(--error-color)] focus:border-[var(--error-color)] focus:ring-[var(--error-color)]/20' 
-                                        : data.email.trim()
-                                            ? 'border-[#15919B]/30 focus:border-[#15919B] focus:ring-[#15919B]/20'
-                                            : 'border-[var(--border-color)] focus:border-[#15919B] focus:ring-[#15919B]/20'
-                                }`}
-                                placeholder={t("employees.newEmployeeForm.personalInfo.emailAddress")}
-                                type="email"
-                                value={data.email}
-                                onChange={e => handleFieldChange('email', e.target.value)}
-                                onBlur={() => handleBlur('email')}
-                                dir={isArabic ? 'rtl' : 'ltr'}
-                            />
-                            {errors.email && (
-                                <p className={`mt-2 text-sm text-[var(--error-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
-                                    {errors.email}
                                 </p>
                             )}
                         </div>
@@ -431,19 +587,22 @@ function PersonalInfoStep({ onNext, onChange, data }) {
                                 {t("employees.newEmployeeForm.personalInfo.mobileNumber") || "Mobile Number"} <span className="text-[var(--error-color)]">*</span>
                             </label>
                             <input
-                                className={`w-full px-4 py-3 border-2 rounded-xl bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-2 transition-all ${
-                                    errors.phoneNumber 
-                                        ? 'border-[var(--error-color)] focus:border-[var(--error-color)] focus:ring-[var(--error-color)]/20' 
-                                        : data.phoneNumber.trim()
-                                            ? 'border-[#15919B]/30 focus:border-[#15919B] focus:ring-[#15919B]/20'
-                                            : 'border-[var(--border-color)] focus:border-[#15919B] focus:ring-[#15919B]/20'
+                                className={`w-full px-4 py-3 border-2 rounded-xl text-[var(--text-color)] focus:outline-none focus:ring-2 transition-all ${
+                                    isReadOnly 
+                                        ? 'bg-[var(--container-color)] border-[var(--border-color)] cursor-not-allowed'
+                                        : errors.phoneNumber 
+                                            ? 'border-[var(--error-color)] focus:border-[var(--error-color)] focus:ring-[var(--error-color)]/20 bg-[var(--bg-color)]' 
+                                            : data.phoneNumber.trim()
+                                                ? 'border-[#15919B]/30 focus:border-[#15919B] focus:ring-[#15919B]/20 bg-[var(--bg-color)]'
+                                                : 'border-[var(--border-color)] focus:border-[#15919B] focus:ring-[#15919B]/20 bg-[var(--bg-color)]'
                                 }`}
                                 placeholder={t("employees.newEmployeeForm.personalInfo.mobileNumber")}
                                 type="tel"
                                 value={data.phoneNumber}
-                                onChange={e => handleFieldChange('phoneNumber', e.target.value)}
-                                onBlur={() => handleBlur('phoneNumber')}
+                                onChange={e => !isReadOnly && handleFieldChange('phoneNumber', e.target.value)}
+                                onBlur={() => !isReadOnly && handleBlur('phoneNumber')}
                                 dir={isArabic ? 'rtl' : 'ltr'}
+                                readOnly={isReadOnly}
                             />
                             {errors.phoneNumber && (
                                 <p className={`mt-2 text-sm text-[var(--error-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
@@ -458,19 +617,22 @@ function PersonalInfoStep({ onNext, onChange, data }) {
                                 {t("employees.newEmployeeForm.personalInfo.firstName") || "First Name"} <span className="text-[var(--error-color)]">*</span>
                             </label>
                             <input
-                                className={`w-full px-4 py-3 border-2 rounded-xl bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-2 transition-all ${
-                                    errors.firstName 
-                                        ? 'border-[var(--error-color)] focus:border-[var(--error-color)] focus:ring-[var(--error-color)]/20' 
-                                        : data.firstName.trim()
-                                            ? 'border-[#15919B]/30 focus:border-[#15919B] focus:ring-[#15919B]/20'
-                                            : 'border-[var(--border-color)] focus:border-[#15919B] focus:ring-[#15919B]/20'
+                                className={`w-full px-4 py-3 border-2 rounded-xl text-[var(--text-color)] focus:outline-none focus:ring-2 transition-all ${
+                                    isReadOnly 
+                                        ? 'bg-[var(--container-color)] border-[var(--border-color)] cursor-not-allowed'
+                                        : errors.firstName 
+                                            ? 'border-[var(--error-color)] focus:border-[var(--error-color)] focus:ring-[var(--error-color)]/20 bg-[var(--bg-color)]' 
+                                            : data.firstName.trim()
+                                                ? 'border-[#15919B]/30 focus:border-[#15919B] focus:ring-[#15919B]/20 bg-[var(--bg-color)]'
+                                                : 'border-[var(--border-color)] focus:border-[#15919B] focus:ring-[#15919B]/20 bg-[var(--bg-color)]'
                                 }`}
                                 placeholder={t("employees.newEmployeeForm.personalInfo.firstName")}
                                 type="text"
                                 value={data.firstName}
-                                onChange={e => handleFieldChange('firstName', e.target.value)}
-                                onBlur={() => handleBlur('firstName')}
+                                onChange={e => !isReadOnly && handleFieldChange('firstName', e.target.value)}
+                                onBlur={() => !isReadOnly && handleBlur('firstName')}
                                 dir={isArabic ? 'rtl' : 'ltr'}
+                                readOnly={isReadOnly}
                             />
                             {errors.firstName && (
                                 <p className={`mt-2 text-sm text-[var(--error-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
@@ -485,19 +647,22 @@ function PersonalInfoStep({ onNext, onChange, data }) {
                                 {t("employees.newEmployeeForm.personalInfo.lastName") || "Last Name"} <span className="text-[var(--error-color)]">*</span>
                             </label>
                             <input
-                                className={`w-full px-4 py-3 border-2 rounded-xl bg-[var(--bg-color)] text-[var(--text-color)] focus:outline-none focus:ring-2 transition-all ${
-                                    errors.lastName 
-                                        ? 'border-[var(--error-color)] focus:border-[var(--error-color)] focus:ring-[var(--error-color)]/20' 
-                                        : data.lastName.trim()
-                                            ? 'border-[#15919B]/30 focus:border-[#15919B] focus:ring-[#15919B]/20'
-                                            : 'border-[var(--border-color)] focus:border-[#15919B] focus:ring-[#15919B]/20'
+                                className={`w-full px-4 py-3 border-2 rounded-xl text-[var(--text-color)] focus:outline-none focus:ring-2 transition-all ${
+                                    isReadOnly 
+                                        ? 'bg-[var(--container-color)] border-[var(--border-color)] cursor-not-allowed'
+                                        : errors.lastName 
+                                            ? 'border-[var(--error-color)] focus:border-[var(--error-color)] focus:ring-[var(--error-color)]/20 bg-[var(--bg-color)]' 
+                                            : data.lastName.trim()
+                                                ? 'border-[#15919B]/30 focus:border-[#15919B] focus:ring-[#15919B]/20 bg-[var(--bg-color)]'
+                                                : 'border-[var(--border-color)] focus:border-[#15919B] focus:ring-[#15919B]/20 bg-[var(--bg-color)]'
                                 }`}
                                 placeholder={t("employees.newEmployeeForm.personalInfo.lastName")}
                                 type="text"
                                 value={data.lastName}
-                                onChange={e => handleFieldChange('lastName', e.target.value)}
-                                onBlur={() => handleBlur('lastName')}
+                                onChange={e => !isReadOnly && handleFieldChange('lastName', e.target.value)}
+                                onBlur={() => !isReadOnly && handleBlur('lastName')}
                                 dir={isArabic ? 'rtl' : 'ltr'}
+                                readOnly={isReadOnly}
                             />
                             {errors.lastName && (
                                 <p className={`mt-2 text-sm text-[var(--error-color)] ${isArabic ? 'text-right' : 'text-left'}`}>
@@ -548,9 +713,9 @@ function PersonalInfoStep({ onNext, onChange, data }) {
                 <button 
                     type="button" 
                     className="px-6 py-3 rounded-xl border-2 border-[var(--border-color)] text-[var(--text-color)] font-semibold hover:bg-[var(--hover-color)] hover:border-[#15919B]/30 transition-all duration-200" 
-                    onClick={() => navigate('/pages/admin/all-employees')}
+                    onClick={onBack}
                 >
-                    {t("employees.newEmployeeForm.buttons.cancel") || "Cancel"}
+                    {t("employees.newEmployeeForm.buttons.back") || "Back"}
                 </button>
                 <button 
                     type="button" 

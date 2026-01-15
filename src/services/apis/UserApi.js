@@ -97,6 +97,15 @@ export const userApi = createApi({
       }),
       providesTags: ["User"],
     }),
+
+    // Check user existence by email
+    checkUserExistenceByEmail: builder.query({
+      query: (email) => ({
+        url: "/api/v1/User/CheckUserExistenceByEmail/check-by-email",
+        method: "GET",
+        params: { email },
+      }),
+    }),
   }),
 });
 
@@ -111,5 +120,6 @@ export const {
   useGetUsersByIdsQuery,
   useGetUserProfileByIdQuery,
   useGetUserStatisticsQuery,
+  useLazyCheckUserExistenceByEmailQuery,
 } = userApi;
 

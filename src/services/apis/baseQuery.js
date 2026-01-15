@@ -14,6 +14,7 @@ import {
 
 const baseUrl = import.meta.env.VITE_API_URL;
 
+console.log("API Base URL:", baseUrl);
 // Track refresh attempts to prevent infinite loops
 let refreshAttempts = 0;
 const MAX_REFRESH_ATTEMPTS = 2;

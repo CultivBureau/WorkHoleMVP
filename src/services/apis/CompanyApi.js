@@ -149,6 +149,14 @@ export const companyApi = createApi({
       }),
       invalidatesTags: ["Company"],
     }),
+    assignUserToCompany: builder.mutation({
+      query: (body) => ({
+        url: "/api/v1/Company/AssignUserToCompany/assign",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Company"],
+    }),
   }),
 });
 
@@ -160,4 +168,5 @@ export const {
   useAddAttachmentMutation,
   useUpdateAttachmentMutation,
   useDeleteAttachmentMutation,
+  useAssignUserToCompanyMutation,
 } = companyApi;
