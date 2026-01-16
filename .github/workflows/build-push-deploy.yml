@@ -37,7 +37,7 @@ jobs:
           context: .
           push: true
           build-args: |
-            VITE_API_URL=${{ secrets.VITE_API_URL }}
+            VITE_API_URL=${{ secrets.VITE_API_URL_PRODUCTION }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
